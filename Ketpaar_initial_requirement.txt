@@ -1,0 +1,21 @@
+Ketpaar (Seekers) Mobile/Web App
+Need:
+•	When someone seeks alms on our way we get a dilemma whether to offer money for food or consider if the money could be used for wrong purposes. Need a mechanism to ensure money gets spent only on food and basic needs 
+Possible solutions:
+•	If a food currency can be made by the authorities that can be used to buy only food, medicine or basic necessities, we can purchase that from authorized vendors and offer to alms seekers.
+•	The second way is to develop this app which supports to send food orders via external food delivery apps for specific persons.
+Working:
+•	Alm seeker seeks for offer
+•	Offeror asks if some food could be ordered for the seeker.
+•	Seeker nods.
+•	Offeror asks the seeker if a snap can be taken for the food delivery person to identify.
+•	Seeker nods.
+•	Offeror takes a snap, places a food order.
+•	The app prechecks using AI if the location is safe for delivery against speeding vehicles, not causing traffic jams, lighting and not being a lonely spot, checks other orders already made in the past hour, any warning set by the delivery crew.
+•	Then the app interacts with the food delivery vendors/apps/websites and places and order.
+•	The food delivery app (external) recognizes the transaction coming from Seekers app. Checks any discount, tax adjustments and sends price quote.
+•	Offeror confirms at the seekers app and pays to the food delivery app.
+•	Offeror conveys the delivery on the way and moves on.
+•	Delivery crew identifies the seeker and delivers the goods.
+•	Delivery crew asks if a snap can be taken for the delivery and uploads the snap against the order and moves on.
+•	The Delivery app notifies to the offeror and the seekers app about the delivery completion and passes the snap to the seekers app. The offeror can check the snaps and details in the seekers app.

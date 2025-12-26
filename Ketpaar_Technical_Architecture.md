@@ -174,6 +174,30 @@
 │  │  - Delivery Success Rate                                    │  │
 │  └─────────────────────────────────────────────────────────────┘  │
 │                                                                      │
+│  ┌─────────────────────────────────────────────────────────────┐  │
+│  │  PLEDGE SERVICE                                             │  │
+│  │  - Pledge Creation & Management                             │  │
+│  │  - Pledge Pool Allocation                                   │  │
+│  │  - Auto-deduction for Orders                                │  │
+│  │  - Pledge History & Analytics                               │  │
+│  └─────────────────────────────────────────────────────────────┘  │
+│                                                                      │
+│  ┌─────────────────────────────────────────────────────────────┐  │
+│  │  VENDOR SERVICE                                             │  │
+│  │  - Vendor Registration & Verification                       │  │
+│  │  - Menu Management                                          │  │
+│  │  - Direct Donation Scheduling                               │  │
+│  │  - Rating & Recognition System                              │  │
+│  └─────────────────────────────────────────────────────────────┘  │
+│                                                                      │
+│  ┌─────────────────────────────────────────────────────────────┐  │
+│  │  CROWDFUNDING SERVICE                                       │  │
+│  │  - Campaign Creation & Management                           │  │
+│  │  - Multi-donor Contribution Handling                        │  │
+│  │  - Threshold Monitoring & Order Trigger                     │  │
+│  │  - Contributor Notification                                 │  │
+│  └─────────────────────────────────────────────────────────────┘  │
+│                                                                      │
 └──────────────────────────────┬──────────────────────────────────────┘
                                │
                                ▼
@@ -362,6 +386,12 @@ order_events
    - Success/failure rate
    - Delivery crew feedback
 
+5. **Duplicate Seeker Detection**
+   - Facial recognition using ML (compare with recent orders)
+   - Location proximity matching (within configurable radius)
+   - Time window check (default: 2 hours)
+   - Returns: duplicate probability score + recent order details
+
 **Safety Score Calculation:**
 ```python
 safety_score = (
@@ -374,9 +404,82 @@ safety_score = (
 # Threshold: >= 0.65 to proceed
 ```
 
+**Duplicate Seeker Detection Algorithm:**
+```python
+import numpy as np
+from datetime import datetime, timedelta
+
+class DuplicateSeekerDetector:
+    DUPLICATE_WINDOW_HOURS = 2  # Configurable
+    LOCATION_RADIUS_METERS = 100
+    SIMILARITY_THRESHOLD = 0.85  # Face matching threshold
+    
+    async def check_duplicate(self, photo, location, timestamp):
+        # 1. Extract facial embedding from photo
+        face_embedding = await self.extract_face_embedding(photo)
+        
+        if face_embedding is None:
+            return {
+                'is_duplicate': False,
+                'confidence': 'low',
+                'message': 'No clear face detected'
+            }
+        
+        # 2. Find recent orders in proximity
+        time_threshold = timestamp - timedelta(hours=self.DUPLICATE_WINDOW_HOURS)
+        
+        recent_seekers = await SeekerDetection.objects.filter(
+            timestamp__gte=time_threshold,
+            location__dwithin=(location, self.LOCATION_RADIUS_METERS)
+        ).all()
+        
+        # 3. Compare face embeddings
+        for seeker in recent_seekers:
+            similarity = self.cosine_similarity(
+                face_embedding, 
+                seeker.face_embedding
+            )
+            
+            if similarity >= self.SIMILARITY_THRESHOLD:
+                # Duplicate detected!
+                order_details = await Order.objects.get(id=seeker.order_id)
+                
+                return {
+                    'is_duplicate': True,
+                    'confidence': 'high',
+                    'similarity_score': similarity,
+                    'previous_order': {
+                        'order_id': seeker.order_id,
+                        'timestamp': seeker.timestamp,
+                        'time_ago_minutes': (timestamp - seeker.timestamp).seconds // 60,
+                        'distance_meters': self.calculate_distance(location, seeker.location)
+                    },
+                    'message': f'This seeker received help {(timestamp - seeker.timestamp).seconds // 60} minutes ago'
+                }
+        
+        # 4. No duplicate found
+        return {
+            'is_duplicate': False,
+            'confidence': 'high',
+            'message': 'No recent help detected for this seeker'
+        }
+    
+    def cosine_similarity(self, embedding1, embedding2):
+        return np.dot(embedding1, embedding2) / (
+            np.linalg.norm(embedding1) * np.linalg.norm(embedding2)
+        )
+    
+    async def extract_face_embedding(self, photo):
+        """Use face recognition model (e.g., FaceNet, DeepFace)"""
+        # Implementation using TensorFlow/PyTorch model
+        # Returns 128-dimensional embedding vector
+        pass
+```
+
 **API Endpoints:**
 ```
 POST   /api/v1/safety/assess             # Assess location safety
+POST   /api/v1/safety/check-duplicate    # Check for duplicate seeker
 GET    /api/v1/safety/history/:location  # Get historical data
 POST   /api/v1/safety/feedback           # Submit delivery feedback
 GET    /api/v1/safety/metrics            # Get safety metrics
@@ -554,6 +657,415 @@ PUT    /api/v1/notifications/preferences
 
 ---
 
+### 3.7 Pledge Service
+
+**Responsibilities:**
+- Manage advance donations/pledges
+- Allocate pledged funds to orders
+- Track pledge utilization
+- Generate pledge analytics
+
+**Technology Stack:**
+- Framework: Node.js (NestJS) or Python (Django)
+- Database: PostgreSQL
+- Cache: Redis (for quick allocation)
+
+**Pledge Types:**
+```
+1. General Pledge: Available for any seeker, anywhere
+2. Location-based: Within specific radius (e.g., my neighborhood)
+3. Time-based: Valid during specific hours (e.g., lunch time)
+4. Amount-based: Auto-renew monthly pledges
+```
+
+**Allocation Algorithm:**
+```python
+def allocate_pledge(order_amount, location, timestamp):
+    # Priority order:
+    # 1. Location + Time specific pledges
+    # 2. Location-specific pledges
+    # 3. Time-specific pledges
+    # 4. General pledges (oldest first)
+    
+    allocated = []
+    remaining = order_amount
+    
+    for pledge in get_matching_pledges(location, timestamp):
+        if remaining <= 0:
+            break
+        amount_to_use = min(pledge.available_amount, remaining)
+        allocated.append({
+            'pledge_id': pledge.id,
+            'amount': amount_to_use
+        })
+        remaining -= amount_to_use
+    
+    return allocated, remaining
+```
+
+**API Endpoints:**
+```
+POST   /api/v1/pledges                    # Create new pledge
+GET    /api/v1/pledges                    # List user's pledges
+GET    /api/v1/pledges/:id                # Get pledge details
+PUT    /api/v1/pledges/:id                # Update pledge
+DELETE /api/v1/pledges/:id                # Cancel pledge
+GET    /api/v1/pledges/pool               # Get pledge pool stats
+GET    /api/v1/pledges/:id/utilization    # Get utilization history
+POST   /api/v1/orders/:id/use-pledge      # Use pledge for order
+```
+
+**Data Model:**
+```sql
+pledges
+├── id (UUID, PK)
+├── donor_id (UUID, FK → users.id)
+├── total_amount (DECIMAL)
+├── remaining_amount (DECIMAL)
+├── pledge_type (ENUM: general, location_based, time_based)
+├── location (GEOGRAPHY, NULLABLE)
+├── radius_meters (INTEGER, NULLABLE)
+├── valid_from_hour (INTEGER, NULLABLE)
+├── valid_to_hour (INTEGER, NULLABLE)
+├── auto_renew (BOOLEAN)
+├── status (ENUM: active, depleted, cancelled)
+├── created_at (TIMESTAMP)
+├── expires_at (TIMESTAMP, NULLABLE)
+└── metadata (JSONB)
+
+pledge_allocations
+├── id (UUID, PK)
+├── pledge_id (UUID, FK → pledges.id)
+├── order_id (UUID, FK → orders.id)
+├── amount_used (DECIMAL)
+├── allocated_at (TIMESTAMP)
+└── status (ENUM: allocated, used, refunded)
+```
+
+---
+
+### 3.8 Vendor Service
+
+**Responsibilities:**
+- Vendor registration and verification
+- Menu and availability management
+- Direct donation order handling
+- Vendor rating and recognition
+
+**Technology Stack:**
+- Framework: Node.js or Python
+- Database: PostgreSQL
+- Storage: S3 (vendor photos, documents)
+
+**Vendor Types:**
+```
+1. Registered Restaurant: Has all licenses, verified
+2. Home Kitchen: Smaller scale, community verified
+3. Food Truck: Mobile vendors
+4. NGO Kitchen: Charity organizations
+```
+
+**Capacity Pledge Model:**
+```
+Vendors pledge donation capacity, not prepared food:
+- Daily capacity: "Can prepare 20 meals per day"
+- Preparation time: "30 minutes from order to ready"
+- Active hours: "11:00 AM - 2:00 PM, 6:00 PM - 9:00 PM"
+- Menu items: Limited selection for efficiency
+
+Real-time Inventory:
+- Available capacity decremented on order placement
+- Restored on delivery completion or cancellation
+- Prevents over-commitment
+- Batch ordering for efficiency (e.g., "3 orders ready in 30 min")
+```
+
+**Verification Process:**
+```
+1. Vendor submits registration
+2. Documents uploaded (FSSAI license, etc.)
+3. Admin review
+4. Field verification (optional)
+5. Approval & badge assignment
+6. Capacity & menu setup
+7. Go live with pledged capacity
+```
+
+**API Endpoints:**
+```
+POST   /api/v1/vendors/register           # Vendor registration
+GET    /api/v1/vendors                    # List vendors (with filters)
+GET    /api/v1/vendors/:id                # Get vendor details
+PUT    /api/v1/vendors/:id                # Update vendor profile
+POST   /api/v1/vendors/:id/menu           # Add/update menu items
+GET    /api/v1/vendors/:id/menu           # Get vendor menu
+POST   /api/v1/vendors/:id/capacity       # Set daily capacity pledge
+PUT    /api/v1/vendors/:id/capacity       # Update capacity/hours
+GET    /api/v1/vendors/:id/capacity       # Get current available capacity
+POST   /api/v1/vendors/:id/orders         # Receive order notification
+PUT    /api/v1/vendors/:id/orders/:orderId # Update order status (preparing/ready)
+GET    /api/v1/vendors/:id/donations      # List donation history
+PUT    /api/v1/vendors/:id/availability   # Update availability
+GET    /api/v1/vendors/nearby?lat=&lng=&capacity=1 # Find vendors with capacity
+POST   /api/v1/vendors/:id/ratings        # Rate vendor
+GET    /api/v1/vendors/:id/reconciliation # Capacity reconciliation report
+```
+
+**Data Model:**
+```sql
+vendors
+├── id (UUID, PK)
+├── owner_id (UUID, FK → users.id)
+├── business_name (VARCHAR)
+├── vendor_type (ENUM)
+├── location (GEOGRAPHY)
+├── address (TEXT)
+├── phone (VARCHAR)
+├── email (VARCHAR)
+├── fssai_license (VARCHAR)
+├── verification_status (ENUM: pending, verified, rejected)
+├── rating (DECIMAL)
+├── total_donations (INTEGER)
+├── recognition_badge (VARCHAR, NULLABLE)
+├── is_active (BOOLEAN)
+├── created_at (TIMESTAMP)
+└── metadata (JSONB)
+
+vendor_capacity
+├── id (UUID, PK)
+├── vendor_id (UUID, FK → vendors.id)
+├── date (DATE)
+├── total_daily_capacity (INTEGER)
+├── remaining_capacity (INTEGER)
+├── active_from_hour (INTEGER)
+├── active_to_hour (INTEGER)
+├── preparation_time_minutes (INTEGER)
+├── batch_size (INTEGER) -- Optimal batch size for efficiency
+├── last_updated (TIMESTAMP)
+└── UNIQUE(vendor_id, date)
+
+vendor_menu_items
+├── id (UUID, PK)
+├── vendor_id (UUID, FK → vendors.id)
+├── item_name (VARCHAR)
+├── description (TEXT)
+├── category (VARCHAR)
+├── is_available (BOOLEAN)
+├── preparation_time (INTEGER)
+└── created_at (TIMESTAMP)
+
+vendor_orders
+├── id (UUID, PK)
+├── vendor_id (UUID, FK → vendors.id)
+├── order_id (UUID, FK → orders.id)
+├── capacity_reserved_at (TIMESTAMP)
+├── preparation_started_at (TIMESTAMP, NULLABLE)
+├── ready_at (TIMESTAMP, NULLABLE)
+├── completed_at (TIMESTAMP, NULLABLE)
+├── status (ENUM: reserved, preparing, ready, picked_up, delivered, cancelled)
+└── metadata (JSONB)
+
+vendor_capacity_log
+├── id (UUID, PK)
+├── vendor_id (UUID, FK → vendors.id)
+├── date (DATE)
+├── order_id (UUID, FK → orders.id, NULLABLE)
+├── action (ENUM: reserve, release, complete, cancel)
+├── capacity_change (INTEGER) -- negative for reserve, positive for release
+├── remaining_after (INTEGER)
+├── timestamp (TIMESTAMP)
+└── reason (VARCHAR)
+
+vendor_ratings
+├── id (UUID, PK)
+├── vendor_id (UUID, FK → vendors.id)
+├── order_id (UUID, FK → orders.id)
+├── user_id (UUID, FK → users.id)
+├── rating (INTEGER CHECK 1-5)
+├── comment (TEXT)
+├── created_at (TIMESTAMP)
+
+CREATE INDEX idx_vendor_capacity_date ON vendor_capacity(vendor_id, date);
+CREATE INDEX idx_vendor_capacity_remaining ON vendor_capacity(remaining_capacity) WHERE remaining_capacity > 0;
+CREATE INDEX idx_vendor_orders_status ON vendor_orders(vendor_id, status);
+```
+
+**Capacity Management Algorithm:**
+```python
+class VendorCapacityManager:
+    def reserve_capacity(self, vendor_id: UUID, date: date, quantity: int) -> bool:
+        """Reserve capacity with pessimistic locking"""
+        with transaction():
+            capacity = VendorCapacity.objects.select_for_update().get(
+                vendor_id=vendor_id, 
+                date=date
+            )
+            
+            if capacity.remaining_capacity >= quantity:
+                capacity.remaining_capacity -= quantity
+                capacity.save()
+                
+                # Log transaction
+                VendorCapacityLog.objects.create(
+                    vendor_id=vendor_id,
+                    date=date,
+                    action='reserve',
+                    capacity_change=-quantity,
+                    remaining_after=capacity.remaining_capacity
+                )
+                return True
+            return False
+    
+    def release_capacity(self, vendor_id: UUID, order_id: UUID, reason: str):
+        """Release capacity back to pool (on cancellation/completion)"""
+        with transaction():
+            vendor_order = VendorOrder.objects.get(order_id=order_id)
+            capacity = VendorCapacity.objects.select_for_update().get(
+                vendor_id=vendor_id,
+                date=vendor_order.created_at.date()
+            )
+            
+            capacity.remaining_capacity += 1  # Release 1 unit
+            capacity.save()
+            
+            # Log transaction
+            VendorCapacityLog.objects.create(
+                vendor_id=vendor_id,
+                date=capacity.date,
+                order_id=order_id,
+                action='release',
+                capacity_change=+1,
+                remaining_after=capacity.remaining_capacity,
+                reason=reason
+            )
+    
+    def reconcile_daily_capacity(self, vendor_id: UUID, date: date):
+        """Reconcile capacity at end of day"""
+        expected = VendorCapacity.objects.get(vendor_id=vendor_id, date=date)
+        
+        completed = VendorOrder.objects.filter(
+            vendor_id=vendor_id,
+            created_at__date=date,
+            status__in=['delivered', 'completed']
+        ).count()
+        
+        cancelled = VendorOrder.objects.filter(
+            vendor_id=vendor_id,
+            created_at__date=date,
+            status='cancelled'
+        ).count()
+        
+        actual_remaining = expected.total_daily_capacity - completed
+        
+        if actual_remaining != expected.remaining_capacity:
+            # Log discrepancy for review
+            logger.warning(f"Capacity mismatch for vendor {vendor_id}: "
+                         f"Expected {expected.remaining_capacity}, "
+                         f"Actual {actual_remaining}")
+```
+
+---
+
+### 3.9 Crowdfunding Service
+
+**Responsibilities:**
+- Campaign creation and management
+- Multi-donor contribution tracking
+- Threshold monitoring and order trigger
+- Contributor notifications
+
+**Technology Stack:**
+- Framework: Node.js (NestJS)
+- Database: PostgreSQL
+- Message Queue: RabbitMQ (for real-time updates)
+- Cache: Redis (for campaign status)
+
+**Campaign Lifecycle:**
+```
+CREATED → ACTIVE → FUNDING → THRESHOLD_MET → 
+ORDER_PLACED → DELIVERED → COMPLETED
+
+Failed states:
+→ EXPIRED (time limit reached)
+→ CANCELLED (by creator)
+```
+
+**Real-time Updates:**
+```javascript
+// WebSocket for live campaign updates
+socket.on('campaign:contribution', (data) => {
+  // Update campaign progress bar
+  // Notify all watchers
+  // Trigger order if threshold met
+});
+```
+
+**API Endpoints:**
+```
+POST   /api/v1/campaigns                  # Create campaign
+GET    /api/v1/campaigns                  # List campaigns (nearby/all)
+GET    /api/v1/campaigns/:id              # Get campaign details
+POST   /api/v1/campaigns/:id/contribute   # Contribute to campaign
+DELETE /api/v1/campaigns/:id              # Cancel campaign
+GET    /api/v1/campaigns/:id/contributors # List contributors
+GET    /api/v1/campaigns/my-contributions # User's contributions
+POST   /api/v1/campaigns/:id/boost        # Share/boost campaign
+```
+
+**Contribution Rules:**
+```
+- Minimum contribution: ₹10
+- Maximum campaign duration: 2 hours
+- Auto-cancel if not met: Yes
+- Refund on failure: Instant to pledge pool or original source
+- Anonymous contributions: Allowed
+```
+
+**Data Model:**
+```sql
+campaigns
+├── id (UUID, PK)
+├── creator_id (UUID, FK → users.id)
+├── seeker_photo_url (VARCHAR)
+├── location (GEOGRAPHY)
+├── location_address (TEXT)
+├── target_amount (DECIMAL)
+├── current_amount (DECIMAL)
+├── description (TEXT)
+├── status (ENUM)
+├── created_at (TIMESTAMP)
+├── expires_at (TIMESTAMP)
+├── order_id (UUID, FK → orders.id, NULLABLE)
+├── completed_at (TIMESTAMP, NULLABLE)
+└── metadata (JSONB)
+
+campaign_contributions
+├── id (UUID, PK)
+├── campaign_id (UUID, FK → campaigns.id)
+├── contributor_id (UUID, FK → users.id)
+├── amount (DECIMAL)
+├── is_anonymous (BOOLEAN)
+├── payment_reference (VARCHAR)
+├── status (ENUM: pending, confirmed, refunded)
+├── contributed_at (TIMESTAMP)
+└── refunded_at (TIMESTAMP, NULLABLE)
+
+CREATE INDEX idx_campaigns_location ON campaigns USING GIST(location);
+CREATE INDEX idx_campaigns_status ON campaigns(status);
+CREATE INDEX idx_campaigns_expires ON campaigns(expires_at);
+```
+
+**Notification Flow:**
+```
+1. Campaign created → Notify nearby users
+2. Contribution made → Notify creator & all contributors with progress
+3. Threshold met → Notify all contributors, trigger order
+4. Order delivered → Notify all contributors with delivery photo
+5. Campaign expired → Notify all, process refunds
+```
+
+---
+
 ## 4. Data Architecture
 
 ### 4.1 Database Schema (PostgreSQL)
@@ -630,6 +1142,22 @@ CREATE TABLE safety_assessments (
 
 CREATE INDEX idx_safety_location ON safety_assessments USING GIST(location);
 CREATE INDEX idx_safety_timestamp ON safety_assessments(timestamp);
+
+seeker_detection
+├── id (UUID, PK)
+├── order_id (UUID, FK → orders.id)
+├── seeker_photo_url (VARCHAR)
+├── face_embedding (VECTOR(128)) -- Facial recognition vector
+├── location (GEOGRAPHY(POINT, 4326))
+├── timestamp (TIMESTAMP)
+├── is_duplicate (BOOLEAN)
+├── matched_order_id (UUID, FK → orders.id, NULLABLE)
+├── similarity_score (DECIMAL(3,2))
+└── metadata (JSONB)
+
+CREATE INDEX idx_seeker_location ON seeker_detection USING GIST(location);
+CREATE INDEX idx_seeker_timestamp ON seeker_detection(timestamp);
+CREATE INDEX idx_seeker_face ON seeker_detection USING ivfflat(face_embedding) WITH (lists = 100); -- For vector similarity search (requires pgvector extension)
 
 -- Delivery feedback table
 CREATE TABLE delivery_feedback (

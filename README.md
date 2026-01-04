@@ -20,6 +20,37 @@ Ketpaar is a mobile/web application that enables donors to provide food and esse
 - [Business Requirements](Ketpaar_Business_Requirement.md) - Complete business case and benefits
 - [Technical Architecture](Ketpaar_Technical_Architecture.md) - Detailed technical design
 - [Initial Requirements](Ketpaar_initial_requirement.txt) - Original concept
+- [Call for Contributors](CALL_FOR_CONTRIBUTORS.md) - How to get involved
+
+## Repository Structure
+
+This is the **master repository** for Ketpaar, containing documentation and overall coordination.
+
+### Child Repositories (Independent Development)
+
+**Frontend:**
+- `ketpaar-mobile-app` - Mobile application (React Native/Flutter)
+- `ketpaar-web-app` - Web application (React/Next.js)
+
+**Backend Services:**
+- `ketpaar-api-gateway` - API gateway and routing
+- `ketpaar-order-service` - Order management
+- `ketpaar-user-service` - User authentication and profiles
+- `ketpaar-integration-service` - Vendor integrations (Swiggy, Zomato)
+- `ketpaar-notification-service` - Notifications
+
+**AI/ML:**
+- `ketpaar-ai-safety` - Location safety assessment
+- `ketpaar-photo-service` - Face detection and verification
+
+**Infrastructure:**
+- `ketpaar-infra` - Infrastructure as Code
+- `ketpaar-deployment` - CI/CD pipelines
+
+**Documentation:**
+- `ketpaar-docs` - User guides and API docs
+
+Each repository evolves independently. Coordination happens here.
 
 ## Project Status
 

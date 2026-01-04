@@ -1470,31 +1470,86 @@ Response: { orders[], stats: { total_donations, total_amount } }
 
 ### 7.1 Food Delivery Vendor Integration
 
-**Integration Methods:**
+**⚠️ Critical Integration Challenge:**
 
-**Option 1: REST API Integration**
+Most major food delivery platforms (Swiggy, Zomato, Uber Eats) **do not provide public APIs** for third-party order placement. This requires:
+- Business partnerships and API access negotiations
+- Custom adapter implementations for each vendor
+- Alternative approaches for MVP phase
+
+**Integration Strategies:**
+
+**Strategy 1: Direct API Integration (Requires Partnership)**
 ```
-- Direct API calls to vendor endpoints
-- OAuth 2.0 authentication
-- Webhook for order updates
+Prerequisites:
+- Formal business partnership with vendor
+- OAuth 2.0 or API key access
+- Webhook endpoint registration
+- Compliance with vendor terms of service
+
+Challenges:
+- Different API structures per vendor
+- Different authentication mechanisms
+- Different webhook signature formats
+- Rate limiting and throttling policies
+- Vendor-specific business rules
 ```
 
-**Option 2: Deep Link Integration**
+**Strategy 2: Deep Link Integration (Fallback)**
 ```
-- Generate vendor-specific deep links
-- Redirect user to vendor app/website
-- Callback URL for payment confirmation
+Flow:
+1. Ketpaar creates order intent (local database)
+2. Generate vendor-specific deep link with pre-filled cart
+3. Redirect user to vendor app/website
+4. User completes order on vendor platform
+5. Vendor sends callback/webhook on order status
+6. Ketpaar updates local order status
+
+Limitations:
+- Less control over order flow
+- Dependency on vendor callback reliability
+- User leaves Ketpaar app temporarily
+- Payment tracking complexity
 ```
 
-**Vendor Adapter Pattern:**
+**Strategy 3: Direct Vendor Program (MVP Approach)**
+```
+Benefits:
+- Full control over integration
+- No dependency on third-party APIs
+- Immediate implementation possible
+- Better margins for social mission
+
+Implementation:
+- Partner with local restaurants and food vendors
+- Simple phone/WhatsApp based ordering
+- Vendor capacity pledge system
+- Direct delivery or partnership with delivery personnel
+```
+
+**Vendor Adapter Pattern (For Future API Access):**
 
 ```typescript
 interface VendorConfig {
   name: string;
   apiBaseUrl: string;
-  authMethod: 'oauth' | 'api_key';
+  authMethod: 'oauth' | 'api_key' | 'partnership';
   webhookSecret: string;
   deepLinkSchema: string;
+  requiresCustomAuth: boolean;
+  rateLimits: {
+    requestsPerMinute: number;
+    requestsPerDay: number;
+  };
+}
+
+interface VendorAdapter {
+  createOrder(orderData: OrderData): Promise<VendorOrder>;
+  getOrderStatus(vendorOrderId: string): Promise<OrderStatus>;
+  generatePaymentLink(vendorOrderId: string): Promise<string>;
+  cancelOrder(vendorOrderId: string): Promise<boolean>;
+  verifyWebhook(payload: any, signature: string): boolean;
+  normalizeResponse(vendorResponse: any): StandardResponse;
 }
 
 class VendorService {
@@ -1502,46 +1557,136 @@ class VendorService {
   
   async createOrder(vendor: string, orderData: OrderData) {
     const adapter = this.adapters.get(vendor);
-    return await adapter.createOrder(orderData);
+    if (!adapter) {
+      throw new Error(`Vendor ${vendor} not supported`);
+    }
+    
+    try {
+      return await adapter.createOrder(orderData);
+    } catch (error) {
+      // Fallback to alternative vendor or direct vendor program
+      return await this.fallbackOrderCreation(orderData);
+    }
   }
   
   async getStatus(vendor: string, vendorOrderId: string) {
     const adapter = this.adapters.get(vendor);
     return await adapter.getOrderStatus(vendorOrderId);
   }
+  
+  private async fallbackOrderCreation(orderData: OrderData) {
+    // Route to direct vendor network
+    return await this.directVendorService.createOrder(orderData);
+  }
+}
+
+// Custom adapter per vendor
+class SwiggyAdapter implements VendorAdapter {
+  async createOrder(orderData: OrderData) {
+    // Swiggy-specific API call structure
+    // Requires partnership agreement
+  }
+  
+  verifyWebhook(payload: any, signature: string): boolean {
+    // Swiggy-specific signature verification
+    const hash = crypto.createHmac('sha256', this.config.webhookSecret)
+      .update(JSON.stringify(payload))
+      .digest('hex');
+    return hash === signature;
+  }
+}
+
+class ZomatoAdapter implements VendorAdapter {
+  async createOrder(orderData: OrderData) {
+    // Zomato-specific API call structure
+    // Different request format than Swiggy
+  }
+  
+  verifyWebhook(payload: any, signature: string): boolean {
+    // Zomato uses different webhook signature method
+    // Requires custom verification logic
+  }
 }
 ```
 
-**Webhook Handling:**
+**Webhook Handling (Multi-Vendor):**
 ```typescript
 @Post('/vendors/webhooks/:vendor')
 async handleWebhook(
   @Param('vendor') vendor: string,
   @Body() payload: any,
-  @Headers('signature') signature: string
+  @Headers('signature') signature: string,
+  @Headers('x-vendor-event') eventType: string
 ) {
-  // Verify signature
-  if (!this.verifySignature(vendor, payload, signature)) {
-    throw new UnauthorizedException();
+  // 1. Get vendor-specific adapter
+  const adapter = this.vendorService.getAdapter(vendor);
+  
+  // 2. Verify webhook signature (vendor-specific)
+  if (!adapter.verifyWebhook(payload, signature)) {
+    this.logger.warn(`Invalid webhook signature from ${vendor}`);
+    throw new UnauthorizedException('Invalid signature');
   }
   
-  // Normalize webhook data
-  const orderUpdate = this.normalizeWebhookData(vendor, payload);
+  // 3. Normalize vendor-specific data to standard format
+  const orderUpdate = adapter.normalizeResponse(payload);
   
-  // Update order status
+  // 4. Update order status
   await this.orderService.updateStatus(
-    orderUpdate.orderId,
-    orderUpdate.status
+    orderUpdate.ketpaarOrderId,
+    orderUpdate.status,
+    {
+      vendorOrderId: orderUpdate.vendorOrderId,
+      vendorStatus: orderUpdate.vendorStatus,
+      deliveryETA: orderUpdate.estimatedDelivery,
+      trackingUrl: orderUpdate.trackingUrl
+    }
   );
   
-  // Send notification
+  // 5. Send notification to donor
   await this.notificationService.send({
-    userId: orderUpdate.userId,
+    userId: orderUpdate.donorId,
     type: 'order_update',
+    template: this.getTemplateForStatus(orderUpdate.status),
     data: orderUpdate
   });
+  
+  return { received: true };
 }
 ```
+
+**Recommended Implementation Phases:**
+
+```
+Phase 1 - MVP (Month 1-3):
+├── Direct Vendor Program (local restaurants)
+├── Manual/phone-based ordering
+├── Simple WhatsApp integration
+└── No dependency on major platform APIs
+
+Phase 2 - Partnership (Month 4-6):
+├── Initiate partnerships with Swiggy/Zomato
+├── API access negotiation
+├── Pilot program with one major vendor
+└── Build custom adapter
+
+Phase 3 - Scale (Month 7-12):
+├── Multi-vendor support
+├── Full webhook integration
+├── Fallback mechanisms
+└── Hybrid approach (direct + platforms)
+```
+
+**API Customization Requirements:**
+
+| Vendor | Customization Level | Key Challenges |
+|--------|-------------------|----------------|
+| **Swiggy** | High | No public API, requires partnership, custom auth flow |
+| **Zomato** | High | Limited API access, different webhook format |
+| **Uber Eats** | High | Enterprise partnership needed, complex auth |
+| **Direct Vendors** | Medium | Custom integration per vendor, capacity management |
+| **Google Maps** | Low | Standard API, well-documented |
+| **Twilio/SendGrid** | Low | Standard SDKs available |
+| **FCM/APNS** | Low | Standard push notification setup |
 
 ---
 
@@ -1571,15 +1716,191 @@ const placeData = await googleMaps.places.nearbySearch({
 
 ### 7.3 Third-Party Services
 
-| Service | Purpose | Provider Options |
-|---------|---------|-----------------|
-| SMS | OTP delivery | Twilio, AWS SNS, Gupshup |
-| Push Notifications | Real-time updates | Firebase FCM, APNS |
-| Email | Receipts, updates | SendGrid, AWS SES |
-| Storage | Photo storage | AWS S3, Azure Blob, GCP Storage |
-| Maps | Location services | Google Maps, Mapbox |
-| Analytics | Usage tracking | Google Analytics, Mixpanel |
-| Monitoring | APM | DataDog, New Relic, Sentry |
+**Service Integration Matrix:**
+
+| Service | Purpose | Provider Options | Customization Level | Implementation Complexity |
+|---------|---------|-----------------|-------------------|-------------------------|
+| **SMS** | OTP delivery, alerts | Twilio, AWS SNS, Gupshup | Low | Simple - Standard REST APIs, good SDKs |
+| **Push Notifications** | Real-time updates | Firebase FCM, APNS | Low | Standard - Setup required, well-documented |
+| **Email** | Receipts, updates | SendGrid, AWS SES | Low | Simple - Template-based, standard APIs |
+| **Storage** | Photo storage | AWS S3, Azure Blob, GCP Storage | Low | Standard - SDK available, minimal config |
+| **Maps** | Location services | Google Maps, Mapbox | Low | Standard - REST API, extensive docs |
+| **Analytics** | Usage tracking | Google Analytics, Mixpanel | Low | Standard - SDK integration |
+| **Monitoring** | APM, error tracking | DataDog, New Relic, Sentry | Medium | Moderate - Custom dashboards needed |
+
+**Detailed Integration Specifications:**
+
+#### **SMS Service (Twilio - Recommended)**
+```javascript
+// Minimal customization - Standard SDK
+const twilio = require('twilio');
+const client = twilio(accountSid, authToken);
+
+async function sendOTP(phoneNumber, otp) {
+  await client.messages.create({
+    body: `Your Ketpaar OTP is: ${otp}. Valid for 5 minutes.`,
+    from: process.env.TWILIO_PHONE,
+    to: phoneNumber
+  });
+}
+
+// Integration effort: 1-2 days
+// Cost: ~$0.0075 per SMS in India
+```
+
+#### **Push Notifications (Firebase FCM)**
+```javascript
+// Low customization - Standard setup
+const admin = require('firebase-admin');
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount)
+});
+
+async function sendPushNotification(deviceToken, notification) {
+  await admin.messaging().send({
+    token: deviceToken,
+    notification: {
+      title: notification.title,
+      body: notification.body
+    },
+    data: notification.data,
+    android: {
+      priority: 'high'
+    },
+    apns: {
+      headers: {
+        'apns-priority': '10'
+      }
+    }
+  });
+}
+
+// Integration effort: 2-3 days (including mobile SDK setup)
+// Cost: Free
+```
+
+#### **Email Service (SendGrid)**
+```javascript
+// Low customization - Template-based
+const sgMail = require('@sendgrid/mail');
+sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+
+async function sendReceipt(email, orderData) {
+  await sgMail.send({
+    to: email,
+    from: 'noreply@ketpaar.org',
+    templateId: 'd-xxxxx', // Dynamic template
+    dynamicTemplateData: {
+      orderId: orderData.id,
+      amount: orderData.amount,
+      items: orderData.items
+    }
+  });
+}
+
+// Integration effort: 1-2 days
+// Cost: Free tier (100 emails/day), then ~$0.0006/email
+```
+
+#### **Cloud Storage (AWS S3)**
+```javascript
+// Low customization - Standard SDK
+const AWS = require('aws-sdk');
+const s3 = new AWS.S3();
+
+async function uploadPhoto(file, orderId) {
+  const params = {
+    Bucket: 'ketpaar-photos',
+    Key: `orders/${orderId}/${Date.now()}-${file.name}`,
+    Body: file.buffer,
+    ContentType: file.mimetype,
+    ServerSideEncryption: 'AES256',
+    Metadata: {
+      'order-id': orderId,
+      'upload-timestamp': new Date().toISOString()
+    }
+  };
+  
+  const result = await s3.upload(params).promise();
+  return result.Location;
+}
+
+// Integration effort: 1 day
+// Cost: ~$0.023 per GB/month storage
+```
+
+#### **Google Maps API**
+```javascript
+// Low customization - Well-documented REST API
+const { Client } = require('@googlemaps/google-maps-services-js');
+const client = new Client({});
+
+async function assessLocation(lat, lng) {
+  // Geocoding
+  const geocode = await client.reverseGeocode({
+    params: {
+      latlng: { lat, lng },
+      key: process.env.GOOGLE_MAPS_API_KEY
+    }
+  });
+  
+  // Nearby places
+  const places = await client.placesNearby({
+    params: {
+      location: { lat, lng },
+      radius: 100,
+      key: process.env.GOOGLE_MAPS_API_KEY
+    }
+  });
+  
+  // Traffic data (requires Roads API)
+  const roads = await client.nearestRoads({
+    params: {
+      points: `${lat},${lng}`,
+      key: process.env.GOOGLE_MAPS_API_KEY
+    }
+  });
+  
+  return {
+    address: geocode.data.results[0].formatted_address,
+    placeTypes: places.data.results.map(p => p.types),
+    nearestRoad: roads.data.snappedPoints[0]
+  };
+}
+
+// Integration effort: 2-3 days
+// Cost: $5 per 1000 requests (Geocoding), $10 per 1000 (Places)
+```
+
+**Integration Timeline Summary:**
+
+```
+Week 1-2: Core Services
+├── Firebase FCM setup (Push notifications)
+├── Twilio integration (SMS)
+├── AWS S3 bucket setup (Photo storage)
+└── SendGrid templates (Email)
+
+Week 3: Enhanced Services
+├── Google Maps API integration
+├── Analytics setup (Google Analytics/Mixpanel)
+└── Basic monitoring (Sentry for errors)
+
+Week 4: Production Readiness
+├── DataDog APM setup
+├── Load testing integrations
+└── Webhook reliability testing
+```
+
+**No Significant Customization Required For:**
+- SMS/Email/Push - Standard APIs with excellent SDKs
+- Cloud Storage - Plug-and-play with minimal configuration
+- Google Maps - Well-documented REST API
+- Analytics - JavaScript tag integration
+
+**Moderate Customization Required For:**
+- Monitoring/APM - Custom dashboards for Ketpaar-specific metrics
+- Error Tracking - Custom error contexts and user data attachments
 
 ---
 

@@ -1,10 +1,10 @@
-# Ketpaar (கேட்பார்) - Digital Alms Platform
+# ShareBridge - Digital Alms Platform
 
 > Transforming traditional alms-giving into a modern, accountable, and dignified process
 
 ## Overview
 
-Ketpaar is a mobile/web application that enables donors to provide food and essential items to alms seekers through verified third-party delivery services, eliminating cash transactions while maintaining dignity and convenience for both parties.
+ShareBridge is a mobile/web application that enables donors to provide food and essential items to alms seekers through verified third-party delivery services, eliminating cash transactions while maintaining dignity and convenience for both parties.
 
 ## Key Features
 
@@ -17,38 +17,38 @@ Ketpaar is a mobile/web application that enables donors to provide food and esse
 
 ## Documentation
 
-- [Business Requirements](Ketpaar_Business_Requirement.md) - Complete business case and benefits
-- [Technical Architecture](Ketpaar_Technical_Architecture.md) - Detailed technical design
-- [Initial Requirements](Ketpaar_initial_requirement.txt) - Original concept
+- [Business Requirements](ShareBridge_Business_Requirement.md) - Complete business case and benefits
+- [Technical Architecture](ShareBridge_Technical_Architecture.md) - Detailed technical design
+- [Initial Requirements](ShareBridge_initial_requirement.txt) - Original concept
 - [Call for Contributors](CALL_FOR_CONTRIBUTORS.md) - How to get involved
 
 ## Repository Structure
 
-This is the **master repository** for Ketpaar, containing documentation and overall coordination.
+This is the **master repository** for ShareBridge, containing documentation and overall coordination.
 
 ### Child Repositories (Independent Development)
 
 **Frontend:**
-- `ketpaar-mobile-app` - Mobile application (React Native/Flutter)
-- `ketpaar-web-app` - Web application (React/Next.js)
+- `sharebridge-mobile-app` - Mobile application (React Native/Flutter)
+- `sharebridge-web-app` - Web application (React/Next.js)
 
 **Backend Services:**
-- `ketpaar-api-gateway` - API gateway and routing
-- `ketpaar-order-service` - Order management
-- `ketpaar-user-service` - User authentication and profiles
-- `ketpaar-integration-service` - Vendor integrations (Swiggy, Zomato)
-- `ketpaar-notification-service` - Notifications
+- `sharebridge-api-gateway` - API gateway and routing
+- `sharebridge-order-service` - Order management
+- `sharebridge-user-service` - User authentication and profiles
+- `sharebridge-integration-service` - Vendor integrations (Swiggy, Zomato)
+- `sharebridge-notification-service` - Notifications
 
 **AI/ML:**
-- `ketpaar-ai-safety` - Location safety assessment
-- `ketpaar-photo-service` - Face detection and verification
+- `sharebridge-ai-safety` - Location safety assessment
+- `sharebridge-photo-service` - Face detection and verification
 
 **Infrastructure:**
-- `ketpaar-infra` - Infrastructure as Code
-- `ketpaar-deployment` - CI/CD pipelines
+- `sharebridge-infra` - Infrastructure as Code
+- `sharebridge-deployment` - CI/CD pipelines
 
 **Documentation:**
-- `ketpaar-docs` - User guides and API docs
+- `sharebridge-docs` - User guides and API docs
 
 Each repository evolves independently. Coordination happens here.
 
@@ -59,7 +59,7 @@ Each repository evolves independently. Coordination happens here.
 
 ## Problem Statement
 
-When encountering people seeking alms, donors face a moral dilemma: offering cash may support unintended uses rather than basic needs. Ketpaar ensures charitable intent is fulfilled by providing food and essentials through verified delivery services.
+When encountering people seeking alms, donors face a moral dilemma: offering cash may support unintended uses rather than basic needs. ShareBridge ensures charitable intent is fulfilled by providing food and essentials through verified delivery services.
 
 ## Solution
 
@@ -128,10 +128,8 @@ Mobile/Web App → API Gateway → Microservices
 
 ## Contact
 
-For inquiries about the Ketpaar project, please contact the development team.
+For inquiries about the ShareBridge project, please contact the development team.
 
 ---
-
-**கேட்பார்** - "Those who ask" in Tamil
 
 *Building technology that serves humanity with dignity and compassion.*

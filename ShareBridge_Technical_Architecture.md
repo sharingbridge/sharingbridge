@@ -1,6 +1,6 @@
-# Ketpaar - Technical Architecture Document
+# ShareBridge - Technical Architecture Document
 
-**Project:** Ketpaar (கேட்பார்) - Digital Alms Platform  
+**Project:** ShareBridge - Digital Alms Platform  
 **Version:** 1.0  
 **Date:** December 25, 2025  
 **Status:** Design Phase
@@ -592,13 +592,13 @@ class UberEatsAdapter implements VendorAdapter { ... }
 ```
 
 **Deep Link Flow:**
-1. Ketpaar creates order via vendor API
+1. ShareBridge creates order via vendor API
 2. Vendor returns order ID and payment link
-3. Ketpaar generates deep link: `ketpaar://order/{orderId}/payment?vendor=swiggy&link={encoded_payment_url}`
+3. ShareBridge generates deep link: `ShareBridge://order/{orderId}/payment?vendor=swiggy&link={encoded_payment_url}`
 4. App opens vendor's payment page (in-app browser or native app)
 5. User completes payment on vendor platform
-6. Vendor webhook notifies Ketpaar of payment confirmation
-7. Ketpaar updates order status and notifies user
+6. Vendor webhook notifies ShareBridge of payment confirmation
+7. ShareBridge updates order status and notifies user
 
 **API Endpoints:**
 ```
@@ -1234,20 +1234,20 @@ rate:limit:{userId}:{endpoint}  TTL: 1 minute
 
 **Queue Topics:**
 ```
-ketpaar.orders.created
-ketpaar.orders.updated
-ketpaar.orders.completed
-ketpaar.safety.assessed
-ketpaar.photos.uploaded
-ketpaar.notifications.send
-ketpaar.vendor.webhook
-ketpaar.analytics.event
+ShareBridge.orders.created
+ShareBridge.orders.updated
+ShareBridge.orders.completed
+ShareBridge.safety.assessed
+ShareBridge.photos.uploaded
+ShareBridge.notifications.send
+ShareBridge.vendor.webhook
+ShareBridge.analytics.event
 ```
 
 **Consumer Services:**
-- Notification Service → `ketpaar.notifications.send`
-- Analytics Service → `ketpaar.analytics.event`
-- Order Service → `ketpaar.vendor.webhook`
+- Notification Service → `ShareBridge.notifications.send`
+- Analytics Service → `ShareBridge.analytics.event`
+- Order Service → `ShareBridge.vendor.webhook`
 
 ---
 
@@ -1257,7 +1257,7 @@ ketpaar.analytics.event
 
 **Base URL:**
 ```
-https://api.ketpaar.com/v1
+https://api.ShareBridge.com/v1
 ```
 
 **Authentication:**
@@ -1498,17 +1498,17 @@ Challenges:
 **Strategy 2: Deep Link Integration (Fallback)**
 ```
 Flow:
-1. Ketpaar creates order intent (local database)
+1. ShareBridge creates order intent (local database)
 2. Generate vendor-specific deep link with pre-filled cart
 3. Redirect user to vendor app/website
 4. User completes order on vendor platform
 5. Vendor sends callback/webhook on order status
-6. Ketpaar updates local order status
+6. ShareBridge updates local order status
 
 Limitations:
 - Less control over order flow
 - Dependency on vendor callback reliability
-- User leaves Ketpaar app temporarily
+- User leaves ShareBridge app temporarily
 - Payment tracking complexity
 ```
 
@@ -1632,7 +1632,7 @@ async handleWebhook(
   
   // 4. Update order status
   await this.orderService.updateStatus(
-    orderUpdate.ketpaarOrderId,
+    orderUpdate.ShareBridgeOrderId,
     orderUpdate.status,
     {
       vendorOrderId: orderUpdate.vendorOrderId,
@@ -1738,7 +1738,7 @@ const client = twilio(accountSid, authToken);
 
 async function sendOTP(phoneNumber, otp) {
   await client.messages.create({
-    body: `Your Ketpaar OTP is: ${otp}. Valid for 5 minutes.`,
+    body: `Your ShareBridge OTP is: ${otp}. Valid for 5 minutes.`,
     from: process.env.TWILIO_PHONE,
     to: phoneNumber
   });
@@ -1788,7 +1788,7 @@ sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 async function sendReceipt(email, orderData) {
   await sgMail.send({
     to: email,
-    from: 'noreply@ketpaar.org',
+    from: 'noreply@ShareBridge.org',
     templateId: 'd-xxxxx', // Dynamic template
     dynamicTemplateData: {
       orderId: orderData.id,
@@ -1810,7 +1810,7 @@ const s3 = new AWS.S3();
 
 async function uploadPhoto(file, orderId) {
   const params = {
-    Bucket: 'ketpaar-photos',
+    Bucket: 'ShareBridge-photos',
     Key: `orders/${orderId}/${Date.now()}-${file.name}`,
     Body: file.buffer,
     ContentType: file.mimetype,
@@ -1899,7 +1899,7 @@ Week 4: Production Readiness
 - Analytics - JavaScript tag integration
 
 **Moderate Customization Required For:**
-- Monitoring/APM - Custom dashboards for Ketpaar-specific metrics
+- Monitoring/APM - Custom dashboards for ShareBridge-specific metrics
 - Error Tracking - Custom error contexts and user data attachments
 
 ---
@@ -1980,7 +1980,7 @@ def process_seeker_photo(image_file):
     
     # 5. Encrypt and upload
     encrypted = encrypt_image(watermarked)
-    url = upload_to_s3(encrypted, bucket='ketpaar-photos')
+    url = upload_to_s3(encrypted, bucket='ShareBridge-photos')
     
     return url
 ```
@@ -2061,7 +2061,7 @@ spec:
     spec:
       containers:
       - name: order-service
-        image: ketpaar/order-service:1.0.0
+        image: ShareBridge/order-service:1.0.0
         ports:
         - containerPort: 3000
         env:
@@ -2368,7 +2368,7 @@ Warning:
 
 **Document Status:** Draft v1.0  
 **Next Review:** Q1 2026  
-**Owner:** Ketpaar Engineering Team
+**Owner:** ShareBridge Engineering Team
 
 ---
 

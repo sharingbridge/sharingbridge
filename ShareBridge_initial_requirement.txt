@@ -1,4 +1,4 @@
-Ketpaar (Seekers) Mobile/Web App
+ShareBridge Mobile/Web App
 Need:
 •	When someone seeks alms on our way we get a dilemma whether to offer money for food or consider if the money could be used for wrong purposes. Need a mechanism to ensure money gets spent only on food and basic needs 
 Possible solutions:

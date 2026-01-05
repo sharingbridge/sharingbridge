@@ -1,8 +1,8 @@
-# Join Us in Building Ketpaar (கேட்பார்) - A Platform for Dignified Giving
+# Join Us in Building ShareBridge - A Platform for Dignified Giving
 
 ## 🌟 Project Overview
 
-**Ketpaar** is an open-source initiative to transform charitable giving by creating a transparent, dignified platform that connects donors with alms seekers through verified food delivery services. We ensure charitable donations reach their intended purpose - providing food and essentials rather than cash that could be misused.
+**ShareBridge** is an open-source initiative to transform charitable giving by creating a transparent, dignified platform that connects donors with alms seekers through verified food delivery services. We ensure charitable donations reach their intended purpose - providing food and essentials rather than cash that could be misused.
 
 **Our Mission:** Enable compassionate giving while maintaining dignity for all parties involved.
 
@@ -10,7 +10,7 @@
 
 ## 🤝 Why This Matters
 
-Every day, people encounter those seeking alms and face a difficult choice - help with cash that may be misused, or walk away. Ketpaar solves this by:
+Every day, people encounter those seeking alms and face a difficult choice - help with cash that may be misused, or walk away. ShareBridge solves this by:
 
 - ✅ Ensuring donations become meals and essentials, not cash
 - ✅ Providing delivery confirmation with photo proof
@@ -30,22 +30,22 @@ This is a complex social-tech project requiring diverse skills. We're looking fo
 
 ### 💻 Software Developers
 
-**Repositories:** `ketpaar-mobile-app`, `ketpaar-web-app`, `ketpaar-*-service`
+**Repositories:** `ShareBridge-mobile-app`, `ShareBridge-web-app`, `ShareBridge-*-service`
 
 **What We Need:**
 - **Frontend Developers** (React Native/Flutter, React/Next.js)
-  - Cross-platform mobile app development → `ketpaar-mobile-app`
-  - Responsive web application → `ketpaar-web-app`
+  - Cross-platform mobile app development → `ShareBridge-mobile-app`
+  - Responsive web application → `ShareBridge-web-app`
   - Real-time order tracking interfaces
   
 - **Backend Developers** (Node.js/NestJS, Python/FastAPI)
-  - Microservices architecture → Choose any `ketpaar-*-service` repo
-  - RESTful API design → `ketpaar-api-gateway`
+  - Microservices architecture → Choose any `ShareBridge-*-service` repo
+  - RESTful API design → `ShareBridge-api-gateway`
   - Event-driven systems
   
 - **Full-Stack Engineers**
   - End-to-end feature implementation across repos
-  - API integration with Swiggy, Zomato, Uber Eats → `ketpaar-integration-service`
+  - API integration with Swiggy, Zomato, Uber Eats → `ShareBridge-integration-service`
   
 **Technologies:** React Native, Flutter, React, Node.js, Python, PostgreSQL, MongoDB, Redis, Docker, Kubernetes
 
@@ -59,14 +59,14 @@ This is a complex social-tech project requiring diverse skills. We're looking fo
 - Experience with modern tech stack and microservices
 - Collaborate with diverse, talented team
 - Portfolio piece with real-world impact
-Repositories:** `ketpaar-ai-safety`, `ketpaar-photo-service`
+Repositories:** `ShareBridge-ai-safety`, `ShareBridge-photo-service`
 
 **What We Need:**
-- **Computer Vision Specialists** → `ketpaar-photo-service`
+- **Computer Vision Specialists** → `ShareBridge-photo-service`
   - Face detection and duplicate seeker identification
   - Privacy-preserving photo verification
   
-- **Location Intelligence Engineers** → `ketpaar-ai-safety`
+- **Location Intelligence Engineers** → `ShareBridge-ai-safety`
   - Safety assessment models
   - Traffic density analysis
   - Real-time location validation
@@ -81,13 +81,13 @@ Repositories:** `ketpaar-ai-safety`, `ketpaar-photo-service`
 - Each AI repo is independent - train, test, deploy separately
 - Repos expose REST APIs for integration with other services
 - Share datasets and models through repo releases
-- Repositories:** `ketpaar-infra`, `ketpaar-deployment`
+- Repositories:** `ShareBridge-infra`, `ShareBridge-deployment`
 
 **What We Need:**
-- CI/CD pipeline setup (GitHub Actions, Jenkins) → `ketpaar-deployment`
-- Container orchestration (Docker, Kubernetes) → `ketpaar-infra`
-- Cloud infrastructure (Azure/AWS/GCP) → `ketpaar-infra`
-- Monitoring and logging (Prometheus, Grafana, ELK) → `ketpaar-infra`
+- CI/CD pipeline setup (GitHub Actions, Jenkins) → `ShareBridge-deployment`
+- Container orchestration (Docker, Kubernetes) → `ShareBridge-infra`
+- Cloud infrastructure (Azure/AWS/GCP) → `ShareBridge-infra`
+- Monitoring and logging (Prometheus, Grafana, ELK) → `ShareBridge-infra`
 - Security hardening and compliance
 - Database administration (PostgreSQL, MongoDB)
 
@@ -98,7 +98,7 @@ Repositories:** `ketpaar-ai-safety`, `ketpaar-photo-service`
 - Cost optimization for nonprofit sustainability
 
 **How to Contribute:**
-- Infrastructure as Code in `ketpaar-infra`
+- Infrastructure as Code in `ShareBridge-infra`
 - Per-service deployment configs in individual service repos
 - Centralized monitoring setup in infra repo
 - Each service can be deployed independently
@@ -265,7 +265,7 @@ Repositories:** `ketpaar-ai-safety`, `ketpaar-photo-service`
 
 **Independent Evolution. Coordinated Progress.**
 
-Ketpaar uses a **multi-repo architecture** where each stream evolves independently:
+ShareBridge uses a **multi-repo architecture** where each stream evolves independently:
 
 ### Master Repository (This Repo)
 - **Purpose:** Overall coordination, documentation, requirements
@@ -275,26 +275,26 @@ Ketpaar uses a **multi-repo architecture** where each stream evolves independent
 ### Child Repositories (Independent Streams)
 
 **Frontend Repositories:**
-- `ketpaar-mobile-app` - React Native/Flutter mobile application
-- `ketpaar-web-app` - React/Next.js web application
+- `ShareBridge-mobile-app` - React Native/Flutter mobile application
+- `ShareBridge-web-app` - React/Next.js web application
 
 **Backend Repositories:**
-- `ketpaar-api-gateway` - API gateway and routing
-- `ketpaar-order-service` - Order management microservice
-- `ketpaar-user-service` - User authentication and profile service
-- `ketpaar-integration-service` - Vendor integration (Swiggy, Zomato, etc.)
-- `ketpaar-notification-service` - Push notifications and alerts
+- `ShareBridge-api-gateway` - API gateway and routing
+- `ShareBridge-order-service` - Order management microservice
+- `ShareBridge-user-service` - User authentication and profile service
+- `ShareBridge-integration-service` - Vendor integration (Swiggy, Zomato, etc.)
+- `ShareBridge-notification-service` - Push notifications and alerts
 
 **AI/ML Repositories:**
-- `ketpaar-ai-safety` - Location safety assessment models
-- `ketpaar-photo-service` - Face detection and duplicate checking
+- `ShareBridge-ai-safety` - Location safety assessment models
+- `ShareBridge-photo-service` - Face detection and duplicate checking
 
 **Infrastructure Repositories:**
-- `ketpaar-infra` - Infrastructure as Code (Terraform/CloudFormation)
-- `ketpaar-deployment` - CI/CD pipelines and deployment scripts
+- `ShareBridge-infra` - Infrastructure as Code (Terraform/CloudFormation)
+- `ShareBridge-deployment` - CI/CD pipelines and deployment scripts
 
 **Documentation:**
-- `ketpaar-docs` - User guides, API documentation, deployment guides
+- `ShareBridge-docs` - User guides, API documentation, deployment guides
 
 ---
 
@@ -308,11 +308,11 @@ Ketpaar uses a **multi-repo architecture** where each stream evolves independent
 - Read the master repo for overall context
 
 ### Step 2: Pick Your Repository
-- **Frontend Developer?** → Fork `ketpaar-mobile-app` or `ketpaar-web-app`
+- **Frontend Developer?** → Fork `ShareBridge-mobile-app` or `ShareBridge-web-app`
 - **Backend Engineer?** → Choose any service repo that interests you
-- **AI/ML Engineer?** → Fork `ketpaar-ai-safety` or `ketpaar-photo-service`
-- **DevOps?** → Fork `ketpaar-infra` or `ketpaar-deployment`
-- **Documentation?** → Fork `ketpaar-docs`
+- **AI/ML Engineer?** → Fork `ShareBridge-ai-safety` or `ShareBridge-photo-service`
+- **DevOps?** → Fork `ShareBridge-infra` or `ShareBridge-deployment`
+- **Documentation?** → Fork `ShareBridge-docs`
 
 ### Step 3: Start Contributing
 - Fork the specific repository you want to work on
@@ -368,7 +368,7 @@ Ketpaar uses a **multi-repo architecture** where each stream evolves independent
 
 **No emails. No meetings. No administrative overhead.**  
 Each repository evolves independently through direct contributions
-## 💡 Why Join Ketpaar?
+## 💡 Why Join ShareBridge?
 
 ✨ **Meaningful Impact** - Your code will feed real people  
 🌍 **Social Good** - Technology solving real-world poverty issues  
@@ -420,4 +420,4 @@ All contributions are voluntary and become part of the open-source codebase.
 
 ---
 
-**Ready to make a difference? Let's build Ketpaar together! 🚀**
+**Ready to make a difference? Let's build ShareBridge together! 🚀**

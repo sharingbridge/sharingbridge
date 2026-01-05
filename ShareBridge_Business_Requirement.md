@@ -1,17 +1,17 @@
-# **Ketpaar (Seekers) - Digital Alms Platform**
+# **ShareBridge - Digital Alms Platform**
 
 ## **Problem Statement**
 When encountering people seeking alms, donors face a moral dilemma: offering cash may support unintended uses (substance abuse, exploitation) rather than basic needs like food and shelter. There's no reliable mechanism to ensure charitable donations are used exclusively for essential necessities.
 
 ## **Solution**
-Ketpaar is a mobile/web application that enables donors to provide food and essential items to alms seekers through verified third-party delivery services, eliminating cash transactions while maintaining dignity and convenience for both parties. **The platform acts as a facilitator only - all payments are processed directly through the vendor's payment system.**
+ShareBridge is a mobile/web application that enables donors to provide food and essential items to alms seekers through verified third-party delivery services, eliminating cash transactions while maintaining dignity and convenience for both parties. **The platform acts as a facilitator only - all payments are processed directly through the vendor's payment system.**
 
 ### **Core Workflow:**
 1. **Location Safety Check** - Donor spots seeker, captures location; AI validates safety before engagement
 2. **Duplicate Check** - System checks if seeker already received help recently (using photo matching + location proximity)
 3. **Donor Interaction** - If location safe and not duplicate, donor engages seeker, obtains consent for food order and identification photo
 4. **Order Placement** - Integration with external food delivery platforms (Zomato, Swiggy, etc.) or direct vendors
-5. **Payment Redirect** - Donor is redirected to vendor's payment gateway; Ketpaar receives order confirmation
+5. **Payment Redirect** - Donor is redirected to vendor's payment gateway; ShareBridge receives order confirmation
 6. **Delivery** - Delivery personnel identify seeker using photo, complete handover
 7. **Confirmation** - Delivery photo captured and shared with donor for transparency
 
@@ -44,7 +44,7 @@ Enable multiple people to contribute to a single order when one person cannot af
 - **How it works:**
   - Person spots seeker but cannot afford full meal
   - Creates a "request for help" with seeker photo and location
-  - Request shared with nearby Ketpaar users
+  - Request shared with nearby ShareBridge users
   - Multiple donors contribute small amounts (₹20, ₹50, etc.)
   - Order placed once threshold reached
   - All contributors notified of delivery
@@ -57,7 +57,7 @@ Enable multiple people to contribute to a single order when one person cannot af
 - Provides delivery confirmation with photo proof
 - Secure payment through trusted vendor platforms (Zomato, Swiggy, etc.)
 - Peace of mind about proper fund utilization
-- No financial data shared with Ketpaar
+- No financial data shared with ShareBridge
 - Flexible giving options: direct, pledge, or crowdfund
 - Community impact visibility
 
@@ -146,7 +146,7 @@ Enable multiple people to contribute to a single order when one person cannot af
 
 **Document Status:** Business Requirement Document
 **Date:** December 25, 2025
-**Project:** Ketpaar (Seekers) Platform
+**Project:** ShareBridge Platform
 
 ---
 

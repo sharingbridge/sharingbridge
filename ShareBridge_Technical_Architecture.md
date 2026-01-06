@@ -1211,7 +1211,113 @@ CREATE INDEX idx_notifications_read ON notifications(read);
 
 ---
 
-### 4.2 Caching Strategy (Redis)
+### 4.2 Global Database Architecture (For Production Scale)
+
+**Multi-Region Strategy:**
+
+```yaml
+Production Architecture:
+  Primary Region: US-East
+    - PostgreSQL Primary (Write)
+    - Read Replicas (2x for HA)
+  
+  Secondary Regions:
+    - EU-West: Read Replica (for European users)
+    - Asia-South: Read Replica (for Asian users)
+  
+  Routing Logic:
+    - Writes: Always to primary (US-East)
+    - Reads: Route to nearest replica based on user location
+    - Replication Lag: 1-5 seconds (acceptable for most queries)
+  
+  Benefits:
+    - Read latency: 20-50ms (vs 300-500ms single region)
+    - Write latency: 100-200ms globally (acceptable)
+    - High availability with cross-region failover
+  
+  Implementation:
+    - AWS RDS Multi-AZ + Cross-Region Read Replicas
+    - Or Aurora Global Database for multi-master writes
+```
+
+**Database Optimization for High Volume:**
+
+```sql
+-- Specialized Geospatial Indexes
+CREATE INDEX idx_orders_location_gist 
+ON orders USING GIST(location) 
+WITH (buffering = on, fillfactor = 90);
+
+-- Partial index for active orders (reduces index size)
+CREATE INDEX idx_active_orders_location 
+ON orders USING GIST(location)
+WHERE status IN ('created', 'in_transit', 'confirmed');
+
+-- BRIN index for time-series queries
+CREATE INDEX idx_orders_location_brin 
+ON orders USING BRIN(location, created_at);
+
+-- Table partitioning by region (for extreme scale)
+CREATE TABLE orders_north_america PARTITION OF orders
+FOR VALUES IN ('NA');
+
+CREATE TABLE orders_europe PARTITION OF orders
+FOR VALUES IN ('EU');
+
+CREATE TABLE orders_asia PARTITION OF orders
+FOR VALUES IN ('ASIA');
+```
+
+**Connection Pooling (PgBouncer - Required for 10K+ users):**
+
+```ini
+[pgbouncer]
+pool_mode = transaction
+default_pool_size = 25
+max_client_conn = 10000
+max_db_connections = 100
+server_idle_timeout = 600
+query_timeout = 30
+```
+
+**PostgreSQL Configuration (32GB RAM server):**
+
+```sql
+shared_buffers = 8GB                    -- 25% of RAM
+effective_cache_size = 24GB             -- 75% of RAM
+maintenance_work_mem = 2GB
+work_mem = 64MB
+max_connections = 200                   -- PgBouncer handles pooling
+random_page_cost = 1.1                  -- For SSD storage
+max_parallel_workers_per_gather = 4
+autovacuum_max_workers = 4
+autovacuum_naptime = 30s
+```
+
+---
+
+### 4.3 Caching Strategy (Redis)
+
+**Multi-Region Redis Clusters:**
+
+```yaml
+Regional Clusters:
+  US-East:
+    - Primary cache for North American users
+    - 3-node cluster for high availability
+  
+  EU-West:
+    - Primary cache for European users
+    - 3-node cluster
+  
+  Asia-South:
+    - Primary cache for Asian users
+    - 3-node cluster
+  
+  Replication:
+    - Async cross-region replication for hot keys
+    - Regional routing based on user location
+```
 
 **Cache Keys:**
 ```
@@ -1221,16 +1327,60 @@ order:active:{orderId}          TTL: 2 hours
 vendor:token:{vendor}           TTL: per vendor policy
 safety:assessment:{lat}:{lng}   TTL: 30 minutes
 rate:limit:{userId}:{endpoint}  TTL: 1 minute
+seekers:active                  TTL: 2 hours (geospatial index)
 ```
 
 **Cache Patterns:**
 - **Cache-Aside**: User profiles, order details
 - **Write-Through**: Active orders
 - **Write-Behind**: Analytics data
+- **Geospatial Caching**: Redis GEORADIUS for nearby seekers
+
+**Geospatial Caching with Redis:**
+
+```javascript
+// Add seeker to geospatial index
+await redis.geoadd('seekers:active', longitude, latitude, seekerId);
+
+// Find nearby seekers (in-memory, ultra-fast)
+const nearby = await redis.georadius('seekers:active', 
+  userLng, userLat, 1, 'km', 'WITHDIST', 'COUNT', 10);
+
+// Fallback to PostgreSQL for complex queries
+if (nearby.length === 0) {
+  nearby = await db.orders.findNearby(userLat, userLng, 1000);
+}
+```
 
 ---
 
-### 4.3 Message Queue Architecture
+### 4.4 Message Queue Architecture
+
+**Recommended: AWS SQS/SNS for Global Scale**
+
+```yaml
+Migration from RabbitMQ to Managed Service:
+  Reasons:
+    - RabbitMQ: Single region, complex clustering
+    - AWS SQS/SNS: Multi-region, fully managed, auto-scaling
+  
+  Regional Deployment:
+    - US-East: SQS queues + SNS topics
+    - EU-West: SQS queues + SNS topics
+    - Asia-South: SQS queues + SNS topics
+  
+  Cross-Region Fanout:
+    - SNS topic in primary region
+    - Subscribe SQS queues in all regions
+    - Global event propagation < 1 second
+  
+  Benefits:
+    - Zero ops overhead
+    - Unlimited throughput
+    - Built-in dead letter queues
+    - 99.9% SLA
+    - Cost: $0.40 per million requests
+```
 
 **Queue Topics:**
 ```
@@ -1242,6 +1392,20 @@ ShareBridge.photos.uploaded
 ShareBridge.notifications.send
 ShareBridge.vendor.webhook
 ShareBridge.analytics.event
+```
+
+**Queue Configuration:**
+```yaml
+order.created:
+  visibility_timeout: 30 seconds
+  message_retention: 14 days
+  dead_letter_queue: order.created.dlq
+  max_receive_count: 3
+
+notification.send:
+  visibility_timeout: 60 seconds
+  message_retention: 4 days
+  batch_size: 10 messages
 ```
 
 **Consumer Services:**
@@ -2164,9 +2328,78 @@ spec:
 
 ## 10. Scalability & Performance
 
-### 10.1 Horizontal Scaling Strategy
+### 10.1 Global Deployment Architecture
 
-**Auto-scaling Rules:**
+**Multi-Region Deployment Strategy:**
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                  GLOBAL DEPLOYMENT                           │
+├─────────────────────────────────────────────────────────────┤
+│                                                              │
+│  Route 53 Geolocation Routing                               │
+│  ├── US/Canada → api-us-east.sharebridge.com               │
+│  ├── Europe → api-eu-west.sharebridge.com                  │
+│  ├── Asia → api-asia-south.sharebridge.com                 │
+│  └── Default → api-us-east.sharebridge.com                 │
+│                                                              │
+│  Region: US-East                                            │
+│  ├── API Gateway + Load Balancer (3 AZs)                   │
+│  ├── Services: Order, User, Integration (2-10 instances)   │
+│  ├── PostgreSQL Primary + Read Replicas                    │
+│  ├── Redis Cluster (3 nodes)                               │
+│  └── S3 Primary Storage                                     │
+│                                                              │
+│  Region: EU-West                                            │
+│  ├── API Gateway + Load Balancer (3 AZs)                   │
+│  ├── Services: Order, User, Integration (2-10 instances)   │
+│  ├── PostgreSQL Read Replica                               │
+│  ├── Redis Cluster (3 nodes)                               │
+│  └── S3 Replica Storage                                     │
+│                                                              │
+│  Region: Asia-South                                         │
+│  ├── API Gateway + Load Balancer (3 AZs)                   │
+│  ├── Services: Order, User, Integration (2-10 instances)   │
+│  ├── PostgreSQL Read Replica                               │
+│  ├── Redis Cluster (3 nodes)                               │
+│  └── S3 Replica Storage                                     │
+│                                                              │
+│  CloudFront CDN (200+ edge locations globally)             │
+│  ├── Photo delivery from nearest edge                       │
+│  ├── Static asset caching                                   │
+│  └── Origin failover (primary → replicas)                  │
+│                                                              │
+└─────────────────────────────────────────────────────────────┘
+```
+
+**Regional Routing Logic:**
+
+```javascript
+function determineRegion(userLocation) {
+  const { lat, lng } = userLocation;
+  
+  // North America
+  if (lat > 15 && lat < 72 && lng > -170 && lng < -50) {
+    return 'us-east';
+  }
+  // Europe
+  else if (lat > 35 && lat < 72 && lng > -10 && lng < 40) {
+    return 'eu-west';
+  }
+  // Asia
+  else if (lat > -10 && lat < 55 && lng > 40 && lng < 150) {
+    return 'asia-south';
+  }
+  // Default
+  return 'us-east';
+}
+```
+
+---
+
+### 10.2 Horizontal Scaling Strategy
+
+**Auto-scaling Rules (Per Region):**
 ```yaml
 # Order Service Auto-scaling
 CPU > 70% → Scale up (+2 pods)
@@ -2179,22 +2412,33 @@ Queue depth > 100 → Scale up (+1 pod)
 Queue depth < 20 → Scale down (-1 pod)
 Min replicas: 1
 Max replicas: 5
+
+# Geographic Auto-scaling
+Regional traffic spike > 2x baseline → Add instances
+Off-peak hours (2AM-6AM local) → Scale to minimum
 ```
 
 ---
 
-### 10.2 Performance Targets
+### 10.3 Performance Targets
 
-| Metric | Target | Measurement |
-|--------|--------|-------------|
-| API Response Time (p95) | < 200ms | Load balancer metrics |
-| API Response Time (p99) | < 500ms | Load balancer metrics |
-| Safety Assessment | < 2s | Service-level metric |
-| Photo Upload | < 5s | End-to-end |
-| Order Creation | < 3s | End-to-end |
-| Database Query (p95) | < 50ms | PostgreSQL metrics |
-| Cache Hit Rate | > 80% | Redis metrics |
-| Uptime | 99.9% | Monthly average |
+**Global Performance Metrics:**
+
+| Metric | Target (Single Region) | Target (Global) | Measurement |
+|--------|----------------------|-----------------|-------------|
+| API Response Time (p95) | < 200ms | < 150ms | Load balancer metrics |
+| API Response Time (p99) | < 500ms | < 300ms | Load balancer metrics |
+| Safety Assessment | < 2s | < 1.5s | Service-level metric |
+| Photo Upload | < 5s | < 2s | End-to-end (nearest region) |
+| Photo Download | N/A | < 500ms | CloudFront edge delivery |
+| Order Creation | < 3s | < 2s | End-to-end |
+| Database Query (p95) | < 50ms | < 30ms | PostgreSQL metrics (local replica) |
+| Database Write (p95) | < 50ms | < 150ms | PostgreSQL metrics (to primary) |
+| Cache Hit Rate | > 80% | > 85% | Redis metrics (regional) |
+| Geospatial Query (p95) | < 100ms | < 50ms | With optimized indexes + cache |
+| Cross-Region Replication Lag | N/A | < 5s | RDS metrics |
+| Uptime (per region) | 99.9% | 99.95% | Monthly average |
+| Global Uptime | N/A | 99.99% | With multi-region failover |
 
 ---
 
@@ -2328,10 +2572,35 @@ Warning:
 - Cross-region replication
 - Backup retention: 90 days
 
-**Photo Backups:**
-- S3 versioning enabled
-- Cross-region replication
-- Lifecycle policy (30 days hot, then glacier)
+**Photo Storage (Global Distribution):**
+
+```yaml
+Architecture:
+  Primary Storage: S3 US-East
+  Replication:
+    - S3 EU-West (automatic cross-region replication)
+    - S3 Asia-South (automatic cross-region replication)
+  
+  CDN: CloudFront with 200+ Edge Locations
+    - Cache TTL: 24 hours
+    - Origin Failover: Primary → EU → Asia
+    - Compression: Gzip/Brotli enabled
+  
+  Upload Strategy:
+    - Direct upload to nearest S3 region (pre-signed URLs)
+    - Client-side compression before upload
+    - Async replication to other regions
+  
+  Performance:
+    - Upload: 100-300ms (nearest region)
+    - Download: 50-150ms (from CDN edge)
+    - Global availability: 99.99%
+
+Backups:
+  - S3 versioning enabled
+  - Cross-region replication
+  - Lifecycle policy: 30 days → delete (GDPR compliance)
+```
 
 ---
 

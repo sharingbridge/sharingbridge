@@ -325,10 +325,10 @@ orders
 ├── id (UUID, PK)
 ├── donor_id (UUID, FK → users.id)
 ├── status (ENUM)
-├── vendor (ENUM: swiggy, zomato, uber_eats)
+├── donation_type (ENUM: food, cloth, shelter, blanket, mosquito_net, washroom_access, miscellaneous)
+├── vendor (ENUM: swiggy, zomato, uber_eats, NULLABLE)
 ├── vendor_order_id (VARCHAR)
-├── location_lat (DECIMAL)
-├── location_lng (DECIMAL)
+├── location (GEOGRAPHY(POINT, 4326))
 ├── location_address (TEXT)
 ├── safety_score (DECIMAL)
 ├── seeker_photo_url (VARCHAR)
@@ -386,11 +386,13 @@ order_events
    - Success/failure rate
    - Delivery crew feedback
 
-5. **Duplicate Seeker Detection**
+5. **Duplicate Seeker Detection (Human-Friendly)**
    - Facial recognition using ML (compare with recent orders)
    - Location proximity matching (within configurable radius)
-   - Time window check (default: 2 hours)
-   - Returns: duplicate probability score + recent order details
+   - Time window check (default: 2 hours - more lenient for edge cases)
+   - Last order status and donation type checking
+   - Returns: duplicate probability score + recent order details + donor-friendly information
+   - Lenient thresholds to accommodate lighting, angle, and appearance variations
 
 **Safety Score Calculation:**
 ```python
@@ -411,10 +413,12 @@ from datetime import datetime, timedelta
 
 class DuplicateSeekerDetector:
     DUPLICATE_WINDOW_HOURS = 2  # Configurable
-    LOCATION_RADIUS_METERS = 100
-    SIMILARITY_THRESHOLD = 0.85  # Face matching threshold
+    LOCATION_RADIUS_METERS = 150  # Increased for leniency
+    SIMILARITY_THRESHOLD = 0.78  # Lowered from 0.85 for human factors (lighting, angles, etc.)
+    CONFIDENCE_THRESHOLD_HIGH = 0.85  # High confidence match
+    CONFIDENCE_THRESHOLD_MEDIUM = 0.78  # Medium confidence - inform but allow
     
-    async def check_duplicate(self, photo, location, timestamp):
+    async def check_duplicate(self, photo, location, timestamp, donor_id=None):
         # 1. Extract facial embedding from photo
         face_embedding = await self.extract_face_embedding(photo)
         
@@ -422,7 +426,9 @@ class DuplicateSeekerDetector:
             return {
                 'is_duplicate': False,
                 'confidence': 'low',
-                'message': 'No clear face detected'
+                'allow_donation': True,
+                'message': 'No clear face detected - proceeding with caution',
+                'donor_message': 'Unable to verify face clearly. Please ensure good photo quality.'
             }
         
         # 2. Find recent orders in proximity
@@ -433,36 +439,95 @@ class DuplicateSeekerDetector:
             location__dwithin=(location, self.LOCATION_RADIUS_METERS)
         ).all()
         
-        # 3. Compare face embeddings
+        # 3. Compare face embeddings with lenient matching
+        best_match = None
+        best_similarity = 0
+        
         for seeker in recent_seekers:
             similarity = self.cosine_similarity(
                 face_embedding, 
                 seeker.face_embedding
             )
             
-            if similarity >= self.SIMILARITY_THRESHOLD:
-                # Duplicate detected!
-                order_details = await Order.objects.get(id=seeker.order_id)
-                
-                return {
-                    'is_duplicate': True,
-                    'confidence': 'high',
-                    'similarity_score': similarity,
-                    'previous_order': {
-                        'order_id': seeker.order_id,
-                        'timestamp': seeker.timestamp,
-                        'time_ago_minutes': (timestamp - seeker.timestamp).seconds // 60,
-                        'distance_meters': self.calculate_distance(location, seeker.location)
-                    },
-                    'message': f'This seeker received help {(timestamp - seeker.timestamp).seconds // 60} minutes ago'
-                }
+            if similarity > best_similarity:
+                best_similarity = similarity
+                best_match = seeker
         
-        # 4. No duplicate found
+        # 4. Process best match with human-friendly logic
+        if best_match and best_similarity >= self.SIMILARITY_THRESHOLD:
+            order_details = await Order.objects.get(id=best_match.order_id)
+            time_ago_minutes = (timestamp - best_match.timestamp).seconds // 60
+            distance_meters = self.calculate_distance(location, best_match.location)
+            
+            # Check if previous order was completed
+            is_high_confidence = best_similarity >= self.CONFIDENCE_THRESHOLD_HIGH
+            allow_donation = not is_high_confidence or time_ago_minutes > 90  # Allow after 90 min even if duplicate
+            
+            # Build donor-friendly message
+            donor_message = self._build_donor_message(
+                order_details, time_ago_minutes, distance_meters, 
+                best_similarity, allow_donation
+            )
+            
+            return {
+                'is_duplicate': is_high_confidence,
+                'is_possible_duplicate': best_similarity >= self.SIMILARITY_THRESHOLD,
+                'confidence': 'high' if is_high_confidence else 'medium',
+                'allow_donation': allow_donation,
+                'similarity_score': best_similarity,
+                'previous_order': {
+                    'order_id': best_match.order_id,
+                    'status': order_details.status,
+                    'donation_type': order_details.donation_type,
+                    'timestamp': best_match.timestamp,
+                    'time_ago_minutes': time_ago_minutes,
+                    'distance_meters': distance_meters
+                },
+                'message': f'Possible match found - {time_ago_minutes} minutes ago',
+                'donor_message': donor_message
+            }
+        
+        # 5. No duplicate found
         return {
             'is_duplicate': False,
+            'is_possible_duplicate': False,
             'confidence': 'high',
-            'message': 'No recent help detected for this seeker'
+            'allow_donation': True,
+            'message': 'No recent help detected for this seeker',
+            'donor_message': 'This appears to be a new request. Proceeding with donation.'
         }
+    
+    def _build_donor_message(self, order, time_ago, distance, similarity, allow):
+        """Build human-friendly message for donor"""
+        status_text = {
+            'pending': 'is being processed',
+            'confirmed': 'was confirmed',
+            'in_progress': 'is in delivery',
+            'completed': 'was successfully delivered',
+            'cancelled': 'was cancelled'
+        }.get(order.status, 'exists')
+        
+        type_text = {
+            'food': 'food',
+            'cloth': 'clothing',
+            'shelter': 'shelter',
+            'blanket': 'blanket(s)',
+            'mosquito_net': 'mosquito net',
+            'washroom_access': 'washroom access',
+            'miscellaneous': 'assistance'
+        }.get(order.donation_type, 'help')
+        
+        confidence_text = 'very likely' if similarity >= 0.85 else 'possibly'
+        
+        message = f"⚠️ This person {confidence_text} received {type_text} {time_ago} minutes ago (~{distance}m away).\n"
+        message += f"Previous order {status_text}."
+        
+        if allow:
+            message += "\n\n✅ You may proceed if you believe this is a genuine need (e.g., different meal, additional items)."
+        else:
+            message += "\n\n⏳ Consider waiting a bit longer or verify the need with the seeker."
+        
+        return message
     
     def cosine_similarity(self, embedding1, embedding2):
         return np.dot(embedding1, embedding2) / (
@@ -490,8 +555,7 @@ GET    /api/v1/safety/metrics            # Get safety metrics
 safety_assessments
 ├── id (UUID, PK)
 ├── order_id (UUID, FK → orders.id)
-├── location_lat (DECIMAL)
-├── location_lng (DECIMAL)
+├── location (GEOGRAPHY(POINT, 4326))
 ├── timestamp (TIMESTAMP)
 ├── traffic_score (DECIMAL)
 ├── time_of_day_score (DECIMAL)
@@ -505,8 +569,7 @@ safety_assessments
 delivery_feedback
 ├── id (UUID, PK)
 ├── order_id (UUID, FK → orders.id)
-├── location_lat (DECIMAL)
-├── location_lng (DECIMAL)
+├── location (GEOGRAPHY(POINT, 4326))
 ├── delivery_success (BOOLEAN)
 ├── safety_issues (TEXT[])
 ├── delivery_crew_rating (INTEGER)
@@ -1091,6 +1154,7 @@ CREATE TABLE orders (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     donor_id UUID NOT NULL REFERENCES users(id),
     status VARCHAR(50) NOT NULL,
+    donation_type VARCHAR(30) NOT NULL CHECK (donation_type IN ('food', 'cloth', 'shelter', 'blanket', 'mosquito_net', 'washroom_access', 'miscellaneous')),
     vendor VARCHAR(20) CHECK (vendor IN ('swiggy', 'zomato', 'uber_eats')),
     vendor_order_id VARCHAR(255),
     location GEOGRAPHY(POINT, 4326) NOT NULL,

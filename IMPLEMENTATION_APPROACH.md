@@ -1,33 +1,858 @@
-# ShareBridge - Global Scalability Implementation Approach
+# ShareBridge - Implementation Approach
 
-**Version:** 1.0  
-**Date:** January 6, 2026  
-**Status:** Implementation Roadmap
+**Version:** 2.0  
+**Date:** January 7, 2026  
+**Status:** Dual-Track Implementation Roadmap
 
 ---
 
 ## Executive Summary
 
-This document outlines the step-by-step implementation approach to transform ShareBridge from a single-region architecture to a globally distributed, high-volume platform capable of handling 100K+ orders/day across multiple continents.
+This document provides two implementation paths for ShareBridge:
+
+1. **Free Tier Development Track** - Zero-cost development and testing using free platforms
+2. **Production Scale Track** - Global infrastructure for 100K+ orders/day
 
 **Timeline:** 6 months  
-**Estimated Budget:** $15,000-$25,000 (infrastructure + development)  
+**Development Budget:** $0 (Free tier)  
+**Production Budget:** $255/month → $3,750/month (scaling)  
 **Team Size:** 3-5 engineers
 
 ---
 
-## Phase 1: Foundation (Months 1-2)
+## 🆓 Free Tier Development Track
 
-### Objectives
-- Establish multi-region database infrastructure
-- Implement connection pooling for high concurrency
-- Optimize geospatial queries
-- Set up regional caching
+### Overview
 
-### Week 1-2: Database Infrastructure
+Develop and test all ShareBridge components using **100% free platforms** with no upfront infrastructure costs. Migrate to production AWS infrastructure only when all components are ready.
 
-#### Step 1.1: Set Up Read Replicas
+**Total Development Cost:** $0  
+**Migration Time:** 1 week  
+**Migration Cost:** Minimal (containerized architecture)
+
+---
+
+### Free Development Stack
+
+| Component | Free Platform | Limitations | Production Path |
+|-----------|---------------|-------------|-----------------|
+| **Database** | Supabase (Postgres + PostGIS) | 500MB, 2GB bandwidth/month | Migrate to AWS RDS/self-hosted |
+| **Backend API** | Render.com / Railway.app | 512MB RAM, sleeps after inactivity | Deploy to AWS EC2/ECS |
+| **File Storage** | Cloudinary Free Tier | 25GB storage, 25GB bandwidth | Migrate to AWS S3 |
+| **Redis Cache** | Upstash Redis | 10K commands/day | Migrate to AWS ElastiCache |
+| **Message Queue** | Upstash Kafka Free / Redis Pub/Sub | Limited throughput | Migrate to AWS SQS/SNS |
+| **SMS/OTP** | Twilio Trial ($15 credit) | Test numbers only | Upgrade to paid plan |
+| **Email** | Resend.io / Brevo (Sendinblue) | 100 emails/day | Upgrade to SendGrid |
+| **Push Notifications** | Firebase FCM | Unlimited (free forever) | Keep Firebase |
+| **Monitoring** | Sentry Free | 5K errors/month | Upgrade or self-host |
+| **CI/CD** | GitHub Actions | 2K minutes/month | Keep GitHub Actions |
+| **Version Control** | GitHub | Unlimited private repos | Keep GitHub |
+| **API Gateway** | Self-hosted Kong (Docker) | Manual setup | Keep or move to AWS |
+
+---
+
+### Quick Start (Day 1) - Free Tier
+
 ```bash
+# 1. Clone repository
+git clone https://github.com/yourusername/sharebridge
+cd sharebridge
+
+# 2. Set up Supabase database
+# - Sign up at supabase.com (no credit card required)
+# - Create project: sharebridge-dev
+# - Run schema from ShareBridge_Technical_Architecture.md
+
+# 3. Configure environment variables
+cp .env.example .env
+# Edit .env with Supabase credentials, Cloudinary keys, etc.
+
+# 4. Run locally with Docker
+docker-compose up
+
+# 5. Deploy to Render.com
+# - Connect GitHub repo
+# - Auto-deploy on push
+
+# Total time: 2-3 hours
+# Total cost: $0
+```
+
+---
+
+---
+
+## Phase 1: Foundation (Months 1-2) - Free Tier
+
+### **Week 1-2: Database Setup**
+
+**Platform:** Supabase (Free PostgreSQL with PostGIS)
+
+```bash
+# Sign up at https://supabase.com (no credit card required)
+# Create project: sharebridge-dev
+
+# Enable PostGIS extension via Supabase Dashboard
+# SQL Editor → Run:
+CREATE EXTENSION IF NOT EXISTS postgis;
+CREATE EXTENSION IF NOT EXISTS pgvector;
+```
+
+**Database Schema:**
+```sql
+-- Run all schema from ShareBridge_Technical_Architecture.md
+-- Use Supabase SQL Editor or migrate tool
+```
+
+**Connection String:**
+```javascript
+// Use Supabase connection pooling (built-in)
+const dbConfig = {
+  host: 'db.your-project.supabase.co',
+  port: 5432,
+  database: 'postgres',
+  user: 'postgres',
+  password: 'your-project-password',
+  max: 20  // Supabase free tier handles pooling
+};
+```
+
+**Limitations:**
+- 500MB database size (enough for 50K+ test orders)
+- 2GB bandwidth/month (500-1K test requests/day)
+- No read replicas (single instance only)
+
+**Workaround:** Clean test data regularly, use seed scripts
+
+**Deliverables:**
+- [ ] Supabase project created
+- [ ] PostGIS extension enabled
+- [ ] Database schema deployed
+- [ ] Connection pooling configured
+- [ ] Sample data seeded
+
+---
+
+### **Week 3-4: Backend API Development**
+
+**Platform:** Render.com or Railway.app (Free tier)
+
+**Setup:**
+```bash
+# 1. Create Dockerfile for your Node.js/Python backend
+FROM node:18-alpine
+WORKDIR /app
+COPY package*.json ./
+RUN npm install
+COPY . .
+EXPOSE 3000
+CMD ["npm", "start"]
+
+# 2. Push to GitHub
+git init
+git add .
+git commit -m "Initial backend"
+git remote add origin https://github.com/yourusername/sharebridge-api
+git push -u origin main
+
+# 3. Deploy on Render.com
+# - Connect GitHub repo
+# - Auto-deploy on push
+# - Free tier: 512MB RAM, sleeps after 15min inactivity
+```
+
+**Alternative - Railway.app:**
+```bash
+# Install Railway CLI
+npm i -g @railway/cli
+
+# Deploy
+railway login
+railway init
+railway up
+```
+
+**Limitations:**
+- Server sleeps after inactivity (first request takes 30s to wake)
+- 512MB RAM (enough for development)
+- No horizontal scaling
+
+**Workaround:** Use free "keep alive" services (cron-job.org) to ping every 10 minutes
+
+**Deliverables:**
+- [ ] Backend API deployed to Render/Railway
+- [ ] Auto-deploy on GitHub push configured
+- [ ] API documentation (Swagger/OpenAPI)
+- [ ] Health check endpoint working
+- [ ] Environment variables configured
+
+---
+
+### **Week 5-6: File Storage**
+
+**Platform:** Cloudinary (Free tier: 25GB storage, 25GB bandwidth)
+
+```javascript
+// Install
+npm install cloudinary
+
+// Configure
+const cloudinary = require('cloudinary').v2;
+
+cloudinary.config({
+  cloud_name: 'your_cloud_name',
+  api_key: 'your_api_key',
+  api_secret: 'your_api_secret'
+});
+
+// Upload seeker photo
+const uploadSeekerPhoto = async (file) => {
+  const result = await cloudinary.uploader.upload(file, {
+    folder: 'sharebridge/seekers',
+    transformation: [
+      { width: 800, height: 800, crop: 'limit' },
+      { quality: 'auto' }
+    ]
+  });
+  
+  return result.secure_url;
+};
+```
+
+**Limitations:**
+- 25GB storage (10K+ photos at avg 2MB)
+- 25GB bandwidth/month
+
+**Workaround:** Compress images to 500KB max, delete test data regularly
+
+**Deliverables:**
+- [ ] Cloudinary account created
+- [ ] Photo upload/delete implemented
+- [ ] Image optimization configured (< 500KB)
+- [ ] CDN URLs working
+- [ ] Fallback error handling
+
+---
+
+### **Week 7-8: Caching Layer**
+
+**Platform:** Upstash Redis (Free tier: 10K commands/day)
+
+```bash
+# Sign up at https://upstash.com
+# Create Redis database (serverless, pay-per-request)
+# Get connection URL from dashboard
+```
+
+```javascript
+// Install
+npm install @upstash/redis
+
+// Configure
+const { Redis } = require('@upstash/redis');
+
+const redis = new Redis({
+  url: 'https://your-endpoint.upstash.io',
+  token: 'your-token'
+});
+
+// Cache geospatial data (limited usage)
+await redis.geoadd('seekers:active', 77.5946, 12.9716, 'seeker123');
+const nearby = await redis.georadius('seekers:active', 77.5946, 12.9716, 1, 'km');
+```
+
+**Limitations:**
+- 10K commands/day (333 requests/hour)
+- Shared instance (slower than dedicated)
+
+**Workaround:** 
+- Use for critical caching only (duplicate detection, session)
+- Fall back to in-memory cache for less critical data
+
+**Deliverables:**
+- [ ] Upstash Redis configured
+- [ ] Geospatial caching implemented
+- [ ] Session management working
+- [ ] Cache fallback logic implemented
+- [ ] Cache invalidation tested
+
+---
+
+## Phase 2: Core Features (Months 3-4) - Free Tier
+
+### **Week 1-2: Message Queue**
+
+**Platform:** Upstash Kafka (Free tier) or Redis Pub/Sub
+
+```javascript
+// Option 1: Upstash Kafka (better for production-like testing)
+const { Kafka } = require('@upstash/kafka');
+
+const kafka = new Kafka({
+  url: 'https://your-kafka.upstash.io',
+  username: 'user',
+  password: 'pass'
+});
+
+// Publish event
+await kafka.producer().produce('order-created', {
+  orderId: '123',
+  donorId: 'donor456'
+});
+
+// Option 2: Redis Pub/Sub (simpler, uses existing Redis quota)
+await redis.publish('order-created', JSON.stringify({ orderId: '123' }));
+```
+
+**Limitations:**
+- Upstash Kafka: Limited messages/day
+- Redis: Counts against 10K command quota
+
+**Workaround:** Queue only critical events during dev/test
+
+**Deliverables:**
+- [ ] Message queue configured
+- [ ] Event schemas documented
+- [ ] Producers implemented
+- [ ] Consumers implemented
+- [ ] Dead letter queue handling
+
+---
+
+### **Week 3-4: SMS & Email**
+
+**SMS:** Twilio Trial Account
+```javascript
+// $15 free credit (150 SMS to verified numbers)
+const twilio = require('twilio');
+const client = twilio('ACCOUNT_SID', 'AUTH_TOKEN');
+
+await client.messages.create({
+  body: 'Your OTP is 123456',
+  from: '+15017122661',  // Trial number
+  to: '+919876543210'    // Must be verified in console
+});
+```
+
+**Email:** Resend.io (Free: 100 emails/day)
+```javascript
+const { Resend } = require('resend');
+const resend = new Resend('re_your_api_key');
+
+await resend.emails.send({
+  from: 'sharebridge@yourdomain.com',
+  to: 'donor@example.com',
+  subject: 'Order Confirmation',
+  html: '<p>Your donation was successful!</p>'
+});
+```
+
+**Deliverables:**
+- [ ] Twilio trial configured
+- [ ] OTP delivery working
+- [ ] Resend.io configured
+- [ ] Email templates created
+- [ ] Retry logic implemented
+
+---
+
+### **Week 5-6: Push Notifications**
+
+**Platform:** Firebase Cloud Messaging (Free forever)
+
+```bash
+# 1. Create Firebase project at console.firebase.google.com
+# 2. Download google-services.json (Android) / GoogleService-Info.plist (iOS)
+```
+
+```javascript
+const admin = require('firebase-admin');
+const serviceAccount = require('./firebase-adminsdk.json');
+
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount)
+});
+
+// Send push notification
+await admin.messaging().send({
+  notification: {
+    title: 'Order Confirmed',
+    body: 'Your food donation is being prepared'
+  },
+  token: userDeviceToken
+});
+```
+
+**Deliverables:**
+- [ ] Firebase project created
+- [ ] Push notifications working on iOS
+- [ ] Push notifications working on Android
+- [ ] Notification templates created
+- [ ] Token management implemented
+
+---
+
+### **Week 7-8: Local Development Environment**
+
+```bash
+# Docker Compose for local full-stack testing
+version: '3.8'
+services:
+  postgres:
+    image: postgis/postgis:15-3.3-alpine
+    environment:
+      POSTGRES_DB: sharebridge
+      POSTGRES_PASSWORD: dev123
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+
+  api:
+    build: ./backend
+    ports:
+      - "3000:3000"
+    environment:
+      DATABASE_URL: postgresql://postgres:dev123@postgres:5432/sharebridge
+      REDIS_URL: redis://redis:6379
+    depends_on:
+      - postgres
+      - redis
+
+volumes:
+  pgdata:
+```
+
+**Run locally:**
+```bash
+docker-compose up
+# Everything runs on your machine - zero cloud costs
+```
+
+**Deliverables:**
+- [ ] Docker Compose configured
+- [ ] All services running locally
+- [ ] Development workflow documented
+- [ ] Seed data scripts ready
+- [ ] Local testing guide created
+
+---
+
+## Phase 3: Testing & Integration (Months 5-6) - Free Tier
+
+### **Week 1-2: End-to-End Testing**
+
+**Testing Checklist:**
+```markdown
+### Functionality Testing
+- [ ] End-to-end order flow (donor → delivery → seeker)
+- [ ] Duplicate detection working with test images
+- [ ] Safety scoring calculations accurate
+- [ ] Push notifications received on iOS/Android
+- [ ] SMS OTP delivery working
+- [ ] Email receipts delivered
+
+### Performance Testing
+- [ ] Load test API with 1K concurrent users (Locust/k6)
+- [ ] Database query performance < 100ms (p95)
+- [ ] Cache hit rate > 80%
+- [ ] Photo upload/download < 2s
+
+### Security Testing
+- [ ] SQL injection tests passed
+- [ ] XSS/CSRF protections working
+- [ ] Authentication/authorization working
+- [ ] Rate limiting prevents abuse
+- [ ] Sensitive data encrypted at rest/transit
+
+### Integration Testing
+- [ ] Swiggy/Zomato/Uber Eats API integration tested
+- [ ] Google Maps API working (geocoding, traffic, places)
+- [ ] Payment gateway test transactions successful
+- [ ] All third-party webhooks handling retries
+```
+
+---
+
+### **Week 3-4: Documentation & Handoff**
+
+**Deliverables:**
+- [ ] API documentation complete (Swagger/OpenAPI)
+- [ ] Database schema documented
+- [ ] Environment setup guide
+- [ ] Deployment runbooks
+- [ ] Troubleshooting guide
+- [ ] Migration scripts tested
+
+---
+
+## 🚀 Production Migration Plan
+
+### Overview
+
+Once all components are developed and tested on free platforms, migrate to production AWS infrastructure in **1 week**.
+
+---
+
+### **Pre-Migration Checklist**
+
+```markdown
+### Backend API
+- [ ] All routes implemented and tested locally
+- [ ] Database migrations ready
+- [ ] Environment variables documented
+- [ ] Docker image builds successfully
+- [ ] API documentation complete (Swagger/OpenAPI)
+- [ ] Unit tests passing (80%+ coverage)
+- [ ] Integration tests with Supabase passing
+
+### Database
+- [ ] Schema finalized (no breaking changes expected)
+- [ ] Indexes optimized
+- [ ] Sample data seeded for testing
+- [ ] Backup/restore procedures documented
+- [ ] Migration scripts from Supabase → Production ready
+
+### Storage
+- [ ] All photo upload/delete flows tested
+- [ ] Image optimization working (< 500KB)
+- [ ] Cloudinary → S3 migration script ready
+- [ ] CDN URLs can be swapped via env variable
+
+### Caching
+- [ ] Cache invalidation logic tested
+- [ ] Redis keys documented
+- [ ] Fallback to DB working when cache misses
+- [ ] Upstash → ElastiCache migration script ready
+
+### Message Queue
+- [ ] Event schemas documented
+- [ ] Producers and consumers tested
+- [ ] Dead letter queue handling implemented
+- [ ] Queue → AWS SQS migration script ready
+
+### Third-Party Services
+- [ ] Twilio upgraded to paid account
+- [ ] Email service upgraded (Resend → SendGrid)
+- [ ] Firebase FCM tested on real devices
+- [ ] Google Maps API key with production quota
+```
+
+---
+
+### **Migration Timeline**
+
+#### **D-Day - 7: Database Migration**
+
+```bash
+# 1. Export from Supabase
+pg_dump -h db.your-project.supabase.co -U postgres -d postgres \
+  --schema=public --no-owner --no-acl > sharebridge_dump.sql
+
+# 2. Create AWS RDS PostgreSQL instance
+aws rds create-db-instance \
+  --db-instance-identifier sharebridge-prod \
+  --db-instance-class db.t3.medium \
+  --engine postgres \
+  --engine-version 15.3 \
+  --master-username sharebridge \
+  --master-user-password "YOUR_SECURE_PASSWORD" \
+  --allocated-storage 100
+
+# 3. Install PostGIS on RDS
+psql -h sharebridge-prod.xyz.rds.amazonaws.com -U sharebridge -d postgres
+CREATE EXTENSION postgis;
+CREATE EXTENSION pgvector;
+
+# 4. Import data
+psql -h sharebridge-prod.xyz.rds.amazonaws.com -U sharebridge -d postgres \
+  < sharebridge_dump.sql
+
+# 5. Verify data integrity
+SELECT COUNT(*) FROM users;
+SELECT COUNT(*) FROM orders;
+```
+
+**Deliverables:**
+- [ ] RDS instance created
+- [ ] Data migrated successfully
+- [ ] Integrity checks passed
+- [ ] Connection pooling configured
+- [ ] Backup automated
+
+---
+
+#### **D-Day - 5: File Storage Migration**
+
+```bash
+# Migrate photos from Cloudinary to AWS S3
+npm install aws-sdk cloudinary
+
+# migration-script.js
+const AWS = require('aws-sdk');
+const cloudinary = require('cloudinary').v2;
+const s3 = new AWS.S3();
+
+const migratePhotos = async () => {
+  // 1. Get all Cloudinary URLs from database
+  const photos = await db.query(
+    'SELECT id, seeker_photo_url, delivery_photo_url FROM orders'
+  );
+
+  for (const photo of photos) {
+    // 2. Download from Cloudinary
+    const response = await fetch(photo.seeker_photo_url);
+    const buffer = await response.buffer();
+
+    // 3. Upload to S3
+    const s3Key = `seekers/${photo.id}.jpg`;
+    await s3.putObject({
+      Bucket: 'sharebridge-photos-prod',
+      Key: s3Key,
+      Body: buffer,
+      ContentType: 'image/jpeg'
+    }).promise();
+
+    // 4. Update database with S3 URL
+    const s3Url = `https://sharebridge-photos-prod.s3.amazonaws.com/${s3Key}`;
+    await db.query(
+      'UPDATE orders SET seeker_photo_url = $1 WHERE id = $2',
+      [s3Url, photo.id]
+    );
+  }
+};
+```
+
+**Deliverables:**
+- [ ] S3 bucket created
+- [ ] CloudFront CDN configured
+- [ ] Photos migrated
+- [ ] Database URLs updated
+- [ ] Access policies configured
+
+---
+
+#### **D-Day - 3: Backend Deployment**
+
+**Option A: AWS EC2 (Manual control)**
+
+```bash
+# 1. Launch EC2 instance
+aws ec2 run-instances \
+  --image-id ami-0c55b159cbfafe1f0 \
+  --instance-type t3.medium \
+  --key-name sharebridge-prod \
+  --security-group-ids sg-xxxxx
+
+# 2. SSH and setup
+ssh -i sharebridge-prod.pem ec2-user@your-ec2-ip
+
+# Install Docker
+sudo yum update -y
+sudo yum install -y docker
+sudo service docker start
+sudo usermod -a -G docker ec2-user
+
+# 3. Pull and run container
+docker pull yourusername/sharebridge-api:latest
+docker run -d \
+  -p 80:3000 \
+  -e DATABASE_URL=postgresql://sharebridge:pass@rds-endpoint/postgres \
+  -e REDIS_URL=redis://elasticache-endpoint:6379 \
+  -e AWS_S3_BUCKET=sharebridge-photos-prod \
+  --name sharebridge-api \
+  yourusername/sharebridge-api:latest
+```
+
+**Option B: AWS ECS (Serverless, auto-scaling)**
+
+```bash
+# 1. Create ECS cluster
+aws ecs create-cluster --cluster-name sharebridge-prod
+
+# 2. Push Docker image to ECR
+aws ecr create-repository --repository-name sharebridge-api
+docker tag sharebridge-api:latest 123456789.dkr.ecr.us-east-1.amazonaws.com/sharebridge-api
+docker push 123456789.dkr.ecr.us-east-1.amazonaws.com/sharebridge-api
+
+# 3. Create task definition (task-def.json)
+{
+  "family": "sharebridge-api",
+  "containerDefinitions": [{
+    "name": "api",
+    "image": "123456789.dkr.ecr.us-east-1.amazonaws.com/sharebridge-api",
+    "memory": 512,
+    "cpu": 256,
+    "essential": true,
+    "portMappings": [{
+      "containerPort": 3000,
+      "protocol": "tcp"
+    }],
+    "environment": [
+      {"name": "DATABASE_URL", "value": "postgresql://..."},
+      {"name": "REDIS_URL", "value": "redis://..."}
+    ]
+  }]
+}
+
+# 4. Create service
+aws ecs create-service \
+  --cluster sharebridge-prod \
+  --service-name api \
+  --task-definition sharebridge-api \
+  --desired-count 2 \
+  --launch-type FARGATE
+```
+
+**Deliverables:**
+- [ ] Backend deployed to AWS
+- [ ] Auto-scaling configured
+- [ ] Health checks passing
+- [ ] Environment variables set
+- [ ] Logging configured
+
+---
+
+#### **D-Day - 2: Cache & Queue Migration**
+
+**Redis Cache:**
+```bash
+# 1. Create ElastiCache cluster
+aws elasticache create-replication-group \
+  --replication-group-id sharebridge-prod-redis \
+  --engine redis \
+  --cache-node-type cache.t3.micro \
+  --num-cache-clusters 1
+
+# 2. Update application env variable
+REDIS_URL=redis://sharebridge-prod-redis.xxxxx.cache.amazonaws.com:6379
+
+# 3. No data migration needed (cache starts fresh)
+```
+
+**Message Queue:**
+```bash
+# 1. Create SQS queues
+aws sqs create-queue --queue-name sharebridge-order-created
+aws sqs create-queue --queue-name sharebridge-order-completed
+
+# 2. Update application code
+# Replace Upstash Kafka with AWS SQS SDK
+const AWS = require('aws-sdk');
+const sqs = new AWS.SQS({ region: 'us-east-1' });
+
+await sqs.sendMessage({
+  QueueUrl: 'https://sqs.us-east-1.amazonaws.com/123456789/sharebridge-order-created',
+  MessageBody: JSON.stringify({ orderId: '123' })
+}).promise();
+```
+
+**Deliverables:**
+- [ ] ElastiCache deployed
+- [ ] SQS queues created
+- [ ] Application code updated
+- [ ] Queue consumers running
+- [ ] Monitoring alerts configured
+
+---
+
+#### **D-Day: DNS & Traffic Switch**
+
+```bash
+# 1. Update DNS records (Route53 or your provider)
+# Point api.sharebridge.com → AWS Load Balancer
+
+# 2. Gradual traffic shift
+# - 10% production traffic → new AWS setup
+# - Monitor for 2 hours
+# - If stable, increase to 50%
+# - Monitor for 4 hours
+# - If stable, switch 100%
+
+# 3. Keep Render.com as fallback for 1 week
+# - Don't delete free tier deployment immediately
+# - Can quickly rollback if issues
+```
+
+**Deliverables:**
+- [ ] DNS updated
+- [ ] SSL certificate configured
+- [ ] Load balancer working
+- [ ] Traffic monitored
+- [ ] Rollback plan ready
+
+---
+
+## Integration Architecture
+
+### **Development (Free Tier)**
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    DEVELOPMENT (FREE)                        │
+├─────────────────────────────────────────────────────────────┤
+│                                                               │
+│  GitHub (Code) → Railway/Render (API) → Supabase (DB)       │
+│                         ↓                                     │
+│                  Upstash (Cache)                             │
+│                         ↓                                     │
+│                  Cloudinary (Storage)                        │
+│                         ↓                                     │
+│              Firebase FCM (Push Notifications)               │
+│                         ↓                                     │
+│            Twilio Trial / Resend (SMS/Email)                 │
+│                                                               │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### **Production (AWS)**
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                   PRODUCTION (AWS/PAID)                      │
+├─────────────────────────────────────────────────────────────┤
+│                                                               │
+│  GitHub Actions → AWS ECS (API) → AWS RDS (DB)              │
+│                         ↓                                     │
+│                  ElastiCache (Cache)                         │
+│                         ↓                                     │
+│                  AWS S3 + CloudFront (Storage)               │
+│                         ↓                                     │
+│              Firebase FCM (Push - unchanged)                 │
+│                         ↓                                     │
+│              Twilio Paid / SendGrid (SMS/Email)              │
+│                         ↓                                     │
+│            Route53 (DNS) + CloudFlare (DDoS)                 │
+│                                                               │
+└─────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## Cost Comparison
+
+| Phase | Free Tier Development | AWS Production (Month 1) | AWS Production (Month 6) |
+|-------|----------------------|-------------------------|-------------------------|
+| **Database** | $0 (Supabase) | $50 (RDS t3.medium) | $750 (+ replicas) |
+| **API Servers** | $0 (Render/Railway) | $70 (2x t3.small EC2) | $900 (3 regions) |
+| **Storage** | $0 (Cloudinary) | $5 (S3 + CloudFront) | $300 (multi-region) |
+| **Cache** | $0 (Upstash) | $15 (ElastiCache micro) | $600 (3 clusters) |
+| **Queue** | $0 (Redis Pub/Sub) | $5 (SQS pay-per-use) | $50 (higher volume) |
+| **SMS** | $0 (Trial) | $100 (1K SMS/month) | $1000 (10K SMS) |
+| **Email** | $0 (Resend free) | $10 (SendGrid starter) | $50 (higher volume) |
+| **Monitoring** | $0 (Sentry free) | $0 (CloudWatch free tier) | $100 (DataDog) |
+| **TOTAL** | **$0/month** | **$255/month** | **$3,750/month** |
+
+---
+
+## 🌐 Production Scale Track (Optional - Multi-Region)
+
+*Note: This section applies only if scaling to 100K+ orders/day across multiple continents. Skip this for initial launch.*
 # AWS RDS Setup
 aws rds create-db-instance-read-replica \
   --db-instance-identifier sharebridge-eu-west-replica \
@@ -1000,6 +1825,25 @@ DROP INDEX CONCURRENTLY idx_orders_location_gist;
 
 ---
 
-**Document Owner:** Architecture Team  
+## Support & Resources
+
+### Free Tier Platforms
+- **Supabase:** https://supabase.com/docs
+- **Render:** https://render.com/docs
+- **Railway:** https://docs.railway.app
+- **Upstash:** https://docs.upstash.com
+- **Cloudinary:** https://cloudinary.com/documentation
+- **Firebase:** https://firebase.google.com/docs
+- **Resend:** https://resend.com/docs
+
+### AWS Resources (Production)
+- **RDS Documentation:** https://docs.aws.amazon.com/rds/
+- **ECS Documentation:** https://docs.aws.amazon.com/ecs/
+- **S3 Documentation:** https://docs.aws.amazon.com/s3/
+- **ElastiCache:** https://docs.aws.amazon.com/elasticache/
+
+---
+
+**Document Owner:** VKK  
+**Last Updated:** January 7, 2026  
 **Review Frequency:** Weekly during implementation  
-**Escalation:** CTO for blockers > 3 days

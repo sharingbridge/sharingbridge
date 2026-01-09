@@ -2,9 +2,14 @@
 
 > Transforming traditional alms-giving into a modern, accountable, and dignified process
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![AI-Powered Development](https://img.shields.io/badge/Development-AI--Powered-blue.svg)](PROMPTS.md)
+
 ## Overview
 
 ShareBridge is a mobile/web application that enables donors to provide food and essential items to alms seekers through verified third-party delivery services, eliminating cash transactions while maintaining dignity and convenience for both parties.
+
+**🤖 AI-Powered Development:** This project is being built primarily through AI-assisted development. Code, documentation, and infrastructure are generated using carefully crafted prompts. All prompts are stored in [PROMPTS.md](PROMPTS.md) and in each repository's `prompting/` folder for transparency and reproducibility.
 
 ## Key Features
 
@@ -19,8 +24,10 @@ ShareBridge is a mobile/web application that enables donors to provide food and 
 
 - [Business Requirements](ShareBridge_Business_Requirement.md) - Complete business case and benefits
 - [Technical Architecture](ShareBridge_Technical_Architecture.md) - Detailed technical design
+- [Implementation Approach](IMPLEMENTATION_APPROACH.md) - Development strategy and free-tier options
+- [Prompts](PROMPTS.md) - All prompts used for AI-assisted development
 - [Initial Requirements](ShareBridge_initial_requirement.txt) - Original concept
-- [Call for Contributors](CALL_FOR_CONTRIBUTORS.md) - How to get involved
+- [Call for Contributors](CALL_FOR_CONTRIBUTORS.md) - How to get involved (technical & non-technical)
 
 ## Repository Structure
 
@@ -28,29 +35,41 @@ This is the **master repository** for ShareBridge, containing documentation and 
 
 ### Child Repositories (Independent Development)
 
+Each repository includes a `prompting/` folder containing all prompts used to generate code and documentation for that component.
+
 **Frontend:**
 - `sharebridge-mobile-app` - Mobile application (React Native/Flutter)
+  - `prompting/` - Mobile UI/UX prompts
 - `sharebridge-web-app` - Web application (React/Next.js)
+  - `prompting/` - Web interface prompts
 
 **Backend Services:**
 - `sharebridge-api-gateway` - API gateway and routing
+  - `prompting/` - API design prompts
 - `sharebridge-order-service` - Order management
+  - `prompting/` - Order flow prompts
 - `sharebridge-user-service` - User authentication and profiles
+  - `prompting/` - Auth flow prompts
 - `sharebridge-integration-service` - Vendor integrations (Swiggy, Zomato)
+  - `prompting/` - Integration prompts
 - `sharebridge-notification-service` - Notifications
+  - `prompting/` - Notification logic prompts
 
 **AI/ML:**
 - `sharebridge-ai-safety` - Location safety assessment
+  - `prompting/` - AI model prompts
 - `sharebridge-photo-service` - Face detection and verification
+  - `prompting/` - Computer vision prompts
 
 **Infrastructure:**
 - `sharebridge-infra` - Infrastructure as Code
+  - `prompting/` - Infrastructure prompts
 - `sharebridge-deployment` - CI/CD pipelines
+  - `prompting/` - Pipeline prompts
 
-**Documentation:**
-- `sharebridge-docs` - User guides and API docs
+Each repository evolves independently. Coordination happens here through GitHub Discussions.
 
-Each repository evolves independently. Coordination happens here.
+**Note:** Documentation is maintained within each service repository rather than in a separate docs repo.
 
 ## Project Status
 
@@ -120,11 +139,19 @@ Mobile/Web App → API Gateway → Microservices
 
 ## Contributing
 
-> Coming soon - Contribution guidelines
+We welcome contributors from all backgrounds - technical and non-technical!
+
+- **Technical Contributors:** Developers, DevOps, AI/ML engineers - see [CALL_FOR_CONTRIBUTORS.md](CALL_FOR_CONTRIBUTORS.md)
+- **Non-Technical Contributors:** Humanitarian workers, legal advisors, community volunteers, government liaisons - your expertise is crucial! Join our GitHub Discussions.
+- **AI-Driven Development:** Most artifacts are generated through prompting. Check the `prompting/` folders in each repo to see examples.
+
+See [CALL_FOR_CONTRIBUTORS.md](CALL_FOR_CONTRIBUTORS.md) for detailed guidance.
 
 ## License
 
-> TBD
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+All contributions will be licensed under the MIT License.
 
 ## Contact
 

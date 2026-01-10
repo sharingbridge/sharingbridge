@@ -386,13 +386,15 @@ order_events
    - Success/failure rate
    - Delivery crew feedback
 
-5. **Duplicate Seeker Detection (Human-Friendly)**
+5. **Duplicate Seeker Detection (Informational Only - Non-Blocking)**
    - Facial recognition using ML (compare with recent orders)
    - Location proximity matching (within configurable radius)
    - Time window check (default: 2 hours - more lenient for edge cases)
    - Last order status and donation type checking
    - Returns: duplicate probability score + recent order details + donor-friendly information
    - Lenient thresholds to accommodate lighting, angle, and appearance variations
+   - **Important: NEVER blocks donations - only provides context to donors**
+   - Donors make final decision based on their judgment and compassion
 
 **Safety Score Calculation:**
 ```python
@@ -414,9 +416,9 @@ from datetime import datetime, timedelta
 class DuplicateSeekerDetector:
     DUPLICATE_WINDOW_HOURS = 2  # Configurable
     LOCATION_RADIUS_METERS = 150  # Increased for leniency
-    SIMILARITY_THRESHOLD = 0.78  # Lowered from 0.85 for human factors (lighting, angles, etc.)
+    SIMILARITY_THRESHOLD = 0.78  # For detecting possible matches
     CONFIDENCE_THRESHOLD_HIGH = 0.85  # High confidence match
-    CONFIDENCE_THRESHOLD_MEDIUM = 0.78  # Medium confidence - inform but allow
+    CONFIDENCE_THRESHOLD_MEDIUM = 0.78  # Medium confidence match
     
     async def check_duplicate(self, photo, location, timestamp, donor_id=None):
         # 1. Extract facial embedding from photo
@@ -426,9 +428,9 @@ class DuplicateSeekerDetector:
             return {
                 'is_duplicate': False,
                 'confidence': 'low',
-                'allow_donation': True,
-                'message': 'No clear face detected - proceeding with caution',
-                'donor_message': 'Unable to verify face clearly. Please ensure good photo quality.'
+                'message': 'No clear face detected',
+                'donor_message': 'ℹ️ Face not clearly detected in photo. You may still proceed with your donation.',
+                'show_to_donor': False  # Don't show if no face detected
             }
         
         # 2. Find recent orders in proximity
@@ -453,27 +455,25 @@ class DuplicateSeekerDetector:
                 best_similarity = similarity
                 best_match = seeker
         
-        # 4. Process best match with human-friendly logic
+        # 4. Process best match - provide informational context only
         if best_match and best_similarity >= self.SIMILARITY_THRESHOLD:
             order_details = await Order.objects.get(id=best_match.order_id)
             time_ago_minutes = (timestamp - best_match.timestamp).seconds // 60
             distance_meters = self.calculate_distance(location, best_match.location)
             
-            # Check if previous order was completed
+            # Determine confidence level for informational purposes
             is_high_confidence = best_similarity >= self.CONFIDENCE_THRESHOLD_HIGH
-            allow_donation = not is_high_confidence or time_ago_minutes > 90  # Allow after 90 min even if duplicate
             
-            # Build donor-friendly message
+            # Build donor-friendly informational message
             donor_message = self._build_donor_message(
                 order_details, time_ago_minutes, distance_meters, 
-                best_similarity, allow_donation
+                best_similarity
             )
             
             return {
                 'is_duplicate': is_high_confidence,
                 'is_possible_duplicate': best_similarity >= self.SIMILARITY_THRESHOLD,
                 'confidence': 'high' if is_high_confidence else 'medium',
-                'allow_donation': allow_donation,
                 'similarity_score': best_similarity,
                 'previous_order': {
                     'order_id': best_match.order_id,
@@ -484,7 +484,8 @@ class DuplicateSeekerDetector:
                     'distance_meters': distance_meters
                 },
                 'message': f'Possible match found - {time_ago_minutes} minutes ago',
-                'donor_message': donor_message
+                'donor_message': donor_message,
+                'show_to_donor': True  # Show info to donor for their awareness
             }
         
         # 5. No duplicate found
@@ -492,13 +493,13 @@ class DuplicateSeekerDetector:
             'is_duplicate': False,
             'is_possible_duplicate': False,
             'confidence': 'high',
-            'allow_donation': True,
             'message': 'No recent help detected for this seeker',
-            'donor_message': 'This appears to be a new request. Proceeding with donation.'
+            'donor_message': 'ℹ️ No recent donations found for this person in the area.',
+            'show_to_donor': False  # No need to show if no duplicate
         }
     
-    def _build_donor_message(self, order, time_ago, distance, similarity, allow):
-        """Build human-friendly message for donor"""
+    def _build_donor_message(self, order, time_ago, distance, similarity):
+        """Build human-friendly informational message for donor (non-blocking)"""
         status_text = {
             'pending': 'is being processed',
             'confirmed': 'was confirmed',
@@ -517,15 +518,14 @@ class DuplicateSeekerDetector:
             'miscellaneous': 'assistance'
         }.get(order.donation_type, 'help')
         
-        confidence_text = 'very likely' if similarity >= 0.85 else 'possibly'
+        confidence_text = 'likely' if similarity >= 0.85 else 'possibly'
         
-        message = f"⚠️ This person {confidence_text} received {type_text} {time_ago} minutes ago (~{distance}m away).\n"
-        message += f"Previous order {status_text}."
-        
-        if allow:
-            message += "\n\n✅ You may proceed if you believe this is a genuine need (e.g., different meal, additional items)."
-        else:
-            message += "\n\n⏳ Consider waiting a bit longer or verify the need with the seeker."
+        # Informational message without blocking suggestions
+        message = f"ℹ️ **For Your Information**\n\n"
+        message += f"This person {confidence_text} received {type_text} {time_ago} minutes ago (~{distance}m away).\n"
+        message += f"Previous order {status_text}.\n\n"
+        message += f"💙 **You can still proceed with your donation.** This information is provided for context only. "
+        message += f"There may be legitimate reasons for multiple requests (different needs, family members, etc.)."
         
         return message
     
@@ -544,7 +544,7 @@ class DuplicateSeekerDetector:
 **API Endpoints:**
 ```
 POST   /api/v1/safety/assess             # Assess location safety
-POST   /api/v1/safety/check-duplicate    # Check for duplicate seeker
+POST   /api/v1/safety/check-duplicate    # Check for duplicate seeker (informational only)
 GET    /api/v1/safety/history/:location  # Get historical data
 POST   /api/v1/safety/feedback           # Submit delivery feedback
 GET    /api/v1/safety/metrics            # Get safety metrics
@@ -629,7 +629,8 @@ photos
 ### 3.5 Integration Service
 
 **Responsibilities:**
-- Vendor API abstraction
+- Vendor API abstraction (food delivery platforms)
+- Logistics partner API abstraction (for pledged vendor deliveries)
 - Deep link generation for payment redirect
 - Webhook handling for order updates
 - Response normalization across vendors
@@ -649,26 +650,58 @@ interface VendorAdapter {
   cancelOrder(vendorOrderId: string): Promise<boolean>;
 }
 
+// Food delivery platforms (includes delivery)
 class SwiggyAdapter implements VendorAdapter { ... }
 class ZomatoAdapter implements VendorAdapter { ... }
 class UberEatsAdapter implements VendorAdapter { ... }
+
+// Logistics partners (for pledged vendor orders)
+interface LogisticsAdapter {
+  createDelivery(pickupLocation: Location, dropLocation: Location, orderId: string): Promise<DeliveryTask>;
+  getDeliveryStatus(taskId: string): Promise<DeliveryStatus>;
+  cancelDelivery(taskId: string): Promise<boolean>;
+  trackDelivery(taskId: string): Promise<LiveTracking>;
+}
+
+class DunzoAdapter implements LogisticsAdapter { ... }
+class PorterAdapter implements LogisticsAdapter { ... }
+class ShadowfaxAdapter implements LogisticsAdapter { ... }
 ```
 
-**Deep Link Flow:**
+**Deep Link Flow (External Vendors - Swiggy/Zomato/UberEats):**
 1. ShareBridge creates order via vendor API
 2. Vendor returns order ID and payment link
 3. ShareBridge generates deep link: `ShareBridge://order/{orderId}/payment?vendor=swiggy&link={encoded_payment_url}`
 4. App opens vendor's payment page (in-app browser or native app)
 5. User completes payment on vendor platform
 6. Vendor webhook notifies ShareBridge of payment confirmation
-7. ShareBridge updates order status and notifies user
+7. Vendor's delivery fleet handles pickup and delivery to seeker
+8. ShareBridge tracks status updates via webhook
+
+**Logistics Flow (Pledged Vendors - Direct Orders):**
+1. Donor pays via ShareBridge payment gateway (Razorpay/Stripe)
+2. Order sent to pledged vendor (restaurant/home kitchen)
+3. Vendor prepares food and marks order as READY
+4. ShareBridge automatically triggers logistics partner API (Dunzo/Porter/Shadowfax)
+5. Logistics partner assigns delivery executive for pickup
+6. Delivery executive picks up from vendor and delivers to seeker
+7. Delivery confirmation with photo upload
+8. Status updates tracked in real-time
 
 **API Endpoints:**
 ```
+# External vendor integration
 POST   /api/v1/vendors/:vendor/orders         # Create vendor order
 GET    /api/v1/vendors/:vendor/orders/:id     # Get vendor order status
 POST   /api/v1/vendors/webhooks/:vendor       # Vendor webhook handler
 GET    /api/v1/vendors/:vendor/menu           # Get vendor menu items
+
+# Logistics partner integration
+POST   /api/v1/logistics/:provider/delivery   # Create delivery task
+GET    /api/v1/logistics/:provider/task/:id   # Get delivery status
+POST   /api/v1/logistics/webhooks/:provider   # Logistics webhook handler
+DELETE /api/v1/logistics/:provider/task/:id   # Cancel delivery
+GET    /api/v1/logistics/:provider/track/:id  # Live tracking
 ```
 
 **Webhook Signature Verification:**
@@ -830,17 +863,36 @@ pledge_allocations
 
 **Capacity Pledge Model:**
 ```
-Vendors pledge donation capacity, not prepared food:
-- Daily capacity: "Can prepare 20 meals per day"
-- Preparation time: "30 minutes from order to ready"
+Vendors pledge hourly donation capacity, not prepared food:
+- Hourly capacity: "Can prepare 5-10 meals per hour"
+- Time slots: Hourly slots during active hours (e.g., 11 AM, 12 PM, 1 PM, 2 PM)
 - Active hours: "11:00 AM - 2:00 PM, 6:00 PM - 9:00 PM"
+- Preparation time: "30 minutes from order to ready"
 - Menu items: Limited selection for efficiency
 
+Example: Restaurant pledges:
+  - 11:00-12:00: 8 meals
+  - 12:00-13:00: 10 meals
+  - 13:00-14:00: 8 meals
+  - 18:00-19:00: 12 meals
+  - 19:00-20:00: 15 meals
+  - 20:00-21:00: 10 meals
+
 Real-time Inventory:
-- Available capacity decremented on order placement
-- Restored on delivery completion or cancellation
-- Prevents over-commitment
-- Batch ordering for efficiency (e.g., "3 orders ready in 30 min")
+- Hourly capacity decremented on order placement for that time slot
+- Orders assigned to current or next available hour
+- Capacity restored on cancellation within the same hour
+- Prevents rush hour overload
+- Enables even distribution of orders
+- Batch preparation within each hour slot
+
+Delivery Logistics:
+- Vendors prepare food; delivery handled by logistics partners
+- Automatic integration with Dunzo/Porter/Shadowfax
+- When vendor marks order READY, delivery auto-triggered
+- Pickup from vendor location, delivery to seeker location
+- Real-time tracking and status updates
+- Delivery cost included in order total or subsidized
 ```
 
 **Verification Process:**
@@ -862,16 +914,17 @@ GET    /api/v1/vendors/:id                # Get vendor details
 PUT    /api/v1/vendors/:id                # Update vendor profile
 POST   /api/v1/vendors/:id/menu           # Add/update menu items
 GET    /api/v1/vendors/:id/menu           # Get vendor menu
-POST   /api/v1/vendors/:id/capacity       # Set daily capacity pledge
-PUT    /api/v1/vendors/:id/capacity       # Update capacity/hours
-GET    /api/v1/vendors/:id/capacity       # Get current available capacity
+POST   /api/v1/vendors/:id/capacity/hourly # Set hourly capacity pledge
+PUT    /api/v1/vendors/:id/capacity/hourly/:date # Update hourly capacity for date
+GET    /api/v1/vendors/:id/capacity/hourly?date=YYYY-MM-DD # Get hourly capacity
+GET    /api/v1/vendors/:id/capacity/available # Get available slots for today
 POST   /api/v1/vendors/:id/orders         # Receive order notification
 PUT    /api/v1/vendors/:id/orders/:orderId # Update order status (preparing/ready)
 GET    /api/v1/vendors/:id/donations      # List donation history
 PUT    /api/v1/vendors/:id/availability   # Update availability
-GET    /api/v1/vendors/nearby?lat=&lng=&capacity=1 # Find vendors with capacity
+GET    /api/v1/vendors/nearby?lat=&lng=&hour=14 # Find vendors with capacity at hour
 POST   /api/v1/vendors/:id/ratings        # Rate vendor
-GET    /api/v1/vendors/:id/reconciliation # Capacity reconciliation report
+GET    /api/v1/vendors/:id/reconciliation?date=YYYY-MM-DD # Hourly reconciliation
 ```
 
 **Data Model:**
@@ -894,18 +947,18 @@ vendors
 ├── created_at (TIMESTAMP)
 └── metadata (JSONB)
 
-vendor_capacity
+vendor_capacity_hourly
 ├── id (UUID, PK)
 ├── vendor_id (UUID, FK → vendors.id)
 ├── date (DATE)
-├── total_daily_capacity (INTEGER)
-├── remaining_capacity (INTEGER)
-├── active_from_hour (INTEGER)
-├── active_to_hour (INTEGER)
+├── hour (INTEGER) -- Hour of the day (0-23)
+├── total_hourly_capacity (INTEGER) -- Max orders for this hour
+├── remaining_capacity (INTEGER) -- Available orders for this hour
 ├── preparation_time_minutes (INTEGER)
 ├── batch_size (INTEGER) -- Optimal batch size for efficiency
+├── is_active (BOOLEAN) -- Whether vendor accepts orders this hour
 ├── last_updated (TIMESTAMP)
-└── UNIQUE(vendor_id, date)
+└── UNIQUE(vendor_id, date, hour)
 
 vendor_menu_items
 ├── id (UUID, PK)
@@ -921,6 +974,8 @@ vendor_orders
 ├── id (UUID, PK)
 ├── vendor_id (UUID, FK → vendors.id)
 ├── order_id (UUID, FK → orders.id)
+├── assigned_date (DATE) -- Date for which capacity is reserved
+├── assigned_hour (INTEGER) -- Hour slot (0-23) for preparation
 ├── capacity_reserved_at (TIMESTAMP)
 ├── preparation_started_at (TIMESTAMP, NULLABLE)
 ├── ready_at (TIMESTAMP, NULLABLE)
@@ -932,6 +987,7 @@ vendor_capacity_log
 ├── id (UUID, PK)
 ├── vendor_id (UUID, FK → vendors.id)
 ├── date (DATE)
+├── hour (INTEGER) -- Hour of the day (0-23)
 ├── order_id (UUID, FK → orders.id, NULLABLE)
 ├── action (ENUM: reserve, release, complete, cancel)
 ├── capacity_change (INTEGER) -- negative for reserve, positive for release
@@ -948,83 +1004,140 @@ vendor_ratings
 ├── comment (TEXT)
 ├── created_at (TIMESTAMP)
 
-CREATE INDEX idx_vendor_capacity_date ON vendor_capacity(vendor_id, date);
-CREATE INDEX idx_vendor_capacity_remaining ON vendor_capacity(remaining_capacity) WHERE remaining_capacity > 0;
+CREATE INDEX idx_vendor_capacity_hourly ON vendor_capacity_hourly(vendor_id, date, hour);
+CREATE INDEX idx_vendor_capacity_available ON vendor_capacity_hourly(vendor_id, date) WHERE remaining_capacity > 0 AND is_active = true;
 CREATE INDEX idx_vendor_orders_status ON vendor_orders(vendor_id, status);
+CREATE INDEX idx_vendor_orders_slot ON vendor_orders(vendor_id, assigned_date, assigned_hour);
 ```
 
 **Capacity Management Algorithm:**
 ```python
+from datetime import datetime, timedelta
+
 class VendorCapacityManager:
-    def reserve_capacity(self, vendor_id: UUID, date: date, quantity: int) -> bool:
-        """Reserve capacity with pessimistic locking"""
+    def find_available_slot(self, vendor_id: UUID, current_time: datetime) -> Optional[tuple[date, int]]:
+        """Find next available hour slot with capacity"""
+        current_date = current_time.date()
+        current_hour = current_time.hour
+        
+        # Check current hour and next 12 hours
+        for hour_offset in range(13):
+            check_time = current_time + timedelta(hours=hour_offset)
+            check_date = check_time.date()
+            check_hour = check_time.hour
+            
+            slot = VendorCapacityHourly.objects.filter(
+                vendor_id=vendor_id,
+                date=check_date,
+                hour=check_hour,
+                is_active=True,
+                remaining_capacity__gt=0
+            ).first()
+            
+            if slot:
+                return (check_date, check_hour)
+        
+        return None
+    
+    def reserve_capacity(self, vendor_id: UUID, date: date, hour: int, quantity: int = 1) -> bool:
+        """Reserve capacity for specific hour with pessimistic locking"""
         with transaction():
-            capacity = VendorCapacity.objects.select_for_update().get(
-                vendor_id=vendor_id, 
-                date=date
+            capacity = VendorCapacityHourly.objects.select_for_update().get(
+                vendor_id=vendor_id,
+                date=date,
+                hour=hour
             )
             
-            if capacity.remaining_capacity >= quantity:
+            if capacity.is_active and capacity.remaining_capacity >= quantity:
                 capacity.remaining_capacity -= quantity
+                capacity.last_updated = datetime.now()
                 capacity.save()
                 
                 # Log transaction
                 VendorCapacityLog.objects.create(
                     vendor_id=vendor_id,
                     date=date,
+                    hour=hour,
                     action='reserve',
                     capacity_change=-quantity,
-                    remaining_after=capacity.remaining_capacity
+                    remaining_after=capacity.remaining_capacity,
+                    timestamp=datetime.now()
                 )
                 return True
             return False
     
     def release_capacity(self, vendor_id: UUID, order_id: UUID, reason: str):
-        """Release capacity back to pool (on cancellation/completion)"""
+        """Release capacity back to hourly slot (on cancellation)"""
         with transaction():
             vendor_order = VendorOrder.objects.get(order_id=order_id)
-            capacity = VendorCapacity.objects.select_for_update().get(
+            capacity = VendorCapacityHourly.objects.select_for_update().get(
                 vendor_id=vendor_id,
-                date=vendor_order.created_at.date()
+                date=vendor_order.assigned_date,
+                hour=vendor_order.assigned_hour
             )
             
-            capacity.remaining_capacity += 1  # Release 1 unit
+            capacity.remaining_capacity += 1
+            capacity.last_updated = datetime.now()
             capacity.save()
             
             # Log transaction
             VendorCapacityLog.objects.create(
                 vendor_id=vendor_id,
-                date=capacity.date,
+                date=vendor_order.assigned_date,
+                hour=vendor_order.assigned_hour,
                 order_id=order_id,
                 action='release',
                 capacity_change=+1,
                 remaining_after=capacity.remaining_capacity,
-                reason=reason
+                reason=reason,
+                timestamp=datetime.now()
             )
     
-    def reconcile_daily_capacity(self, vendor_id: UUID, date: date):
-        """Reconcile capacity at end of day"""
-        expected = VendorCapacity.objects.get(vendor_id=vendor_id, date=date)
+    def reconcile_hourly_capacity(self, vendor_id: UUID, date: date, hour: int):
+        """Reconcile capacity for specific hour at end of hour"""
+        expected = VendorCapacityHourly.objects.get(
+            vendor_id=vendor_id,
+            date=date,
+            hour=hour
+        )
         
         completed = VendorOrder.objects.filter(
             vendor_id=vendor_id,
-            created_at__date=date,
+            assigned_date=date,
+            assigned_hour=hour,
             status__in=['delivered', 'completed']
         ).count()
         
         cancelled = VendorOrder.objects.filter(
             vendor_id=vendor_id,
-            created_at__date=date,
+            assigned_date=date,
+            assigned_hour=hour,
             status='cancelled'
         ).count()
         
-        actual_remaining = expected.total_daily_capacity - completed
+        actual_remaining = expected.total_hourly_capacity - completed
         
         if actual_remaining != expected.remaining_capacity:
-            # Log discrepancy for review
-            logger.warning(f"Capacity mismatch for vendor {vendor_id}: "
-                         f"Expected {expected.remaining_capacity}, "
-                         f"Actual {actual_remaining}")
+            logger.warning(f"Hourly capacity mismatch for vendor {vendor_id} "
+                         f"on {date} at {hour}:00 - "
+                         f"Expected: {expected.remaining_capacity}, "
+                         f"Actual: {actual_remaining}")
+    
+    def initialize_daily_slots(self, vendor_id: UUID, date: date, hourly_config: dict):
+        """Initialize hourly capacity slots for a day"""
+        # hourly_config format: {11: 8, 12: 10, 13: 8, 18: 12, 19: 15, 20: 10}
+        for hour, capacity in hourly_config.items():
+            VendorCapacityHourly.objects.update_or_create(
+                vendor_id=vendor_id,
+                date=date,
+                hour=hour,
+                defaults={
+                    'total_hourly_capacity': capacity,
+                    'remaining_capacity': capacity,
+                    'is_active': True,
+                    'last_updated': datetime.now()
+                }
+            )
 ```
 
 ---
@@ -1740,19 +1853,29 @@ Limitations:
 - Payment tracking complexity
 ```
 
-**Strategy 3: Direct Vendor Program (MVP Approach)**
+**Strategy 3: Direct Vendor Program with Automated Integration (MVP Approach)**
 ```
 Benefits:
 - Full control over integration
 - No dependency on third-party APIs
 - Immediate implementation possible
 - Better margins for social mission
+- Fully automated end-to-end workflow
 
 Implementation:
-- Partner with local restaurants and food vendors
-- Simple phone/WhatsApp based ordering
-- Vendor capacity pledge system
-- Direct delivery or partnership with delivery personnel
+- Partner with local restaurants, home kitchens, and food vendors
+- Vendors onboard via ShareBridge Vendor Portal (web/mobile)
+- Automated order notification to vendors (push, SMS, in-app)
+- Vendor capacity pledge system (hourly slots)
+- Vendors mark orders as READY via app
+- Automatic logistics partner integration (Dunzo/Porter/Shadowfax)
+- Real-time order tracking and status updates
+- NO manual steps - fully digital workflow
+
+Key Difference from External Vendors:
+- ShareBridge handles payment (Razorpay/Stripe) instead of redirecting
+- ShareBridge coordinates delivery logistics
+- Vendors only prepare food; rest is automated by platform
 ```
 
 **Vendor Adapter Pattern (For Future API Access):**
@@ -1886,22 +2009,27 @@ async handleWebhook(
 
 ```
 Phase 1 - MVP (Month 1-3):
-├── Direct Vendor Program (local restaurants)
-├── Manual/phone-based ordering
-├── Simple WhatsApp integration
-└── No dependency on major platform APIs
+├── Direct Vendor Program (local restaurants, home kitchens)
+├── Automated vendor onboarding via portal
+├── Digital order notifications (push/SMS/in-app)
+├── Integrated payment gateway (Razorpay/Stripe)
+├── Automated logistics integration (Dunzo/Porter)
+├── Real-time status tracking
+└── No manual steps - fully automated workflow
 
 Phase 2 - Partnership (Month 4-6):
-├── Initiate partnerships with Swiggy/Zomato
+├── Initiate partnerships with Swiggy/Zomato/Uber Eats
 ├── API access negotiation
 ├── Pilot program with one major vendor
-└── Build custom adapter
+├── Build custom adapter
+└── Hybrid model (direct vendors + platforms)
 
 Phase 3 - Scale (Month 7-12):
-├── Multi-vendor support
-├── Full webhook integration
+├── Multi-vendor support across all channels
+├── Full webhook integration for all platforms
+├── Intelligent vendor selection (cost, capacity, location)
 ├── Fallback mechanisms
-└── Hybrid approach (direct + platforms)
+└── Optimized hybrid approach
 ```
 
 **API Customization Requirements:**
@@ -2136,56 +2264,416 @@ Week 4: Production Readiness
 
 ### 8.1 Safety Assessment Model
 
-**Model Architecture:**
-```
-Input Features (12 dimensions):
-├── Location coordinates (lat, lng)
-├── Time of day (hour, day_of_week)
-├── Traffic density score
-├── Road type classification
-├── Proximity to public places
-├── Historical delivery success rate
-├── Weather conditions
-└── Lighting conditions
+**Approach: Rule-Based Scoring with Existing APIs (No Custom ML Training Required)**
 
-Model: Random Forest Classifier / Gradient Boosting
+**Architecture:**
+```
+Input: Location coordinates (lat, lng) + Timestamp
+Data Sources: External APIs (no training needed)
+Processing: Rule-based weighted scoring
 Output: Safety score (0.0 - 1.0)
 Threshold: >= 0.65 for approval
 ```
 
-**Training Pipeline:**
+**Data Sources & APIs:**
 ```python
-# Feature engineering
-features = [
-    'hour_of_day',
-    'day_of_week',
-    'traffic_density',
-    'road_type',
-    'distance_to_landmark',
-    'historical_success_rate',
-    'weather_score',
-    'lighting_score',
-    'is_residential',
-    'is_commercial',
-    'population_density',
-    'crime_rate'
-]
-
-# Model training
-model = GradientBoostingClassifier(
-    n_estimators=100,
-    max_depth=5,
-    learning_rate=0.1
-)
-
-model.fit(X_train, y_train)
+# 1. Google Maps Traffic API - Real-time traffic data
+# 2. Google Places API - Location type (residential, commercial, etc.)
+# 3. Google Maps Roads API - Road classification
+# 4. OpenWeather API - Weather conditions
+# 5. SunCalc Library - Daylight calculation
+# 6. Internal Database - Historical delivery success rate
+# 7. Optional: Public crime data APIs (government open data)
 ```
 
-**Model Deployment:**
-- Model versioning with MLflow
-- A/B testing for model updates
-- Fallback to rule-based system if ML service down
-- Model retraining every 30 days with new data
+**Implementation (Rule-Based Scoring):**
+```python
+from datetime import datetime
+import requests
+from suncalc import get_times
+import math
+
+class SafetyAssessmentService:
+    def __init__(self):
+        self.google_maps_key = os.getenv('GOOGLE_MAPS_API_KEY')
+        self.openweather_key = os.getenv('OPENWEATHER_API_KEY')
+        
+    async def assess_safety(self, lat: float, lng: float, timestamp: datetime) -> dict:
+        """
+        Calculate safety score using external APIs and rule-based logic.
+        No ML training required - uses real-time data from trusted sources.
+        """
+        # Parallel API calls for efficiency
+        traffic_score = await self.get_traffic_safety_score(lat, lng)
+        time_score = self.calculate_time_safety_score(lat, lng, timestamp)
+        location_score = await self.get_location_type_score(lat, lng)
+        historical_score = await self.get_historical_success_rate(lat, lng)
+        
+        # Weighted scoring
+        safety_score = (
+            traffic_score * 0.25 +      # Traffic conditions
+            time_score * 0.20 +          # Daylight/time of day
+            location_score * 0.30 +      # Location type (public/residential)
+            historical_score * 0.25      # Past delivery success
+        )
+        
+        return {
+            'safety_score': safety_score,
+            'is_safe': safety_score >= 0.65,
+            'breakdown': {
+                'traffic': traffic_score,
+                'time_of_day': time_score,
+                'location_type': location_score,
+                'historical': historical_score
+            },
+            'recommendations': self.generate_recommendations(safety_score, {
+                'traffic': traffic_score,
+                'time': time_score,
+                'location': location_score
+            })
+        }
+    
+    async def get_traffic_safety_score(self, lat: float, lng: float) -> float:
+        """Get traffic safety score from Google Maps Traffic API"""
+        url = f"https://maps.googleapis.com/maps/api/directions/json"
+        params = {
+            'origin': f'{lat},{lng}',
+            'destination': f'{lat},{lng}',  # Same point for current traffic
+            'departure_time': 'now',
+            'key': self.google_maps_key
+        }
+        
+        response = requests.get(url, params=params)
+        data = response.json()
+        
+        # Extract traffic conditions
+        if 'routes' in data and len(data['routes']) > 0:
+            duration = data['routes'][0]['legs'][0].get('duration', {})
+            duration_in_traffic = data['routes'][0]['legs'][0].get('duration_in_traffic', {})
+            
+            # Compare normal vs traffic duration
+            if duration and duration_in_traffic:
+                traffic_ratio = duration['value'] / duration_in_traffic['value']
+                # Higher ratio = worse traffic = lower score
+                return min(traffic_ratio, 1.0)
+        
+        # Use Roads API for road type
+        roads_url = f"https://roads.googleapis.com/v1/nearestRoads"
+        roads_params = {
+            'points': f'{lat},{lng}',
+            'key': self.google_maps_key
+        }
+        roads_response = requests.get(roads_url, params=roads_params)
+        roads_data = roads_response.json()
+        
+        # Main roads = higher score
+        if 'snappedPoints' in roads_data:
+            return 0.8  # Good traffic accessibility
+        
+        return 0.6  # Default moderate score
+    
+    def calculate_time_safety_score(self, lat: float, lng: float, timestamp: datetime) -> float:
+        """Calculate safety based on time of day using daylight hours"""
+        # Get sunrise/sunset times for location
+        times = get_times(timestamp.date(), lng, lat)
+        sunrise = times['sunrise']
+        sunset = times['sunset']
+        
+        # Check if within daylight hours
+        if sunrise <= timestamp <= sunset:
+            # Daylight hours - full score
+            return 1.0
+        else:
+            # Night time - calculate how far into night
+            hours_after_sunset = (timestamp - sunset).total_seconds() / 3600
+            hours_before_sunrise = (sunrise - timestamp).total_seconds() / 3600
+            
+            # Early evening (0-2 hours after sunset) or early morning (0-2 hours before sunrise)
+            if hours_after_sunset <= 2 or hours_before_sunrise <= 2:
+                return 0.7
+            # Late night
+            else:
+                return 0.4
+    
+    async def get_location_type_score(self, lat: float, lng: float) -> float:
+        """Get location type score from Google Places API"""
+        url = f"https://maps.googleapis.com/maps/api/place/nearbysearch/json"
+        params = {
+            'location': f'{lat},{lng}',
+            'radius': 200,  # 200 meter radius
+            'key': self.google_maps_key
+        }
+        
+        response = requests.get(url, params=params)
+        data = response.json()
+        
+        if 'results' not in data or len(data['results']) == 0:
+            return 0.5  # Isolated area - moderate score
+        
+        # Analyze nearby places
+        place_types = []
+        for place in data['results'][:10]:  # Check top 10 nearby places
+            place_types.extend(place.get('types', []))
+        
+        # Score based on place types
+        public_places = ['hospital', 'police', 'school', 'park', 'shopping_mall', 
+                        'restaurant', 'cafe', 'store', 'transit_station']
+        residential = ['neighborhood', 'street_address', 'premise']
+        
+        public_count = sum(1 for pt in place_types if pt in public_places)
+        residential_count = sum(1 for pt in place_types if pt in residential)
+        
+        if public_count > 3:
+            return 0.9  # Busy public area - very safe
+        elif residential_count > 2:
+            return 0.8  # Residential area - safe
+        else:
+            return 0.6  # Mixed/unclear - moderate
+    
+    async def get_historical_success_rate(self, lat: float, lng: float) -> float:
+        """Get historical delivery success rate from internal database"""
+        # Query orders within 500m radius
+        query = """
+            SELECT 
+                COUNT(*) as total,
+                SUM(CASE WHEN status = 'completed' THEN 1 ELSE 0 END) as successful
+            FROM orders
+            WHERE ST_DWithin(
+                location::geography,
+                ST_SetSRID(ST_MakePoint($1, $2), 4326)::geography,
+                500
+            )
+            AND created_at > NOW() - INTERVAL '90 days'
+        """
+        
+        result = await db.fetch_one(query, lng, lat)
+        
+        if result['total'] == 0:
+            return 0.7  # No history - assume moderate safety
+        
+        success_rate = result['successful'] / result['total']
+        return success_rate
+    
+    def generate_recommendations(self, score: float, breakdown: dict) -> list:
+        """Generate recommendations based on score breakdown"""
+        recommendations = []
+        
+        if breakdown['traffic'] < 0.5:
+            recommendations.append("High traffic area - delivery may take longer")
+        
+        if breakdown['time'] < 0.6:
+            recommendations.append("Night time delivery - extra caution advised")
+        
+        if breakdown['location'] < 0.6:
+            recommendations.append("Isolated location - ensure good communication")
+        
+        if score >= 0.65:
+            recommendations.append("Location approved for delivery")
+        else:
+            recommendations.append("Consider alternative location or time")
+        
+        return recommendations
+```
+
+**Benefits of Rule-Based Approach:**
+- ✅ No ML training required - works immediately
+- ✅ Uses authoritative data sources (Google, OpenWeather)
+- ✅ Real-time data instead of trained predictions
+- ✅ Easy to understand and debug
+- ✅ No model drift or retraining overhead
+- ✅ Lower infrastructure costs (no ML pipeline)
+- ✅ Transparent scoring logic
+- ✅ Can be updated with simple configuration changes
+
+**Cost Considerations:**
+
+**Previous Approach (Custom ML):**
+- ML Infrastructure (GPU instances): ~$500-1000/month
+- MLflow/model registry: ~$50-100/month
+- Training data storage: ~$50/month
+- Model retraining compute: ~$100-200/month
+- Data scientists/ML engineers: Ongoing operational cost
+- **Total ML Infrastructure: ~$700-1350/month**
+
+**New Approach (API-Based Rule System):**
+- Google Maps API:
+  - Directions API (traffic): $5 per 1000 requests
+  - Roads API: $10 per 1000 requests  
+  - Places API: $17 per 1000 requests
+  - Combined: ~$32 per 1000 safety assessments
+  - At 1000 assessments/day: ~$960/month
+  - At 100 assessments/day (realistic MVP): ~$96/month
+- OpenWeather API: Free tier (60 calls/min) or $40/month for paid
+- SunCalc library: Free (npm package)
+- Rule-based compute: Negligible (~$5/month serverless)
+- **Total API-Based: ~$100-1000/month (volume dependent)**
+
+**Cost Comparison at Different Scales:**
+
+| Daily Assessments | ML Approach | API Approach | Savings |
+|------------------|-------------|--------------|---------|
+| 100 (MVP)        | $700-1350   | $100-150     | ~$600-1200 (85% cheaper) |
+| 1,000 (Growth)   | $700-1350   | $960-1000    | Break-even to slight savings |
+| 5,000+ (Scale)   | $700-1350   | $4,800+      | ML becomes cheaper |
+
+**Key Insights:**
+- ✅ **MVP/Early Stage**: API approach is 85% cheaper
+- ✅ **No upfront investment**: No ML infrastructure needed
+- ✅ **Pay-as-you-grow**: Costs scale with actual usage
+- ⚠️ **At scale (5000+/day)**: Custom ML becomes cost-effective
+- 💡 **Strategy**: Start with APIs, migrate to ML when volume justifies it
+
+**Optimization Strategies:**
+1. Cache safety scores for frequently requested locations (reduce API calls by 40-60%)
+2. Batch nearby assessments
+3. Use Google Maps API quota optimization
+4. Implement tiered assessment (quick check first, detailed only if needed)
+
+**Example with Caching:**
+- 1000 assessments/day, 50% cache hit rate
+- Actual API calls: 500/day
+- Cost: ~$480/month instead of $960/month
+
+**Recommendation for MVP:**
+Start with API-based approach. It's cheaper, faster to implement, and requires no ML expertise. Switch to custom ML only when reaching 3000-5000 assessments/day.
+
+---
+
+**Phased Implementation Strategy:**
+
+**Phase 1: MVP (Months 1-3, 0-500 orders/day)**
+```yaml
+Safety Assessment:
+  Approach: API-based rule system
+  Infrastructure: Google Cloud free credits ($300)
+  Cost: $0/month (within free tier)
+  Features:
+    - Google Maps APIs (traffic, places, roads)
+    - OpenWeather free tier
+    - SunCalc library (free)
+    - Rule-based weighted scoring
+    - Basic location caching (1 hour)
+  
+Vendor Integration:
+  Approach: Direct Vendor Program only
+  Features:
+    - Local restaurants/home kitchens
+    - Automated vendor portal
+    - Hourly capacity management
+    - Push/SMS notifications to vendors
+    - Integrated payment (Razorpay/Stripe)
+    - Logistics automation (Dunzo/Porter)
+  Cost: $0 infrastructure (pay only for actual deliveries)
+  Benefits:
+    - Full control over workflow
+    - No dependency on platform APIs
+    - Faster onboarding
+    - Better margins for charity
+```
+
+**Phase 2: Growth (Months 4-6, 500-2000 orders/day)**
+```yaml
+Safety Assessment:
+  Approach: Optimized API-based system
+  Infrastructure: Production API quotas
+  Cost: $300-500/month
+  Enhancements:
+    - Advanced caching (50% hit rate)
+    - Batch processing for nearby locations
+    - Historical data analytics
+    - API quota optimization
+    - Fallback to simplified scoring if API limits reached
+
+Vendor Integration:
+  Approach: Hybrid (Direct + Platform partnerships)
+  Features:
+    - Continue direct vendor network (primary)
+    - Begin Swiggy/Zomato partnership discussions
+    - Deep link integration (fallback option)
+    - Vendor selection algorithm (cost, capacity, location)
+    - Multi-vendor order routing
+  Cost: $0 additional infrastructure
+  Benefits:
+    - Redundancy and reliability
+    - Wider coverage area
+    - Better donor experience
+```
+
+**Phase 3: Scale (Months 7-12, 2000-5000+ orders/day)**
+```yaml
+Safety Assessment:
+  Decision Point: Evaluate ML vs API costs
+  
+  Option A: Continue API-based (if cost-effective)
+    Cost: $800-1200/month
+    Enhancements:
+      - Multi-level caching (location + time)
+      - Pre-computed safety zones
+      - Tiered assessment (quick check first)
+  
+  Option B: Migrate to Custom ML (if volume justifies)
+    Cost: $700-1000/month (fixed)
+    Implementation:
+      - 3-month training data collection
+      - Custom ML model (Random Forest/Gradient Boosting)
+      - MLflow deployment
+      - A/B testing against API baseline
+      - Gradual rollout (10% → 50% → 100%)
+    Benefits:
+      - Fixed costs at scale
+      - Customized to Indian delivery patterns
+      - No API rate limits
+
+Vendor Integration:
+  Approach: Full multi-vendor ecosystem
+  Features:
+    - Direct vendors (60-70% of orders)
+    - Swiggy API integration (if partnership secured)
+    - Zomato API integration (if partnership secured)
+    - UberEats (future)
+    - Intelligent routing algorithm
+      * Cost optimization
+      * Capacity availability
+      * Delivery time prediction
+      * Historical vendor performance
+    - Automated failover between vendors
+  Cost: Development + API costs (variable)
+  Benefits:
+    - Maximum coverage
+    - Best pricing through competition
+    - High reliability
+```
+
+**Decision Framework:**
+
+| Metric | MVP (Phase 1) | Growth (Phase 2) | Scale (Phase 3) |
+|--------|---------------|------------------|------------------|
+| Daily Orders | 0-500 | 500-2000 | 2000-5000+ |
+| Safety Assessments | 0-500/day | 500-2000/day | 2000-5000+/day |
+| Safety Cost | $0 (free tier) | $300-500/month | $700-1200/month |
+| Approach | API-based | API-based optimized | ML or API (evaluate) |
+| Vendor Strategy | Direct only | Hybrid | Full ecosystem |
+| Vendor Cost | Per delivery | Per delivery | Per delivery + API |
+| Infrastructure | Free tier | Paid tier | Production scale |
+| Team Focus | Fast launch | Optimization | Partnerships + ML |
+
+**Migration Triggers:**
+
+Phase 1 → Phase 2:
+- ✅ Consistent 300+ orders/day for 2 weeks
+- ✅ 10+ active vendors in network
+- ✅ API costs approaching $200/month
+- ✅ 95%+ delivery success rate
+
+Phase 2 → Phase 3:
+- ✅ Consistent 1500+ orders/day for 1 month
+- ✅ API costs exceeding $600/month
+- ✅ 50+ active vendors
+- ✅ Partnership discussions with major platforms progressing
+- ⚠️ Evaluate: ML training feasible (3 months of quality data)
+
+**Recommendation:**
+Start with Phase 1 approach. Monitor costs and scale metrics monthly. Make Phase 2/3 decisions based on actual data, not projections.
 
 ---
 

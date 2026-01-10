@@ -392,7 +392,145 @@ await admin.messaging().send({
 
 ---
 
-### **Week 7-8: Local Development Environment**
+### **Week 7: AI Safety Assessment Service**
+
+**Approach:** Rule-Based API Integration (No ML Training)
+
+**Platform:** Free tier APIs
+
+```javascript
+// Safety assessment using external APIs
+class SafetyAssessmentService {
+  async assessLocation(lat, lng, timestamp) {
+    // 1. Google Maps API (use $300 GCP free credit)
+    const traffic = await this.getTrafficScore(lat, lng);
+    
+    // 2. Free daylight calculation (SunCalc library)
+    const timeScore = this.calculateDaylightScore(lat, lng, timestamp);
+    
+    // 3. Google Places API (use $300 GCP free credit)
+    const locationScore = await this.getLocationTypeScore(lat, lng);
+    
+    // 4. Internal database (free)
+    const historicalScore = await this.getHistoricalRate(lat, lng);
+    
+    // 5. Rule-based scoring (no ML needed)
+    const safetyScore = (
+      traffic * 0.25 +
+      timeScore * 0.20 +
+      locationScore * 0.30 +
+      historicalScore * 0.25
+    );
+    
+    return {
+      score: safetyScore,
+      is_safe: safetyScore >= 0.65,
+      breakdown: { traffic, timeScore, locationScore, historicalScore }
+    };
+  }
+}
+```
+
+**Cost During Development:**
+- Google Cloud Platform: $300 free credit (12 months)
+- Covers ~10,000-15,000 safety assessments
+- OpenWeather API: Free tier (60 calls/min)
+- SunCalc library: Free
+- Total: $0/month
+
+**Migration to Production:**
+- Phase 1 (MVP): Continue with API approach (~$100-150/month for 100 assessments/day)
+- Phase 2 (Growth): Add caching, optimize API usage (~$500/month for 1000/day)
+- Phase 3 (Scale): Consider custom ML model only at 5000+/day
+
+**Deliverables:**
+- [ ] Google Maps API configured with free credits
+- [ ] Rule-based safety scoring implemented
+- [ ] Location caching strategy deployed
+- [ ] Safety thresholds configured
+- [ ] API cost monitoring enabled
+
+---
+
+### **Week 8: Vendor Integration Strategy**
+
+**Phase-Based Vendor Integration:**
+
+**MVP Phase (Months 1-3):**
+```javascript
+// Focus: Direct Vendor Program (Full automation, no external APIs)
+
+class DirectVendorService {
+  async createOrder(orderData) {
+    // 1. Find available vendor with hourly capacity
+    const vendor = await this.findAvailableVendor(
+      orderData.location,
+      orderData.prepTime
+    );
+    
+    // 2. Reserve hourly slot
+    await this.reserveCapacity(vendor.id, currentHour);
+    
+    // 3. Send automated notification to vendor
+    await this.notifyVendor(vendor.id, orderData);
+    
+    // 4. Vendor accepts/prepares via app
+    // 5. Auto-trigger logistics partner when READY
+    await this.triggerLogistics(vendor.location, orderData.seekerLocation);
+    
+    return { vendorId: vendor.id, status: 'processing' };
+  }
+}
+```
+
+**Growth Phase (Months 4-6):**
+```javascript
+// Add: Partnership discussions with Swiggy/Zomato
+// Implementation: Deep link integration (fallback)
+
+class ExternalVendorService {
+  async createOrder(orderData) {
+    // Generate deep link to vendor platform
+    const paymentLink = await this.generateVendorLink(
+      'swiggy',
+      orderData
+    );
+    
+    // Redirect donor to vendor's payment page
+    return { paymentLink, vendor: 'swiggy' };
+  }
+}
+```
+
+**Scale Phase (Months 7-12):**
+```javascript
+// Full API integration with multiple vendors
+// Hybrid approach: Direct vendors + Platforms
+
+class HybridVendorService {
+  async createOrder(orderData) {
+    // Intelligent routing based on cost, capacity, location
+    const bestOption = await this.selectBestVendor(orderData);
+    
+    if (bestOption.type === 'direct') {
+      return await this.directVendorService.createOrder(orderData);
+    } else {
+      return await this.externalVendorService.createOrder(orderData);
+    }
+  }
+}
+```
+
+**Deliverables:**
+- [ ] Direct vendor onboarding portal created
+- [ ] Hourly capacity management implemented
+- [ ] Vendor notification system working
+- [ ] Logistics partner integration (Dunzo/Porter API)
+- [ ] Partnership outreach initiated with Swiggy/Zomato
+
+---
+
+### **Week 9-10: Local Development Environment**
 
 ```bash
 # Docker Compose for local full-stack testing

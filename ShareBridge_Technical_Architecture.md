@@ -8,16 +8,16 @@
 ---
 
 ## Table of Contents
-1. [System Overview](#system-overview)
-2. [Architecture Diagram](#architecture-diagram)
-3. [Component Architecture](#component-architecture)
-4. [Data Architecture](#data-architecture)
-5. [API Design](#api-design)
-6. [Security Architecture](#security-architecture)
-7. [Integration Architecture](#integration-architecture)
-8. [AI/ML Pipeline](#aiml-pipeline)
-9. [Deployment Architecture](#deployment-architecture)
-10. [Scalability & Performance](#scalability--performance)
+1. [System Overview](#1-system-overview)
+2. [Architecture Diagram](#2-architecture-diagram)
+3. [Component Architecture](#3-component-architecture)
+4. [Data Architecture](#4-data-architecture)
+5. [API Design](#5-api-design)
+6. [Security Architecture](#6-security-architecture)
+7. [Integration Architecture](#7-integration-architecture)
+8. [AI/ML Pipeline](#8-aiml-pipeline)
+9. [Deployment Architecture](#9-deployment-architecture)
+10. [Scalability & Performance](#10-scalability--performance)
 
 ---
 

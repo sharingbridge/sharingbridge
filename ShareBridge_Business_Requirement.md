@@ -8,10 +8,10 @@ ShareBridge is a mobile/web application that enables donors to provide food and 
 
 ### **Core Workflow:**
 1. **Location Safety Check** - Donor spots seeker, captures location; AI validates safety before engagement
-2. **Duplicate Check** - System checks if seeker already received help recently (using photo matching + location proximity)
-3. **Donor Interaction** - If location safe and not duplicate, donor engages seeker, obtains consent for food order and identification photo
+2. **Duplicate Check** - System checks if seeker already received help recently (using photo matching + location proximity) and provides informational context to donor - never blocks donations
+3. **Donor Interaction** - Donor engages seeker, obtains consent for food order and identification photo
 4. **Order Placement** - Integration with external food delivery platforms (Zomato, Swiggy, etc.) or direct vendors
-5. **Payment Redirect** - Donor is redirected to vendor's payment gateway; ShareBridge receives order confirmation
+5. **Payment** - For external vendors: redirected to vendor's payment gateway. For direct vendors: Razorpay/Stripe integration (ShareBridge never handles payment directly)
 6. **Delivery** - Delivery personnel identify seeker using photo, complete handover
 7. **Confirmation** - Delivery photo captured and shared with donor for transparency
 
@@ -34,7 +34,7 @@ Small food vendors/restaurants pledge their donation capacity without preparing 
   - When order comes, system checks nearest vendor with available capacity
   - Vendor confirms and starts preparation only after order placed
   - Real-time reconciliation: capacity decremented on order, restored on completion/cancellation
-  - Vendors set daily/weekly capacity limits and preparation windows
+  - Vendors set hourly capacity limits and preparation windows (e.g., 8 meals at 11 AM, 10 meals at 12 PM)
   - System sends batch notifications (e.g., "3 orders in your area, prepare now")
   - Vendors receive social recognition badges based on fulfilled pledges
 - **Benefits:** Zero food waste, realistic capacity planning, batch efficiency for vendors, faster fulfillment
@@ -126,21 +126,22 @@ Enable multiple people to contribute to a single order when one person cannot af
 - Community contribution ledger
 
 ### **Key Technical Features:**
-- **AI-powered safety checks** before order confirmation
+- **AI-powered safety checks** using external APIs (Google Maps, Places) with rule-based scoring
 - **Multi-vendor integration** for wider coverage
 - **Photo verification** at both ends (order & delivery)
 - **Real-time notifications** for order status
 - **Privacy-first design** (encrypted photo storage, limited retention)
-- **Payment redirect model** - zero financial liability, no PCI compliance needed
+- **Payment delegation** - All payments handled by Razorpay/Stripe or vendor platforms, zero financial liability
 - **Webhook integration** for order tracking without payment handling
 
 ### **Technology Stack (Proposed):**
 - **Mobile:** React Native / Flutter
 - **Backend:** Node.js / Python (Django/FastAPI)
-- **AI/ML:** TensorFlow/PyTorch for location safety analysis
+- **Safety Assessment:** API-based (Google Maps, Places, OpenWeather) with rule-based scoring; Custom ML optional at scale (5000+ orders/day)
+- **Face Recognition:** Pre-trained models (FaceNet/DeepFace) for duplicate detection
 - **Database:** PostgreSQL with PostGIS for location data
 - **Cloud:** AWS/Azure/GCP
-- **APIs:** Food delivery platform APIs
+- **APIs:** Food delivery platform APIs, Logistics partner APIs (Dunzo/Porter/Shadowfax)
 
 ---
 

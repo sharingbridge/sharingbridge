@@ -102,8 +102,9 @@ A facilitator platform that:
 - **Message Queue:** RabbitMQ / AWS SQS
 
 ### AI/ML
-- **Framework:** TensorFlow / PyTorch
-- **Location Safety:** Custom ML model for safety scoring
+- **Framework:** TensorFlow / PyTorch (for face recognition only)
+- **Location Safety:** API-based rule system (Google Maps, Places, OpenWeather); Custom ML optional at scale
+- **Face Recognition:** Pre-trained models (FaceNet/DeepFace)
 
 ### Infrastructure
 - **Cloud:** AWS / Azure / GCP

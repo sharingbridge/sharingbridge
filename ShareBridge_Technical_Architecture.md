@@ -22,6 +22,7 @@
 ---
 
 ## 1. System Overview
+[↑ Back to Table of Contents](#table-of-contents)
 
 ### 1.1 Architecture Principles
 - **Microservices-based** - Loosely coupled services for independent scaling
@@ -74,6 +75,7 @@
 ---
 
 ## 2. Architecture Diagram
+[↑ Back to Table of Contents](#table-of-contents)
 
 ### 2.1 Detailed System Architecture
 
@@ -243,6 +245,7 @@
 ---
 
 ## 3. Component Architecture
+[↑ Back to Table of Contents](#table-of-contents)
 
 ### 3.1 User Service
 
@@ -1243,6 +1246,7 @@ CREATE INDEX idx_campaigns_expires ON campaigns(expires_at);
 ---
 
 ## 4. Data Architecture
+[↑ Back to Table of Contents](#table-of-contents)
 
 ### 4.1 Database Schema (PostgreSQL)
 
@@ -1593,6 +1597,7 @@ notification.send:
 ---
 
 ## 5. API Design
+[↑ Back to Table of Contents](#table-of-contents)
 
 ### 5.1 RESTful API Standards
 
@@ -1737,6 +1742,7 @@ Response: { orders[], stats: { total_donations, total_amount } }
 ---
 
 ## 6. Security Architecture
+[↑ Back to Table of Contents](#table-of-contents)
 
 ### 6.1 Authentication & Authorization
 
@@ -1808,6 +1814,7 @@ Response: { orders[], stats: { total_donations, total_amount } }
 ---
 
 ## 7. Integration Architecture
+[↑ Back to Table of Contents](#table-of-contents)
 
 ### 7.1 Food Delivery Vendor Integration
 
@@ -2261,6 +2268,7 @@ Week 4: Production Readiness
 ---
 
 ## 8. AI/ML Pipeline
+[↑ Back to Table of Contents](#table-of-contents)
 
 ### 8.1 Safety Assessment Model
 
@@ -2704,6 +2712,7 @@ def process_seeker_photo(image_file):
 ---
 
 ## 9. Deployment Architecture
+[↑ Back to Table of Contents](#table-of-contents)
 
 ### 9.1 Cloud Infrastructure (AWS Example)
 
@@ -2879,6 +2888,7 @@ spec:
 ---
 
 ## 10. Scalability & Performance
+[↑ Back to Table of Contents](#table-of-contents)
 
 ### 10.1 Global Deployment Architecture
 
@@ -3034,6 +3044,7 @@ L3: CDN cache (static assets)
 ---
 
 ## 11. Monitoring & Observability
+[↑ Back to Table of Contents](#table-of-contents)
 
 ### 11.1 Metrics
 
@@ -3115,6 +3126,7 @@ Warning:
 ---
 
 ## 12. Disaster Recovery & Business Continuity
+[↑ Back to Table of Contents](#table-of-contents)
 
 ### 12.1 Backup Strategy
 

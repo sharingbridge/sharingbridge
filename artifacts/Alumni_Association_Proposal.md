@@ -1,8 +1,9 @@
 # Proposal for ShareBridge Platform Development
-## Under the Aegis of [College Name] Alumni Association
+## Under the Aegis of Madras Institute of Technology Alumni Association
 
 **Date:** January 15, 2026  
-**Submitted by:** [Your Names], [Batch Year]  
+
+**Submitted by:** [Your Names], [Batch Year] Electronics  
 **Contact:** [Your Email/Phone]
 
 ---
@@ -203,7 +204,7 @@ We respectfully request the **[College Name] Alumni Association** to grant permi
 ## Conclusion
 
 
-ShareBridge lets the **[College Name] Alumni Association** support a social initiative with minimal effort. Lending the association's name gives credibility and reach, while the association gets positive recognition at no cost.
+ShareBridge lets the **Madras Institute of Technology Alumni Association** support a social initiative with minimal effort. Lending the association's name gives credibility and reach, while the association gets positive recognition at no cost.
 
 All we request is permission to use the name and occasional help connecting with alumni expertise.
 
@@ -219,12 +220,6 @@ All we request is permission to use the name and occasional help connecting with
 
 ---
 
-**Contact Information:**
-[Your Names]  
-[Batch Year], [Department]  
-Email: [Your Email]  
-Phone: [Your Phone]
 
----
 
 *"Alone we can do so little; together we can do so much."* - Helen Keller

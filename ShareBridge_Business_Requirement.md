@@ -113,7 +113,10 @@ Enable multiple people to contribute to a single order when one person cannot af
 - OAuth/Deep linking for vendor payment redirect
 - Webhook listeners for order status updates
 - Photo storage (cloud-based)
-- Push notification service
+  - Push notification service (default)
+  - In-app notification service (default)
+  - Email notification service (default)
+  - (Optional/Future) SMS notification service
 
 **5. Data Management**
 - Location coordinates storage
@@ -129,7 +132,7 @@ Enable multiple people to contribute to a single order when one person cannot af
 - **AI-powered safety checks** using external APIs (Google Maps, Places) with rule-based scoring
 - **Multi-vendor integration** for wider coverage
 - **Photo verification** at both ends (order & delivery)
-- **Real-time notifications** for order status
+- **Real-time notifications** for order status (push, in-app, email by default; SMS optional/future)
 - **Privacy-first design** (encrypted photo storage, limited retention)
 - **Payment delegation** - All payments handled by Razorpay/Stripe or vendor platforms, zero financial liability
 - **Webhook integration** for order tracking without payment handling

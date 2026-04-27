@@ -33,6 +33,9 @@ You use the app to place the order. The app arranges the delivery through a food
 
 The delivery partner brings the food directly to the person in need. You receive a photo as proof of delivery. No cash is exchanged, and the process is clear and safe for you, the person receiving help, and the delivery partner.
 
+**Notifications:**
+- You receive updates via push notification (app), in-app alerts, or email. SMS is not used for MVP but can be enabled later if needed.
+
 ---
 
 ## How is ShareBridge Different from Just Using a Food Delivery App?

@@ -41,7 +41,7 @@ Develop and test all ShareBridge components using **100% free platforms** with n
 | **File Storage** | Cloudinary Free Tier | 25GB storage, 25GB bandwidth | Migrate to AWS S3 |
 | **Redis Cache** | Upstash Redis | 10K commands/day | Migrate to AWS ElastiCache |
 | **Message Queue** | Upstash Kafka Free / Redis Pub/Sub | Limited throughput | Migrate to AWS SQS/SNS |
-| **SMS/OTP** | Twilio Trial ($15 credit) | Test numbers only | Upgrade to paid plan |
+| **SMS/OTP** | (Optional/Future) | Not enabled for MVP | Enable if needed |
 | **Email** | Resend.io / Brevo (Sendinblue) | 100 emails/day | Upgrade to SendGrid |
 | **Push Notifications** | Firebase FCM | Unlimited (free forever) | Keep Firebase |
 | **Monitoring** | Sentry Free | 5K errors/month | Upgrade or self-host |
@@ -319,20 +319,10 @@ await redis.publish('order-created', JSON.stringify({ orderId: '123' }));
 
 ---
 
-### **Week 3-4: SMS & Email**
 
-**SMS:** Twilio Trial Account
-```javascript
-// $15 free credit (150 SMS to verified numbers)
-const twilio = require('twilio');
-const client = twilio('ACCOUNT_SID', 'AUTH_TOKEN');
+### **Week 3-4: Email Only (MVP)**
 
-await client.messages.create({
-  body: 'Your OTP is 123456',
-  from: '+15017122661',  // Trial number
-  to: '+919876543210'    // Must be verified in console
-});
-```
+*SMS is not enabled for MVP. Use push, in-app, or email notifications. Add SMS later if required for non-app users.*
 
 **Email:** Resend.io (Free: 100 emails/day)
 ```javascript
@@ -981,7 +971,7 @@ await sqs.sendMessage({
 | **Storage** | $0 (Cloudinary) | $5 (S3 + CloudFront) | $300 (multi-region) |
 | **Cache** | $0 (Upstash) | $15 (ElastiCache micro) | $600 (3 clusters) |
 | **Queue** | $0 (Redis Pub/Sub) | $5 (SQS pay-per-use) | $50 (higher volume) |
-| **SMS** | $0 (Trial) | $100 (1K SMS/month) | $1000 (10K SMS) |
+| **SMS** | $0 (Not enabled) | $100 (1K SMS/month, if enabled) | $1000 (10K SMS, if enabled) |
 | **Email** | $0 (Resend free) | $10 (SendGrid starter) | $50 (higher volume) |
 | **Monitoring** | $0 (Sentry free) | $0 (CloudWatch free tier) | $100 (DataDog) |
 | **TOTAL** | **$0/month** | **$255/month** | **$3,750/month** |

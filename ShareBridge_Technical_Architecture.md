@@ -162,10 +162,10 @@
 │  ┌─────────────────────────────────────────────────────────────┐  │
 │  │  NOTIFICATION SERVICE                                       │  │
 │  │  - Push Notifications (FCM/APNS)                            │  │
-│  │  - SMS Notifications (Twilio/AWS SNS)                       │  │
-│  │  - Email Notifications                                      │  │
 │  │  - In-app Notifications                                     │  │
+│  │  - Email Notifications                                      │  │
 │  │  - Template Management                                      │  │
+│  │  - (Optional/Future) SMS Notifications (Twilio/AWS SNS)     │  │
 │  └─────────────────────────────────────────────────────────────┘  │
 │                                                                      │
 │  ┌─────────────────────────────────────────────────────────────┐  │
@@ -238,6 +238,7 @@
 │  └──────────────┘ └──────────────┘ └──────────────┘               │
 │  ┌──────────────┐ ┌──────────────┐ ┌──────────────┐               │
 │  │ Google Maps  │ │   FCM/APNS   │ │ Twilio SMS   │               │
+│  │ ($200/mo free)│ │  (Free tier) │ │ (Pay-as-you) │               │
 │  └──────────────┘ └──────────────┘ └──────────────┘               │
 └─────────────────────────────────────────────────────────────────────┘
 ```
@@ -373,6 +374,9 @@ order_events
    - Google Maps Traffic Layer API
    - Real-time traffic density
    - Road type classification
+
+> **💰 Cost Optimization Note:**
+> Google Maps Platform provides **$200/month free credit** (all APIs combined). At MVP scale (100 assessments/day ≈ 3,000/month), this is completely free. Even at 1,000 assessments/day, costs remain minimal (~$96/month).
 
 2. **Time-of-Day Assessment**
    - Daylight hours scoring
@@ -722,7 +726,7 @@ def verify_webhook(vendor: str, payload: dict, signature: str) -> bool:
 ### 3.6 Notification Service
 
 **Responsibilities:**
-- Multi-channel notifications (push, SMS, email)
+- Multi-channel notifications (push, in-app, email; SMS optional/future)
 - Template management
 - Notification scheduling and retry logic
 - Delivery tracking
@@ -730,9 +734,10 @@ def verify_webhook(vendor: str, payload: dict, signature: str) -> bool:
 **Technology Stack:**
 - Framework: Node.js or Python
 - Push: Firebase Cloud Messaging (FCM), Apple Push Notification (APNS)
-- SMS: Twilio / AWS SNS
+- In-app: WebSocket/Realtime DB
 - Email: SendGrid / AWS SES
 - Queue: RabbitMQ / AWS SQS
+- (Optional/Future) SMS: Twilio / AWS SNS
 
 **Notification Types:**
 ```
@@ -744,6 +749,7 @@ def verify_webhook(vendor: str, payload: dict, signature: str) -> bool:
 - Delivery Completed
 - Delivery Photo Available
 ```
+*Push, in-app, and email are default channels for MVP. SMS can be enabled later if needed (e.g., for users without smartphones).*
 
 **API Endpoints:**
 ```

@@ -129,7 +129,7 @@
 │  │  - Order State Machine (Created→Validated→Ordered→          │  │
 │  │    Confirmed→InTransit→Delivered→Completed)                 │  │
 │  │  - Order History & Tracking                                 │  │
-│  │  - Duplicate Prevention Logic                               │  │
+│  │  - Beneficiary Assistance History Logic                     │  │
 │  └─────────────────────────────────────────────────────────────┘  │
 │                                                                      │
 │  ┌─────────────────────────────────────────────────────────────┐  │
@@ -251,20 +251,25 @@
 ### 3.1 User Service
 
 **Responsibilities:**
-- User authentication and authorization
-- Profile management
-- Role-based access control (RBAC)
+- User authentication, authorization, and session lifecycle management
+- Profile management and secure beneficiary data access policies
+- Role-based access control (RBAC) for donor, delivery_partner, beneficiary_coordinator, and admin
+- Login/logout, refresh token handling, and session revocation
+- Audit logging and minimal data exposure for beneficiary details
 
 **Technology Stack:**
 - Framework: Node.js (Express) or Python (FastAPI)
-- Authentication: JWT + OAuth 2.0
+- Authentication: JWT + OAuth 2.0 / OTP / SSO
 - Database: PostgreSQL
+- Session store: Redis for refresh tokens and session state
 
 **API Endpoints:**
 ```
 POST   /api/v1/auth/register
 POST   /api/v1/auth/login
+POST   /api/v1/auth/refresh
 POST   /api/v1/auth/logout
+GET    /api/v1/auth/session
 GET    /api/v1/users/profile
 PUT    /api/v1/users/profile
 GET    /api/v1/users/history
@@ -277,11 +282,13 @@ users
 ├── phone_number (VARCHAR, UNIQUE)
 ├── email (VARCHAR, UNIQUE, NULLABLE)
 ├── name (VARCHAR)
-├── role (ENUM: donor, admin)
+├── role (ENUM: donor, delivery_partner, beneficiary_coordinator, admin)
+├── auth_method (ENUM: otp, oauth, api_key)
 ├── created_at (TIMESTAMP)
 ├── updated_at (TIMESTAMP)
 ├── last_login (TIMESTAMP)
-└── is_active (BOOLEAN)
+├── is_active (BOOLEAN)
+└── requires_2fa (BOOLEAN DEFAULT FALSE)
 ```
 
 ---
@@ -393,15 +400,15 @@ order_events
    - Success/failure rate
    - Delivery crew feedback
 
-5. **Duplicate Seeker Detection (Informational Only - Non-Blocking)**
-   - Facial recognition using ML (compare with recent orders)
+5. **Beneficiary Assistance History Review (Informational Only - Non-Blocking)**
+   - Compare current beneficiary photo and location against recent help records
    - Location proximity matching (within configurable radius)
-   - Time window check (default: 2 hours - more lenient for edge cases)
-   - Last order status and donation type checking
-   - Returns: duplicate probability score + recent order details + donor-friendly information
+   - Time window check (default: 2 hours - lenient for edge cases)
+   - Provide recent assistance status and donor-friendly context
+   - Returns: assistance probability score + recent help details + guidance for compassionate decisions
    - Lenient thresholds to accommodate lighting, angle, and appearance variations
-   - **Important: NEVER blocks donations - only provides context to donors**
-   - Donors make final decision based on their judgment and compassion
+   - **Important: NEVER blocks donations - only informs donors about recent assistance history**
+   - Donors retain final discretion and compassion remains central
 
 **Safety Score Calculation:**
 ```python
@@ -415,73 +422,71 @@ safety_score = (
 # Threshold: >= 0.65 to proceed
 ```
 
-**Duplicate Seeker Detection Algorithm:**
+**Beneficiary Assistance History Matching Algorithm:**
 ```python
 import numpy as np
 from datetime import datetime, timedelta
 
-class DuplicateSeekerDetector:
-    DUPLICATE_WINDOW_HOURS = 2  # Configurable
-    LOCATION_RADIUS_METERS = 150  # Increased for leniency
-    SIMILARITY_THRESHOLD = 0.78  # For detecting possible matches
-    CONFIDENCE_THRESHOLD_HIGH = 0.85  # High confidence match
-    CONFIDENCE_THRESHOLD_MEDIUM = 0.78  # Medium confidence match
+class BeneficiaryHistoryChecker:
+    ASSISTANCE_WINDOW_HOURS = 2  # Configurable
+    PROXIMITY_RADIUS_METERS = 150  # Increased for leniency
+    MATCH_THRESHOLD = 0.78  # For detecting possible matches
+    HIGH_CONFIDENCE_THRESHOLD = 0.85  # High confidence match
+    MEDIUM_CONFIDENCE_THRESHOLD = 0.78  # Medium confidence match
     
-    async def check_duplicate(self, photo, location, timestamp, donor_id=None):
+    async def check_history(self, photo, location, timestamp, donor_id=None):
         # 1. Extract facial embedding from photo
         face_embedding = await self.extract_face_embedding(photo)
         
         if face_embedding is None:
             return {
-                'is_duplicate': False,
+                'recent_assistance': False,
                 'confidence': 'low',
                 'message': 'No clear face detected',
                 'donor_message': 'ℹ️ Face not clearly detected in photo. You may still proceed with your donation.',
-                'show_to_donor': False  # Don't show if no face detected
+                'show_to_donor': False
             }
         
-        # 2. Find recent orders in proximity
-        time_threshold = timestamp - timedelta(hours=self.DUPLICATE_WINDOW_HOURS)
+        # 2. Find recent assistance records in proximity
+        time_threshold = timestamp - timedelta(hours=self.ASSISTANCE_WINDOW_HOURS)
         
-        recent_seekers = await SeekerDetection.objects.filter(
+        recent_records = await BeneficiaryHistory.objects.filter(
             timestamp__gte=time_threshold,
-            location__dwithin=(location, self.LOCATION_RADIUS_METERS)
+            location__dwithin=(location, self.PROXIMITY_RADIUS_METERS)
         ).all()
         
         # 3. Compare face embeddings with lenient matching
         best_match = None
         best_similarity = 0
         
-        for seeker in recent_seekers:
+        for record in recent_records:
             similarity = self.cosine_similarity(
                 face_embedding, 
-                seeker.face_embedding
+                record.face_embedding
             )
             
             if similarity > best_similarity:
                 best_similarity = similarity
-                best_match = seeker
+                best_match = record
         
         # 4. Process best match - provide informational context only
-        if best_match and best_similarity >= self.SIMILARITY_THRESHOLD:
+        if best_match and best_similarity >= self.MATCH_THRESHOLD:
             order_details = await Order.objects.get(id=best_match.order_id)
             time_ago_minutes = (timestamp - best_match.timestamp).seconds // 60
             distance_meters = self.calculate_distance(location, best_match.location)
             
-            # Determine confidence level for informational purposes
-            is_high_confidence = best_similarity >= self.CONFIDENCE_THRESHOLD_HIGH
+            is_high_confidence = best_similarity >= self.HIGH_CONFIDENCE_THRESHOLD
             
-            # Build donor-friendly informational message
             donor_message = self._build_donor_message(
                 order_details, time_ago_minutes, distance_meters, 
                 best_similarity
             )
             
             return {
-                'is_duplicate': is_high_confidence,
-                'is_possible_duplicate': best_similarity >= self.SIMILARITY_THRESHOLD,
+                'recent_assistance': is_high_confidence,
+                'possible_assistance': best_similarity >= self.MATCH_THRESHOLD,
                 'confidence': 'high' if is_high_confidence else 'medium',
-                'similarity_score': best_similarity,
+                'match_score': best_similarity,
                 'previous_order': {
                     'order_id': best_match.order_id,
                     'status': order_details.status,
@@ -490,19 +495,19 @@ class DuplicateSeekerDetector:
                     'time_ago_minutes': time_ago_minutes,
                     'distance_meters': distance_meters
                 },
-                'message': f'Possible match found - {time_ago_minutes} minutes ago',
+                'message': f'Possible recent assistance found - {time_ago_minutes} minutes ago',
                 'donor_message': donor_message,
-                'show_to_donor': True  # Show info to donor for their awareness
+                'show_to_donor': True
             }
         
-        # 5. No duplicate found
+        # 5. No recent assistance found
         return {
-            'is_duplicate': False,
-            'is_possible_duplicate': False,
+            'recent_assistance': False,
+            'possible_assistance': False,
             'confidence': 'high',
-            'message': 'No recent help detected for this seeker',
+            'message': 'No recent assistance found for this beneficiary',
             'donor_message': 'ℹ️ No recent donations found for this person in the area.',
-            'show_to_donor': False  # No need to show if no duplicate
+            'show_to_donor': False
         }
     
     def _build_donor_message(self, order, time_ago, distance, similarity):
@@ -551,7 +556,7 @@ class DuplicateSeekerDetector:
 **API Endpoints:**
 ```
 POST   /api/v1/safety/assess             # Assess location safety
-POST   /api/v1/safety/check-duplicate    # Check for duplicate seeker (informational only)
+POST   /api/v1/safety/check-beneficiary-history    # Check beneficiary assistance history (informational only)
 GET    /api/v1/safety/history/:location  # Get historical data
 POST   /api/v1/safety/feedback           # Submit delivery feedback
 GET    /api/v1/safety/metrics            # Get safety metrics
@@ -1342,21 +1347,21 @@ CREATE TABLE safety_assessments (
 CREATE INDEX idx_safety_location ON safety_assessments USING GIST(location);
 CREATE INDEX idx_safety_timestamp ON safety_assessments(timestamp);
 
-seeker_detection
+beneficiary_history
 ├── id (UUID, PK)
 ├── order_id (UUID, FK → orders.id)
-├── seeker_photo_url (VARCHAR)
-├── face_embedding (VECTOR(128)) -- Facial recognition vector
+├── beneficiary_photo_url (VARCHAR)
+├── face_embedding (VECTOR(128)) -- Facial recognition vector for assistance history matching
 ├── location (GEOGRAPHY(POINT, 4326))
 ├── timestamp (TIMESTAMP)
-├── is_duplicate (BOOLEAN)
-├── matched_order_id (UUID, FK → orders.id, NULLABLE)
-├── similarity_score (DECIMAL(3,2))
+├── recent_assistance (BOOLEAN)
+├── previous_order_id (UUID, FK → orders.id, NULLABLE)
+├── match_score (DECIMAL(3,2))
 └── metadata (JSONB)
 
-CREATE INDEX idx_seeker_location ON seeker_detection USING GIST(location);
-CREATE INDEX idx_seeker_timestamp ON seeker_detection(timestamp);
-CREATE INDEX idx_seeker_face ON seeker_detection USING ivfflat(face_embedding) WITH (lists = 100); -- For vector similarity search (requires pgvector extension)
+CREATE INDEX idx_history_location ON beneficiary_history USING GIST(location);
+CREATE INDEX idx_history_timestamp ON beneficiary_history(timestamp);
+CREATE INDEX idx_history_face ON beneficiary_history USING ivfflat(face_embedding) WITH (lists = 100); -- For vector similarity search (requires pgvector extension)
 
 -- Delivery feedback table
 CREATE TABLE delivery_feedback (

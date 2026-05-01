@@ -266,7 +266,7 @@ const nearby = await redis.georadius('seekers:active', 77.5946, 12.9716, 1, 'km'
 - Shared instance (slower than dedicated)
 
 **Workaround:** 
-- Use for critical caching only (duplicate detection, session)
+- Use for critical caching only (beneficiary history, session)
 - Fall back to in-memory cache for less critical data
 
 **Deliverables:**
@@ -599,7 +599,7 @@ docker-compose up
 ```markdown
 ### Functionality Testing
 - [ ] End-to-end order flow (donor → delivery → seeker)
-- [ ] Duplicate detection working with test images
+- [ ] Beneficiary assistance history working with test images
 - [ ] Safety scoring calculations accurate
 - [ ] Push notifications received on iOS/Android
 - [ ] SMS OTP delivery working

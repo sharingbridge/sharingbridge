@@ -18,7 +18,7 @@ This document tracks all significant prompts, requests, and changes made to the 
 2. MIME type functionality in Photo Service
 3. Order lifecycle management vs state machine differences
 4. Vendor capacity management (hourly vs daily)
-5. Duplicate seeker detection approach
+5. Beneficiary assistance history approach
 6. Vendor delivery logistics
 7. Direct vendor program automation requirements
 8. Payment handling delegation
@@ -75,7 +75,7 @@ This document tracks all significant prompts, requests, and changes made to the 
 
 ---
 
-#### **C. Duplicate Seeker Detection - Informational Only**
+#### **C. Beneficiary Assistance History - Informational Only**
 
 **Location:** ShareBridge_Technical_Architecture.md - Section 3.3 AI Safety Service
 
@@ -311,7 +311,7 @@ safety_score = (
 **Architecture Improvements:**
 1. ✅ Clearer delivery logistics model (external vs direct vendors)
 2. ✅ More scalable capacity management (hourly vs daily)
-3. ✅ Compassionate duplicate detection (informational vs blocking)
+3. ✅ Compassionate beneficiary assistance history (informational vs blocking)
 4. ✅ Fully automated vendor workflow (no manual steps)
 5. ✅ Simplified safety assessment (API vs ML)
 6. ✅ Cost-optimized approach for MVP ($600-1200/month savings)
@@ -465,7 +465,7 @@ All repositories initialized with git and include:
 6. **sharebridge-integration-service** - Vendor integration (Swiggy, Zomato, etc.)
 7. **sharebridge-notification-service** - Push notifications and alerts
 8. **sharebridge-ai-safety** - Location safety assessment models
-9. **sharebridge-photo-service** - Face detection and duplicate checking
+9. **sharebridge-photo-service** - Face detection and beneficiary assistance history matching
 10. **sharebridge-infra** - Infrastructure as Code (Terraform/CloudFormation)
 11. **sharebridge-deployment** - CI/CD pipelines and deployment scripts
 
@@ -685,11 +685,11 @@ Added visual diagrams showing:
 
 ---
 
-### **Prompt #6: Enhanced Duplicate Detection & New Donation Types**
+### **Prompt #6: Enhanced Beneficiary Assistance History & New Donation Types**
 **Requested by:** VKK  
 **Date:** January 7, 2026  
 **Request:** 
-- Make duplicate detector more lenient considering human factors and app errors
+- Make beneficiary assistance matching more lenient considering human factors and app errors
 - Check last order status and donation type
 - Inform donor with actionable information
 - Add new donation categories: cloth, shelter, blanket, mosquito net, washroom access, miscellaneous
@@ -706,14 +706,14 @@ Updated `orders` table schema to include:
 - `ShareBridge_Technical_Architecture.md` - Data Model (line ~327)
 - `ShareBridge_Technical_Architecture.md` - SQL Schema (line ~1091)
 
-#### **B. More Lenient Duplicate Detection**
-Enhanced `DuplicateSeekerDetector` algorithm:
+#### **B. More Lenient Beneficiary Assistance History Matching**
+Enhanced `BeneficiaryHistoryChecker` algorithm:
 
 **Leniency Improvements:**
 - Similarity threshold: 0.85 → **0.78** (accounts for lighting, angles, facial expressions)
 - Location radius: 100m → **150m** (more flexible proximity matching)
 - Two-tier confidence: High (0.85+) and Medium (0.78-0.84)
-- Auto-allow donations after **90 minutes** even if duplicate detected
+- Auto-allow donations after **90 minutes** even if recent assistance is identified
 
 **Last Order Tracking:**
 - Returns previous order status (pending, confirmed, in_progress, completed, cancelled)
@@ -726,7 +726,7 @@ Enhanced `DuplicateSeekerDetector` algorithm:
 - Clear status of previous order: "was successfully delivered", "is in delivery", etc.
 - Confidence level: "very likely" (85%+) vs "possibly" (78-84%)
 - Actionable guidance: "✅ You may proceed if you believe this is a genuine need"
-- Warning symbols for visibility: ⚠️ for possible duplicates, ✅ for proceed options
+- Warning symbols for visibility: ⚠️ for possible recent assistance, ✅ for proceed options
 
 **Example Donor Message:**
 ```
@@ -738,7 +738,7 @@ Previous order was successfully delivered.
 ```
 
 **Files Modified:**
-- `ShareBridge_Technical_Architecture.md` - Duplicate Detection section (line ~388-512)
+- `ShareBridge_Technical_Architecture.md` - Beneficiary Assistance History section (line ~388-512)
 
 **Rationale:** 
 - Balances fraud prevention with compassion for genuine recurring needs

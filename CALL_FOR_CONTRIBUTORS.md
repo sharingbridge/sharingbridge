@@ -114,7 +114,7 @@ Repositories:** `ShareBridge-ai-safety`, `ShareBridge-photo-service`
 
 **What We Need:**
 - **Computer Vision Specialists** → `ShareBridge-photo-service`
-  - Face detection and duplicate seeker identification
+  - Face detection and beneficiary assistance history matching
   - Privacy-preserving photo verification
   
 - **Location Intelligence Engineers** → `ShareBridge-ai-safety`
@@ -395,7 +395,7 @@ Each repository contains:
 **AI/ML Repositories:**
 - `ShareBridge-ai-safety` - Location safety assessment models
   - `prompting/` - AI model prompts, training data descriptions
-- `ShareBridge-photo-service` - Face detection and duplicate checking
+- `ShareBridge-photo-service` - Face detection and beneficiary assistance history matching
   - `prompting/` - Computer vision prompts, privacy requirements
 
 **Infrastructure Repositories:**

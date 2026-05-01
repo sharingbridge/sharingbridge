@@ -8,7 +8,7 @@ ShareBridge is a mobile/web application that enables donors to provide food and 
 
 ### **Core Workflow:**
 1. **Location Safety Check** - Donor spots seeker, captures location; AI validates safety before engagement
-2. **Duplicate Check** - System checks if seeker already received help recently (using photo matching + location proximity) and provides informational context to donor - never blocks donations
+2. **Beneficiary Assistance History** - System checks whether the beneficiary has recently received support (using photo matching + location proximity) and provides contextual information to the donor without blocking donations
 3. **Donor Interaction** - Donor engages seeker, obtains consent for food order and identification photo
 4. **Order Placement** - Integration with external food delivery platforms (Zomato, Swiggy, etc.) or direct vendors, with secure beneficiary data sharing via time-limited links or manual instructions
 5. **Payment** - For external vendors: redirected to vendor's payment gateway. For direct vendors: Razorpay/Stripe integration (ShareBridge never handles payment directly)
@@ -101,11 +101,11 @@ Enable multiple people to contribute to a single order when one person cannot af
   - Lighting conditions (time-of-day aware)
   - Public vs isolated area detection
   - Historical delivery success rate
-- Duplicate seeker detection:
+- Beneficiary assistance history:
   - Facial recognition matching (AI-powered)
   - Location proximity check (within 100m)
   - Time-based filtering (configurable: default 2 hours)
-  - Alert donor if seeker recently helped
+  - Inform donor if beneficiary recently received help
 - Delivery crew feedback integration
 
 **4. Integration Layer**
@@ -141,7 +141,7 @@ Enable multiple people to contribute to a single order when one person cannot af
 - **Mobile:** React Native / Flutter
 - **Backend:** Node.js / Python (Django/FastAPI)
 - **Safety Assessment:** API-based (Google Maps, Places, OpenWeather) with rule-based scoring; Custom ML optional at scale (5000+ orders/day)
-- **Face Recognition:** Pre-trained models (FaceNet/DeepFace) for duplicate detection
+- **Face Recognition:** Pre-trained models (FaceNet/DeepFace) for beneficiary assistance history matching
 - **Database:** PostgreSQL with PostGIS for location data
 - **Cloud:** AWS/Azure/GCP
 - **APIs:** Food delivery platform APIs, Logistics partner APIs (Dunzo/Porter/Shadowfax)

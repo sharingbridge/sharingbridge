@@ -1672,11 +1672,11 @@ Authorization: Bearer <JWT_TOKEN>
 
 ```
 POST /api/v1/auth/register
-Body: { phone_number, name, email? }
+Body: { phone_number, name, email }  # Email required for MVP OTP
 Response: { user, token }
 
 POST /api/v1/auth/login
-Body: { phone_number, otp }
+Body: { email, otp }  # MVP uses email OTP; future: phone_number + SMS OTP
 Response: { user, token }
 
 POST /api/v1/auth/refresh
@@ -1769,15 +1769,21 @@ Response: { orders[], stats: { total_donations, total_amount } }
 
 ### 6.1 Authentication & Authorization
 
-**Authentication Flow:**
+**MVP Authentication Flow (No SMS OTP):**
 ```
-1. User enters phone number
-2. OTP sent via SMS (Twilio)
-3. User enters OTP
+1. User enters phone number and email
+2. OTP sent via email (for MVP simplicity)
+3. User enters OTP from email
 4. Server validates OTP
 5. JWT token issued (access + refresh)
 6. Client stores token securely
 ```
+
+**Future Authentication Options:**
+- SMS OTP (Twilio) for production
+- OAuth 2.0 (Google, Facebook)
+- SSO integration
+- App-based TOTP (Google Authenticator)
 
 **JWT Structure:**
 ```json

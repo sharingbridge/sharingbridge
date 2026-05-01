@@ -10,9 +10,9 @@ ShareBridge is a mobile/web application that enables donors to provide food and 
 1. **Location Safety Check** - Donor spots seeker, captures location; AI validates safety before engagement
 2. **Duplicate Check** - System checks if seeker already received help recently (using photo matching + location proximity) and provides informational context to donor - never blocks donations
 3. **Donor Interaction** - Donor engages seeker, obtains consent for food order and identification photo
-4. **Order Placement** - Integration with external food delivery platforms (Zomato, Swiggy, etc.) or direct vendors
+4. **Order Placement** - Integration with external food delivery platforms (Zomato, Swiggy, etc.) or direct vendors, with secure beneficiary data sharing via time-limited links or manual instructions
 5. **Payment** - For external vendors: redirected to vendor's payment gateway. For direct vendors: Razorpay/Stripe integration (ShareBridge never handles payment directly)
-6. **Delivery** - Delivery personnel identify seeker using photo, complete handover
+6. **Delivery** - Delivery personnel access secure beneficiary identification data (location, facial description, photo) via one-time NDA-protected links, identify seeker, complete handover, and report completion
 7. **Confirmation** - Delivery photo captured and shared with donor for transparency
 
 ### **Extended Features:**

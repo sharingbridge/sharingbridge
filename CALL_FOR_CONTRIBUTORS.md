@@ -96,7 +96,7 @@ The easiest way to contribute is through **GitHub Discussions**:
   
 - **Full-Stack Engineers**
   - End-to-end feature implementation across repos
-  - API integration with Swiggy, Zomato, Uber Eats → `ShareBridge-integration-service`
+  - Deep link integration with Swiggy, Zomato, Uber Eats (secure beneficiary data sharing) → `ShareBridge-integration-service`
   
 **Technologies:** React Native, Flutter, React, Node.js, Python, PostgreSQL, MongoDB, Redis, Docker, Kubernetes
 

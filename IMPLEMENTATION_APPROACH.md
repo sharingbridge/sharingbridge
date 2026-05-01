@@ -476,18 +476,38 @@ class DirectVendorService {
 **Growth Phase (Months 4-6):**
 ```javascript
 // Add: Partnership discussions with Swiggy/Zomato
-// Implementation: Deep link integration (fallback)
+// Implementation: Deep link integration with secure beneficiary data sharing
 
 class ExternalVendorService {
   async createOrder(orderData) {
-    // Generate deep link to vendor platform
-    const paymentLink = await this.generateVendorLink(
-      'swiggy',
-      orderData
+    // 1. Generate secure, time-limited beneficiary data link
+    const secureLink = await this.generateSecureBeneficiaryLink(
+      orderData.seekerPhoto,
+      orderData.seekerLocation,
+      orderData.facialDescription
     );
     
-    // Redirect donor to vendor's payment page
-    return { paymentLink, vendor: 'swiggy' };
+    // 2. Generate deep link with embedded secure instructions
+    const paymentLink = await this.generateVendorLink(
+      'swiggy',
+      orderData,
+      secureLink
+    );
+    
+    // 3. Return link for donor to complete order with vendor
+    return { paymentLink, vendor: 'swiggy', secureLink };
+  }
+  
+  async generateSecureBeneficiaryLink(photoUrl, location, description) {
+    // Create encrypted, expiring link for delivery personnel
+    // NDA-protected, one-time access
+    return await this.createTimeLimitedAccessLink({
+      photoUrl,
+      location,
+      description,
+      expiresIn: '2 hours',
+      accessType: 'delivery_personnel_only'
+    });
   }
 }
 ```

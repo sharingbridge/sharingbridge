@@ -675,15 +675,27 @@ class PorterAdapter implements LogisticsAdapter { ... }
 class ShadowfaxAdapter implements LogisticsAdapter { ... }
 ```
 
-**Deep Link Flow (External Vendors - Swiggy/Zomato/UberEats):**
-1. ShareBridge creates order via vendor API
-2. Vendor returns order ID and payment link
-3. ShareBridge generates deep link: `ShareBridge://order/{orderId}/payment?vendor=swiggy&link={encoded_payment_url}`
-4. App opens vendor's payment page (in-app browser or native app)
-5. User completes payment on vendor platform
-6. Vendor webhook notifies ShareBridge of payment confirmation
-7. Vendor's delivery fleet handles pickup and delivery to seeker
-8. ShareBridge tracks status updates via webhook
+**Deep Link Flow (External Vendors - Swiggy/Zomato/UberEats) with Secure Beneficiary Data:**
+1. ShareBridge creates order intent with beneficiary data
+2. Generate secure, time-limited link containing beneficiary identification details (location, facial description, photo URL)
+3. Embed secure link in vendor-specific deep link or instruction text
+4. ShareBridge generates deep link: `swiggy://order?cart={encoded_cart}&instructions={secure_link_instructions}`
+5. App opens vendor's order page (in-app browser or native app)
+6. User completes order on vendor platform, instructions include secure beneficiary data access
+7. Vendor assigns delivery executive who agrees to NDA for data access
+8. Delivery executive accesses secure link for one-time beneficiary identification
+9. Executive locates and delivers to beneficiary using provided details
+10. Executive reports delivery completion via secure link endpoint
+11. ShareBridge receives delivery confirmation and updates status
+12. Secure link auto-expires, preventing further data access
+
+**Interim Manual Flow (MVP - No API Access):**
+1. Donor captures beneficiary photo in ShareBridge app
+2. App generates instruction text with secure beneficiary data link
+3. App provides copy-paste functionality for instructions
+4. Donor manually pastes instructions into vendor's delivery notes field
+5. Vendor processes order with embedded secure access instructions
+6. Delivery follows same secure NDA-protected process as above
 
 **Logistics Flow (Pledged Vendors - Direct Orders):**
 1. Donor pays via ShareBridge payment gateway (Razorpay/Stripe)
@@ -1817,6 +1829,14 @@ Response: { orders[], stats: { total_donations, total_amount } }
 - Location tracking consent
 - SMS/Push notification consent
 
+**Beneficiary Data Protection in Delivery Integration:**
+- Secure, time-limited links for beneficiary identification data
+- One-time access tokens for delivery personnel
+- NDA requirement for delivery partners accessing beneficiary data
+- Automatic data expiration post-delivery
+- No permanent data storage on third-party platforms
+- Encrypted photo storage with access controls
+
 ---
 
 ## 7. Integration Architecture
@@ -1849,22 +1869,58 @@ Challenges:
 - Vendor-specific business rules
 ```
 
-**Strategy 2: Deep Link Integration (Fallback)**
-```
-Flow:
-1. ShareBridge creates order intent (local database)
-2. Generate vendor-specific deep link with pre-filled cart
-3. Redirect user to vendor app/website
-4. User completes order on vendor platform
-5. Vendor sends callback/webhook on order status
-6. ShareBridge updates local order status
+**Strategy 2: Deep Link Integration with Secure Beneficiary Data Sharing (Fallback)**
 
-Limitations:
+**Privacy-First Approach:**
+To address privacy concerns with sharing beneficiary personal details, pictures, and locations, implement secure data sharing mechanisms:
+
+**Secure Link Generation:**
+- Generate time-limited, one-time access secure links for beneficiary data
+- Links contain encrypted beneficiary location, facial features description, and photo storage location
+- Access restricted to specific delivery personnel only
+- Automatic expiration after delivery completion or configurable time window (e.g., 2 hours)
+
+**Delivery Personnel NDA and Access Control:**
+- Delivery personnel must agree to Non-Disclosure Agreement (NDA) before accessing beneficiary data
+- One-time access tokens prevent data reuse or sharing
+- Audit logging of all data access attempts
+
+**Deep Link Flow with Privacy Protection:**
+```
+1. ShareBridge creates order intent with beneficiary data (local database)
+2. Generate secure external link containing:
+   - Beneficiary location coordinates
+   - Facial features description (AI-generated from photo)
+   - Secure photo storage URL (encrypted, time-limited access)
+   - Delivery completion reporting endpoint
+3. Embed secure link in vendor-specific deep link or instruction field
+4. Redirect user to vendor app/website with pre-filled cart and instructions
+5. User completes order on vendor platform
+6. Delivery personnel access secure link via app instructions
+7. Personnel uses description and photo to locate/identify beneficiary
+8. Personnel reports delivery completion via secure link endpoint
+9. ShareBridge receives webhook/callback on delivery status
+10. Secure link auto-expires, data inaccessible
+
+Interim Manual Approach (MVP):
+- App provides copy-paste option after beneficiary photo capture
+- Generate instruction text with secure link and identification details
+- User manually pastes into vendor's delivery instruction field
+- Delivery personnel follow same NDA and secure access process
+```
+
+**Limitations:**
 - Less control over order flow
 - Dependency on vendor callback reliability
 - User leaves ShareBridge app temporarily
 - Payment tracking complexity
-```
+- Manual interim step requires user action
+
+**Benefits:**
+- Zero permanent data sharing with third parties
+- Time-limited access prevents data misuse
+- Maintains beneficiary privacy and dignity
+- Enables accurate delivery identification without compromising security
 
 **Strategy 3: Direct Vendor Program with Automated Integration (MVP Approach)**
 ```

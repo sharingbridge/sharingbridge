@@ -11,9 +11,12 @@ ShareBridge is a mobile/web application that enables donors to provide food and 
 2. **Beneficiary Assistance History** - System checks whether the beneficiary has recently received support (using photo matching + location proximity) and provides contextual information to the donor without blocking donations
 3. **Donor Interaction** - Donor engages seeker, obtains consent for food order and identification photo
 4. **Order Placement** - Integration with external food delivery platforms (Zomato, Swiggy, etc.) or direct vendors, with secure beneficiary data sharing via time-limited links or manual instructions
+   - Donors can pre-store preferred restaurant/vendor deep links and menu item templates in ShareBridge so the app can surface ready-made order options during the seeker interaction without typing.
+   - Donor interaction should capture seeker details, generate structured delivery instructions and beneficiary descriptions via AI, and present a ready-made deep-link order option.
 5. **Payment** - For external vendors: redirected to vendor's payment gateway. For direct vendors: Razorpay/Stripe integration (ShareBridge never handles payment directly)
-6. **Delivery** - Delivery personnel access secure beneficiary identification data (location, facial description, photo) via one-time NDA-protected links, identify seeker, complete handover, and report completion
+6. **Delivery** - Delivery personnel access secure beneficiary identification data (location, facial description, photo) via one-time NDA-protected links, identify seeker through the app directly, complete handover, submit delivery experience/notes, and report completion
 7. **Confirmation** - Delivery photo captured and shared with donor for transparency
+8. **Dashboard & Analytics** - Donors and admins can view nearby orders on a map-style dashboard, including the top 100 nearby orders and order status trends.
 
 ### **Extended Features:**
 

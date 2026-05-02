@@ -696,9 +696,9 @@ class ShadowfaxAdapter implements LogisticsAdapter { ... }
 
 **Interim Manual Flow (MVP - No API Access):**
 1. Donor captures beneficiary photo in ShareBridge app
-2. App generates instruction text with secure beneficiary data link
+2. App surfaces donor's pre-stored preferred deep-link order options and generates secure beneficiary instruction text
 3. App provides copy-paste functionality for instructions
-4. Donor manually pastes instructions into vendor's delivery notes field
+4. Donor selects the ready-made deep-link option and pastes instructions into vendor's delivery notes field, without typing during the seeker interaction
 5. Vendor processes order with embedded secure access instructions
 6. Delivery follows same secure NDA-protected process as above
 
@@ -1901,13 +1901,14 @@ To address privacy concerns with sharing beneficiary personal details, pictures,
 1. ShareBridge creates order intent with beneficiary data (local database)
 2. Generate secure external link containing:
    - Beneficiary location coordinates
-   - Facial features description (AI-generated from photo)
+   - Facial features description (AI-generated from photo or local LLM inference)
    - Secure photo storage URL (encrypted, time-limited access)
    - Delivery completion reporting endpoint
+   - Structured instruction payload for vendor notes and delivery personnel guidance
 3. Embed secure link in vendor-specific deep link or instruction field
-4. Redirect user to vendor app/website with pre-filled cart and instructions
+4. Redirect user to vendor app/website with pre-filled cart and instructions selected from the donor's saved deep-link order options, so no typing is required during seeker interaction
 5. User completes order on vendor platform
-6. Delivery personnel access secure link via app instructions
+6. Delivery personnel access secure link via app instructions and identify the seeker through the delivery app using AI-backed description/photo guidance
 7. Personnel uses description and photo to locate/identify beneficiary
 8. Personnel reports delivery completion via secure link endpoint
 9. ShareBridge receives webhook/callback on delivery status
@@ -2366,6 +2367,11 @@ Threshold: >= 0.65 for approval
 # 6. Internal Database - Historical delivery success rate
 # 7. Optional: Public crime data APIs (government open data)
 ```
+
+**Hybrid AI Strategy: Remote + Local LLM**
+- Primary model: remote AI service APIs to generate structured delivery instructions and beneficiary descriptions.
+- Optional local LLM/on-device inference: capture text descriptions at donor interaction and assist delivery personnel when connectivity is limited or privacy-sensitive.
+- Structured response payloads are expected to include fields such as `delivery_instructions`, `beneficiary_description`, `order_template`, `privacy_notes`, and `delivery_notes`.
 
 **Implementation (Rule-Based Scoring):**
 ```python

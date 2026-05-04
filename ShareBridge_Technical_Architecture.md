@@ -3,11 +3,29 @@
 **Project:** ShareBridge - Digital Alms Platform  
 **Version:** 1.0  
 **Date:** December 25, 2025  
-**Status:** Design Phase
+**Status:** Design Phase  
+**Last aligned (normative product assumptions):** May 4, 2026
+
+---
+
+## Normative product assumptions
+
+Technical design in this document must remain consistent with the BRD section **“Product truths & operating assumptions”** in `ShareBridge_Business_Requirement.md`. In particular:
+
+- **Beneficiaries are not product users** (no seeker login, accounts, or role obligations). Any “beneficiary coordinator” or delivery role in this document refers to **helpers with accounts**, not to the person receiving aid.
+- **Naming:** Legacy references to a “seeker app” mean **ShareBridge**; beneficiaries remain unregistered.
+- **Money:** ShareBridge services must **not** implement an authoritative financial ledger, settlement, or merchant-of-record behavior. Store only **non-authoritative** coordination state (and external references) as narrowly as each service requires; payments stay with **vendors and licensed payment providers**.
+- **Pledges / crowdfunding:** Treat as **voluntary intent and coordination** until orchestration and refund flows are explicitly specified; design message queues and APIs so financial truth stays external.
+- **Progressive quality:** Privacy controls, retention, and unhappy-path behavior may start minimal and **tighten iteratively**; document deltas in issues or short ADRs when behavior changes.
+
+Where this architecture document implies otherwise (for example detailed pledge or ledger schemas), interpret those as **proposed implementation sketches** subject to the BRD product truths until explicitly revised.
 
 ---
 
 ## Table of Contents
+
+- **[Normative product assumptions](#normative-product-assumptions)** (read before implementation details)
+
 1. [System Overview](#1-system-overview)
 2. [Architecture Diagram](#2-architecture-diagram)
 3. [Component Architecture](#3-component-architecture)

@@ -1,3 +1,8 @@
+[Historical note — May 2026]
+This file is the original one-time requirement. The living spec is ShareBridge_Business_Requirement.md (section "Product truths & operating assumptions" is normative). Early working name "seeker app" became ShareBridge; beneficiaries are not registered users.
+
+---
+
 ShareBridge Mobile/Web App
 Need:
 •	When someone seeks alms on our way we get a dilemma whether to offer money for food or consider if the money could be used for wrong purposes. Need a mechanism to ensure money gets spent only on food and basic needs 

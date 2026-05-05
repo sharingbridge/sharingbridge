@@ -11,12 +11,7 @@ ShareBridge is a mobile/web application that enables donors to provide food and 
 
 ## Contributor notes (read this first)
 
-Normative intent for contributors is captured in the BRD section **“Operating Constraints & Assumptions”** in [ShareBridge_Business_Requirement.md](ShareBridge_Business_Requirement.md). In short:
-
-- **Beneficiaries (alms seekers) are not registered users** and are not bound to any product role.
-- ShareBridge is a **facilitator**; it **does not own financial tracking responsibility** (no authoritative money ledger; payments and balances live with vendors and licensed payment providers).
-- **Pledges / community assist** express **voluntary intent**; orchestration and unhappy paths are refined **over time** in an agile cadence.
-- Coordination between repos is **lightweight** (e.g. discussions, weekly cadence)—see the BRD for the full wording.
+Product-level assumptions are maintained in one place: [ShareBridge_Business_Requirement.md](ShareBridge_Business_Requirement.md), section **“Operating Constraints & Assumptions.”** Refer to that section as the source of truth.
 
 **🤖 AI-Powered Development:** This project is being built primarily through AI-assisted development. Code, documentation, and infrastructure are generated using carefully crafted prompts. All prompts are stored in [PROMPTS.md](PROMPTS.md) and in each repository's `prompting/` folder for transparency and reproducibility.
 

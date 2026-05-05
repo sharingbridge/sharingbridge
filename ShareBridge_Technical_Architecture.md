@@ -4,26 +4,21 @@
 **Version:** 1.0  
 **Date:** December 25, 2025  
 **Status:** Design Phase  
-**Last aligned (normative product assumptions):** May 4, 2026
+**Last aligned (operating assumptions):** May 5, 2026
 
 ---
 
-## Normative product assumptions
+## Assumptions Reference
 
-Technical design in this document must remain consistent with the BRD section **“Operating Constraints & Assumptions”** in `ShareBridge_Business_Requirement.md`. In particular:
+For product-level assumptions, use [ShareBridge_Business_Requirement.md](ShareBridge_Business_Requirement.md), section **“Operating Constraints & Assumptions”** as the single source of truth.
 
-- **Beneficiaries are not product users** (no seeker login, accounts, or role obligations). Any “beneficiary coordinator” or delivery role in this document refers to **helpers with accounts**, not to the person receiving aid.
-- **Money:** ShareBridge services must **not** implement an authoritative financial ledger, settlement, or merchant-of-record behavior. Store only **non-authoritative** coordination state (and external references) as narrowly as each service requires; payments stay with **vendors and licensed payment providers**.
-- **Pledges / crowdfunding:** Treat as **voluntary intent and coordination** until orchestration and refund flows are explicitly specified; design message queues and APIs so financial truth stays external.
-- **Progressive quality:** Privacy controls, retention, and unhappy-path behavior may start minimal and **tighten iteratively**; document deltas in issues or short ADRs when behavior changes.
-
-Where this architecture document implies otherwise (for example detailed pledge or ledger schemas), interpret those as **proposed implementation sketches** subject to BRD operating constraints until explicitly revised.
+If this architecture document conflicts with that BRD section (for example in proposed pledge or ledger schemas), follow the BRD.
 
 ---
 
 ## Table of Contents
 
-- **[Normative product assumptions](#normative-product-assumptions)** (read before implementation details)
+- **[Assumptions Reference](#assumptions-reference)** (single source of truth in BRD)
 
 1. [System Overview](#1-system-overview)
 2. [Architecture Diagram](#2-architecture-diagram)

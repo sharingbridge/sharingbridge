@@ -18,7 +18,7 @@ This document provides two implementation paths for ShareBridge:
 **Production Budget:** $255/month → $3,750/month (scaling)  
 **Team Size:** 3-5 engineers
 
-**Normative product context:** Technical and infra work in this roadmap must stay aligned with [ShareBridge_Business_Requirement.md](ShareBridge_Business_Requirement.md) — section **“Operating Constraints & Assumptions”**: beneficiaries are not registered users; ShareBridge does not own financial tracking responsibility (no authoritative platform ledger); pledges and community assist are **voluntary coordination** until orchestration is fully specified; privacy and unhappy paths may tighten iteratively.
+**Product assumptions reference:** Use [ShareBridge_Business_Requirement.md](ShareBridge_Business_Requirement.md), section **“Operating Constraints & Assumptions”** as the source of truth for product-level assumptions.
 
 ---
 

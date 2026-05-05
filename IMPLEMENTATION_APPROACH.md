@@ -26,9 +26,9 @@ This document provides two implementation paths for ShareBridge:
 
 ### Overview
 
-Develop and test all ShareBridge components using **100% free platforms** with no upfront infrastructure costs. Migrate to production AWS infrastructure only when all components are ready.
+Develop and test all ShareBridge components using free-tier platforms with near-zero upfront infrastructure costs. Migrate to production AWS infrastructure only when all components are ready.
 
-**Total Development Cost:** $0  
+**Total Development Cost Target:** ~$0 (within free-tier limits)  
 **Migration Time:** 1 week  
 **Migration Cost:** Minimal (containerized architecture)
 
@@ -42,7 +42,7 @@ Develop and test all ShareBridge components using **100% free platforms** with n
 | **Backend API** | Render.com / Railway.app | 512MB RAM, sleeps after inactivity | Deploy to AWS EC2/ECS |
 | **File Storage** | Cloudinary Free Tier | 25GB storage, 25GB bandwidth | Migrate to AWS S3 |
 | **Redis Cache** | Upstash Redis | 10K commands/day | Migrate to AWS ElastiCache |
-| **Message Queue** | Upstash Kafka Free / Redis Pub/Sub | Limited throughput | Migrate to AWS SQS/SNS |
+| **Message Queue** | Redis Streams / Redis Pub/Sub (Upstash Redis) | Limited throughput | Migrate to AWS SQS/SNS |
 | **SMS/OTP** | (Optional/Future) | Not enabled for MVP | Enable if needed |
 | **Email** | Resend.io / Brevo (Sendinblue) | 100 emails/day | Upgrade to SendGrid |
 | **Push Notifications** | Firebase FCM | Unlimited (free forever) | Keep Firebase |
@@ -284,31 +284,21 @@ const nearby = await redis.georadius('seekers:active', 77.5946, 12.9716, 1, 'km'
 
 ### **Week 1-2: Message Queue**
 
-**Platform:** Upstash Kafka (Free tier) or Redis Pub/Sub
+**Platform:** Redis Streams / Redis Pub/Sub (Upstash Redis free tier)
 
 ```javascript
-// Option 1: Upstash Kafka (better for production-like testing)
-const { Kafka } = require('@upstash/kafka');
+// Option 1: Redis Pub/Sub (simpler, uses existing Redis quota)
+await redis.publish('order-created', JSON.stringify({ orderId: '123' }));
 
-const kafka = new Kafka({
-  url: 'https://your-kafka.upstash.io',
-  username: 'user',
-  password: 'pass'
-});
-
-// Publish event
-await kafka.producer().produce('order-created', {
+// Option 2: Redis Streams (replay + consumer groups)
+await redis.xadd('events:order-created', '*', {
   orderId: '123',
   donorId: 'donor456'
 });
-
-// Option 2: Redis Pub/Sub (simpler, uses existing Redis quota)
-await redis.publish('order-created', JSON.stringify({ orderId: '123' }));
 ```
 
 **Limitations:**
-- Upstash Kafka: Limited messages/day
-- Redis: Counts against 10K command quota
+- Redis free tier: commands/day and storage limits
 
 **Workaround:** Queue only critical events during dev/test
 
@@ -340,8 +330,7 @@ await resend.emails.send({
 ```
 
 **Deliverables:**
-- [ ] Twilio trial configured
-- [ ] OTP delivery working
+- [ ] Email OTP delivery working
 - [ ] Resend.io configured
 - [ ] Email templates created
 - [ ] Retry logic implemented
@@ -502,12 +491,14 @@ class ExternalVendorService {
   
   async generateSecureBeneficiaryLink(photoUrl, location, description) {
     // Create encrypted, expiring link for delivery personnel
-    // NDA-protected, one-time access
+    // Technical access controls only:
+    // role-scoped token, watermark/no-download where possible,
+    // and expiry at delivery completion + 30 minutes.
     return await this.createTimeLimitedAccessLink({
       photoUrl,
       location,
       description,
-      expiresIn: '2 hours',
+      expiresAt: 'delivery_completion_plus_30_minutes',
       accessType: 'delivery_personnel_only'
     });
   }
@@ -604,7 +595,7 @@ docker-compose up
 - [ ] Beneficiary assistance history working with test images
 - [ ] Safety scoring calculations accurate
 - [ ] Push notifications received on iOS/Android
-- [ ] SMS OTP delivery working
+- [ ] Email OTP delivery working
 - [ ] Email receipts delivered
 
 ### Performance Testing
@@ -892,7 +883,7 @@ aws sqs create-queue --queue-name sharebridge-order-created
 aws sqs create-queue --queue-name sharebridge-order-completed
 
 # 2. Update application code
-# Replace Upstash Kafka with AWS SQS SDK
+# Replace Redis Streams/PubSub queue path with AWS SQS SDK
 const AWS = require('aws-sdk');
 const sqs = new AWS.SQS({ region: 'us-east-1' });
 
@@ -1593,12 +1584,11 @@ function getDBReplica(region) {
 
 ### Week 15-16: Message Queue Migration
 
-#### Step 3.3: Migrate from RabbitMQ to AWS SQS/SNS
+#### Step 3.3: Migrate from Redis Streams/PubSub (MVP) to AWS SQS/SNS
 ```javascript
-// Before: RabbitMQ (single region)
-const amqp = require('amqplib');
-const connection = await amqp.connect('amqp://localhost');
-const channel = await connection.createChannel();
+// Before: Redis Streams / PubSub (MVP)
+await redis.xadd('events:order-created', '*', { orderId: '123' });
+await redis.publish('order-created', JSON.stringify({ orderId: '123' }));
 
 // After: AWS SQS (multi-region)
 const AWS = require('aws-sdk');
@@ -1655,9 +1645,9 @@ aws sns subscribe \
 - [ ] Queue subscriptions configured
 - [ ] Message consumers migrated
 - [ ] Dead letter queues configured
-- [ ] RabbitMQ gracefully decommissioned
+- [ ] Redis queue paths retired for production traffic
 
-**Cost Savings:** $200/month (RabbitMQ ops) → $5/month (SQS)
+**Operational Shift:** Redis queue logic for MVP simplicity → managed SQS/SNS for scale and reliability
 
 ---
 
@@ -1893,8 +1883,8 @@ aws rds delete-db-instance --db-instance-identifier sharebridge-asia-south-repli
 # Phase 2 Rollback: Revert to single region
 aws route53 change-resource-record-sets --hosted-zone-id Z123 --change-batch file://rollback-dns.json
 
-# Phase 3 Rollback: Revert to RabbitMQ
-kubectl apply -f k8s/rabbitmq-deployment.yaml
+# Phase 3 Rollback: Revert to Redis Streams/PubSub queue path
+# (keep the Redis-based MVP event path available as fallback)
 
 # Database Rollback: Drop new indexes (if causing issues)
 DROP INDEX CONCURRENTLY idx_orders_location_gist;

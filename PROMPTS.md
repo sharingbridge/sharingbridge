@@ -2,6 +2,11 @@
 
 This document tracks all significant prompts, requests, and changes made to the ShareBridge project architecture and documentation.
 
+**Important:** This is a historical prompt log. Some older prompt outcomes may no longer represent the current project direction. For active product/architecture decisions, use:
+- `ShareBridge_Business_Requirement.md` (Operating Constraints & Assumptions)
+- `ShareBridge_Technical_Architecture.md` (Assumptions Reference)
+- `IMPLEMENTATION_APPROACH.md` (current execution path)
+
 **Note:** Prompts are listed in reverse chronological order (latest first, with highest number at top).
 
 ---

@@ -7,14 +7,16 @@ When encountering people seeking alms, donors face a moral dilemma: offering cas
 ShareBridge is a mobile/web application that enables donors to provide food and essential items to alms seekers through verified third-party delivery services, eliminating cash transactions while maintaining dignity and convenience for both parties. **The platform acts as a facilitator only - all payments are processed directly through the vendor's payment system.**
 
 ### **Core Workflow:**
-1. **Spot and Consent** - Donor meets a beneficiary, asks if food help is needed, and gets consent to take an identification photo for delivery.
-2. **Quick Safety Check** - App checks whether the delivery location is reasonably safe and practical.
-3. **Create Order Intent** - Donor captures beneficiary context and chooses a prepared order option.
-4. **Place Order** - Order is created through external food delivery platforms (or direct-vendor flows as they mature).
-5. **Pay Externally** - Donor completes payment in vendor or licensed provider systems.
-6. **Deliver and Verify** - Delivery personnel identify the beneficiary and complete handover; delivery photo/evidence is captured.
-7. **Confirm to Donor** - Donor receives completion status and verification details.
-8. **View History** - Donors/admins can see nearby and past order outcomes.
+1. **Donor Setup (Before Field Use)** - Donor configures preferred vendor deep links, menu templates, and payment redirect preferences so orders can be placed quickly when needed.
+2. **Real-World Trigger** - Workflow starts only when an alms seeker approaches the donor and asks for help.
+3. **Initial Conversation and Consent** - Donor confirms food help intent and gets consent to capture beneficiary details/photo for delivery identification.
+4. **Quick Safety Check (Early)** - During this initial interaction, the app checks whether delivery at the current location is reasonably safe and practical.
+5. **Create Order Intent** - Donor captures beneficiary context and chooses a prepared order option.
+6. **Place Order** - Order is created through external food delivery platforms (or direct-vendor flows as they mature).
+7. **Pay Externally** - Donor completes payment in vendor or licensed provider systems.
+8. **Deliver and Verify** - Delivery personnel identify the beneficiary and complete handover; delivery photo/evidence is captured.
+9. **Confirm to Donor** - Donor receives completion status and verification details.
+10. **View History** - Donors/admins can see nearby and past order outcomes.
 
 ## **Operating Constraints & Assumptions (Current)**
 

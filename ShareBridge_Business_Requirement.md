@@ -6,7 +6,7 @@ When encountering people seeking alms, donors face a moral dilemma: offering cas
 ## **Solution**
 ShareBridge is a mobile/web application that enables donors to provide food and essential items to alms seekers through verified third-party delivery services, eliminating cash transactions while maintaining dignity and convenience for both parties. **The platform acts as a facilitator only - all payments are processed directly through the vendor's payment system.**
 
-### **Core Workflow (Primary Journey):**
+### **Core Workflow:**
 1. **Spot and Consent** - Donor meets a beneficiary, asks if food help is needed, and gets consent to take an identification photo for delivery.
 2. **Quick Safety Check** - App checks whether the delivery location is reasonably safe and practical.
 3. **Create Order Intent** - Donor captures beneficiary context and chooses a prepared order option.
@@ -26,44 +26,6 @@ This section defines the current product constraints for volunteer-led, agile de
 - **Pledges and community pools:** Pledges describe **voluntary intent** from willing participants, **not legally binding commitments** and not a regulated pooled account unless a future scope explicitly says otherwise (with professional advice). **Orchestration**—who gets notified when, how intent becomes a fulfilled order, expiry, partial fulfillment, cancellation—**is not fully specified yet** and will be designed as those features mature.
 - **Direct vendor program:** Directionally clear (capacity-based, dignity-first); **end-to-end flows are not fully specified** yet. The same rule applies: **no platform-owned financial responsibility.**
 
-### **Extended Features:**
-
-#### **1. Pledge Pool System (Advance Donations)**
-Donors can pledge money in advance for future seekers they haven't met yet.
-- **How it works:**
-  - Donors pledge amount (₹100, ₹500, ₹1000, etc.) to a common pool
-  - When any donor encounters a seeker, they can use pledged funds instead of paying directly
-  - Pledges can be earmarked (location-based, time-based, or general)
-  - Real-time dashboard shows pledge utilization
-- **Benefits:** Enables giving even when not physically present, creates community fund
-- **Orchestration (TBD):** Matching pledges to live encounters, notifications to pledgors and other parties, expiry, cancellation, and visibility rules are **to be designed** as the feature set matures—without the platform taking on financial tracking responsibility.
-
-#### **2. Direct Vendor Program (Capacity-Based)**
-Small food vendors/restaurants pledge their donation capacity without preparing food in advance.
-- **How it works:**
-  - Vendors register and pledge: "Can prepare X meals, ready in Y minutes, valid for Z hours"
-  - System maintains real-time capacity inventory per vendor
-  - When order comes, system checks nearest vendor with available capacity
-  - Vendor confirms and starts preparation only after order placed
-  - Real-time reconciliation: capacity decremented on order, restored on completion/cancellation
-  - Vendors set hourly capacity limits and preparation windows (e.g., 8 meals at 11 AM, 10 meals at 12 PM)
-  - System sends batch notifications (e.g., "3 orders in your area, prepare now")
-  - Vendors receive social recognition badges based on fulfilled pledges
-- **Benefits:** Zero food waste, realistic capacity planning, batch efficiency for vendors, faster fulfillment
-- **Status:** Fulfillment, handoff, and reconciliation with payment providers are **still being refined**; the non-negotiable rule remains that ShareBridge **does not** own financial tracking responsibility.
-
-#### **3. Crowdfunding Orders (Community Assist)**
-Enable multiple people to contribute to a single order when one person cannot afford it alone.
-- **How it works:**
-  - Person spots seeker but cannot afford full meal
-  - Creates a "request for help" with seeker photo and location
-  - Request shared with nearby ShareBridge users
-  - Multiple donors contribute small amounts (₹20, ₹50, etc.)
-  - Order placed once threshold reached
-  - All contributors notified of delivery
-- **Benefits:** Lower barrier to giving, community participation, no one turned away
-- **Orchestration (TBD):** Threshold logic, refunds, and notifications across contributors are **to be designed** with the same constraint: **no platform-owned financial ledger**—money flows stay with providers/vendors.
-
 ## **Key Benefits**
 
 **For Donors:**
@@ -71,7 +33,7 @@ Enable multiple people to contribute to a single order when one person cannot af
 - Provides delivery confirmation with photo proof
 - Secure payment through trusted vendor platforms (Zomato, Swiggy, etc.)
 - Peace of mind about proper fund utilization
-- No platform-owned payment credentials or settlement ledgers; only non-authoritative coordination data as needed (see *Product truths*)
+- No platform-owned payment credentials or settlement ledgers; only non-authoritative coordination data as needed (see *Operating Constraints*)
 - Flexible giving options: direct, pledge, or crowdfund
 - Community impact visibility
 
@@ -147,7 +109,7 @@ Enable multiple people to contribute to a single order when one person cannot af
 - **Photo verification** at both ends (order & delivery)
 - **Real-time notifications** for order status (push, in-app, email by default; SMS optional/future)
 - **Privacy-first design** (encrypted photo storage, limited retention)
-- **Payment delegation** - Money movement and authoritative records live with vendors and licensed payment providers; ShareBridge does not own financial tracking responsibility (see *Product truths*)
+- **Payment delegation** - Money movement and authoritative records live with vendors and licensed payment providers; ShareBridge does not own financial tracking responsibility (see *Operating Constraints*)
 - **Webhook integration** for order tracking without payment handling
 
 ### **Technology Stack (Proposed):**
@@ -158,6 +120,44 @@ Enable multiple people to contribute to a single order when one person cannot af
 - **Database:** PostgreSQL with PostGIS for location data
 - **Cloud:** AWS/Azure/GCP
 - **APIs:** Food delivery platform APIs, Logistics partner APIs (Dunzo/Porter/Shadowfax)
+
+## **Future Extensions**
+
+#### **1. Pledge Pool System**
+Donors can pledge money in advance for future seekers they have not met yet.
+- **How it works:**
+  - Donors pledge amount (₹100, ₹500, ₹1000, etc.) to a common pool
+  - When any donor encounters a seeker, they can use pledged funds instead of paying directly
+  - Pledges can be earmarked (location-based, time-based, or general)
+  - Real-time dashboard shows pledge utilization
+- **Benefits:** Enables giving even when not physically present, creates community fund
+- **Orchestration (TBD):** Matching pledges to live encounters, notifications to pledgors and other parties, expiry, cancellation, and visibility rules are to be designed as the feature set matures, without the platform taking on financial tracking responsibility.
+
+#### **2. Direct Vendor Program**
+Small food vendors/restaurants pledge their donation capacity without preparing food in advance.
+- **How it works:**
+  - Vendors register and pledge: "Can prepare X meals, ready in Y minutes, valid for Z hours"
+  - System maintains real-time capacity inventory per vendor
+  - When order comes, system checks nearest vendor with available capacity
+  - Vendor confirms and starts preparation only after order placed
+  - Real-time reconciliation: capacity decremented on order, restored on completion/cancellation
+  - Vendors set hourly capacity limits and preparation windows (e.g., 8 meals at 11 AM, 10 meals at 12 PM)
+  - System sends batch notifications (e.g., "3 orders in your area, prepare now")
+  - Vendors receive social recognition badges based on fulfilled pledges
+- **Benefits:** Zero food waste, realistic capacity planning, batch efficiency for vendors, faster fulfillment
+- **Status:** Fulfillment, handoff, and reconciliation with payment providers are still being refined; the non-negotiable rule remains that ShareBridge does not own financial tracking responsibility.
+
+#### **3. Crowdfunding Orders**
+Enable multiple people to contribute to a single order when one person cannot afford it alone.
+- **How it works:**
+  - Person spots seeker but cannot afford full meal
+  - Creates a "request for help" with seeker photo and location
+  - Request shared with nearby ShareBridge users
+  - Multiple donors contribute small amounts (₹20, ₹50, etc.)
+  - Order placed once threshold reached
+  - All contributors notified of delivery
+- **Benefits:** Lower barrier to giving, community participation, no one turned away
+- **Orchestration (TBD):** Threshold logic, refunds, and notifications across contributors are to be designed with the same constraint: no platform-owned financial ledger; money flows stay with providers/vendors.
 
 ---
 

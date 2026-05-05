@@ -1,33 +1,30 @@
 # **ShareBridge - Digital Alms Platform**
 
-## **Product truths & operating assumptions**
-
-This section is the **normative intent** for volunteer-led, agile delivery: other sections describe features in more detail; if anything below conflicts with older wording elsewhere in this document, **follow this section** until the rest is updated.
-
-- **Charitable intent, light process:** Development is expected to be **iterative** (short cycles, progressive refinement). Edge cases—especially **privacy** and **unhappy paths**—are specified and hardened **over time**, not all upfront.
-- **Naming:** Early drafts used **“seeker app”**; the product name is **ShareBridge**. Historical files may still use the old name.
-- **Beneficiaries:** People receiving assistance (**alms seekers / beneficiaries**) are **not registered users**. They do not log in, are **not bound** to any role or obligation toward the platform, and are not party to “contracts” in a product sense.
-- **Facilitation, not finance:** ShareBridge is a **facilitator**. The platform **does not own financial tracking responsibility**—no authoritative **ledger of record**, settlement, or institutional money-handling role. **Payments and balances live with vendors and licensed payment providers.** The product may store **non-authoritative** data needed for coordination and UX (for example order state, external vendor order references), only as narrowly as implementation requires, and with retention rules to be tightened as privacy work proceeds.
-- **Pledges and community pools:** Pledges describe **voluntary intent** from willing participants, **not legally binding commitments** and not a regulated pooled account unless a future scope explicitly says otherwise (with professional advice). **Orchestration**—who gets notified when, how intent becomes a fulfilled order, expiry, partial fulfillment, cancellation—**is not fully specified yet** and will be designed as those features mature.
-- **Direct vendor program:** Directionally clear (capacity-based, dignity-first); **end-to-end flows are not fully specified** yet. The same rule applies: **no platform-owned financial responsibility.**
-
 ## **Problem Statement**
 When encountering people seeking alms, donors face a moral dilemma: offering cash may support unintended uses (substance abuse, exploitation) rather than basic needs like food and shelter. There's no reliable mechanism to ensure charitable donations are used exclusively for essential necessities.
 
 ## **Solution**
 ShareBridge is a mobile/web application that enables donors to provide food and essential items to alms seekers through verified third-party delivery services, eliminating cash transactions while maintaining dignity and convenience for both parties. **The platform acts as a facilitator only - all payments are processed directly through the vendor's payment system.**
 
-### **Core Workflow:**
-1. **Location Safety Check** - Donor spots seeker, captures location; AI validates safety before engagement
-2. **Beneficiary Assistance History** - System checks whether the beneficiary has recently received support (using photo matching + location proximity) and provides contextual information to the donor without blocking donations
-3. **Donor Interaction** - Donor engages seeker, obtains consent for food order and identification photo
-4. **Order Placement** - Integration with external food delivery platforms (Zomato, Swiggy, etc.) or direct vendors, with secure beneficiary data sharing via time-limited links or manual instructions
-   - Donors can pre-store preferred restaurant/vendor deep links and menu item templates in ShareBridge so the app can surface ready-made order options during the seeker interaction without typing.
-   - Donor interaction should capture seeker details, generate structured delivery instructions and beneficiary descriptions via AI, and present a ready-made deep-link order option.
-5. **Payment** - For external vendors: donor is redirected to the **vendor's** payment gateway. For direct vendors: payment is completed through **the vendor or a licensed payment provider** (e.g. Razorpay/Stripe) as configured for that vendor; ShareBridge **does not** hold funds, maintain an authoritative money ledger, or act as financial record-keeper—only such **non-authoritative** references as needed for order coordination (see *Product truths* above).
-6. **Delivery** - Delivery personnel access secure beneficiary identification data (location, facial description, photo) via one-time NDA-protected links, identify seeker through the app directly, complete handover, submit delivery experience/notes, and report completion
-7. **Confirmation** - Delivery photo captured and shared with donor for transparency
-8. **Dashboard & Analytics** - Donors and admins can view nearby orders on a map-style dashboard, including the top 100 nearby orders and order status trends.
+### **Core Workflow (Happy Path First):**
+1. **Spot and Consent** - Donor meets a beneficiary, asks if food help is needed, and gets consent to take an identification photo for delivery.
+2. **Quick Safety Check** - App checks whether the delivery location is reasonably safe and practical.
+3. **Create Order Intent** - Donor captures beneficiary context and chooses a prepared order option.
+4. **Place Order** - Order is created through external food delivery platforms (or direct-vendor flows as they mature).
+5. **Pay Externally** - Donor completes payment in vendor or licensed provider systems.
+6. **Deliver and Verify** - Delivery personnel identify the beneficiary and complete handover; delivery photo/evidence is captured.
+7. **Confirm to Donor** - Donor receives completion status and verification details.
+8. **View History** - Donors/admins can see nearby and past order outcomes.
+
+## **Operating Constraints & Assumptions (Current)**
+
+This section defines the current product constraints for volunteer-led, agile delivery.
+
+- **Charitable intent, light process:** Development is expected to be **iterative** (short cycles, progressive refinement). Edge cases—especially **privacy** and **unhappy paths**—are specified and hardened **over time**, not all upfront.
+- **Beneficiaries:** People receiving assistance (**alms seekers / beneficiaries**) are **not registered users**. They do not log in, are **not bound** to any role or obligation toward the platform, and are not party to “contracts” in a product sense.
+- **Facilitation, not finance:** ShareBridge is a **facilitator**. The platform **does not own financial tracking responsibility**—no authoritative **ledger of record**, settlement, or institutional money-handling role. **Payments and balances live with vendors and licensed payment providers.** The product may store **non-authoritative** data needed for coordination and UX (for example order state, external vendor order references), only as narrowly as implementation requires, and with retention rules to be tightened as privacy work proceeds.
+- **Pledges and community pools:** Pledges describe **voluntary intent** from willing participants, **not legally binding commitments** and not a regulated pooled account unless a future scope explicitly says otherwise (with professional advice). **Orchestration**—who gets notified when, how intent becomes a fulfilled order, expiry, partial fulfillment, cancellation—**is not fully specified yet** and will be designed as those features mature.
+- **Direct vendor program:** Directionally clear (capacity-based, dignity-first); **end-to-end flows are not fully specified** yet. The same rule applies: **no platform-owned financial responsibility.**
 
 ### **Extended Features:**
 

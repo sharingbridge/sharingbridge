@@ -6,7 +6,7 @@ When encountering people seeking alms, donors face a moral dilemma: offering cas
 ## **Solution**
 ShareBridge is a mobile/web application that enables donors to provide food and essential items to alms seekers through verified third-party delivery services, eliminating cash transactions while maintaining dignity and convenience for both parties. **The platform acts as a facilitator only - all payments are processed directly through the vendor's payment system.**
 
-### **Core Workflow (Happy Path First):**
+### **Core Workflow (Primary Journey):**
 1. **Spot and Consent** - Donor meets a beneficiary, asks if food help is needed, and gets consent to take an identification photo for delivery.
 2. **Quick Safety Check** - App checks whether the delivery location is reasonably safe and practical.
 3. **Create Order Intent** - Donor captures beneficiary context and chooses a prepared order option.

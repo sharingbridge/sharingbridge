@@ -12,21 +12,23 @@ ShareBridge is a mobile/web application that enables donors to provide food and 
 3. **Initial Conversation and Consent** - Donor confirms food help intent and gets consent to capture beneficiary details/photo for delivery identification.
 4. **Quick Safety Check (Early)** - During this initial interaction, the app checks whether delivery at the current location is reasonably safe and practical.
 5. **Create Order Intent** - Donor captures beneficiary context and chooses a prepared order option.
-6. **Place Order** - Order is created through external food delivery platforms (or direct-vendor flows as they mature).
-7. **Pay Externally** - Donor completes payment in vendor or licensed provider systems.
-8. **Deliver and Verify** - Delivery personnel identify the beneficiary and complete handover; delivery photo/evidence is captured.
-9. **Confirm to Donor** - Donor receives completion status and verification details.
-10. **View History** - Donors/admins can see nearby and past order outcomes.
+6. **Generate Delivery Instruction Pack** - App uses AI to create clean, non-offensive delivery instructions from donor input (for example: visible appearance cues, current geolocation, order summary, and secure photo reference). Donor can copy-paste this text into the delivery app instruction field.
+7. **Store Photo + Instruction Securely** - App stores the beneficiary photo and generated instruction text in a secure external repository and includes only the required reference/link in delivery instructions.
+8. **Place Order** - Order is created through external food delivery platforms (or through the direct-vendor flow once that flow is fully implemented).
+9. **Pay Externally** - Donor completes payment in vendor or licensed provider systems.
+10. **Deliver and Verify** - Delivery personnel identify the beneficiary and complete handover; delivery photo/evidence is captured.
+11. **Confirm to Donor** - Donor receives completion status and verification details.
+12. **View History** - Donors/admins can see nearby and past order outcomes.
 
-## **Operating Constraints & Assumptions (Current)**
+## **Operating Constraints & Assumptions**
 
-This section defines the current product constraints for volunteer-led, agile delivery.
+This section defines product constraints for volunteer-led, agile delivery.
 
 - **Charitable intent, light process:** Development is expected to be **iterative** (short cycles, progressive refinement). Edge cases—especially **privacy** and **unhappy paths**—are specified and hardened **over time**, not all upfront.
-- **Beneficiaries:** People receiving assistance (**alms seekers / beneficiaries**) are **not registered users**. They do not log in, are **not bound** to any role or obligation toward the platform, and are not party to “contracts” in a product sense.
+- **Beneficiaries:** Beneficiaries are **not registered users** and do not log in.
 - **Facilitation, not finance:** ShareBridge is a **facilitator**. The platform **does not own financial tracking responsibility**—no authoritative **ledger of record**, settlement, or institutional money-handling role. **Payments and balances live with vendors and licensed payment providers.** The product may store **non-authoritative** data needed for coordination and UX (for example order state, external vendor order references), only as narrowly as implementation requires, and with retention rules to be tightened as privacy work proceeds.
 - **Pledges and community pools:** Pledges describe **voluntary intent** from willing participants, **not legally binding commitments** and not a regulated pooled account unless a future scope explicitly says otherwise (with professional advice). **Orchestration**—who gets notified when, how intent becomes a fulfilled order, expiry, partial fulfillment, cancellation—**is not fully specified yet** and will be designed as those features mature.
-- **Direct vendor program:** Directionally clear (capacity-based, dignity-first); **end-to-end flows are not fully specified** yet. The same rule applies: **no platform-owned financial responsibility.**
+- **Direct vendor flow:** Optional flow; implementation details are still being finalized. Same money principle applies: **no platform-owned financial responsibility.**
 
 ## **Key Benefits**
 
@@ -42,7 +44,7 @@ This section defines the current product constraints for volunteer-led, agile de
 **For Alms Seekers:**
 - Guaranteed food/essential items instead of uncertain cash
 - Maintains dignity through respectful process
-- No exploitation by intermediaries
+- Reduced uncertainty through direct order visibility and confirmation
 - Multiple fulfillment options (delivery, vendor pickup, community support)
 - Faster access through pledge pools
 
@@ -50,7 +52,7 @@ This section defines the current product constraints for volunteer-led, agile de
 - Social recognition and community visibility
 - CSR (Corporate Social Responsibility) credits
 - Direct community engagement without app development costs
-- Reduction in food waste through planned donations
+- Better planning through vendor capacity slots and scheduled preparation
 
 **For Society:**
 - Reduces misuse of charitable funds
@@ -90,6 +92,7 @@ This section defines the current product constraints for volunteer-led, agile de
 - External food delivery API connectors (Swiggy, Zomato, Uber Eats)
 - OAuth/Deep linking for vendor payment redirect
 - Webhook listeners for order status updates
+- AI-generated delivery instruction text builder (copy-paste ready for vendor apps)
 - Photo storage (cloud-based)
   - Push notification service (default)
   - In-app notification service (default)
@@ -99,6 +102,7 @@ This section defines the current product constraints for volunteer-led, agile de
 **5. Data Management**
 - Location coordinates storage
 - Photo storage with privacy compliance
+- Generated delivery instruction text with content safety controls (no offensive, illegal, or sensitive wording)
 - Non-authoritative order and status records (coordination—not a financial ledger of record)
 - Safety metrics and analytics
 - Voluntary pledge intent and allocation signals (orchestration TBD; not a binding or regulated ledger unless separately scoped)
@@ -165,7 +169,7 @@ Enable multiple people to contribute to a single order when one person cannot af
 
 **Document Status:** Business Requirement Document  
 **Date:** December 25, 2025  
-**Last aligned (product truths):** May 4, 2026  
+**Last aligned (operating assumptions):** May 5, 2026  
 **Project:** ShareBridge Platform
 
 ---

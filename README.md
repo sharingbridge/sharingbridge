@@ -9,12 +9,11 @@
 
 ShareBridge is a mobile/web application that enables donors to provide food and essential items to alms seekers through verified third-party delivery services, eliminating cash transactions while maintaining dignity and convenience for both parties.
 
-## Product truths (read this first)
+## Contributor notes (read this first)
 
-Normative intent for contributors is captured in the BRD section **“Product truths & operating assumptions”** in [ShareBridge_Business_Requirement.md](ShareBridge_Business_Requirement.md). In short:
+Normative intent for contributors is captured in the BRD section **“Operating Constraints & Assumptions”** in [ShareBridge_Business_Requirement.md](ShareBridge_Business_Requirement.md). In short:
 
 - **Beneficiaries (alms seekers) are not registered users** and are not bound to any product role.
-- **Early name:** “Seeker app” in old notes refers to this product, now **ShareBridge**.
 - ShareBridge is a **facilitator**; it **does not own financial tracking responsibility** (no authoritative money ledger; payments and balances live with vendors and licensed payment providers).
 - **Pledges / community assist** express **voluntary intent**; orchestration and unhappy paths are refined **over time** in an agile cadence.
 - Coordination between repos is **lightweight** (e.g. discussions, weekly cadence)—see the BRD for the full wording.
@@ -26,7 +25,7 @@ Normative intent for contributors is captured in the BRD section **“Product tr
 - 🤝 **Dignity-First Approach** - Respectful process for both donors and seekers
 - 🔒 **Safety Verification** - AI-powered location safety assessment
 - 📱 **Multi-Platform** - iOS, Android, and Web applications
-- 🛡️ **Facilitator-only money** - Payments and authoritative financial records stay with vendors/providers; see BRD *Product truths*
+- 🛡️ **Facilitator-only money** - Payments and authoritative financial records stay with vendors/providers; see BRD *Operating Constraints*
 - 📸 **Photo Verification** - Transparent delivery confirmation
 - 🌐 **Multi-Vendor Support** - Integration with Swiggy, Zomato, Uber Eats
 
@@ -142,7 +141,7 @@ Mobile/Web App → API Gateway → Microservices
 - 🔒 End-to-end encryption for sensitive data
 - 🗑️ Auto-deletion of photos after 30 days
 - ✅ GDPR/DPDPA compliant
-- 🚫 No platform-owned payment ledger; minimize stored payment-related data (see BRD *Product truths*)
+- 🚫 No platform-owned payment ledger; minimize stored payment-related data (see BRD *Operating Constraints*)
 
 ## Getting Started
 

@@ -6,7 +6,7 @@
 
 **Our Mission:** Enable compassionate giving while maintaining dignity for all parties involved.
 
-**Before you contribute:** Read **“Product truths & operating assumptions”** in [ShareBridge_Business_Requirement.md](ShareBridge_Business_Requirement.md) — it defines beneficiaries as non-registered users, facilitator-only money (no platform financial ledger of record), and voluntary pledge intent. Technical work should stay aligned with that section and with [ShareBridge_Technical_Architecture.md](ShareBridge_Technical_Architecture.md) (*Normative product assumptions*).
+**Before you contribute:** Read **“Operating Constraints & Assumptions”** in [ShareBridge_Business_Requirement.md](ShareBridge_Business_Requirement.md) — it defines beneficiaries as non-registered users, facilitator-only money (no platform financial ledger of record), and voluntary pledge intent. Technical work should stay aligned with that section and with [ShareBridge_Technical_Architecture.md](ShareBridge_Technical_Architecture.md) (*Normative product assumptions*).
 
 ## 🤖 Development Approach: AI-Powered Collaboration
 

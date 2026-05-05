@@ -225,17 +225,18 @@ If this architecture document conflicts with that BRD section (for example in pr
 │  │  + PostGIS       │  │                  │  │                 │  │
 │  └──────────────────┘  └──────────────────┘  └─────────────────┘  │
 │                                                                      │
-│  ┌──────────────────┐  ┌──────────────────┐                        │
-│  │  MongoDB/DynamoDB│  │  Elasticsearch   │                        │
-│  │  (Order Logs)    │  │  (Search/Logs)   │                        │
-│  └──────────────────┘  └──────────────────┘                        │
+│  ┌──────────────────┐                                           │
+│  │  PostgreSQL      │                                           │
+│  │  (events/logs via│                                           │
+│  │   JSONB tables)  │                                           │
+│  └──────────────────┘                                           │
 │                                                                      │
 └─────────────────────────────────────────────────────────────────────┘
 
 ┌─────────────────────────────────────────────────────────────────────┐
 │                      MESSAGE QUEUE LAYER                             │
 ├─────────────────────────────────────────────────────────────────────┤
-│  RabbitMQ / Apache Kafka / AWS SQS                                  │
+│  Redis Streams (MVP) / AWS SQS (Production)                         │
 │  ┌──────────────────┐  ┌──────────────────┐                        │
 │  │  Order Events    │  │  Notification    │                        │
 │  │  Queue           │  │  Queue           │                        │
@@ -315,7 +316,7 @@ users
 
 **Technology Stack:**
 - Framework: Node.js (NestJS) or Python (Django)
-- Database: PostgreSQL + MongoDB (for event logs)
+- Database: PostgreSQL (primary + event logs via JSONB)
 - Cache: Redis (for active orders)
 
 **Order State Machine:**
@@ -661,7 +662,7 @@ photos
 
 **Technology Stack:**
 - Framework: Node.js (Express/NestJS)
-- Message Queue: RabbitMQ / AWS SQS
+- Message Queue: Redis Streams (MVP), AWS SQS (production scale)
 - Cache: Redis (for vendor API tokens)
 
 **Vendor Integration Pattern:**
@@ -699,12 +700,12 @@ class ShadowfaxAdapter implements LogisticsAdapter { ... }
 4. ShareBridge generates deep link: `swiggy://order?cart={encoded_cart}&instructions={secure_link_instructions}`
 5. App opens vendor's order page (in-app browser or native app)
 6. User completes order on vendor platform, instructions include secure beneficiary data access
-7. Vendor assigns delivery executive who agrees to NDA for data access
-8. Delivery executive accesses secure link for one-time beneficiary identification
+7. Vendor/logistics assigns delivery executive
+8. Delivery executive accesses secure link with role-scoped token for beneficiary identification
 9. Executive locates and delivers to beneficiary using provided details
 10. Executive reports delivery completion via secure link endpoint
 11. ShareBridge receives delivery confirmation and updates status
-12. Secure link auto-expires, preventing further data access
+12. Secure link remains active until delivery completion, then expires after a 30-minute look-back window
 
 **Interim Manual Flow (MVP - No API Access):**
 1. Donor captures beneficiary photo in ShareBridge app
@@ -712,10 +713,10 @@ class ShadowfaxAdapter implements LogisticsAdapter { ... }
 3. App provides copy-paste functionality for instructions
 4. Donor selects the ready-made deep-link option and pastes instructions into vendor's delivery notes field, without typing during the seeker interaction
 5. Vendor processes order with embedded secure access instructions
-6. Delivery follows same secure NDA-protected process as above
+6. Delivery follows the same secure token-based access process as above
 
 **Logistics Flow (Pledged Vendors - Direct Orders):**
-1. Donor pays via ShareBridge payment gateway (Razorpay/Stripe)
+1. Donor pays via vendor-hosted or licensed-provider-hosted payment link
 2. Order sent to pledged vendor (restaurant/home kitchen)
 3. Vendor prepares food and marks order as READY
 4. ShareBridge automatically triggers logistics partner API (Dunzo/Porter/Shadowfax)
@@ -765,7 +766,7 @@ def verify_webhook(vendor: str, payload: dict, signature: str) -> bool:
 - Push: Firebase Cloud Messaging (FCM), Apple Push Notification (APNS)
 - In-app: WebSocket/Realtime DB
 - Email: SendGrid / AWS SES
-- Queue: RabbitMQ / AWS SQS
+- Queue: Redis Streams (MVP), AWS SQS (production scale)
 - (Optional/Future) SMS: Twilio / AWS SNS
 
 **Notification Types:**
@@ -1191,7 +1192,7 @@ class VendorCapacityManager:
 **Technology Stack:**
 - Framework: Node.js (NestJS)
 - Database: PostgreSQL
-- Message Queue: RabbitMQ (for real-time updates)
+- Message Queue: Redis Streams (for real-time updates in MVP)
 - Cache: Redis (for campaign status)
 
 **Campaign Lifecycle:**
@@ -1572,14 +1573,24 @@ if (nearby.length === 0) {
 
 ### 4.4 Message Queue Architecture
 
-**Recommended: AWS SQS/SNS for Global Scale**
+**Canonical Queue Strategy**
 
 ```yaml
-Migration from RabbitMQ to Managed Service:
+MVP (zero-cost infra target):
+  Queue:
+    - Redis Streams / PubSub (using existing Redis free-tier setup)
   Reasons:
-    - RabbitMQ: Single region, complex clustering
-    - AWS SQS/SNS: Multi-region, fully managed, auto-scaling
+    - No extra infrastructure component for MVP
+    - Simple event workflow for low-to-medium throughput
+    - Keeps MVP close to $0 infrastructure cost
   
+Production / Global Scale:
+  Queue:
+    - AWS SQS + SNS
+  Reasons:
+    - Multi-region, fully managed, auto-scaling
+    - DLQ support and strong operational reliability
+
   Regional Deployment:
     - US-East: SQS queues + SNS topics
     - EU-West: SQS queues + SNS topics
@@ -1591,8 +1602,8 @@ Migration from RabbitMQ to Managed Service:
     - Global event propagation < 1 second
   
   Benefits:
-    - Zero ops overhead
-    - Unlimited throughput
+    - Zero broker ops overhead
+    - High throughput and fanout support
     - Built-in dead letter queues
     - 99.9% SLA
     - Cost: $0.40 per million requests
@@ -1854,8 +1865,8 @@ Response: { orders[], stats: { total_donations, total_amount } }
 
 **Beneficiary Data Protection in Delivery Integration:**
 - Secure, time-limited links for beneficiary identification data
-- One-time access tokens for delivery personnel
-- NDA requirement for delivery partners accessing beneficiary data
+- Role-scoped, time-bound access tokens for delivery personnel
+- Access window active until delivery completion, then auto-expiry after 30 minutes
 - Automatic data expiration post-delivery
 - No permanent data storage on third-party platforms
 - Encrypted photo storage with access controls
@@ -1898,15 +1909,17 @@ Challenges:
 To address privacy concerns with sharing beneficiary personal details, pictures, and locations, implement secure data sharing mechanisms:
 
 **Secure Link Generation:**
-- Generate time-limited, one-time access secure links for beneficiary data
+- Generate time-limited secure links for beneficiary data
 - Links contain encrypted beneficiary location, facial features description, and photo storage location
-- Access restricted to specific delivery personnel only
-- Automatic expiration after delivery completion or configurable time window (e.g., 2 hours)
+- Access restricted to delivery-role token holders with audit logging
+- Automatic expiration after delivery completion + 30 minutes (configurable)
 
-**Delivery Personnel NDA and Access Control:**
-- Delivery personnel must agree to Non-Disclosure Agreement (NDA) before accessing beneficiary data
-- One-time access tokens prevent data reuse or sharing
-- Audit logging of all data access attempts
+**Delivery Access Controls (Technical):**
+- Role-scoped token verification before data access
+- Minimal-field data view (only details required for successful delivery)
+- Watermarked image rendering and no-download policy where supported
+- Audit logging of all access attempts
+- Link remains active until delivery completion, then expires after 30 minutes
 
 **Deep Link Flow with Privacy Protection:**
 ```
@@ -1924,13 +1937,13 @@ To address privacy concerns with sharing beneficiary personal details, pictures,
 7. Personnel uses description and photo to locate/identify beneficiary
 8. Personnel reports delivery completion via secure link endpoint
 9. ShareBridge receives webhook/callback on delivery status
-10. Secure link auto-expires, data inaccessible
+10. Secure link stays active until delivery completion, then auto-expires after 30 minutes
 
 Interim Manual Approach (MVP):
 - App provides copy-paste option after beneficiary photo capture
 - Generate instruction text with secure link and identification details
 - User manually pastes into vendor's delivery instruction field
-- Delivery personnel follow same NDA and secure access process
+- Delivery personnel follow same token-based secure access process
 ```
 
 **Limitations:**
@@ -1966,9 +1979,9 @@ Implementation:
 - NO manual steps - fully digital workflow
 
 Key Difference from External Vendors:
-- ShareBridge handles payment (Razorpay/Stripe) instead of redirecting
+- Payment still happens on vendor/provider-hosted links (not inside ShareBridge)
 - ShareBridge coordinates delivery logistics
-- Vendors only prepare food; rest is automated by platform
+- Vendors prepare food; orchestration and tracking are automated by platform
 ```
 
 **Vendor Adapter Pattern (For Future API Access):**
@@ -2105,7 +2118,7 @@ Phase 1 - MVP (Month 1-3):
 ├── Direct Vendor Program (local restaurants, home kitchens)
 ├── Automated vendor onboarding via portal
 ├── Digital order notifications (push/SMS/in-app)
-├── Integrated payment gateway (Razorpay/Stripe)
+├── Provider-hosted payment links (vendor/provider checkout)
 ├── Automated logistics integration (Dunzo/Porter)
 ├── Real-time status tracking
 └── No manual steps - fully automated workflow
@@ -2660,7 +2673,7 @@ Vendor Integration:
     - Automated vendor portal
     - Hourly capacity management
     - Push/SMS notifications to vendors
-    - Integrated payment (Razorpay/Stripe)
+    - Provider-hosted payment links (no in-app payment handling)
     - Logistics automation (Dunzo/Porter)
   Cost: $0 infrastructure (pay only for actual deliveries)
   Benefits:
@@ -3284,7 +3297,7 @@ Backups:
 | Backend Framework | Express, NestJS, Django, FastAPI | **NestJS** | TypeScript, modular, enterprise-ready |
 | Database | PostgreSQL, MySQL, MongoDB | **PostgreSQL** | PostGIS for geospatial, JSONB support, reliability |
 | Cache | Redis, Memcached | **Redis** | Pub/Sub, data structures, persistence |
-| Message Queue | RabbitMQ, Kafka, SQS | **RabbitMQ** | Simplicity, low latency, good for event-driven |
+| Message Queue | Redis Streams, RabbitMQ, Kafka, SQS | **Redis Streams (MVP), SQS (Scale)** | Zero-cost MVP path with Redis; managed reliability at scale with SQS |
 | Cloud Provider | AWS, Azure, GCP | **AWS** | Market leader, comprehensive services, community |
 | Container Orchestration | ECS, EKS, Kubernetes | **EKS** | Standard Kubernetes, portability, ecosystem |
 

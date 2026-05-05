@@ -84,6 +84,56 @@ docker-compose up
 
 ---
 
+## Client Application Workstreams (Parallel to Backend Phases)
+
+The backend/infrastructure phases below run in parallel with explicit frontend tracks:
+- `sharebridge-mobile-app` (React Native or Flutter)
+- `sharebridge-web-app` (React/Next.js)
+
+### Mobile App Workstream (`sharebridge-mobile-app`)
+
+**Weeks 1-2 (Foundation):**
+- Project bootstrap, navigation shell, environment setup, API client scaffolding
+- Auth/session UX aligned to MVP (email OTP + token refresh)
+- Permission strategy (camera, location, notifications) with graceful fallback paths
+
+**Weeks 3-6 (Core Flow):**
+- Donor setup screens (saved deep links, menu templates, preferences)
+- Encounter flow: consent capture, early safety check trigger, beneficiary capture
+- AI instruction-pack display and one-tap copy for vendor delivery notes
+- External payment/deep-link redirect flow and return-state recovery
+
+**Weeks 7-10 (Reliability):**
+- Push notification wiring (FCM/APNS), order timeline status screens
+- Offline/low-network drafts for in-progress encounters and retry behavior
+- Error-state UX for webhook delays, vendor callback gaps, and permission denial
+
+**Weeks 11-12 (Validation):**
+- Device compatibility testing (Android + iOS)
+- Beta distribution (TestFlight / internal Android track)
+- MVP release checklist and rollout playbook
+
+### Web App Workstream (`sharebridge-web-app`)
+
+**Weeks 1-2 (Foundation):**
+- App shell, auth/session setup, role-aware route scaffolding
+- Shared design system basics and API integration layer
+
+**Weeks 3-6 (Operations Views):**
+- Admin/coordinator dashboard: active orders, statuses, and exception views
+- Vendor/coordinator support views for order follow-up and issue handling
+- Search/filter panels for order timeline and beneficiary-assistance context
+
+**Weeks 7-10 (Monitoring + Governance):**
+- Operational analytics views (trend, success/failure reasons, regional status)
+- Queue/processing health visibility and manual intervention actions
+- Audit-friendly views for secure-link access events and delivery confirmation review
+
+**Weeks 11-12 (Validation):**
+- Browser compatibility and responsive behavior checks
+- Accessibility pass for critical donor/admin actions
+- Production deployment checklist and runbook
+
 ## Phase 1: Foundation (Months 1-2) - Free Tier
 
 ### **Week 1-2: Database Setup**

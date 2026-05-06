@@ -29,6 +29,7 @@ Product-level assumptions are maintained in one place: [ShareBridge_Business_Req
 - [Business Requirements](ShareBridge_Business_Requirement.md) - Complete business case and benefits
 - [Technical Architecture](ShareBridge_Technical_Architecture.md) - Detailed technical design
 - [Implementation Approach](IMPLEMENTATION_APPROACH.md) - Development strategy and free-tier options
+- [MVP Bootstrap Issues](MVP_BOOTSTRAP_ISSUES.md) - Per-repo kickoff issue/checklist definitions
 - [Prompts](PROMPTS.md) - All prompts used for AI-assisted development
 - [Initial Requirements](ShareBridge_initial_requirement.txt) - Original concept
 - [Call for Contributors](CALL_FOR_CONTRIBUTORS.md) - How to get involved (technical & non-technical)
@@ -82,7 +83,7 @@ Each repository evolves independently. Coordination happens here through GitHub 
 
 ## Problem Statement
 
-When encountering people seeking alms, donors face a moral dilemma: offering cash may support unintended uses rather than basic needs. ShareBridge ensures charitable intent is fulfilled by providing food and essentials through verified delivery services.
+When meeting people seeking alms, donors face a moral dilemma: offering cash may support unintended uses rather than basic needs. ShareBridge ensures charitable intent is fulfilled by providing food and essentials through verified delivery services.
 
 ## Solution
 

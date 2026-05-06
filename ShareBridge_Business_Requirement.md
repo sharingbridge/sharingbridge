@@ -1,7 +1,7 @@
 # **ShareBridge - Digital Alms Platform**
 
 ## **Problem Statement**
-When encountering people seeking alms, donors face a moral dilemma: offering cash may support unintended uses (substance abuse, exploitation) rather than basic needs like food and shelter. There's no reliable mechanism to ensure charitable donations are used exclusively for essential necessities.
+When meeting people seeking alms, donors face a moral dilemma: offering cash may support unintended uses (substance abuse, exploitation) rather than basic needs like food and shelter. There's no reliable mechanism to ensure charitable donations are used exclusively for essential necessities.
 
 ## **Solution**
 ShareBridge is a mobile/web application that enables donors to provide food and essential items to alms seekers through verified third-party delivery services, eliminating cash transactions while maintaining dignity and convenience for both parties. **The platform acts as a facilitator only - all payments are processed directly through the vendor's payment system.**
@@ -133,11 +133,11 @@ This section defines product constraints for volunteer-led, agile delivery.
 Donors can pledge money in advance for future seekers they have not met yet.
 - **How it works:**
   - Donors pledge amount (₹100, ₹500, ₹1000, etc.) to a common pool
-  - When any donor encounters a seeker, they can use pledged funds instead of paying directly
+  - When any donor meets a seeker, they can use pledged funds instead of paying directly
   - Pledges can be earmarked (location-based, time-based, or general)
   - Real-time dashboard shows pledge utilization
 - **Benefits:** Enables giving even when not physically present, creates community fund
-- **Orchestration (TBD):** Matching pledges to live encounters, notifications to pledgors and other parties, expiry, cancellation, and visibility rules are to be designed as the feature set matures, without the platform taking on financial tracking responsibility.
+- **Orchestration (TBD):** Matching pledges to live donor-seeker interactions, notifications to pledgors and other parties, expiry, cancellation, and visibility rules are to be designed as the feature set matures, without the platform taking on financial tracking responsibility.
 
 #### **2. Direct Vendor Program**
 Small food vendors/restaurants pledge their donation capacity without preparing food in advance.

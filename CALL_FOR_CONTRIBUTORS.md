@@ -24,7 +24,7 @@
 
 ## 🤝 Why This Matters
 
-Every day, people encounter those seeking alms and face a difficult choice - help with cash that may be misused, or walk away. ShareBridge solves this by:
+Every day, people meet those seeking alms and face a difficult choice - help with cash that may be misused, or walk away. ShareBridge solves this by:
 
 - ✅ Ensuring donations become meals and essentials, not cash
 - ✅ Providing delivery confirmation with photo proof
@@ -250,7 +250,7 @@ Repositories:** `ShareBridge-ai-safety`, `ShareBridge-photo-service`
 **Special Considerations:**
 - Design for users with varying literacy levels
 - Low-data scenarios
-- Quick, intuitive workflows for street encounters
+- Quick, intuitive workflows for street-side donor-seeker interactions
 
 **Impact:** Create an interface that anyone can use in moments of compassion.
 

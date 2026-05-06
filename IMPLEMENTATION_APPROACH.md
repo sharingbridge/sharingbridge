@@ -120,13 +120,13 @@ The backend/infrastructure phases below run in parallel with explicit frontend t
 
 **Weeks 3-6 (Core Flow):**
 - Donor setup screens (saved deep links, menu templates, preferences)
-- Encounter flow: consent capture, early safety check trigger, beneficiary capture
+- Donor-seeker interaction flow: consent capture, early safety check trigger, beneficiary capture
 - AI instruction-pack display and one-tap copy for vendor delivery notes
 - External payment/deep-link redirect flow and return-state recovery
 
 **Weeks 7-10 (Reliability):**
 - Push notification wiring (FCM/APNS), order timeline status screens
-- Offline/low-network drafts for in-progress encounters and retry behavior
+- Offline/low-network drafts for in-progress donor-seeker interactions and retry behavior
 - Error-state UX for webhook delays, vendor callback gaps, and permission denial
 
 **Weeks 11-12 (Validation):**

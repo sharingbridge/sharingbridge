@@ -103,7 +103,7 @@ A facilitator platform that:
 - **Framework:** Node.js (NestJS) / Python (FastAPI)
 - **Database:** PostgreSQL with PostGIS
 - **Cache:** Redis
-- **Message Queue:** RabbitMQ / AWS SQS
+- **Message Queue:** Redis Streams/PubSub (MVP), AWS SQS/SNS (scale)
 
 ### AI/ML
 - **Framework:** TensorFlow / PyTorch (for face recognition only)

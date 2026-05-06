@@ -72,13 +72,34 @@ cp .env.example .env
 # 4. Run locally with Docker
 docker-compose up
 
-# 5. Deploy to Render.com
-# - Connect GitHub repo
-# - Auto-deploy on push
+# 5. Deploy to Render.com (high level)
+# - Create Render service from connected GitHub repo
+# - Configure build/start settings (or Dockerfile)
+# - Add environment variables in Render dashboard
+# - Deploy and verify health endpoint
 
 # Total time: 2-3 hours
 # Total cost: $0
 ```
+
+**Render.com Setup (Detailed):**
+1. Sign in to `render.com` and click **New +** -> **Web Service**.
+2. Connect/select your GitHub repository and target branch (for example `main`).
+3. Choose deployment mode:
+   - **Docker** (if repo has a `Dockerfile`), or
+   - **Native build/start commands** (if not using Docker).
+4. Configure service settings:
+   - Build command / start command (or Docker auto-detection)
+   - Region
+   - Health check path (for example `/health`)
+5. Set environment variables in the Render dashboard:
+   - Open service -> **Environment** / **Environment Variables**
+   - Add required secrets (`DATABASE_URL`, `REDIS_URL`, `JWT_SECRET`, API keys, etc.)
+   - Save changes
+6. Trigger first deploy and confirm service URL responds.
+7. Enable/keep **Auto-Deploy** so new commits to the selected branch redeploy automatically.
+
+**Note:** Keep real secrets only in Render/local `.env`; commit only `.env.example` placeholders to Git.
 
 ---
 

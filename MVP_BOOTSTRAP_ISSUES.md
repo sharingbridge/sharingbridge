@@ -70,6 +70,7 @@ Each issue below should be closed only when all relevant items are demonstrably 
 
 - [ ] Bootstrap auth module (OTP/email or configured MVP auth mechanism) and token lifecycle
 - [ ] Define donor profile model with vendor deep-link preferences and menu templates
+- [ ] Add donor setup preference schema support for AI-suggested local vendors/menu templates with explicit donor-confirmed values
 - [ ] Add APIs for donor setup CRUD (pre-field preferences)
 - [ ] Add secure storage rules for profile-linked configuration data
 - [ ] Add audit events for auth and setup updates
@@ -82,6 +83,7 @@ Each issue below should be closed only when all relevant items are demonstrably 
 - [ ] User service stores only required non-financial profile/config data
 - [ ] Auth/session behavior is consumable by both `sharebridge-mobile-app` and `sharebridge-web-app`
 - [ ] Core setup APIs are documented and versioned
+- [ ] Setup model cleanly stores AI suggestion provenance (confidence/source type) separately from donor-confirmed preferences
 
 ---
 
@@ -116,6 +118,7 @@ Each issue below should be closed only when all relevant items are demonstrably 
 
 - [ ] Implement vendor OAuth/deep-link integration skeleton (start, callback, token handling hooks)
 - [ ] Implement final instruction-pack assembly from donor/context inputs
+- [ ] Implement AI-assisted local vendor/menu suggestion endpoint using fixed prompt + strict JSON schema validation
 - [ ] Integrate secure photo + instruction storage reference generation
 - [ ] Enforce secure link TTL policy: active until delivery completion + 30 minutes, then expire
 - [ ] Add vendor order submission adapter interfaces and mock provider implementation
@@ -128,6 +131,7 @@ Each issue below should be closed only when all relevant items are demonstrably 
 - [ ] Payment flow is provider-hosted redirect/deep-link only
 - [ ] Secure link lifetime behavior is tested and auditable
 - [ ] Vendor adapters are interface-driven to allow multi-vendor expansion
+- [ ] AI suggestion endpoint rejects malformed model output and returns safe fallback/manual-entry guidance
 
 ---
 
@@ -161,7 +165,7 @@ Each issue below should be closed only when all relevant items are demonstrably 
 **Scope checklist:**
 
 - [ ] Bootstrap app shell, auth/session wiring, and API client base
-- [ ] Build donor setup screens (vendor links, templates, payment preferences)
+- [ ] Build donor setup screens (AI-assisted local vendor/menu suggestions + manual edit + confirmation, then saved payment preferences)
 - [ ] Build donor-seeker interaction flow screens (consent, quick safety check, beneficiary capture)
 - [ ] Display generated instruction pack with one-tap copy + secure reference awareness
 - [ ] Implement external vendor redirect/return handling with state recovery
@@ -174,6 +178,7 @@ Each issue below should be closed only when all relevant items are demonstrably 
 - [ ] No UI implies platform-owned wallet/ledger behavior
 - [ ] Error states cover safety check failure, vendor callback delay, and network interruption
 - [ ] App stores only required local transient state and protects sensitive references
+- [ ] AI onboarding never auto-commits suggestions; donor review/confirm is mandatory with low-confidence manual fallback
 
 ---
 

@@ -269,7 +269,7 @@ This section defines frontend ownership and contracts for:
 
 **Repo Responsibilities:**
 - **Mobile app (`sharebridge-mobile-app`)**
-  - Donor field workflow: setup, donor-seeker interaction flow, consent capture, safety check trigger, instruction-pack generation/copy
+  - Donor field workflow: setup (including AI-assisted vendor/menu onboarding), donor-seeker interaction flow, consent capture, safety check trigger, instruction-pack generation/copy
   - Device capabilities: camera, geolocation, deep-link launch, push notification handling
   - Field reliability: offline draft state, retry queue for unstable networks, clear user recovery paths
 - **Web app (`sharebridge-web-app`)**
@@ -287,6 +287,7 @@ This section defines frontend ownership and contracts for:
 - **Mobile:** permission prompts at point-of-use, graceful fallback for denied permissions, app-state recovery after deep-link return.
 - **Web:** responsive layout for low-end devices, accessible controls for key donor/admin actions, safe session timeout handling.
 - **Both:** structured client telemetry for critical flow stages (setup, safety check, instruction generation, order redirect, confirmation).
+- **AI setup guardrail:** client must present AI suggestions as editable drafts; nothing is auto-saved without explicit donor confirmation.
 
 ### 3.1 User Service
 

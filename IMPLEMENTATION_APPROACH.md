@@ -119,7 +119,7 @@ The backend/infrastructure phases below run in parallel with explicit frontend t
 - Permission strategy (camera, location, notifications) with graceful fallback paths
 
 **Weeks 3-6 (Core Flow):**
-- Donor setup screens (saved deep links, menu templates, preferences)
+- Donor setup screens with AI-assisted local vendor/menu suggestions (fixed prompt + structured JSON, donor confirm/edit before save)
 - Donor-seeker interaction flow: consent capture, early safety check trigger, beneficiary capture
 - AI instruction-pack display and one-tap copy for vendor delivery notes
 - External payment/deep-link redirect flow and return-state recovery

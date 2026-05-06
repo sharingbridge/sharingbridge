@@ -684,6 +684,7 @@ photos
 - Vendor API abstraction (food delivery platforms)
 - Logistics partner API abstraction (for pledged vendor deliveries)
 - Deep link generation for payment redirect
+- Final vendor instruction-pack assembly and ownership (AI-generated text fragments + secure references)
 - Webhook handling for order updates
 - Response normalization across vendors
 
@@ -1729,6 +1730,12 @@ POST /api/v1/auth/login
 Body: { email, otp }  # MVP uses email OTP; future: phone_number + SMS OTP
 Response: { user, token }
 
+GET /api/v1/auth/oauth/:provider/start
+Response: { auth_url }  # provider examples: google, apple
+
+GET /api/v1/auth/oauth/:provider/callback?code=...
+Response: { user, token }  # ShareBridge-issued JWT access + refresh tokens
+
 POST /api/v1/auth/refresh
 Body: { refresh_token }
 Response: { token }
@@ -1834,6 +1841,17 @@ Response: { orders[], stats: { total_donations, total_amount } }
 - OAuth 2.0 (Google, Facebook)
 - SSO integration
 - App-based TOTP (Google Authenticator)
+
+**OAuth 2.0 Flow (Provider Login):**
+```
+1. Client requests /api/v1/auth/oauth/:provider/start
+2. User is redirected to provider auth/consent screen
+3. Provider redirects to /api/v1/auth/oauth/:provider/callback with auth code
+4. User Service exchanges code for provider token at provider token endpoint
+5. User Service fetches provider profile and maps/creates ShareBridge user
+6. User Service issues ShareBridge JWT tokens (access + refresh)
+7. Client uses ShareBridge JWT for all /api/v1 API calls
+```
 
 **JWT Structure:**
 ```json

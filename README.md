@@ -3,7 +3,7 @@
 > Transforming traditional alms-giving into a modern, accountable, and dignified process
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![AI-Powered Development](https://img.shields.io/badge/Development-AI--Powered-blue.svg)](PROMPTS.md)
+[![AI-Powered Development](https://img.shields.io/badge/Development-AI--Powered-blue.svg)](development/PROMPTS.md)
 
 ## Overview
 
@@ -11,9 +11,9 @@ ShareBridge is a mobile/web application that enables donors to provide food and 
 
 ## Contributor notes (read this first)
 
-Product-level assumptions are maintained in one place: [ShareBridge_Business_Requirement.md](ShareBridge_Business_Requirement.md), section **“Operating Constraints & Assumptions.”** Refer to that section as the source of truth.
+Product-level assumptions are maintained in one place: [ShareBridge_Business_Requirement.md](requirements/ShareBridge_Business_Requirement.md), section **“Operating Constraints & Assumptions.”** Refer to that section as the source of truth.
 
-**🤖 AI-Powered Development:** This project is being built primarily through AI-assisted development. Code, documentation, and infrastructure are generated using carefully crafted prompts. All prompts are stored in [PROMPTS.md](PROMPTS.md) and in each repository's `prompting/` folder for transparency and reproducibility.
+**🤖 AI-Powered Development:** This project is being built primarily through AI-assisted development. Code, documentation, and infrastructure are generated using carefully crafted prompts. All prompts are stored in [PROMPTS.md](development/PROMPTS.md) and in each repository's `prompting/` folder for transparency and reproducibility.
 
 ## Key Features
 
@@ -26,13 +26,13 @@ Product-level assumptions are maintained in one place: [ShareBridge_Business_Req
 
 ## Documentation
 
-- [Business Requirements](ShareBridge_Business_Requirement.md) - Complete business case and benefits
-- [Technical Architecture](ShareBridge_Technical_Architecture.md) - Detailed technical design
-- [Implementation Approach](IMPLEMENTATION_APPROACH.md) - Development strategy and free-tier options
-- [MVP Bootstrap Issues](MVP_BOOTSTRAP_ISSUES.md) - Per-repo kickoff issue/checklist definitions
-- [Prompts](PROMPTS.md) - All prompts used for AI-assisted development
-- [Initial Requirements](ShareBridge_initial_requirement.txt) - Original concept
-- [Call for Contributors](CALL_FOR_CONTRIBUTORS.md) - How to get involved (technical & non-technical)
+- [Business Requirements](requirements/ShareBridge_Business_Requirement.md) - Complete business case and benefits
+- [Technical Architecture](design/ShareBridge_Technical_Architecture.md) - Detailed technical design
+- [Implementation Approach](development/IMPLEMENTATION_APPROACH.md) - Development strategy and free-tier options
+- [MVP Bootstrap Issues](development/MVP_BOOTSTRAP_ISSUES.md) - Per-repo kickoff issue/checklist definitions
+- [Prompts](development/PROMPTS.md) - All prompts used for AI-assisted development
+- [Initial Requirements](requirements/ShareBridge_initial_requirement.txt) - Original concept
+- [Call for Contributors](development/CALL_FOR_CONTRIBUTORS.md) - How to get involved (technical & non-technical)
 
 ## Repository Structure
 
@@ -147,11 +147,11 @@ Mobile/Web App → API Gateway → Microservices
 
 We welcome contributors from all backgrounds - technical and non-technical!
 
-- **Technical Contributors:** Developers, DevOps, AI/ML engineers - see [CALL_FOR_CONTRIBUTORS.md](CALL_FOR_CONTRIBUTORS.md)
+- **Technical Contributors:** Developers, DevOps, AI/ML engineers - see [CALL_FOR_CONTRIBUTORS.md](development/CALL_FOR_CONTRIBUTORS.md)
 - **Non-Technical Contributors:** Humanitarian workers, legal advisors, community volunteers, government liaisons - your expertise is crucial! Join our GitHub Discussions.
 - **AI-Driven Development:** Most artifacts are generated through prompting. Check the `prompting/` folders in each repo to see examples.
 
-See [CALL_FOR_CONTRIBUTORS.md](CALL_FOR_CONTRIBUTORS.md) for detailed guidance.
+See [CALL_FOR_CONTRIBUTORS.md](development/CALL_FOR_CONTRIBUTORS.md) for detailed guidance.
 
 ## License
 

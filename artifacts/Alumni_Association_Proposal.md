@@ -216,10 +216,10 @@ All we request is permission to use the name and occasional help connecting with
 ---
 
 **Appendices:**
-- [Technical Architecture Document](https://github.com/sharebridge/sharebridge/blob/main/ShareBridge_Technical_Architecture.md)
-- [Detailed Business Requirements](https://github.com/sharebridge/sharebridge/blob/main/ShareBridge_Business_Requirement.md)
-- [Implementation Approach](https://github.com/sharebridge/sharebridge/blob/main/IMPLEMENTATION_APPROACH.md)
-- [Call for Contributors](https://github.com/sharebridge/sharebridge/blob/main/CALL_FOR_CONTRIBUTORS.md)
+- [Technical Architecture Document](https://github.com/sharebridge/sharebridge/blob/main/design/ShareBridge_Technical_Architecture.md)
+- [Detailed Business Requirements](https://github.com/sharebridge/sharebridge/blob/main/requirements/ShareBridge_Business_Requirement.md)
+- [Implementation Approach](https://github.com/sharebridge/sharebridge/blob/main/development/IMPLEMENTATION_APPROACH.md)
+- [Call for Contributors](https://github.com/sharebridge/sharebridge/blob/main/development/CALL_FOR_CONTRIBUTORS.md)
 
 ---
 

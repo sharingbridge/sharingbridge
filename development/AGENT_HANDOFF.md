@@ -20,6 +20,7 @@ Deliver a tangible MVP donor setup flow where a donor can enter free-text intent
 - Contract examples: `design/contracts/examples/`
 - Execution checklist: `development/MVP_BOOTSTRAP_ISSUES.md`
 - Implementation plan: `development/IMPLEMENTATION_APPROACH.md`
+- User-service preferences migration plan: `development/USER_SERVICE_PREFERENCES_MIGRATION.md`
 
 ## Current Implementation Status
 - `sharebridge-integration-service`:
@@ -28,7 +29,8 @@ Deliver a tangible MVP donor setup flow where a donor can enter free-text intent
   - `GET /v1/donor-setup/preferences?user_id=...` implemented.
   - File-backed preferences store: `src/preferencesStore.js`.
   - HTTP server exposed as a factory (`createIntegrationServer`) so tests can boot it against a temp DB.
-  - Integration tests cover save+fetch roundtrip, repeat-save dedupe, per-user isolation, and validation rejection (`test/preferencesRoundtrip.test.js`).
+  - Preferences access goes through a `PreferencesGateway` abstraction (`src/preferencesGateway.js`): `LocalPreferencesGateway` wraps the file store today; `UserServicePreferencesGateway` is a placeholder for the user-service swap. Backend selected by `PREFERENCES_BACKEND` env (`local` default, `user_service` requires `USER_SERVICE_BASE_URL`).
+  - Integration tests cover save+fetch roundtrip, repeat-save dedupe, per-user isolation, validation rejection, and gateway boundary contract (`test/preferencesRoundtrip.test.js`, `test/preferencesGateway.test.js`).
   - Tests passing via `npm test`.
 - `sharebridge-mobile-app`:
   - Donor setup search wired to backend API.
@@ -55,5 +57,5 @@ Deliver a tangible MVP donor setup flow where a donor can enter free-text intent
 ## Next Recommended Tasks
 1. ~~Add timeout/retry and typed error mapping in mobile API client.~~ Done.
 2. ~~Add integration tests for preferences save+fetch roundtrip and dedupe behavior.~~ Done.
-3. Move preference ownership from integration-service mock path toward user-service boundary (when user-service API baseline is ready).
+3. ~~Move preference ownership from integration-service mock path toward user-service boundary~~ — gateway abstraction and migration plan landed; remote `UserServicePreferencesGateway` body is deferred until the user-service API baseline ships. See `development/USER_SERVICE_PREFERENCES_MIGRATION.md`.
 4. Add minimal auth context (`user_id` from token/headers) instead of static demo user.

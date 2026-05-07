@@ -27,6 +27,8 @@ Deliver a tangible MVP donor setup flow where a donor can enter free-text intent
   - `POST /v1/donor-setup/preferences` implemented (save presets by `user_id`).
   - `GET /v1/donor-setup/preferences?user_id=...` implemented.
   - File-backed preferences store: `src/preferencesStore.js`.
+  - HTTP server exposed as a factory (`createIntegrationServer`) so tests can boot it against a temp DB.
+  - Integration tests cover save+fetch roundtrip, repeat-save dedupe, per-user isolation, and validation rejection (`test/preferencesRoundtrip.test.js`).
   - Tests passing via `npm test`.
 - `sharebridge-mobile-app`:
   - Donor setup search wired to backend API.
@@ -52,6 +54,6 @@ Deliver a tangible MVP donor setup flow where a donor can enter free-text intent
 
 ## Next Recommended Tasks
 1. ~~Add timeout/retry and typed error mapping in mobile API client.~~ Done.
-2. Add integration tests for preferences save+fetch roundtrip and dedupe behavior.
+2. ~~Add integration tests for preferences save+fetch roundtrip and dedupe behavior.~~ Done.
 3. Move preference ownership from integration-service mock path toward user-service boundary (when user-service API baseline is ready).
 4. Add minimal auth context (`user_id` from token/headers) instead of static demo user.

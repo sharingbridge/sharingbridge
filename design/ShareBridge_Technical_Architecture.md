@@ -14,6 +14,18 @@ For product-level assumptions, use [ShareBridge_Business_Requirement.md](../requ
 
 If this architecture document conflicts with that BRD section (for example in proposed pledge or ledger schemas), follow the BRD.
 
+## MVP Implementation Decisions
+
+To remove framework ambiguity during build-out, the current MVP implementation uses:
+
+- **Backend API framework:** **Node.js + NestJS**
+- **Mobile client framework:** **Flutter**
+- **Web client framework:** **React/Next.js**
+
+Notes:
+- Mentions of alternative frameworks elsewhere in this document represent future flexibility, not the active MVP build choice.
+- If execution docs or service repos conflict with this section, treat this section as the architecture-level implementation baseline for MVP.
+
 ---
 
 ## Table of Contents
@@ -50,7 +62,7 @@ If this architecture document conflicts with that BRD section (for example in pr
 │                     CLIENT LAYER                             │
 │  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐      │
 │  │ iOS App      │  │ Android App  │  │  Web App     │      │
-│  │ (React Native/Flutter)          │  │  (React)     │      │
+│  │ (Flutter)                     │  │  (React)     │      │
 │  └──────────────┘  └──────────────┘  └──────────────┘      │
 └─────────────────────────────────────────────────────────────┘
                             │

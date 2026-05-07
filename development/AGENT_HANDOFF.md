@@ -32,6 +32,8 @@ Deliver a tangible MVP donor setup flow where a donor can enter free-text intent
   - Donor setup search wired to backend API.
   - Confirm-and-save wired to preferences endpoint.
   - Startup load from backend by `user_id` with local `shared_preferences` fallback cache.
+  - HTTP API client now supports request timeout, exponential-backoff retry, and typed exceptions (`DonorSetupNetworkException`, `DonorSetupTimeoutException`, `DonorSetupBadRequestException`, `DonorSetupServerException`, `DonorSetupResponseException`). Mutating saves do not retry on 5xx (no double-write).
+  - UI surfaces friendly error messages per typed exception.
   - Tests passing via `flutter test`.
 
 ## Quick Runbook
@@ -49,7 +51,7 @@ Deliver a tangible MVP donor setup flow where a donor can enter free-text intent
   - Android emulator: `flutter run --dart-define=API_BASE_URL=http://10.0.2.2:8080`
 
 ## Next Recommended Tasks
-1. Add timeout/retry and typed error mapping in mobile API client.
+1. ~~Add timeout/retry and typed error mapping in mobile API client.~~ Done.
 2. Add integration tests for preferences save+fetch roundtrip and dedupe behavior.
 3. Move preference ownership from integration-service mock path toward user-service boundary (when user-service API baseline is ready).
 4. Add minimal auth context (`user_id` from token/headers) instead of static demo user.

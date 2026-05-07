@@ -1,0 +1,21 @@
+{
+  "suggestions": [
+    {
+      "restaurant_name": "A2B",
+      "menu_items": ["Mini Meals", "Curd Rice"],
+      "order_url": "https://www.zomato.com/chennai/a2b/order",
+      "app_name": "Zomato",
+      "confidence": 0.92,
+      "notes": "Popular around current location"
+    },
+    {
+      "restaurant_name": "Saravana Bhavan",
+      "menu_items": ["Idli Sambar", "Pongal"],
+      "order_url": "https://www.swiggy.com/city/chennai/saravana-bhavan/order",
+      "app_name": "Swiggy",
+      "confidence": 0.88,
+      "notes": "Strong vegetarian breakfast options"
+    }
+  ],
+  "generated_at": "2026-05-07T07:00:00Z"
+}

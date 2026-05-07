@@ -28,6 +28,7 @@ Product-level assumptions are maintained in one place: [ShareBridge_Business_Req
 
 - [Business Requirements](requirements/ShareBridge_Business_Requirement.md) - Complete business case and benefits
 - [Technical Architecture](design/ShareBridge_Technical_Architecture.md) - Detailed technical design
+- [API Contracts](design/contracts/donor_setup_suggest_vendors.openapi.yaml) - Shared request/response contracts and examples
 - [Implementation Approach](development/IMPLEMENTATION_APPROACH.md) - Development strategy and free-tier options
 - [MVP Bootstrap Issues](development/MVP_BOOTSTRAP_ISSUES.md) - Per-repo kickoff issue/checklist definitions
 - [Prompts](development/PROMPTS.md) - All prompts used for AI-assisted development

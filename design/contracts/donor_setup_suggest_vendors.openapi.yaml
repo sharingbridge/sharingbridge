@@ -1,0 +1,156 @@
+openapi: 3.0.3
+info:
+  title: ShareBridge Donor Setup Suggest Vendors API
+  version: 0.1.0
+  description: |
+    Contract for AI-assisted donor setup vendor/menu suggestions.
+    This endpoint returns up to 5 curated suggestions.
+
+paths:
+  /v1/donor-setup/suggest-vendors:
+    post:
+      summary: Suggest local vendors and menu presets
+      operationId: suggestDonorSetupVendors
+      tags:
+        - donor-setup
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SuggestVendorsRequest"
+            examples:
+              geoEnabled:
+                summary: Location permission enabled request
+                value:
+                  query_text: "zomato a2b mini meals"
+                  lat: 12.9784
+                  lng: 80.1796
+                  location_precision: "gps"
+                  client_platform: "flutter-android"
+              manualArea:
+                summary: Location permission denied fallback
+                value:
+                  query_text: "swiggy idli sambar"
+                  manual_area: "T Nagar, Chennai"
+                  location_precision: "manual_area"
+                  client_platform: "flutter-ios"
+      responses:
+        "200":
+          description: Suggestions generated successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuggestVendorsResponse"
+        "400":
+          description: Invalid request payload
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "422":
+          description: AI response malformed; fallback guidance returned
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+components:
+  schemas:
+    SuggestVendorsRequest:
+      type: object
+      required:
+        - query_text
+        - location_precision
+        - client_platform
+      properties:
+        query_text:
+          type: string
+          minLength: 3
+          maxLength: 200
+        lat:
+          type: number
+          format: double
+        lng:
+          type: number
+          format: double
+        manual_area:
+          type: string
+          minLength: 2
+          maxLength: 120
+        location_precision:
+          type: string
+          enum: [gps, manual_area]
+        client_platform:
+          type: string
+          maxLength: 40
+      allOf:
+        - oneOf:
+            - required: [lat, lng]
+            - required: [manual_area]
+
+    SuggestVendorsResponse:
+      type: object
+      required:
+        - suggestions
+        - generated_at
+      properties:
+        suggestions:
+          type: array
+          minItems: 0
+          maxItems: 5
+          items:
+            $ref: "#/components/schemas/VendorSuggestion"
+        generated_at:
+          type: string
+          format: date-time
+        guidance:
+          type: string
+          description: Optional user-safe fallback guidance
+
+    VendorSuggestion:
+      type: object
+      required:
+        - restaurant_name
+        - menu_items
+        - order_url
+        - app_name
+        - confidence
+      properties:
+        restaurant_name:
+          type: string
+          maxLength: 120
+        menu_items:
+          type: array
+          minItems: 1
+          maxItems: 8
+          items:
+            type: string
+            maxLength: 80
+        order_url:
+          type: string
+          format: uri
+        app_name:
+          type: string
+          maxLength: 60
+        confidence:
+          type: number
+          format: float
+          minimum: 0
+          maximum: 1
+        notes:
+          type: string
+          maxLength: 200
+
+    ErrorResponse:
+      type: object
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+        guidance:
+          type: string

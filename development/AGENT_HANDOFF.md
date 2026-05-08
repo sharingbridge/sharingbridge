@@ -21,6 +21,7 @@ Deliver a tangible MVP donor setup flow where a donor can enter free-text intent
 - Execution checklist: `development/MVP_BOOTSTRAP_ISSUES.md`
 - Implementation plan: `development/IMPLEMENTATION_APPROACH.md`
 - User-service preferences migration plan: `development/USER_SERVICE_PREFERENCES_MIGRATION.md`
+- Manual testing guide for shipped modules: `testing/MANUAL_TESTING_GUIDE.md` (index: `testing/README.md`)
 
 ## Current Implementation Status
 - `sharebridge-integration-service`:

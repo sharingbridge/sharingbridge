@@ -14,7 +14,7 @@ needed.
 |---|--------|----------------|
 | 1 | Donor setup `suggest-vendors` (mock top-5) | `sharebridge-integration-service/src/server.js`, `src/suggestVendors.js` |
 | 2 | Preferences save/fetch HTTP API | `sharebridge-integration-service/src/server.js`, `src/preferencesStore.js` |
-| 3 | Preferences gateway boundary toward user-service | `sharebridge-integration-service/src/preferencesGateway.js` |
+| 3 | Preferences repository boundary toward user-service | `sharebridge-integration-service/src/preferencesRepository.js` |
 | 4 | Minimal auth context (header-derived `user_id`) | `sharebridge-integration-service/src/authContext.js` |
 | 5 | Mobile donor setup UI + repository | `sharebridge-mobile-app/lib/features/donor_setup/**` |
 | 6 | Mobile HTTP client (timeout, retry, typed errors, auth headers) | `sharebridge-mobile-app/lib/features/donor_setup/data/http_donor_setup_api_client.dart` |
@@ -46,7 +46,7 @@ Coverage at a glance:
 | Test file | What it asserts |
 |-----------|-----------------|
 | `test/suggestVendors.test.js` | request validators and mock response shape |
-| `test/preferencesGateway.test.js` | `LocalPreferencesGateway` delegation, `UserServicePreferencesGateway` placeholder boundary |
+| `test/preferencesRepository.test.js` | `LocalPreferencesRepository` delegation, `UserServicePreferencesRepository` placeholder boundary |
 | `test/preferencesRoundtrip.test.js` | full HTTP save→fetch roundtrip, dedupe by `(restaurant_name, order_url)`, per-user isolation, validation rejection |
 | `test/authContext.test.js` | header parsing + `user_id` reconciliation |
 | `test/authContextRoundtrip.test.js` | bearer-token flow, `X-User-Id` flow, `403 user_id_mismatch`, `401 missing_auth_context`, legacy compat |
@@ -238,7 +238,7 @@ npm start
 Expect a clear error:
 
 ```
-UserServicePreferencesGateway requires baseUrl (USER_SERVICE_BASE_URL)
+UserServicePreferencesRepository requires baseUrl (USER_SERVICE_BASE_URL)
 ```
 
 Then unset and restart:

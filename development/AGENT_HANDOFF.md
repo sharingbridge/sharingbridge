@@ -30,9 +30,9 @@ Deliver a tangible MVP donor setup flow where a donor can enter free-text intent
   - `GET /v1/donor-setup/preferences` implemented (header-derived `user_id`; legacy `?user_id=` still accepted).
   - File-backed preferences store: `src/preferencesStore.js`.
   - HTTP server exposed as a factory (`createIntegrationServer`) so tests can boot it against a temp DB.
-  - Preferences access goes through a `PreferencesGateway` abstraction (`src/preferencesGateway.js`): `LocalPreferencesGateway` wraps the file store today; `UserServicePreferencesGateway` is a placeholder for the user-service swap. Backend selected by `PREFERENCES_BACKEND` env (`local` default, `user_service` requires `USER_SERVICE_BASE_URL`).
+  - Preferences access goes through a `PreferencesRepository` abstraction (`src/preferencesRepository.js`): `LocalPreferencesRepository` wraps the file store today; `UserServicePreferencesRepository` is a placeholder for the user-service swap. Backend selected by `PREFERENCES_BACKEND` env (`local` default, `user_service` requires `USER_SERVICE_BASE_URL`).
   - Auth context (`src/authContext.js`): MVP placeholder accepts `Authorization: Bearer demo.<user_id>` (preferred) and `X-User-Id` (fallback). Mismatched header vs body/query `user_id` returns `403 user_id_mismatch`. Missing auth context returns `401 missing_auth_context` on preferences endpoints.
-  - Integration tests cover save+fetch roundtrip, repeat-save dedupe, per-user isolation, validation rejection, gateway boundary contract, and header-driven auth flows (`test/preferencesRoundtrip.test.js`, `test/preferencesGateway.test.js`, `test/authContext.test.js`, `test/authContextRoundtrip.test.js`).
+  - Integration tests cover save+fetch roundtrip, repeat-save dedupe, per-user isolation, validation rejection, repository boundary contract, and header-driven auth flows (`test/preferencesRoundtrip.test.js`, `test/preferencesRepository.test.js`, `test/authContext.test.js`, `test/authContextRoundtrip.test.js`).
   - Tests passing via `npm test`.
 - `sharebridge-mobile-app`:
   - Donor setup search wired to backend API.
@@ -61,10 +61,10 @@ Deliver a tangible MVP donor setup flow where a donor can enter free-text intent
 ## Next Recommended Tasks
 1. ~~Add timeout/retry and typed error mapping in mobile API client.~~ Done.
 2. ~~Add integration tests for preferences save+fetch roundtrip and dedupe behavior.~~ Done.
-3. ~~Move preference ownership from integration-service mock path toward user-service boundary~~ — gateway abstraction and migration plan landed; remote `UserServicePreferencesGateway` body is deferred until the user-service API baseline ships. See `development/USER_SERVICE_PREFERENCES_MIGRATION.md`.
+3. ~~Move preference ownership from integration-service mock path toward user-service boundary~~ — repository abstraction and migration plan landed; remote `UserServicePreferencesRepository` body is deferred until the user-service API baseline ships. See `development/USER_SERVICE_PREFERENCES_MIGRATION.md`.
 4. ~~Add minimal auth context (`user_id` from token/headers) instead of static demo user.~~ Done.
 
 ## Follow-ups Surfaced This Pass
-- Implement `UserServicePreferencesGateway` body (HTTP client to user-service preferences endpoints) once `sharebridge-user-service` publishes its baseline.
+- Implement `UserServicePreferencesRepository` body (HTTP client to user-service preferences endpoints) once `sharebridge-user-service` publishes its baseline.
 - Replace the MVP `Bearer demo.<user_id>` placeholder with a real signed token issued by `sharebridge-user-service` (JWT or session token) and tighten the integration-service auth resolver to verify signatures. Reject `X-User-Id` once the real token issuer ships.
 - Backfill any presets in the integration-service file store into the user-service when the migration runs (see migration plan).

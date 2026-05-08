@@ -12,8 +12,8 @@ its preferences API baseline.
 
 ## Current boundary (in code)
 
-`sharebridge-integration-service/src/preferencesGateway.js` defines the
-abstraction the HTTP handlers depend on:
+`sharebridge-integration-service/src/preferencesRepository.js` defines
+the abstraction the HTTP handlers depend on:
 
 ```
 listByUser(userId)            -> Promise<Preset[]>
@@ -23,8 +23,8 @@ init()                         -> Promise<void>
 
 Two implementations:
 
-- `LocalPreferencesGateway(store)` — wraps `PreferencesStore` (today).
-- `UserServicePreferencesGateway({ baseUrl })` — placeholder; throws
+- `LocalPreferencesRepository(store)` — wraps `PreferencesStore` (today).
+- `UserServicePreferencesRepository({ baseUrl })` — placeholder; throws
   `not yet implemented` until the user-service baseline ships.
 
 Selection is driven by env:
@@ -71,7 +71,7 @@ Errors:
 
 1. Implement the planned endpoints in `sharebridge-user-service` against
    its persistent store (Postgres per current architecture doc).
-2. Replace the body of `UserServicePreferencesGateway` with `fetch()`
+2. Replace the body of `UserServicePreferencesRepository` with `fetch()`
    calls to those endpoints, propagating the donor's auth context.
 3. Add a roundtrip integration test against a stub user-service (e.g.
    spin up an HTTP fixture that mirrors the contract).
@@ -79,7 +79,7 @@ Errors:
    in the integration-service deployment config.
 5. Backfill any presets in the file-backed store into user-service via a
    one-shot script. Then retire `PreferencesStore` and
-   `LocalPreferencesGateway`.
+   `LocalPreferencesRepository`.
 6. Delete `data/` and the `PreferencesStore` module from
    integration-service.
 

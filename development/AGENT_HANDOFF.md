@@ -1,7 +1,9 @@
 # ShareBridge Agent Handoff
 
+> **Live coordination doc for AI-assisted coding sessions.** Read this first when picking up the project. Update the "Recently Shipped" and "Next Recommended Tasks" sections as work lands so the next session has fresh context.
+
 ## Goal
-Deliver a tangible MVP donor setup flow where a donor can enter free-text intent, receive AI-assisted vendor/menu suggestions, confirm one or more options, and persist presets for reuse. The backend is the source of truth for user preferences; mobile uses local cache fallback for resilience.
+Deliver the MVP **donor-setup → donor-seeker interaction → vendor redirect → delivery confirmation** flow. The integration service is the platform's facilitator. ShareBridge is never the system of record for money.
 
 ## Approach (Locked)
 - Backend payment model: provider/vendor-hosted only.
@@ -10,7 +12,7 @@ Deliver a tangible MVP donor setup flow where a donor can enter free-text intent
 - Queue strategy: Redis for MVP, SQS/SNS for scale.
 - Backend source-of-truth for user preferences; client cache is non-authoritative.
 - Mobile stack: Flutter.
-- Backend API stack (MVP): Node.js + NestJS direction; current integration-service MVP uses lightweight Node server for rapid loop validation.
+- Backend API stack (MVP): Node.js + NestJS direction; integration-service today is a lightweight Node http server for fast iteration.
 
 ## Site Map (Source of Truth)
 - BRD assumptions: `requirements/ShareBridge_Business_Requirement.md`
@@ -18,53 +20,92 @@ Deliver a tangible MVP donor setup flow where a donor can enter free-text intent
 - Donor setup sequence: `design/Donor_Setup_AI_Search_Sequence.md`
 - API contract: `design/contracts/donor_setup_suggest_vendors.openapi.yaml`
 - Contract examples: `design/contracts/examples/`
-- Execution checklist: `development/MVP_BOOTSTRAP_ISSUES.md`
+- MVP per-repo execution checklist: `development/MVP_BOOTSTRAP_ISSUES.md`
 - Implementation plan: `development/IMPLEMENTATION_APPROACH.md`
 - User-service preferences migration plan: `development/USER_SERVICE_PREFERENCES_MIGRATION.md`
 - Manual testing guide for shipped modules: `testing/MANUAL_TESTING_GUIDE.md` (index: `testing/README.md`)
 
 ## Current Implementation Status
-- `sharebridge-integration-service`:
-  - `POST /v1/donor-setup/suggest-vendors` implemented (mock top-5 suggestions).
-  - `POST /v1/donor-setup/preferences` implemented (save presets — `user_id` derived from auth headers).
-  - `GET /v1/donor-setup/preferences` implemented (header-derived `user_id`; legacy `?user_id=` still accepted).
-  - File-backed preferences store: `src/preferencesStore.js`.
-  - HTTP server exposed as a factory (`createIntegrationServer`) so tests can boot it against a temp DB.
-  - Preferences access goes through a `PreferencesRepository` abstraction (`src/preferencesRepository.js`): `LocalPreferencesRepository` wraps the file store today; `UserServicePreferencesRepository` is a placeholder for the user-service swap. Backend selected by `PREFERENCES_BACKEND` env (`local` default, `user_service` requires `USER_SERVICE_BASE_URL`).
-  - Auth context (`src/authContext.js`): MVP placeholder accepts `Authorization: Bearer demo.<user_id>` (preferred) and `X-User-Id` (fallback). Mismatched header vs body/query `user_id` returns `403 user_id_mismatch`. Missing auth context returns `401 missing_auth_context` on preferences endpoints.
-  - Integration tests cover save+fetch roundtrip, repeat-save dedupe, per-user isolation, validation rejection, repository boundary contract, and header-driven auth flows (`test/preferencesRoundtrip.test.js`, `test/preferencesRepository.test.js`, `test/authContext.test.js`, `test/authContextRoundtrip.test.js`).
-  - Tests passing via `npm test`.
-- `sharebridge-mobile-app`:
-  - Donor setup search wired to backend API.
-  - Confirm-and-save wired to preferences endpoint.
-  - Startup load from backend by `user_id` with local `shared_preferences` fallback cache.
-  - HTTP API client now supports request timeout, exponential-backoff retry, and typed exceptions (`DonorSetupNetworkException`, `DonorSetupTimeoutException`, `DonorSetupBadRequestException`, `DonorSetupServerException`, `DonorSetupResponseException`). Mutating saves do not retry on 5xx (no double-write).
-  - UI surfaces friendly error messages per typed exception.
-  - `AuthContext` (`lib/features/donor_setup/data/auth_context.dart`) sources `user_id` from `--dart-define=USER_ID=...` (default `demo-user`) and injects `Authorization: Bearer demo.<user_id>` plus `X-User-Id` headers on every API call. Static demo user constant removed from the page.
-  - Tests passing via `flutter test`.
+
+### `sharebridge-integration-service` (donor setup MVP shipped)
+- `POST /v1/donor-setup/suggest-vendors` — mock top-5 vendor/menu suggestions.
+- `POST /v1/donor-setup/preferences` — save donor presets, `user_id` derived from auth headers.
+- `GET /v1/donor-setup/preferences` — fetch presets, header-derived `user_id` (legacy `?user_id=` still accepted).
+- File-backed preferences store (`src/preferencesStore.js`) accessed via a `PreferencesRepository` abstraction (`src/preferencesRepository.js`).
+  - `LocalPreferencesRepository` is wired today.
+  - `UserServicePreferencesRepository` is a placeholder; throws `not yet implemented` until the user-service preferences API ships.
+  - Backend selected by `PREFERENCES_BACKEND` env (`local` default, `user_service` requires `USER_SERVICE_BASE_URL`).
+- Auth context (`src/authContext.js`): MVP placeholder. Accepts `Authorization: Bearer demo.<user_id>` (preferred) or `X-User-Id` (fallback). Mismatch → `403 user_id_mismatch`. Missing → `401 missing_auth_context` on preferences endpoints.
+- HTTP server is exposed as a factory (`createIntegrationServer`) so tests can boot it against a temp DB.
+- 28 tests, all green via `npm test`.
+
+### `sharebridge-mobile-app` (donor setup MVP shipped)
+- Donor setup screen wired to integration-service: search → suggestions → confirm-and-save.
+- Startup loads presets from server, with local `shared_preferences` fallback cache when the server is unreachable.
+- HTTP API client (`lib/features/donor_setup/data/http_donor_setup_api_client.dart`) supports request timeout, exponential-backoff retry, and typed exceptions (`DonorSetupNetworkException`, `DonorSetupTimeoutException`, `DonorSetupBadRequestException`, `DonorSetupServerException`, `DonorSetupResponseException`). Mutating saves do not retry on 5xx (no double-write).
+- UI surfaces friendly error messages per typed exception.
+- `AuthContext` (`lib/features/donor_setup/data/auth_context.dart`) sources `user_id` from `--dart-define=USER_ID=...` (default `demo-user`) and injects `Authorization: Bearer demo.<user_id>` plus `X-User-Id` headers on every API call.
+- 15 tests, all green via `flutter test`.
+
+### Other repos
+- `sharebridge-user-service`: README only, no code yet. **This is the highest-leverage next bootstrap target** — it unblocks the three deferred follow-ups below.
+- `sharebridge-api-gateway`, `sharebridge-order-service`, `sharebridge-notification-service`, `sharebridge-ai-safety`, `sharebridge-photo-service`, `sharebridge-web-app`, `sharebridge-infra`, `sharebridge-deployment`: README only, no code yet.
 
 ## Quick Runbook
-- Integration service:
-  - `cd sharebridge-integration-service`
-  - `npm install`
-  - `npm test`
-  - `npm start`
-  - Health: `http://localhost:8080/health`
-  - Preferences endpoints require `Authorization: Bearer demo.<user_id>` (or `X-User-Id`) header.
-- Mobile app:
-  - `cd sharebridge-mobile-app`
-  - `flutter pub get`
-  - `flutter test`
-  - Windows desktop: `flutter run --dart-define=API_BASE_URL=http://localhost:8080 --dart-define=USER_ID=demo-user`
-  - Android emulator: `flutter run --dart-define=API_BASE_URL=http://10.0.2.2:8080 --dart-define=USER_ID=demo-user`
+
+Integration service:
+- `cd sharebridge-integration-service`
+- `npm install`
+- `npm test`
+- `npm start` → listens on `http://localhost:8080`
+- Health: `GET /health`
+- Preferences endpoints require `Authorization: Bearer demo.<user_id>` (or `X-User-Id`).
+
+Mobile app:
+- `cd sharebridge-mobile-app`
+- `flutter pub get`
+- `flutter test`
+- Windows desktop: `flutter run --dart-define=API_BASE_URL=http://localhost:8080 --dart-define=USER_ID=demo-user`
+- Android emulator: `flutter run --dart-define=API_BASE_URL=http://10.0.2.2:8080 --dart-define=USER_ID=demo-user`
+
+Manual end-to-end and API smoke steps live in `testing/MANUAL_TESTING_GUIDE.md`.
 
 ## Next Recommended Tasks
-1. ~~Add timeout/retry and typed error mapping in mobile API client.~~ Done.
-2. ~~Add integration tests for preferences save+fetch roundtrip and dedupe behavior.~~ Done.
-3. ~~Move preference ownership from integration-service mock path toward user-service boundary~~ — repository abstraction and migration plan landed; remote `UserServicePreferencesRepository` body is deferred until the user-service API baseline ships. See `development/USER_SERVICE_PREFERENCES_MIGRATION.md`.
-4. ~~Add minimal auth context (`user_id` from token/headers) instead of static demo user.~~ Done.
 
-## Follow-ups Surfaced This Pass
-- Implement `UserServicePreferencesRepository` body (HTTP client to user-service preferences endpoints) once `sharebridge-user-service` publishes its baseline.
-- Replace the MVP `Bearer demo.<user_id>` placeholder with a real signed token issued by `sharebridge-user-service` (JWT or session token) and tighten the integration-service auth resolver to verify signatures. Reject `X-User-Id` once the real token issuer ships.
-- Backfill any presets in the integration-service file store into the user-service when the migration runs (see migration plan).
+Pick the highest-leverage task that unblocks downstream work. Suggested priority order:
+
+1. **Bootstrap `sharebridge-user-service` skeleton.** Stand up a minimal Node service per `development/MVP_BOOTSTRAP_ISSUES.md` section 2 + the planned contract in `development/USER_SERVICE_PREFERENCES_MIGRATION.md`:
+   - Donor user model (id, phone/email, created_at).
+   - MVP token issuer endpoint that mints a token compatible with what integration-service / mobile already accept (initially `demo.<user_id>` is fine; design for swap to JWT later).
+   - `GET/PUT /v1/users/{user_id}/donor-presets` endpoints with the `Preset` shape from the migration doc; persist in-memory or file-backed for MVP.
+   - Tests covering token issue, preset list/upsert, and 401/403 paths consistent with integration-service.
+   - This is the only task that unblocks items #2, #4, and #5 below.
+2. **Add CI for the two repos that already have tests.** Minimal GitHub Actions workflow per repo:
+   - `sharebridge-integration-service`: Node 20, `npm install`, `npm test` on every push/PR.
+   - `sharebridge-mobile-app`: Flutter stable, `flutter pub get`, `flutter test` on every push/PR.
+   - Cheap; prevents silent regressions while we keep adding code.
+3. **Mobile polish before going wider.**
+   - Replace the hard-coded `'Chennai'` manual-area in `donor_setup_page.dart` with a small picker / text field.
+   - Distinguish "server returned 0 presets" (legitimate) from "server unreachable" on initial load — today both fall through to cache, masking outages.
+   - Add a "clear cached presets / sign out" action that wipes the local `shared_preferences` cache.
+4. **Wire `UserServicePreferencesRepository` to the new user-service** (depends on #1). Migration steps are in `development/USER_SERVICE_PREFERENCES_MIGRATION.md`.
+5. **Replace the `Bearer demo.<user_id>` placeholder with a real signed token** issued by the user-service (depends on #1). Tighten the integration-service auth resolver to verify signatures. Reject `X-User-Id` once the real token issuer is in place.
+
+## Follow-ups Surfaced in Prior Sessions
+- Backfill any presets in the integration-service file store into user-service when the migration runs (covered in the migration plan).
+- The integration-service file-backed store (`PreferencesStore`) and `LocalPreferencesRepository` retire once the migration completes.
+
+## Recently Shipped (chronological, newest last)
+- `feat`: donor-setup `suggest-vendors` mock endpoint + tests.
+- `feat`: donor-setup preset save endpoint.
+- `feat`: persist donor presets per user and add preferences fetch.
+- `feat`: scaffold Flutter day-1 donor-setup baseline + wire suggest-vendors API client.
+- `feat`: complete mobile preset confirm-save flow and add platforms.
+- `feat`: load presets from server with local cache fallback.
+- `feat`: add timeout, retry, and typed errors to donor setup API client (mobile).
+- `test`: add HTTP roundtrip tests for donor preferences save and dedupe (integration-service).
+- `refactor`: introduce preferences repository boundary toward user-service (integration-service) — abstraction now named `PreferencesRepository` (was `PreferencesGateway` to avoid edge-gateway terminology clash).
+- `feat`: derive user_id from auth headers on preferences endpoints (integration-service).
+- `feat`: send donor identity via auth headers from mobile app.
+- `docs`: add `testing/` folder with `MANUAL_TESTING_GUIDE.md` for shipped modules.
+- `docs`: clean up unused `prompting/` folders, retire `development/PROMPTS.md`, and refocus README + CALL_FOR_CONTRIBUTORS on AGENT_HANDOFF as the live coordination doc.

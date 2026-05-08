@@ -3,7 +3,6 @@
 > Transforming traditional alms-giving into a modern, accountable, and dignified process
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![AI-Powered Development](https://img.shields.io/badge/Development-AI--Powered-blue.svg)](development/PROMPTS.md)
 
 ## Overview
 
@@ -13,7 +12,7 @@ ShareBridge is a mobile/web application that enables donors to provide food and 
 
 Product-level assumptions are maintained in one place: [ShareBridge_Business_Requirement.md](requirements/ShareBridge_Business_Requirement.md), section **“Operating Constraints & Assumptions.”** Refer to that section as the source of truth.
 
-**🤖 AI-Powered Development:** This project is being built primarily through AI-assisted development. Code, documentation, and infrastructure are generated using carefully crafted prompts. All prompts are stored in [PROMPTS.md](development/PROMPTS.md) and in each repository's `prompting/` folder for transparency and reproducibility.
+**🤖 AI-Assisted Development:** This project is being built primarily through AI-assisted coding sessions. Live coordination, decisions, and the next set of recommended tasks are tracked in [AGENT_HANDOFF.md](development/AGENT_HANDOFF.md). Conversations are not archived in the repo — durable knowledge lives in design/, requirements/, development/, and testing/ docs.
 
 ## Key Features
 
@@ -31,7 +30,8 @@ Product-level assumptions are maintained in one place: [ShareBridge_Business_Req
 - [API Contracts](design/contracts/donor_setup_suggest_vendors.openapi.yaml) - Shared request/response contracts and examples
 - [Implementation Approach](development/IMPLEMENTATION_APPROACH.md) - Development strategy and free-tier options
 - [MVP Bootstrap Issues](development/MVP_BOOTSTRAP_ISSUES.md) - Per-repo kickoff issue/checklist definitions
-- [Prompts](development/PROMPTS.md) - All prompts used for AI-assisted development
+- [Agent Handoff](development/AGENT_HANDOFF.md) - Live coordination doc and next recommended tasks
+- [Manual Testing Guide](testing/MANUAL_TESTING_GUIDE.md) - How to verify the modules shipped so far
 - [Initial Requirements](requirements/ShareBridge_initial_requirement.txt) - Original concept
 - [Call for Contributors](development/CALL_FOR_CONTRIBUTORS.md) - How to get involved (technical & non-technical)
 
@@ -41,39 +41,26 @@ This is the **master repository** for ShareBridge, containing documentation and 
 
 ### Child Repositories (Independent Development)
 
-Each repository includes a `prompting/` folder containing all prompts used to generate code and documentation for that component.
-
 **Frontend:**
-- `sharebridge-mobile-app` - Mobile application (React Native/Flutter)
-  - `prompting/` - Mobile UI/UX prompts
+- `sharebridge-mobile-app` - Mobile application (Flutter)
 - `sharebridge-web-app` - Web application (React/Next.js)
-  - `prompting/` - Web interface prompts
 
 **Backend Services:**
 - `sharebridge-api-gateway` - API gateway and routing
-  - `prompting/` - API design prompts
 - `sharebridge-order-service` - Order management
-  - `prompting/` - Order flow prompts
 - `sharebridge-user-service` - User authentication and profiles
-  - `prompting/` - Auth flow prompts
 - `sharebridge-integration-service` - Vendor integrations (Swiggy, Zomato)
-  - `prompting/` - Integration prompts
 - `sharebridge-notification-service` - Notifications
-  - `prompting/` - Notification logic prompts
 
 **AI/ML:**
 - `sharebridge-ai-safety` - Location safety assessment
-  - `prompting/` - AI model prompts
 - `sharebridge-photo-service` - Face detection and verification
-  - `prompting/` - Computer vision prompts
 
 **Infrastructure:**
 - `sharebridge-infra` - Infrastructure as Code
-  - `prompting/` - Infrastructure prompts
 - `sharebridge-deployment` - CI/CD pipelines
-  - `prompting/` - Pipeline prompts
 
-Each repository evolves independently. Coordination happens here through GitHub Discussions.
+Each repository evolves independently. Coordination happens here through GitHub Discussions and `development/AGENT_HANDOFF.md`.
 
 **Note:** Documentation is maintained within each service repository rather than in a separate docs repo.
 
@@ -150,7 +137,7 @@ We welcome contributors from all backgrounds - technical and non-technical!
 
 - **Technical Contributors:** Developers, DevOps, AI/ML engineers - see [CALL_FOR_CONTRIBUTORS.md](development/CALL_FOR_CONTRIBUTORS.md)
 - **Non-Technical Contributors:** Humanitarian workers, legal advisors, community volunteers, government liaisons - your expertise is crucial! Join our GitHub Discussions.
-- **AI-Driven Development:** Most artifacts are generated through prompting. Check the `prompting/` folders in each repo to see examples.
+- **AI-Assisted Development:** Most artifacts are generated through AI-assisted coding sessions. The live coordination doc is [AGENT_HANDOFF.md](development/AGENT_HANDOFF.md).
 
 See [CALL_FOR_CONTRIBUTORS.md](development/CALL_FOR_CONTRIBUTORS.md) for detailed guidance.
 

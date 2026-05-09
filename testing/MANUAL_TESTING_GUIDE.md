@@ -15,7 +15,7 @@ needed.
 | 1 | Donor setup `suggest-vendors` (mock top-5) | `sharebridge-integration-service/src/server.js`, `src/suggestVendors.js` |
 | 2 | Preferences save/fetch HTTP API | `sharebridge-integration-service/src/server.js`, `src/preferencesStore.js` |
 | 3 | Preferences repository boundary toward user-service | `sharebridge-integration-service/src/preferencesRepository.js` |
-| 4 | Minimal auth context (header-derived `user_id`) | `sharebridge-integration-service/src/authContext.js` |
+| 4 | Signed-token auth context (JWT Bearer) | `sharebridge-integration-service/src/authContext.js`, `src/tokenService.js` |
 | 5 | Mobile donor setup UI + repository | `sharebridge-mobile-app/lib/features/donor_setup/**` |
 | 6 | Mobile HTTP client (timeout, retry, typed errors, auth headers) | `sharebridge-mobile-app/lib/features/donor_setup/data/http_donor_setup_api_client.dart` |
 | 7 | Mobile auth context | `sharebridge-mobile-app/lib/features/donor_setup/data/auth_context.dart` |
@@ -29,11 +29,14 @@ needed.
 - Both repos cloned alongside this one:
   - `D:\kannan\sharebridge_repos\sharebridge-integration-service`
   - `D:\kannan\sharebridge_repos\sharebridge-mobile-app`
+- User service cloned and runnable for token minting:
+  - `D:\kannan\sharebridge_repos\sharebridge-user-service`
 - Port `8080` free locally.
+- Port `8081` free locally.
 
 ## 1. Automated test suites
 
-### 1a. Integration service (Node.js, currently 28 tests)
+### 1a. Integration service (Node.js, currently 29 tests)
 
 ```powershell
 cd D:\kannan\sharebridge_repos\sharebridge-integration-service
@@ -46,10 +49,11 @@ Coverage at a glance:
 | Test file | What it asserts |
 |-----------|-----------------|
 | `test/suggestVendors.test.js` | request validators and mock response shape |
-| `test/preferencesRepository.test.js` | `LocalPreferencesRepository` delegation, `UserServicePreferencesRepository` placeholder boundary |
+| `test/preferencesRepository.test.js` | local + user-service repository behavior, auth-header forwarding, typed upstream error mapping |
 | `test/preferencesRoundtrip.test.js` | full HTTP save→fetch roundtrip, dedupe by `(restaurant_name, order_url)`, per-user isolation, validation rejection |
-| `test/authContext.test.js` | header parsing + `user_id` reconciliation |
-| `test/authContextRoundtrip.test.js` | bearer-token flow, `X-User-Id` flow, `403 user_id_mismatch`, `401 missing_auth_context`, legacy compat |
+| `test/authContext.test.js` | signed bearer parsing/verification + `user_id` reconciliation |
+| `test/authContextRoundtrip.test.js` | signed-token flow, mismatch and missing-token guards (`403`/`401`) |
+| `test/userServicePreferencesRoundtrip.test.js` | integration-service → user-service backend path roundtrip + upstream 403 surfacing |
 
 Each roundtrip test boots a real `http.Server` on port 0 against a
 temp-dir `PreferencesStore`, so the HTTP wiring under test is the same
@@ -58,12 +62,12 @@ code that runs in `npm start`.
 Expected output footer:
 
 ```
-# tests 28
-# pass 28
+# tests 29
+# pass 29
 # fail 0
 ```
 
-### 1b. Mobile app (Flutter, currently 15 tests)
+### 1b. Mobile app (Flutter, currently 17 tests)
 
 ```powershell
 cd D:\kannan\sharebridge_repos\sharebridge-mobile-app
@@ -85,7 +89,16 @@ Expected last line: `All tests passed!`.
 
 ## 2. Manual API smoke tests
 
-Start the backend in one PowerShell window:
+Start user-service in one PowerShell window:
+
+```powershell
+cd D:\kannan\sharebridge_repos\sharebridge-user-service
+npm install   # first time only
+npm start
+# User service listening on 8081
+```
+
+Start integration-service in a second PowerShell window:
 
 ```powershell
 cd D:\kannan\sharebridge_repos\sharebridge-integration-service
@@ -93,7 +106,24 @@ npm start
 # Integration service listening on 8080
 ```
 
-In a second window, drive the API.
+In a third window, drive the API.
+
+First, mint a signed token from user-service (required for all preferences endpoints):
+
+```powershell
+Invoke-RestMethod -Method Post -Uri http://localhost:8081/v1/auth/token `
+  -ContentType application/json `
+  -Body (@{ user_id = "alice" } | ConvertTo-Json)
+```
+
+Save the returned `token`:
+
+```powershell
+$token = (Invoke-RestMethod -Method Post -Uri http://localhost:8081/v1/auth/token `
+  -ContentType application/json `
+  -Body (@{ user_id = "alice" } | ConvertTo-Json)).token
+$headers = @{ Authorization = "Bearer $token" }
+```
 
 ### 2a. Health check (no auth)
 
@@ -119,10 +149,9 @@ Invoke-RestMethod -Method Post -Uri http://localhost:8080/v1/donor-setup/suggest
 
 Expect a `suggestions` array (≤ 5 entries) plus `generated_at`.
 
-### 2c. Save presets via Bearer token (auth required)
+### 2c. Save presets via signed Bearer token (auth required)
 
 ```powershell
-$headers = @{ Authorization = "Bearer demo.alice" }
 $body = @{
   presets = @(
     @{
@@ -207,7 +236,10 @@ try {
 ### 2g. Verify per-user isolation
 
 ```powershell
-$bobHeaders = @{ Authorization = "Bearer demo.bob" }
+$bobToken = (Invoke-RestMethod -Method Post -Uri http://localhost:8081/v1/auth/token `
+  -ContentType application/json `
+  -Body (@{ user_id = "bob" } | ConvertTo-Json)).token
+$bobHeaders = @{ Authorization = "Bearer $bobToken" }
 $bobBody = @{
   presets = @(
     @{
@@ -228,23 +260,19 @@ Invoke-RestMethod -Method Post -Uri http://localhost:8080/v1/donor-setup/prefere
 
 Expect each user to only see their own presets.
 
-### 2h. (Optional) Verify the user-service backend switch fails loudly
+### 2h. (Optional) Verify user-service backend switch
 
 ```powershell
-$env:PREFERENCES_BACKEND = "user_service"   # missing USER_SERVICE_BASE_URL on purpose
+$env:PREFERENCES_BACKEND = "user_service"
+$env:USER_SERVICE_BASE_URL = "http://localhost:8081"
 npm start
 ```
 
-Expect a clear error:
-
-```
-UserServicePreferencesRepository requires baseUrl (USER_SERVICE_BASE_URL)
-```
-
-Then unset and restart:
+Then unset and restart (to return to local backend):
 
 ```powershell
 Remove-Item Env:PREFERENCES_BACKEND
+Remove-Item Env:USER_SERVICE_BASE_URL
 npm start
 ```
 
@@ -265,17 +293,29 @@ flutter run -d windows --dart-define=API_BASE_URL=http://localhost:8080 --dart-d
 flutter run --dart-define=API_BASE_URL=http://10.0.2.2:8080 --dart-define=USER_ID=alice
 ```
 
-`USER_ID` is optional (defaults to `demo-user`). The mobile client signs
-every request with `Authorization: Bearer demo.<USER_ID>` plus
-`X-User-Id`.
+Mint a signed token first:
+
+```powershell
+$mobileToken = (Invoke-RestMethod -Method Post -Uri http://localhost:8081/v1/auth/token `
+  -ContentType application/json `
+  -Body (@{ user_id = "alice" } | ConvertTo-Json)).token
+```
+
+Run with token:
+
+```powershell
+flutter run -d windows --dart-define=API_BASE_URL=http://localhost:8080 --dart-define=USER_ID=alice --dart-define=AUTH_TOKEN=$mobileToken
+```
+
+The mobile client now sends only `Authorization: Bearer <AUTH_TOKEN>`.
 
 ### 3c. Walkthrough on the app
 
 1. App opens to **Donor Setup**. Because step 2c saved presets for
    `alice`, the page shows status "Loaded saved presets from server."
 2. Type something like `zomato a2b mini meals` → tap **Suggest Vendors**.
-   The mock backend returns up to 5 suggestions; each request carries
-   `Authorization: Bearer demo.alice` and `X-User-Id: alice`.
+   The mock backend returns up to 5 suggestions; auth-protected endpoints
+   carry `Authorization: Bearer <signed token>`.
 3. Check one or more suggestions → tap **Confirm and Save Presets**.
    Status flips to "Presets saved successfully." Re-running the GET
    from step 2d shows the new picks (with dedupe applied).
@@ -305,7 +345,7 @@ Windows).
 
 ## 5. What "good" looks like (acceptance summary)
 
-- `npm test` in `sharebridge-integration-service` reports `# pass 28 / # fail 0`.
+- `npm test` in `sharebridge-integration-service` reports `# pass 29 / # fail 0`.
 - `flutter test` in `sharebridge-mobile-app` ends with `All tests passed!`.
 - `Invoke-RestMethod http://localhost:8080/health` returns `ok=True`.
 - Step 2c returns HTTP 200 with `saved_count=1`; step 2d echoes the

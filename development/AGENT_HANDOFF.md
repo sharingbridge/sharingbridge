@@ -77,14 +77,10 @@ Manual end-to-end and API smoke steps live in `testing/MANUAL_TESTING_GUIDE.md`.
 
 ## Next Recommended Tasks
 
-Tasks #1-#2 are complete. Remaining priority order:
+Tasks #1-#3 are complete. Remaining priority order:
 
-1. **Mobile polish before going wider.**
-   - Replace the hard-coded `'Chennai'` manual-area in `donor_setup_page.dart` with a small picker / text field.
-   - Distinguish "server returned 0 presets" (legitimate) from "server unreachable" on initial load — today both fall through to cache, masking outages.
-   - Add a "clear cached presets / sign out" action that wipes the local `shared_preferences` cache.
-2. **Wire `UserServicePreferencesRepository` to the new user-service.** Migration steps are in `development/USER_SERVICE_PREFERENCES_MIGRATION.md`.
-3. **Replace the `Bearer demo.<user_id>` placeholder with a real signed token** issued by the user-service. Tighten the integration-service auth resolver to verify signatures. Reject `X-User-Id` once the real token issuer is in place.
+1. **Wire `UserServicePreferencesRepository` to the new user-service.** Migration steps are in `development/USER_SERVICE_PREFERENCES_MIGRATION.md`.
+2. **Replace the `Bearer demo.<user_id>` placeholder with a real signed token** issued by the user-service. Tighten the integration-service auth resolver to verify signatures. Reject `X-User-Id` once the real token issuer is in place.
 
 ## Follow-ups Surfaced in Prior Sessions
 - Backfill any presets in the integration-service file store into user-service when the migration runs (covered in the migration plan).
@@ -106,3 +102,4 @@ Tasks #1-#2 are complete. Remaining priority order:
 - `docs`: clean up unused `prompting/` folders, retire `development/PROMPTS.md`, and refocus README + CALL_FOR_CONTRIBUTORS on AGENT_HANDOFF as the live coordination doc.
 - `feat`: bootstrap `sharebridge-user-service` skeleton with demo-token auth endpoint, donor-presets GET/PUT APIs, file-backed donor model/preset storage, and green roundtrip tests for token + presets + 401/403 auth paths.
 - `ci`: add minimal GitHub Actions CI workflows for `sharebridge-integration-service` (Node 20, `npm install`, `npm test`) and `sharebridge-mobile-app` (Flutter stable, `flutter pub get`, `flutter test`) on push/PR.
+- `feat`: mobile donor-setup polish — replace hard-coded manual area with editable field, distinguish empty server presets from server-unreachable fallback behavior, and add clear cache/sign-out action; extend widget tests for new behaviors.

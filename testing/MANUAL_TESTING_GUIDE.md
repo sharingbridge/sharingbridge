@@ -36,7 +36,9 @@ needed.
 
 ### Auth signing secret (`AUTH_TOKEN_SECRET`)
 
-Tokens are signed and verified with a **symmetric** secret (`AUTH_TOKEN_SECRET`).
+This guide describes the **donor-setup MVP** path: symmetric HS256 tokens and a shared `AUTH_TOKEN_SECRET` between user-service and integration-service. Production is expected to use **managed secrets**, **rotation**, and later **stronger patterns** (e.g. asymmetric signing)—see `development/AGENT_HANDOFF.md` follow-ups.
+
+Tokens are signed and verified with that **symmetric** secret (`AUTH_TOKEN_SECRET`).
 
 - **You do not have to set it for basic local smoke tests.** If the variable is unset, both `sharebridge-user-service` and `sharebridge-integration-service` use the same **built-in dev default** from each repo’s `src/tokenService.js` (`sharebridge-dev-secret-change-me`). Tokens minted on user-service `:8081` will verify on integration-service `:8080` as long as you did not change the secret on one side only.
 

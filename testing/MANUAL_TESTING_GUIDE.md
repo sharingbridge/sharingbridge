@@ -34,6 +34,24 @@ needed.
 - Port `8080` free locally.
 - Port `8081` free locally.
 
+### Auth signing secret (`AUTH_TOKEN_SECRET`)
+
+Tokens are signed and verified with a **symmetric** secret (`AUTH_TOKEN_SECRET`).
+
+- **You do not have to set it for basic local smoke tests.** If the variable is unset, both `sharebridge-user-service` and `sharebridge-integration-service` use the same **built-in dev default** from each repo’s `src/tokenService.js` (`sharebridge-dev-secret-change-me`). Tokens minted on user-service `:8081` will verify on integration-service `:8080` as long as you did not change the secret on one side only.
+
+- **Set it explicitly** when you want to match staging/prod habits or avoid relying on the default string. The value must be **identical** on both servers before each `npm start`:
+
+  ```powershell
+  # In the user-service terminal, before `npm start`:
+  $env:AUTH_TOKEN_SECRET = "your-strong-local-secret"
+
+  # In the integration-service terminal, before `npm start`:
+  $env:AUTH_TOKEN_SECRET = "your-strong-local-secret"
+  ```
+
+- If you override **`AUTH_TOKEN_ISSUER`** or **`AUTH_TOKEN_AUDIENCE`** in either service, override them **to the same values** on both; otherwise verification will fail.
+
 ## 1. Automated test suites
 
 ### 1a. Integration service (Node.js, currently 29 tests)

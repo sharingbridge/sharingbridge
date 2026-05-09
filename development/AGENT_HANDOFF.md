@@ -77,18 +77,14 @@ Manual end-to-end and API smoke steps live in `testing/MANUAL_TESTING_GUIDE.md`.
 
 ## Next Recommended Tasks
 
-Task #1 is complete. Remaining priority order:
+Tasks #1-#2 are complete. Remaining priority order:
 
-1. **Add CI for the two repos that already have tests.** Minimal GitHub Actions workflow per repo:
-   - `sharebridge-integration-service`: Node 20, `npm install`, `npm test` on every push/PR.
-   - `sharebridge-mobile-app`: Flutter stable, `flutter pub get`, `flutter test` on every push/PR.
-   - Cheap; prevents silent regressions while we keep adding code.
-2. **Mobile polish before going wider.**
+1. **Mobile polish before going wider.**
    - Replace the hard-coded `'Chennai'` manual-area in `donor_setup_page.dart` with a small picker / text field.
    - Distinguish "server returned 0 presets" (legitimate) from "server unreachable" on initial load — today both fall through to cache, masking outages.
    - Add a "clear cached presets / sign out" action that wipes the local `shared_preferences` cache.
-3. **Wire `UserServicePreferencesRepository` to the new user-service.** Migration steps are in `development/USER_SERVICE_PREFERENCES_MIGRATION.md`.
-4. **Replace the `Bearer demo.<user_id>` placeholder with a real signed token** issued by the user-service. Tighten the integration-service auth resolver to verify signatures. Reject `X-User-Id` once the real token issuer is in place.
+2. **Wire `UserServicePreferencesRepository` to the new user-service.** Migration steps are in `development/USER_SERVICE_PREFERENCES_MIGRATION.md`.
+3. **Replace the `Bearer demo.<user_id>` placeholder with a real signed token** issued by the user-service. Tighten the integration-service auth resolver to verify signatures. Reject `X-User-Id` once the real token issuer is in place.
 
 ## Follow-ups Surfaced in Prior Sessions
 - Backfill any presets in the integration-service file store into user-service when the migration runs (covered in the migration plan).
@@ -109,3 +105,4 @@ Task #1 is complete. Remaining priority order:
 - `docs`: add `testing/` folder with `MANUAL_TESTING_GUIDE.md` for shipped modules.
 - `docs`: clean up unused `prompting/` folders, retire `development/PROMPTS.md`, and refocus README + CALL_FOR_CONTRIBUTORS on AGENT_HANDOFF as the live coordination doc.
 - `feat`: bootstrap `sharebridge-user-service` skeleton with demo-token auth endpoint, donor-presets GET/PUT APIs, file-backed donor model/preset storage, and green roundtrip tests for token + presets + 401/403 auth paths.
+- `ci`: add minimal GitHub Actions CI workflows for `sharebridge-integration-service` (Node 20, `npm install`, `npm test`) and `sharebridge-mobile-app` (Flutter stable, `flutter pub get`, `flutter test`) on push/PR.

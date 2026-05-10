@@ -54,7 +54,7 @@ Deliver the MVP **donor-setup → donor-seeker interaction → vendor redirect �
   - `GET/PUT /v1/users/{user_id}/donor-presets` with preset validation and dedupe by `(restaurant_name, order_url)` (latest wins).
   - auth handling aligned with integration-service semantics for 401 (`missing_auth_context`) and 403 (`user_id_mismatch`).
   - 3 roundtrip tests green for token issue, presets upsert/list, and 401/403 auth paths.
-  - GitHub Actions CI: Node 20, `npm install`, `npm test` on push/PR.
+  - GitHub Actions CI: Node 20, `npm install`, `npm test` on push/PR; branch protection on `main` requires passing check **`test`** (alongside existing review/signature rules).
 - `sharebridge-api-gateway`, `sharebridge-order-service`, `sharebridge-notification-service`, `sharebridge-ai-safety`, `sharebridge-photo-service`, `sharebridge-web-app`, `sharebridge-infra`, `sharebridge-deployment`: README only, no code yet.
 
 ## Quick Runbook

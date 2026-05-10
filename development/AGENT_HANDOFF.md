@@ -53,7 +53,8 @@ The **donor-setup slice** that is live in code is intentionally a **minimal MVP*
 - HTTP API client (`lib/features/donor_setup/data/http_donor_setup_api_client.dart`) supports request timeout, exponential-backoff retry, and typed exceptions (`DonorSetupNetworkException`, `DonorSetupTimeoutException`, `DonorSetupBadRequestException`, `DonorSetupServerException`, `DonorSetupResponseException`). Mutating saves do not retry on 5xx (no double-write).
 - UI surfaces friendly error messages per typed exception.
 - `AuthContext` (`lib/features/donor_setup/data/auth_context.dart`) sources `user_id` from `--dart-define=USER_ID=...` and signed token from `--dart-define=AUTH_TOKEN=...`, and sends only `Authorization: Bearer <token>`.
-- 17 tests, all green via `flutter test`.
+- Donor Setup app bar opens **Saved presets**: server-backed list with **Copy link** / **Open link** (`url_launcher`) on each preset’s `order_url`; pull-to-refresh.
+- 19 tests, all green via `flutter test`.
 
 ### Other repos
 - `sharebridge-user-service`: MVP skeleton bootstrapped (Node HTTP service + tests) with:
@@ -127,3 +128,4 @@ Tasks #1-#5 are complete. Remaining priority order:
 - `test`: add `UserStore` file-backed persistence/dedupe tests, HTTP edges (`/health`, 404, invalid JSON, validation, URL-encoded `user_id`), and trim phone/email on merge-in to match create behavior.
 - `docs`: refresh `USER_SERVICE_PREFERENCES_MIGRATION.md` for current contract and backfill; document Render/Railway secret-manager tech debt in `IMPLEMENTATION_APPROACH.md`.
 - `docs`: clarify **MVP staging (mini vs matured)** in `AGENT_HANDOFF.md` and tie donor-setup file persistence to the Supabase-oriented roadmap in `IMPLEMENTATION_APPROACH.md`.
+- `feat` (mobile): Saved presets screen + navigation from Donor Setup; copy/open order URLs for manual deep-link checks; docs/test counts updated (`MANUAL_TESTING_GUIDE.md`).

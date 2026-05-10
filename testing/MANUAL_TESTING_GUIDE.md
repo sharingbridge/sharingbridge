@@ -88,7 +88,7 @@ Expected output footer:
 # fail 0
 ```
 
-### 1b. Mobile app (Flutter, currently 17 tests)
+### 1b. Mobile app (Flutter, currently 19 tests)
 
 ```powershell
 cd D:\kannan\sharebridge_repos\sharebridge-mobile-app
@@ -105,6 +105,7 @@ Coverage at a glance:
 | `test/features/donor_setup/data/suggest_vendors_response_dto_test.dart` | response DTO mapping and malformed payload handling |
 | `test/features/donor_setup/data/http_donor_setup_api_client_test.dart` | retry-then-success, persistent 5xx, 4xx mapping, malformed JSON, no-retry on save 5xx, auth headers on the wire |
 | `test/features/donor_setup/presentation/donor_setup_page_test.dart` | search renders suggestions, confirm saves and shows status |
+| `test/features/donor_setup/presentation/donor_presets_page_test.dart` | saved-presets screen lists server presets; copy/open order URL affordances |
 
 Expected last line: `All tests passed!`.
 
@@ -366,6 +367,7 @@ The mobile client now sends only `Authorization: Bearer <AUTH_TOKEN>`.
    exception path renders messages like "Server is temporarily
    unavailable (HTTP 500)." or "Network unavailable. Check your
    connection and retry." instead of stack traces.
+6. **Saved presets / order links**: tap the app-bar icon with tooltip **Saved presets** → **Saved presets** loads from the server (`GET /v1/donor-setup/preferences`). Each row shows the **order URL** (selectable text), **Copy link**, and **Open link** (opens the vendor URL in the system browser). Pull-to-refresh reloads the list.
 
 ## 4. Cleanup / fresh slate
 

@@ -1,14 +1,13 @@
 # Donor Preferences → User Service Migration Plan
 
-Status: **Prep complete; remote implementation deferred.**
+Status: **Baseline implemented; cutover and tear-down are ops steps.**
 
 ## Why this exists
 
 For MVP velocity, donor presets are owned by `sharebridge-integration-service`
 (file-backed `PreferencesStore`). Long-term, user-scoped state belongs in
 `sharebridge-user-service`. This document captures the contract and the
-migration steps so the swap is mechanical once the user service publishes
-its preferences API baseline.
+migration steps so the swap is mechanical.
 
 ## Current boundary (in code)
 
@@ -16,16 +15,15 @@ its preferences API baseline.
 the abstraction the HTTP handlers depend on:
 
 ```
-listByUser(userId)            -> Promise<Preset[]>
-upsertForUser(userId, presets) -> Promise<Preset[]>  // returns full set
-init()                         -> Promise<void>
+listByUser(userId, opts?)              -> Promise<Preset[]>
+upsertForUser(userId, presets, opts?)  -> Promise<Preset[]>  // full set after upsert
+init()                                 -> Promise<void>
 ```
 
 Two implementations:
 
-- `LocalPreferencesRepository(store)` — wraps `PreferencesStore` (today).
-- `UserServicePreferencesRepository({ baseUrl })` — placeholder; throws
-  `not yet implemented` until the user-service baseline ships.
+- `LocalPreferencesRepository(store)` — wraps `PreferencesStore` (default local dev).
+- `UserServicePreferencesRepository({ baseUrl })` — calls user-service and forwards `Authorization` from the inbound integration request.
 
 Selection is driven by env:
 
@@ -57,31 +55,36 @@ Endpoints (under `sharebridge-user-service`):
 }
 ```
 
-Auth: forward the donor's auth context (`Authorization: Bearer <token>`
-or `X-User-Id` for MVP — see the "minimal auth context" task).
+Auth: `Authorization: Bearer <signed token>` from user-service (`POST /v1/auth/token`).
+`X-User-Id` is not used.
 
 Errors:
 
 - `400 invalid_request` for schema/validation failures.
-- `401 unauthorized` if auth context is missing.
-- `403 forbidden` if `user_id` in URL does not match auth context.
+- `401` if auth context is missing or token invalid.
+- `403` if `user_id` in URL does not match token subject.
 - `5xx` for upstream/persistence failures.
 
-## Migration steps (when user-service baseline lands)
+## Migration steps (cutover checklist)
 
-1. Implement the planned endpoints in `sharebridge-user-service` against
-   its persistent store (Postgres per current architecture doc).
-2. Replace the body of `UserServicePreferencesRepository` with `fetch()`
-   calls to those endpoints, propagating the donor's auth context.
-3. Add a roundtrip integration test against a stub user-service (e.g.
-   spin up an HTTP fixture that mirrors the contract).
-4. Set `PREFERENCES_BACKEND=user_service` and `USER_SERVICE_BASE_URL=...`
-   in the integration-service deployment config.
-5. Backfill any presets in the file-backed store into user-service via a
-   one-shot script. Then retire `PreferencesStore` and
-   `LocalPreferencesRepository`.
-6. Delete `data/` and the `PreferencesStore` module from
-   integration-service.
+1. **User-service baseline** — `GET`/`PUT` donor-presets APIs are live (implemented).
+2. **Integration remote repository** — `UserServicePreferencesRepository` uses `fetch()` to those endpoints (implemented).
+3. **Backfill file store → user-service** (once per environment, before or right after flip):
+
+   From `sharebridge-integration-service`, with user-service running and using the **same** `AUTH_TOKEN_SECRET` as local minting expects:
+
+   ```powershell
+   cd D:\path\to\sharebridge-integration-service
+   $env:USER_SERVICE_BASE_URL = "http://localhost:8081"   # or production URL
+   $env:PREFERENCES_DB_PATH = ".\data\preferences.json"    # default if omitted
+   # Optional: $env:BACKFILL_DRY_RUN = "1"                   # log only
+   npm run backfill:user-service-presets
+   ```
+
+   The script mints a token per `user_id` via `POST /v1/auth/token`, normalizes rows to user-service validation rules (default `source=migrated_from_integration_store`, `confidence=0` when missing), then `PUT`s the full preset list per user.
+
+4. **Flip integration deployment config:** `PREFERENCES_BACKEND=user_service` and `USER_SERVICE_BASE_URL=...`.
+5. After traffic is healthy on user-service for presets, **retire** integration’s file store for that environment: stop writing `data/preferences.json`, delete `data/` from that deployment, and eventually remove `PreferencesStore` / `LocalPreferencesRepository` from code when no env needs local mode (optional final cleanup).
 
 No mobile-side change is required — the mobile app talks only to
 integration-service for donor setup today, and the integration-service

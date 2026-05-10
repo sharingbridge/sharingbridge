@@ -56,7 +56,7 @@ Tokens are signed and verified with that **symmetric** secret (`AUTH_TOKEN_SECRE
 
 ## 1. Automated test suites
 
-### 1a. Integration service (Node.js, currently 29 tests)
+### 1a. Integration service (Node.js, currently 32 tests)
 
 ```powershell
 cd D:\kannan\sharebridge_repos\sharebridge-integration-service
@@ -74,6 +74,7 @@ Coverage at a glance:
 | `test/authContext.test.js` | signed bearer parsing/verification + `user_id` reconciliation |
 | `test/authContextRoundtrip.test.js` | signed-token flow, mismatch and missing-token guards (`403`/`401`) |
 | `test/userServicePreferencesRoundtrip.test.js` | integration-service → user-service backend path roundtrip + upstream 403 surfacing |
+| `test/backfill-presets.test.js` | normalizing `PreferencesStore` rows for user-service backfill |
 
 Each roundtrip test boots a real `http.Server` on port 0 against a
 temp-dir `PreferencesStore`, so the HTTP wiring under test is the same
@@ -82,8 +83,8 @@ code that runs in `npm start`.
 Expected output footer:
 
 ```
-# tests 29
-# pass 29
+# tests 32
+# pass 32
 # fail 0
 ```
 
@@ -298,22 +299,7 @@ npm start
 
 ## 3. End-to-end with the mobile app
 
-Keep the backend running on `localhost:8080`, then in another window:
-
-### 3a. Windows desktop
-
-```powershell
-cd D:\kannan\sharebridge_repos\sharebridge-mobile-app
-flutter run -d windows --dart-define=API_BASE_URL=http://localhost:8080 --dart-define=USER_ID=alice
-```
-
-### 3b. Android emulator
-
-```powershell
-flutter run --dart-define=API_BASE_URL=http://10.0.2.2:8080 --dart-define=USER_ID=alice
-```
-
-Mint a signed token first:
+Keep integration-service on `localhost:8080` and user-service on `localhost:8081`, then mint a token and run Flutter:
 
 ```powershell
 $mobileToken = (Invoke-RestMethod -Method Post -Uri http://localhost:8081/v1/auth/token `
@@ -321,10 +307,18 @@ $mobileToken = (Invoke-RestMethod -Method Post -Uri http://localhost:8081/v1/aut
   -Body (@{ user_id = "alice" } | ConvertTo-Json)).token
 ```
 
-Run with token:
+### 3a. Windows desktop
 
 ```powershell
+cd D:\kannan\sharebridge_repos\sharebridge-mobile-app
 flutter run -d windows --dart-define=API_BASE_URL=http://localhost:8080 --dart-define=USER_ID=alice --dart-define=AUTH_TOKEN=$mobileToken
+```
+
+### 3b. Android emulator
+
+```powershell
+cd D:\kannan\sharebridge_repos\sharebridge-mobile-app
+flutter run --dart-define=API_BASE_URL=http://10.0.2.2:8080 --dart-define=USER_ID=alice --dart-define=AUTH_TOKEN=$mobileToken
 ```
 
 The mobile client now sends only `Authorization: Bearer <AUTH_TOKEN>`.
@@ -363,9 +357,22 @@ platform-specific shared preferences clear (e.g. uninstall and
 reinstall the app on Android, or delete the Flutter app data folder on
 Windows).
 
+### 4b. (Optional) Copy file-backed presets into user-service
+
+Use this **before or right after** you point integration-service at user-service presets (`PREFERENCES_BACKEND=user_service`). Requires user-service running and the **same `AUTH_TOKEN_SECRET`** as used for `/v1/auth/token`:
+
+```powershell
+cd D:\kannan\sharebridge_repos\sharebridge-integration-service
+$env:USER_SERVICE_BASE_URL = "http://localhost:8081"
+# Dry run: $env:BACKFILL_DRY_RUN = "1"
+npm run backfill:user-service-presets
+```
+
+See `development/USER_SERVICE_PREFERENCES_MIGRATION.md` for the full cutover checklist.
+
 ## 5. What "good" looks like (acceptance summary)
 
-- `npm test` in `sharebridge-integration-service` reports `# pass 29 / # fail 0`.
+- `npm test` in `sharebridge-integration-service` reports `# pass 32 / # fail 0`.
 - `flutter test` in `sharebridge-mobile-app` ends with `All tests passed!`.
 - `Invoke-RestMethod http://localhost:8080/health` returns `ok=True`.
 - Step 2c returns HTTP 200 with `saved_count=1`; step 2d echoes the

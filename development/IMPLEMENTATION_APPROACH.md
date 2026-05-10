@@ -101,6 +101,8 @@ docker-compose up
 
 **Note:** Keep real secrets only in Render/local `.env`; commit only `.env.example` placeholders to Git.
 
+**Tech debt (post‑MVP / AWS scale-out):** MVP targets (Render.com / Railway.app) use **platform environment variables** for `AUTH_TOKEN_SECRET` and related config—no separate paid “secrets manager” product is required for the first deploy. Centralized secret storage (e.g. AWS Secrets Manager, SSM Parameter Store with KMS, HashiCorp Vault) and **eliminating dev-default fallbacks in non-local environments** are **deferred** until after MVP or when workloads move to AWS as described later in this doc.
+
 ---
 
 ---

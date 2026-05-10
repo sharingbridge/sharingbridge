@@ -51,6 +51,8 @@ Develop and test all ShareBridge components using free-tier platforms with near-
 | **Version Control** | GitHub | Unlimited private repos | Keep GitHub |
 | **API Gateway** | Self-hosted Kong (Docker) | Manual setup | Keep or move to AWS |
 
+**How this relates to donor-setup code today:** The table and diagrams below assume backend services eventually use **Supabase Postgres** (or equivalent) for durable data. The **shipped donor-setup path** (`sharebridge-integration-service` + `sharebridge-user-service`) currently persists preferences and donor profile/presets in **JSON files** so the team can ship contracts and integration without standing up a database first. Treat that as an intentional **staging step** (mini MVP); migrate user-scoped state to Postgres when you need deploy durability, replicas, or alignment with this doc’s full free-tier stack. See `development/AGENT_HANDOFF.md` section **MVP staging (mini vs matured)**.
+
 ---
 
 ### Quick Start (Day 1) - Free Tier

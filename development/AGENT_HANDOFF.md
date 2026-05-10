@@ -25,6 +25,14 @@ Deliver the MVP **donor-setup → donor-seeker interaction → vendor redirect �
 - User-service preferences migration plan: `development/USER_SERVICE_PREFERENCES_MIGRATION.md`
 - Manual testing guide for shipped modules: `testing/MANUAL_TESTING_GUIDE.md` (index: `testing/README.md`)
 
+## MVP staging (mini vs matured)
+
+The **donor-setup slice** that is live in code is intentionally a **minimal MVP** (“MVP‑0”): flows and APIs are wired end‑to‑end while **preferences and user-service donor data stay file‑backed JSON** (easy local and Render/Railway iteration, with the limits of ephemeral disks and single-instance file stores).
+
+**Matured MVP** means closing the gap with `development/IMPLEMENTATION_APPROACH.md`: attach **managed Postgres** (for example Supabase during free tier) for user‑scoped persistence where the architecture diagram shows a database, plus hosting patterns suited to durability and scale. Product scope stays MVP; infra depth catches up.
+
+`development/USER_SERVICE_PREFERENCES_MIGRATION.md` describes preferences authority and integration ↔ user‑service cutover; this section is only about labeling **what shipped now** versus **what the roadmap stack assumes**.
+
 ## Current Implementation Status
 
 ### `sharebridge-integration-service` (donor setup MVP shipped)
@@ -118,3 +126,4 @@ Tasks #1-#5 are complete. Remaining priority order:
 - `test`: expand `sharebridge-user-service` with `tokenService` and `authContext` unit tests; read token defaults from env at mint/verify time for test isolation.
 - `test`: add `UserStore` file-backed persistence/dedupe tests, HTTP edges (`/health`, 404, invalid JSON, validation, URL-encoded `user_id`), and trim phone/email on merge-in to match create behavior.
 - `docs`: refresh `USER_SERVICE_PREFERENCES_MIGRATION.md` for current contract and backfill; document Render/Railway secret-manager tech debt in `IMPLEMENTATION_APPROACH.md`.
+- `docs`: clarify **MVP staging (mini vs matured)** in `AGENT_HANDOFF.md` and tie donor-setup file persistence to the Supabase-oriented roadmap in `IMPLEMENTATION_APPROACH.md`.

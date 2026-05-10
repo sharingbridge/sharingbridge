@@ -401,7 +401,7 @@ See `development/USER_SERVICE_PREFERENCES_MIGRATION.md` for the full cutover che
 
 - `npm test` in `sharebridge-integration-service` reports `# pass 32 / # fail 0`.
 - `npm test` in `sharebridge-user-service` reports `# pass 35 / # fail 0`.
-- `flutter test` in `sharebridge-mobile-app` ends with `All tests passed!`.
+- `flutter test` in `sharebridge-mobile-app` ends with `All tests passed!` (**19 tests**, 0 failures — summary line shows `+19`).
 - `Invoke-RestMethod http://localhost:8080/health` returns `ok=True`.
 - Step 2c returns HTTP 200 with `saved_count=1`; step 2d echoes the
   same preset back.

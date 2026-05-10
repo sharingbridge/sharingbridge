@@ -53,7 +53,7 @@ Deliver the MVP **donor-setup → donor-seeker interaction → vendor redirect �
   - `POST /v1/auth/token` issuing signed bearer tokens (JWT HS256).
   - `GET/PUT /v1/users/{user_id}/donor-presets` with preset validation and dedupe by `(restaurant_name, order_url)` (latest wins).
   - auth handling aligned with integration-service semantics for 401 (`missing_auth_context`) and 403 (`user_id_mismatch`).
-  - 3 roundtrip tests green for token issue, presets upsert/list, and 401/403 auth paths.
+  - **18** Node tests green via `npm test` (HTTP roundtrips + `tokenService` + `authContext` unit coverage).
   - GitHub Actions CI: Node 20, `npm install`, `npm test` on push/PR; branch protection on `main` requires passing check **`test`** (alongside existing review/signature rules).
 - `sharebridge-api-gateway`, `sharebridge-order-service`, `sharebridge-notification-service`, `sharebridge-ai-safety`, `sharebridge-photo-service`, `sharebridge-web-app`, `sharebridge-infra`, `sharebridge-deployment`: README only, no code yet.
 
@@ -115,4 +115,5 @@ Tasks #1-#5 are complete. Remaining priority order:
 - `feat`: replace demo auth with signed token flow — user-service now mints JWT tokens, integration-service verifies token signature/claims and rejects `X-User-Id` fallback, mobile sends bearer token via `AUTH_TOKEN`; test suites updated and green.
 - `feat`: add `backfill:user-service-presets` script and tests to migrate `PreferencesStore` JSON into user-service via signed tokens.
 - `ci`: add GitHub Actions workflow for `sharebridge-user-service` (Node 20, `npm test`).
+- `test`: expand `sharebridge-user-service` with `tokenService` and `authContext` unit tests; read token defaults from env at mint/verify time for test isolation.
 - `docs`: refresh `USER_SERVICE_PREFERENCES_MIGRATION.md` for current contract and backfill; document Render/Railway secret-manager tech debt in `IMPLEMENTATION_APPROACH.md`.

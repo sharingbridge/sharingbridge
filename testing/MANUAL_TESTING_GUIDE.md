@@ -108,6 +108,31 @@ Coverage at a glance:
 
 Expected last line: `All tests passed!`.
 
+### 1c. User service (Node.js, currently 35 tests)
+
+```powershell
+cd D:\kannan\sharebridge_repos\sharebridge-user-service
+npm install       # first time only
+npm test
+```
+
+Coverage at a glance:
+
+| Test file | What it asserts |
+|-----------|-----------------|
+| `test/userServiceRoundtrip.test.js` | mint token + donor-presets PUT/GET roundtrip (dedupe), 401/403 auth, `/health`, 404, invalid JSON bodies, presets array/type validation, URL-encoded path `user_id` |
+| `test/tokenService.test.js` | JWT mint/verify, secret/expiry/claims/tamper cases, env-driven defaults |
+| `test/authContext.test.js` | bearer extraction and authenticated `user_id` resolution |
+| `test/userStore.test.js` | file-backed init/read, `getOrCreateUser`, preset list/replace dedupe and persistence |
+
+Expected output footer:
+
+```
+# tests 35
+# pass 35
+# fail 0
+```
+
 ## 2. Manual API smoke tests
 
 Start user-service in one PowerShell window:
@@ -373,6 +398,7 @@ See `development/USER_SERVICE_PREFERENCES_MIGRATION.md` for the full cutover che
 ## 5. What "good" looks like (acceptance summary)
 
 - `npm test` in `sharebridge-integration-service` reports `# pass 32 / # fail 0`.
+- `npm test` in `sharebridge-user-service` reports `# pass 35 / # fail 0`.
 - `flutter test` in `sharebridge-mobile-app` ends with `All tests passed!`.
 - `Invoke-RestMethod http://localhost:8080/health` returns `ok=True`.
 - Step 2c returns HTTP 200 with `saved_count=1`; step 2d echoes the

@@ -104,7 +104,7 @@ Coverage at a glance:
 | `test/features/donor_setup/application/confirm_presets_usecase_test.dart` | save delegation and empty-list guard |
 | `test/features/donor_setup/data/suggest_vendors_response_dto_test.dart` | response DTO mapping and malformed payload handling |
 | `test/features/donor_setup/data/http_donor_setup_api_client_test.dart` | retry-then-success, persistent 5xx, 4xx mapping, malformed JSON, no-retry on save 5xx, auth headers on the wire |
-| `test/features/donor_setup/presentation/donor_setup_page_test.dart` | search renders suggestions, confirm saves and shows status |
+| `test/features/donor_setup/presentation/donor_setup_page_test.dart` | search renders suggestions; confirm saves, reloads list from (fake) server, success status; full menu line + restaurant title; cache clear |
 | `test/features/donor_setup/presentation/donor_presets_page_test.dart` | saved-presets screen lists server presets; copy/open order URL affordances |
 
 Expected last line: `All tests passed!`.
@@ -408,5 +408,5 @@ See `development/USER_SERVICE_PREFERENCES_MIGRATION.md` for the full cutover che
   with `code=missing_auth_context`.
 - Step 2g shows alice and bob with disjoint preset lists.
 - Step 3c shows the mobile UI loading server presets on cold start,
-  saving new picks, and falling back to the local cache when the
-  backend is offline.
+  saving new picks, **Donor Setup list matching the server immediately after save**,
+  and falling back to the local cache when the backend is offline.

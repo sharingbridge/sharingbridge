@@ -367,9 +367,43 @@ The mobile client now sends only `Authorization: Bearer <AUTH_TOKEN>`.
    connection and retry." instead of stack traces.
 6. **Saved presets / order links**: tap the app-bar icon with tooltip **Saved presets** → **Saved presets** loads from the server (`GET /v1/donor-setup/preferences`). Each row shows the **order URL** (selectable text), **Copy link**, and **Open link** (opens the vendor URL in the system browser). Pull-to-refresh reloads the list.
 
+### 3d. Why Suggest Vendors and Saved presets can both look “static”
+
+- **Suggest Vendors** always hits the **same mock** (`POST /v1/donor-setup/suggest-vendors`): three fixed venues. That is expected until real search/AI replaces the mock.
+- **Saved presets** (screen + Donor Setup list after save) reflects **whatever the integration-service returns from `GET …/preferences`** — i.e. **persisted** data, not the mock suggestion list.
+- **Clear cache / Sign out** on Donor Setup only clears the **phone’s offline cache** (`shared_preferences`). It does **not** delete presets on the server, so **Saved presets** will still show server rows after a refresh.
+
+### 3e. Clear server-side saved presets (empty the listing)
+
+Pick one approach:
+
+1. **Wipe the local integration file store** (typical dev: `PREFERENCES_BACKEND=local`): stop `npm start` on integration-service, delete the data file or folder, restart.
+
+   ```powershell
+   cd D:\kannan\sharebridge_repos\sharebridge-integration-service
+   Remove-Item -Recurse -Force data -ErrorAction SilentlyContinue
+   npm start
+   ```
+
+   To clear **only one user**, edit `data\preferences.json` and remove that user’s array under `byUser` (or set it to `[]`), then restart the server.
+
+2. **User-service backend** (`PREFERENCES_BACKEND=user_service`): presets live in user-service. Either delete that user’s presets in `sharebridge-user-service\data\user-service-store.json` under `donorPresets` (while the service is stopped), or **replace with an empty list** via API (same bearer token as the app):
+
+   ```powershell
+   $token = "<paste token from POST /v1/auth/token>"
+   $uid = "alice"
+   Invoke-RestMethod -Method Put -Uri "http://localhost:8081/v1/users/$uid/donor-presets" `
+     -Headers @{ Authorization = "Bearer $token" } -ContentType "application/json" `
+     -Body '{"presets":[]}'
+   ```
+
+3. **Fresh user id**: run the app with a new `--dart-define=USER_ID=...` and mint a matching token. That user has no presets until you save again.
+
+**Local merge caveat:** With the default **file-backed** integration store (`local`), each save **merges** presets by `(restaurant_name, order_url)`; older venues for that user are **not** removed if you omit them in a later save. To shrink the list you must clear storage (above) or use **user-service** mode, where `PUT` donor-presets **replaces** the full set.
+
 ## 4. Cleanup / fresh slate
 
-To wipe persisted donor presets and start over:
+To wipe persisted donor presets and start over (same as §3e option 1):
 
 ```powershell
 cd D:\kannan\sharebridge_repos\sharebridge-integration-service

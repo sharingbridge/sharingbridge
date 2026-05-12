@@ -354,8 +354,7 @@ The mobile client now sends only `Authorization: Bearer <AUTH_TOKEN>`.
 1. App opens to **Donor Setup**. Because step 2c saved presets for
    `alice`, the page shows status "Loaded saved presets from server."
 2. Type something like `zomato a2b mini meals` → tap **Suggest Vendors**.
-   The mock backend returns up to 5 suggestions; auth-protected endpoints
-   carry `Authorization: Bearer <signed token>`.
+   The mock backend returns the **same fixed** suggestions every time (it does **not** personalize by `query_text`); each row shows the **full** comma-separated **menu items** under the restaurant name. Auth-protected endpoints carry `Authorization: Bearer <signed token>`.
 3. Check one or more suggestions → tap **Confirm and Save Presets**.
    Status flips to "Presets saved successfully." Re-running the GET
    from step 2d shows the new picks (with dedupe applied).

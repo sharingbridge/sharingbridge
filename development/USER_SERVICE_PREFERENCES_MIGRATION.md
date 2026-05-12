@@ -17,8 +17,11 @@ the abstraction the HTTP handlers depend on:
 ```
 listByUser(userId, opts?)              -> Promise<Preset[]>
 upsertForUser(userId, presets, opts?)  -> Promise<Preset[]>  // full set after upsert
+clearForUser(userId, opts?)            -> Promise<Preset[]>  // always []
 init()                                 -> Promise<void>
 ```
+
+Integration HTTP: `DELETE /v1/donor-setup/preferences?user_id=<id>` (Bearer required) clears that user’s presets — implemented for local store and delegated to user-service `PUT { presets: [] }` when `PREFERENCES_BACKEND=user_service`.
 
 Two implementations:
 

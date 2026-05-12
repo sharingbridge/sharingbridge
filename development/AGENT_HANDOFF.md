@@ -45,7 +45,8 @@ The **donor-setup slice** that is live in code is intentionally a **minimal MVP*
   - Backend selected by `PREFERENCES_BACKEND` env (`local` default, `user_service` requires `USER_SERVICE_BASE_URL`).
 - Auth context (`src/authContext.js`): verifies signed bearer tokens (HS256) issued by user-service. `X-User-Id` fallback is removed. Missing/invalid token → `401 missing_auth_context`; URL/payload mismatch vs token subject → `403 user_id_mismatch`.
 - HTTP server is exposed as a factory (`createIntegrationServer`) so tests can boot it against a temp DB.
-- 32 tests, all green via `npm test`; `npm run backfill:user-service-presets` migrates `data/preferences.json` → user-service (see migration doc).
+- `DELETE /v1/donor-setup/preferences?user_id=…` clears all presets for the authed user (local store `clearForUser`; user-service mode uses `PUT` with `[]`). Mobile **Saved presets → Clear all** calls this and clears offline cache.
+- 35 tests, all green via `npm test`; `npm run backfill:user-service-presets` migrates `data/preferences.json` → user-service (see migration doc).
 
 ### `sharebridge-mobile-app` (donor setup MVP shipped)
 - Donor setup screen wired to integration-service: search → suggestions → confirm-and-save.
@@ -54,8 +55,8 @@ The **donor-setup slice** that is live in code is intentionally a **minimal MVP*
 - UI surfaces friendly error messages per typed exception.
 - `AuthContext` (`lib/features/donor_setup/data/auth_context.dart`) sources `user_id` from `--dart-define=USER_ID=...` and signed token from `--dart-define=AUTH_TOKEN=...`, and sends only `Authorization: Bearer <token>`.
 - Donor Setup list shows **full `menu_items`** per suggestion (not only the first item); integration-service **suggest-vendors** mock is still **query-independent** (fixed venues/menus until real search ships).
-- Donor Setup app bar opens **Saved presets**: server-backed list with **Copy link** / **Open link** (`url_launcher`) on each preset’s `order_url`; pull-to-refresh.
-- 19 tests, all green via `flutter test`.
+- Donor Setup app bar opens **Saved presets**: server-backed list with **Copy link** / **Open link** (`url_launcher`) on each preset’s `order_url`; pull-to-refresh; **Clear all** with confirmation (`ClearPresetsUseCase` + `DELETE` on integration API).
+- 22 tests, all green via `flutter test`.
 
 ### Other repos
 - `sharebridge-user-service`: MVP skeleton bootstrapped (Node HTTP service + tests) with:
@@ -132,3 +133,4 @@ Tasks #1-#5 are complete. Remaining priority order:
 - `feat` (mobile): Saved presets screen + navigation from Donor Setup; copy/open order URLs for manual deep-link checks; docs/test counts updated (`MANUAL_TESTING_GUIDE.md`).
 - `fix` (mobile): Donor Setup suggestion tiles show full menu list + app name; manual guide notes mock suggest-vendors ignores `query_text`.
 - `fix` (mobile): After **Confirm and Save Presets**, reload preferences from the server and clear selection so the on-screen list matches saved choices (empty server list clears the list).
+- `feat`: integration-service **`DELETE` donor-setup preferences** + `PreferencesStore.clearForUser`; mobile **Clear all** on Saved presets + `clearPresets` HTTP/repository/use case tests; lazy-create HTTP repo in `DonorPresetsPage` when both use cases injected (widget tests).

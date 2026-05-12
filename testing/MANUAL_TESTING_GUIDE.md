@@ -56,7 +56,7 @@ Tokens are signed and verified with that **symmetric** secret (`AUTH_TOKEN_SECRE
 
 ## 1. Automated test suites
 
-### 1a. Integration service (Node.js, currently 32 tests)
+### 1a. Integration service (Node.js, currently 35 tests)
 
 ```powershell
 cd D:\kannan\sharebridge_repos\sharebridge-integration-service
@@ -69,10 +69,10 @@ Coverage at a glance:
 | Test file | What it asserts |
 |-----------|-----------------|
 | `test/suggestVendors.test.js` | request validators and mock response shape |
-| `test/preferencesRepository.test.js` | local + user-service repository behavior, auth-header forwarding, typed upstream error mapping |
-| `test/preferencesRoundtrip.test.js` | full HTTP save→fetch roundtrip, dedupe by `(restaurant_name, order_url)`, per-user isolation, validation rejection |
+| `test/preferencesRepository.test.js` | local + user-service repository behavior, `clearForUser`, auth-header forwarding, typed upstream error mapping |
+| `test/preferencesRoundtrip.test.js` | full HTTP save→fetch roundtrip, **`DELETE` clears authed user**, dedupe by `(restaurant_name, order_url)`, per-user isolation, validation rejection |
 | `test/authContext.test.js` | signed bearer parsing/verification + `user_id` reconciliation |
-| `test/authContextRoundtrip.test.js` | signed-token flow, mismatch and missing-token guards (`403`/`401`) |
+| `test/authContextRoundtrip.test.js` | signed-token flow, mismatch and missing-token guards (`403`/`401`), **`DELETE` without token → `401`** |
 | `test/userServicePreferencesRoundtrip.test.js` | integration-service → user-service backend path roundtrip + upstream 403 surfacing |
 | `test/backfill-presets.test.js` | normalizing `PreferencesStore` rows for user-service backfill |
 
@@ -83,12 +83,12 @@ code that runs in `npm start`.
 Expected output footer:
 
 ```
-# tests 32
-# pass 32
+# tests 35
+# pass 35
 # fail 0
 ```
 
-### 1b. Mobile app (Flutter, currently 19 tests)
+### 1b. Mobile app (Flutter, currently 22 tests)
 
 ```powershell
 cd D:\kannan\sharebridge_repos\sharebridge-mobile-app
@@ -102,10 +102,11 @@ Coverage at a glance:
 |-----------|-----------------|
 | `test/features/donor_setup/application/suggest_vendors_usecase_test.dart` | top-5 trim and missing-permission guard |
 | `test/features/donor_setup/application/confirm_presets_usecase_test.dart` | save delegation and empty-list guard |
+| `test/features/donor_setup/application/clear_presets_usecase_test.dart` | clear delegation to repository |
 | `test/features/donor_setup/data/suggest_vendors_response_dto_test.dart` | response DTO mapping and malformed payload handling |
-| `test/features/donor_setup/data/http_donor_setup_api_client_test.dart` | retry-then-success, persistent 5xx, 4xx mapping, malformed JSON, no-retry on save 5xx, auth headers on the wire |
+| `test/features/donor_setup/data/http_donor_setup_api_client_test.dart` | retry-then-success, persistent 5xx, 4xx mapping, malformed JSON, no-retry on save 5xx, **`DELETE` clear presets**, auth headers on the wire |
 | `test/features/donor_setup/presentation/donor_setup_page_test.dart` | search renders suggestions; confirm saves, reloads list from (fake) server, success status; full menu line + restaurant title; cache clear |
-| `test/features/donor_setup/presentation/donor_presets_page_test.dart` | saved-presets screen lists server presets; copy/open order URL affordances |
+| `test/features/donor_setup/presentation/donor_presets_page_test.dart` | saved-presets list; copy/open order URL; **Clear all** confirmation empties list + snackbar |
 
 Expected last line: `All tests passed!`.
 
@@ -365,7 +366,7 @@ The mobile client now sends only `Authorization: Bearer <AUTH_TOKEN>`.
    exception path renders messages like "Server is temporarily
    unavailable (HTTP 500)." or "Network unavailable. Check your
    connection and retry." instead of stack traces.
-6. **Saved presets / order links**: tap the app-bar icon with tooltip **Saved presets** → **Saved presets** loads from the server (`GET /v1/donor-setup/preferences`). Each row shows the **order URL** (selectable text), **Copy link**, and **Open link** (opens the vendor URL in the system browser). Pull-to-refresh reloads the list.
+6. **Saved presets / order links**: tap the app-bar icon with tooltip **Saved presets** → **Saved presets** loads from the server (`GET /v1/donor-setup/preferences`). Each row shows the **order URL** (selectable text), **Copy link**, and **Open link** (opens the vendor URL in the system browser). Pull-to-refresh reloads the list. Use **Clear all** (top-right) to confirm and remove **all** presets for the signed-in user on the server (`DELETE /v1/donor-setup/preferences?user_id=…`) and clear the same offline cache key as Donor Setup.
 
 ### 3d. Why Suggest Vendors and Saved presets can both look “static”
 
@@ -376,6 +377,8 @@ The mobile client now sends only `Authorization: Bearer <AUTH_TOKEN>`.
 ### 3e. Clear server-side saved presets (empty the listing)
 
 Pick one approach:
+
+0. **In the app (Saved presets screen):** tap **Clear all** → confirm. No shell commands; uses integration-service `DELETE` (or user-service `PUT` with `[]` when that backend is enabled).
 
 1. **Wipe the local integration file store** (typical dev: `PREFERENCES_BACKEND=local`): stop `npm start` on integration-service, delete the data file or folder, restart.
 
@@ -431,9 +434,9 @@ See `development/USER_SERVICE_PREFERENCES_MIGRATION.md` for the full cutover che
 
 ## 5. What "good" looks like (acceptance summary)
 
-- `npm test` in `sharebridge-integration-service` reports `# pass 32 / # fail 0`.
+- `npm test` in `sharebridge-integration-service` reports `# pass 35 / # fail 0`.
 - `npm test` in `sharebridge-user-service` reports `# pass 35 / # fail 0`.
-- `flutter test` in `sharebridge-mobile-app` ends with `All tests passed!` (**19 tests**, 0 failures — summary line shows `+19`).
+- `flutter test` in `sharebridge-mobile-app` ends with `All tests passed!` (**22 tests**, 0 failures — summary line shows `+22`).
 - `Invoke-RestMethod http://localhost:8080/health` returns `ok=True`.
 - Step 2c returns HTTP 200 with `saved_count=1`; step 2d echoes the
   same preset back.

@@ -356,8 +356,7 @@ The mobile client now sends only `Authorization: Bearer <AUTH_TOKEN>`.
 2. Type something like `zomato a2b mini meals` → tap **Suggest Vendors**.
    The mock backend returns the **same fixed** suggestions every time (it does **not** personalize by `query_text`); each row shows the **full** comma-separated **menu items** under the restaurant name. Auth-protected endpoints carry `Authorization: Bearer <signed token>`.
 3. Check one or more suggestions → tap **Confirm and Save Presets**.
-   Status flips to "Presets saved successfully." Re-running the GET
-   from step 2d shows the new picks (with dedupe applied).
+   Status flips to "Presets saved successfully." The list on **Donor Setup** immediately reloads from the server so it shows **only** the presets you saved (not the full mock search result with old checkboxes). Re-running the GET from step 2d matches the same set (with dedupe applied server-side).
 4. **Cache fallback path**: stop the backend (Ctrl+C in step 2's
    window), kill and relaunch the app — the page falls back to
    "Using cached presets (offline fallback)." once the remote load

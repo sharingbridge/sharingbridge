@@ -131,3 +131,4 @@ Tasks #1-#5 are complete. Remaining priority order:
 - `docs`: clarify **MVP staging (mini vs matured)** in `AGENT_HANDOFF.md` and tie donor-setup file persistence to the Supabase-oriented roadmap in `IMPLEMENTATION_APPROACH.md`.
 - `feat` (mobile): Saved presets screen + navigation from Donor Setup; copy/open order URLs for manual deep-link checks; docs/test counts updated (`MANUAL_TESTING_GUIDE.md`).
 - `fix` (mobile): Donor Setup suggestion tiles show full menu list + app name; manual guide notes mock suggest-vendors ignores `query_text`.
+- `fix` (mobile): After **Confirm and Save Presets**, reload preferences from the server and clear selection so the on-screen list matches saved choices (empty server list clears the list).

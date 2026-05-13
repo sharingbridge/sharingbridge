@@ -59,7 +59,7 @@ ShareBridge makes helping someone with food safer, more private, and easier to t
 
 **GitHub Repository Structure:** We have already set up a comprehensive repository structure for the project:
 
-**Repository:** https://github.com/sharebridge/sharebridge
+**Repository:** https://github.com/sharingbridge/sharebridge
 
 - **Main Repository:** `sharebridge` - Contains all documentation and coordination
   - Business requirements and technical architecture
@@ -216,10 +216,10 @@ All we request is permission to use the name and occasional help connecting with
 ---
 
 **Appendices:**
-- [Technical Architecture Document](https://github.com/sharebridge/sharebridge/blob/main/design/ShareBridge_Technical_Architecture.md)
-- [Detailed Business Requirements](https://github.com/sharebridge/sharebridge/blob/main/requirements/ShareBridge_Business_Requirement.md)
-- [Implementation Approach](https://github.com/sharebridge/sharebridge/blob/main/development/IMPLEMENTATION_APPROACH.md)
-- [Call for Contributors](https://github.com/sharebridge/sharebridge/blob/main/development/CALL_FOR_CONTRIBUTORS.md)
+- [Technical Architecture Document](https://github.com/sharingbridge/sharebridge/blob/main/design/ShareBridge_Technical_Architecture.md)
+- [Detailed Business Requirements](https://github.com/sharingbridge/sharebridge/blob/main/requirements/ShareBridge_Business_Requirement.md)
+- [Implementation Approach](https://github.com/sharingbridge/sharebridge/blob/main/development/IMPLEMENTATION_APPROACH.md)
+- [Call for Contributors](https://github.com/sharingbridge/sharebridge/blob/main/development/CALL_FOR_CONTRIBUTORS.md)
 
 ---
 

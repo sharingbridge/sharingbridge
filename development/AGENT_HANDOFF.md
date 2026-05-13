@@ -26,6 +26,7 @@ Deliver the MVP **donor-setup → donor-seeker interaction → vendor redirect �
 - Implementation plan: `development/IMPLEMENTATION_APPROACH.md`
 - User-service preferences migration plan: `development/USER_SERVICE_PREFERENCES_MIGRATION.md`
 - Manual testing guide for shipped modules: `testing/MANUAL_TESTING_GUIDE.md` (index: `testing/README.md`)
+- GitHub org/repo rename playbook: `development/GITHUB_ORG_AND_REPO_RENAMES.md` (helper script: `scripts/set-remotes-sharingbridge.ps1`)
 
 ## MVP staging (mini vs matured)
 
@@ -95,14 +96,20 @@ Manual end-to-end and API smoke steps live in `testing/MANUAL_TESTING_GUIDE.md` 
 
 Do this before starting the next feature thread:
 
-1. **CI on GitHub** — Open the latest workflow run on `main` for each repo you changed (`sharebridge-user-service`, `sharebridge-integration-service`, `sharebridge-mobile-app`, `sharebridge` as applicable). Confirm the **`test`** job (and any other required checks) are green; fix failures before layering more changes.
+1. **CI on GitHub** — Open the latest workflow run on `main` for each repo you changed (for example `sharingbridge-user-service` or legacy `sharebridge-*` slugs until renames land). Confirm the **`test`** job (and any other required checks) are green; fix failures before layering more changes.
 2. **Manual smoke** — Short pass from `testing/MANUAL_TESTING_GUIDE.md`: mint token, suggest, save presets, single-row delete (`delete-item`), clear all, mobile **Copy link** / **Suggest again** / saved-presets flows.
 3. **Branch protection alignment** — If org rules expect PRs + required checks (and direct `main` pushes only work via bypass), use **feature branches + PRs** next time so reviews and status checks run normally.
 4. **Roadmap next slice** — After the above, pick the next MVP milestone from `development/IMPLEMENTATION_APPROACH.md` and the BRD (e.g. donor-seeker flow, real vendor search replacing mock suggest, managed DB for durability).
 
-## GitHub organization rename (optional)
+## GitHub: `sharingbridge` org and repository slugs
 
-Renaming the GitHub org (for example from `sharebridge` to `sharingbridge`) is **supported by GitHub** and old URLs **redirect for a period**, but plan an explicit sweep: update every **`git remote`** clone, documentation links, CI deploy targets, badges, and any hard-coded `github.com/org/repo` strings. Crate/npm **package names** and in-repo folder names (`sharebridge-mobile-app`, etc.) do not change automatically; keep them as-is unless you intentionally re-scope branding and imports in a dedicated rename effort.
+The GitHub organization is **`sharingbridge`** (`https://github.com/sharingbridge`). Local clones should use `origin` URLs under that host (see `development/GITHUB_ORG_AND_REPO_RENAMES.md`).
+
+**Repository slugs** on GitHub may still be `sharebridge` / `sharebridge-*` until each repo is renamed in **Settings → General → Repository name**; after renaming a repo to `sharingbridge-*`, run `git remote set-url origin https://github.com/sharingbridge/<new-slug>.git` (or `scripts/set-remotes-sharingbridge.ps1` when the local folder name matches the slug).
+
+Renaming local directories to `sharingbridge-*` may require closing IDEs and terminals that lock those paths (Windows “access denied” / “in use”), then reopening the workspace.
+
+Crate/npm **package names** and Dart import paths (`sharebridge_mobile_app`, etc.) are **not** renamed by GitHub moves; treat those as a separate effort if you want code identifiers to match the new brand.
 
 ## Next Recommended Tasks
 

@@ -1,0 +1,219 @@
+openapi: 3.0.3
+info:
+  title: ShareBridge Integration Service — Donor Setup Preferences
+  version: 0.2.0
+  description: |
+    HTTP API exposed by **sharebridge-integration-service** for donor preset
+    persistence. The mobile app targets this service; when `PREFERENCES_BACKEND=user_service`,
+    integration forwards to **sharebridge-user-service** donor-presets routes.
+
+    **Auth:** `Authorization: Bearer <JWT>` (HS256 minted by user-service). `user_id` in
+    query/body must match the token subject or the server returns `403 user_id_mismatch`.
+    Missing/invalid token → `401 missing_auth_context`.
+
+servers:
+  - url: http://localhost:8080
+    description: Local integration-service
+
+paths:
+  /v1/donor-setup/preferences:
+    get:
+      summary: List saved presets for the authenticated user
+      tags: [donor-setup-preferences]
+      parameters:
+        - name: user_id
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Optional legacy hint; must match token subject if present.
+      responses:
+        "200":
+          description: Current presets
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PreferencesGetResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+    delete:
+      summary: Clear all presets for the authenticated user
+      tags: [donor-setup-preferences]
+      parameters:
+        - name: user_id
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Cleared
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PreferencesClearResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+    post:
+      summary: Save (append/merge) presets for the authenticated user
+      tags: [donor-setup-preferences]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SavePresetsRequest"
+      responses:
+        "200":
+          description: Save acknowledged
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SavePresetsResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+
+  /v1/donor-setup/preferences/delete-item:
+    post:
+      summary: Remove one preset by natural key
+      tags: [donor-setup-preferences]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DeletePresetItemRequest"
+      responses:
+        "200":
+          description: Remaining presets
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PreferencesGetResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+
+components:
+  responses:
+    Unauthorized:
+      description: Missing or invalid bearer token
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+    Forbidden:
+      description: user_id mismatch
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+    BadRequest:
+      description: Validation error
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+
+  schemas:
+    ErrorResponse:
+      type: object
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+
+    Preset:
+      type: object
+      description: Shape stored by integration; user-service normalizes additional fields.
+      properties:
+        restaurant_name:
+          type: string
+        order_url:
+          type: string
+        menu_items:
+          type: array
+          items:
+            type: string
+        app_name:
+          type: string
+        source:
+          type: string
+        confidence:
+          type: number
+        id:
+          type: string
+        saved_at:
+          type: string
+
+    PreferencesGetResponse:
+      type: object
+      properties:
+        user_id:
+          type: string
+        presets:
+          type: array
+          items:
+            $ref: "#/components/schemas/Preset"
+
+    PreferencesClearResponse:
+      allOf:
+        - $ref: "#/components/schemas/PreferencesGetResponse"
+        - type: object
+          properties:
+            cleared:
+              type: boolean
+
+    DeletePresetItemRequest:
+      type: object
+      required:
+        - restaurant_name
+        - order_url
+      properties:
+        user_id:
+          type: string
+          description: Optional legacy field; auth subject wins.
+        restaurant_name:
+          type: string
+        order_url:
+          type: string
+
+    SavePresetsRequest:
+      type: object
+      required:
+        - presets
+      properties:
+        user_id:
+          type: string
+        presets:
+          type: array
+          items:
+            $ref: "#/components/schemas/Preset"
+
+    SavePresetsResponse:
+      type: object
+      properties:
+        user_id:
+          type: string
+        saved_count:
+          type: integer
+        total_count:
+          type: integer
+        preset_ids:
+          type: array
+          items:
+            type: string
+        saved_at:
+          type: string

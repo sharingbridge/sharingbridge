@@ -56,7 +56,7 @@ Tokens are signed and verified with that **symmetric** secret (`AUTH_TOKEN_SECRE
 
 ## 1. Automated test suites
 
-### 1a. Integration service (Node.js, currently 35 tests)
+### 1a. Integration service (Node.js, currently 40 tests)
 
 ```powershell
 cd D:\kannan\sharebridge_repos\sharebridge-integration-service
@@ -70,10 +70,10 @@ Coverage at a glance:
 |-----------|-----------------|
 | `test/suggestVendors.test.js` | request validators and mock response shape |
 | `test/preferencesRepository.test.js` | local + user-service repository behavior, `clearForUser`, auth-header forwarding, typed upstream error mapping |
-| `test/preferencesRoundtrip.test.js` | full HTTP save→fetch roundtrip, **`DELETE` clears authed user**, dedupe by `(restaurant_name, order_url)`, per-user isolation, validation rejection |
+| `test/preferencesRoundtrip.test.js` | full HTTP save→fetch roundtrip, **`DELETE` clears authed user**, **`POST …/delete-item`** removes one row, dedupe by `(restaurant_name, order_url)`, per-user isolation, validation rejection |
 | `test/authContext.test.js` | signed bearer parsing/verification + `user_id` reconciliation |
 | `test/authContextRoundtrip.test.js` | signed-token flow, mismatch and missing-token guards (`403`/`401`), **`DELETE` without token → `401`** |
-| `test/userServicePreferencesRoundtrip.test.js` | integration-service → user-service backend path roundtrip + upstream 403 surfacing |
+| `test/userServicePreferencesRoundtrip.test.js` | integration-service → user-service backend path roundtrip, **`POST …/delete-item`** through stub user-service, upstream 403 surfacing |
 | `test/backfill-presets.test.js` | normalizing `PreferencesStore` rows for user-service backfill |
 
 Each roundtrip test boots a real `http.Server` on port 0 against a
@@ -83,12 +83,12 @@ code that runs in `npm start`.
 Expected output footer:
 
 ```
-# tests 35
-# pass 35
+# tests 40
+# pass 40
 # fail 0
 ```
 
-### 1b. Mobile app (Flutter, currently 22 tests)
+### 1b. Mobile app (Flutter, currently 28 tests)
 
 ```powershell
 cd D:\kannan\sharebridge_repos\sharebridge-mobile-app
@@ -104,13 +104,13 @@ Coverage at a glance:
 | `test/features/donor_setup/application/confirm_presets_usecase_test.dart` | save delegation and empty-list guard |
 | `test/features/donor_setup/application/clear_presets_usecase_test.dart` | clear delegation to repository |
 | `test/features/donor_setup/data/suggest_vendors_response_dto_test.dart` | response DTO mapping and malformed payload handling |
-| `test/features/donor_setup/data/http_donor_setup_api_client_test.dart` | retry-then-success, persistent 5xx, 4xx mapping, malformed JSON, no-retry on save 5xx, **`DELETE` clear presets**, auth headers on the wire |
-| `test/features/donor_setup/presentation/donor_setup_page_test.dart` | search renders suggestions; confirm saves, reloads list from (fake) server, success status; full menu line + restaurant title; cache clear |
-| `test/features/donor_setup/presentation/donor_presets_page_test.dart` | saved-presets list; copy/open order URL; **Clear all** confirmation empties list + snackbar |
+| `test/features/donor_setup/data/http_donor_setup_api_client_test.dart` | retry-then-success, persistent 5xx, 4xx mapping, malformed JSON, no-retry on save 5xx, **`DELETE` clear presets**, **`POST` delete-item**, auth headers on the wire |
+| `test/features/donor_setup/presentation/donor_setup_page_test.dart` | search; **Copy link** / **Open vendor page** / **Suggest again**; confirm saves **without** collapsing list to saved-only; success status + snackbar; presets navigation; slow-load race; cache clear |
+| `test/features/donor_setup/presentation/donor_presets_page_test.dart` | saved-presets list; copy/open; per-row **Remove**; **Clear all** |
 
 Expected last line: `All tests passed!`.
 
-### 1c. User service (Node.js, currently 35 tests)
+### 1c. User service (Node.js, currently 37 tests)
 
 ```powershell
 cd D:\kannan\sharebridge_repos\sharebridge-user-service
@@ -122,16 +122,16 @@ Coverage at a glance:
 
 | Test file | What it asserts |
 |-----------|-----------------|
-| `test/userServiceRoundtrip.test.js` | mint token + donor-presets PUT/GET roundtrip (dedupe), 401/403 auth, `/health`, 404, invalid JSON bodies, presets array/type validation, URL-encoded path `user_id` |
+| `test/userServiceRoundtrip.test.js` | mint token + donor-presets PUT/GET roundtrip (dedupe), **`POST …/donor-presets/delete-item`**, 401/403 auth, `/health`, 404, invalid JSON bodies, presets array/type validation, URL-encoded path `user_id` |
 | `test/tokenService.test.js` | JWT mint/verify, secret/expiry/claims/tamper cases, env-driven defaults |
 | `test/authContext.test.js` | bearer extraction and authenticated `user_id` resolution |
-| `test/userStore.test.js` | file-backed init/read, `getOrCreateUser`, preset list/replace dedupe and persistence |
+| `test/userStore.test.js` | file-backed init/read, `getOrCreateUser`, preset list/replace dedupe, **`deleteDonorPreset`**, persistence |
 
 Expected output footer:
 
 ```
-# tests 35
-# pass 35
+# tests 37
+# pass 37
 # fail 0
 ```
 
@@ -354,10 +354,9 @@ The mobile client now sends only `Authorization: Bearer <AUTH_TOKEN>`.
 
 1. App opens to **Donor Setup**. Because step 2c saved presets for
    `alice`, the page shows status "Loaded saved presets from server."
-2. Type something like `zomato a2b mini meals` → tap **Suggest Vendors**.
-   The mock backend returns the **same fixed** suggestions every time (it does **not** personalize by `query_text`); each row shows the **full** comma-separated **menu items** under the restaurant name. Auth-protected endpoints carry `Authorization: Bearer <signed token>`.
+2. Type something like `zomato a2b mini meals` → tap **Suggest Vendors** (or **Suggest again** to re-fetch with the same query). The mock backend returns the **same fixed** suggestions every time (it does **not** personalize by `query_text`); each row shows the **full** menu line, **Copy link**, and **Open vendor page** when the URL is `http`/`https`. Auth-protected endpoints carry `Authorization: Bearer <signed token>`.
 3. Check one or more suggestions → tap **Confirm and Save Presets**.
-   Status flips to "Presets saved successfully." The list on **Donor Setup** immediately reloads from the server so it shows **only** the presets you saved (not the full mock search result with old checkboxes). Re-running the GET from step 2d matches the same set (with dedupe applied server-side).
+   A **SnackBar** and green status show "Presets saved successfully." The **full suggestion list stays on screen** (only checkboxes clear) so you can save another subset or open **Saved presets** without losing unselected rows. Server state still updates (dedupe on save as before).
 4. **Cache fallback path**: stop the backend (Ctrl+C in step 2's
    window), kill and relaunch the app — the page falls back to
    "Using cached presets (offline fallback)." once the remote load
@@ -366,12 +365,12 @@ The mobile client now sends only `Authorization: Bearer <AUTH_TOKEN>`.
    exception path renders messages like "Server is temporarily
    unavailable (HTTP 500)." or "Network unavailable. Check your
    connection and retry." instead of stack traces.
-6. **Saved presets / order links**: tap the app-bar icon with tooltip **Saved presets** → **Saved presets** loads from the server (`GET /v1/donor-setup/preferences`). Each row shows the **order URL** (selectable text), **Copy link**, and **Open link** (opens the vendor URL in the system browser). Pull-to-refresh reloads the list. Use **Clear all** (top-right) to confirm and remove **all** presets for the signed-in user on the server (`DELETE /v1/donor-setup/preferences?user_id=…`) and clear the same offline cache key as Donor Setup.
+6. **Saved presets / order links**: tap the app-bar icon with tooltip **Saved presets** → **Saved presets** loads from the server (`GET /v1/donor-setup/preferences`). Each row shows the **order URL** (selectable text), **Copy link**, and **Open link**. Per-row **Remove** calls integration `POST /v1/donor-setup/preferences/delete-item` (user-service: `POST /v1/users/{id}/donor-presets/delete-item` when that backend is on). **Clear all** uses `DELETE …/preferences`. Pull-to-refresh reloads the list.
 
 ### 3d. Why Suggest Vendors and Saved presets can both look “static”
 
 - **Suggest Vendors** always hits the **same mock** (`POST /v1/donor-setup/suggest-vendors`): three fixed venues. That is expected until real search/AI replaces the mock.
-- **Saved presets** (screen + Donor Setup list after save) reflects **whatever the integration-service returns from `GET …/preferences`** — i.e. **persisted** data, not the mock suggestion list.
+- **Saved presets** reflects **`GET …/preferences`**. After **Confirm and Save** on Donor Setup, the **suggestion** list is still the mock search result until you run **Suggest Vendors** again; use **Saved presets** to see persisted rows only.
 - **Clear cache / Sign out** on Donor Setup only clears the **phone’s offline cache** (`shared_preferences`). It does **not** delete presets on the server, so **Saved presets** will still show server rows after a refresh.
 
 ### 3e. Clear server-side saved presets (empty the listing)
@@ -434,9 +433,9 @@ See `development/USER_SERVICE_PREFERENCES_MIGRATION.md` for the full cutover che
 
 ## 5. What "good" looks like (acceptance summary)
 
-- `npm test` in `sharebridge-integration-service` reports `# pass 35 / # fail 0`.
-- `npm test` in `sharebridge-user-service` reports `# pass 35 / # fail 0`.
-- `flutter test` in `sharebridge-mobile-app` ends with `All tests passed!` (**22 tests**, 0 failures — summary line shows `+22`).
+- `npm test` in `sharebridge-integration-service` reports `# pass 39 / # fail 0`.
+- `npm test` in `sharebridge-user-service` reports `# pass 37 / # fail 0`.
+- `flutter test` in `sharebridge-mobile-app` ends with `All tests passed!` (**28 tests**).
 - `Invoke-RestMethod http://localhost:8080/health` returns `ok=True`.
 - Step 2c returns HTTP 200 with `saved_count=1`; step 2d echoes the
   same preset back.
@@ -445,5 +444,5 @@ See `development/USER_SERVICE_PREFERENCES_MIGRATION.md` for the full cutover che
   with `code=missing_auth_context`.
 - Step 2g shows alice and bob with disjoint preset lists.
 - Step 3c shows the mobile UI loading server presets on cold start,
-  saving new picks, **Donor Setup list matching the server immediately after save**,
+  saving new picks (full mock list remains after save; **Saved presets** shows server truth),
   and falling back to the local cache when the backend is offline.

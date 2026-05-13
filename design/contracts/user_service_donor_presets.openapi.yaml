@@ -1,0 +1,89 @@
+openapi: 3.0.3
+info:
+  title: ShareBridge User Service — Donor presets
+  version: 0.2.0
+  description: |
+    Authoritative donor preset storage when integration-service uses
+    `PREFERENCES_BACKEND=user_service`. Requires `Authorization: Bearer <JWT>`;
+    URL `user_id` must match token subject (`403 user_id_mismatch` otherwise).
+
+servers:
+  - url: http://localhost:8081
+    description: Local user-service
+
+paths:
+  /v1/users/{user_id}/donor-presets:
+    get:
+      summary: List presets
+      parameters:
+        - $ref: "#/components/parameters/UserId"
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PresetsEnvelope"
+    put:
+      summary: Replace full preset list (dedupe by restaurant_name + order_url)
+      parameters:
+        - $ref: "#/components/parameters/UserId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [presets]
+              properties:
+                presets:
+                  type: array
+                  items:
+                    type: object
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PresetsEnvelope"
+
+  /v1/users/{user_id}/donor-presets/delete-item:
+    post:
+      summary: Delete one preset by natural key (single round-trip)
+      parameters:
+        - $ref: "#/components/parameters/UserId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [restaurant_name, order_url]
+              properties:
+                restaurant_name:
+                  type: string
+                order_url:
+                  type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PresetsEnvelope"
+
+components:
+  parameters:
+    UserId:
+      name: user_id
+      in: path
+      required: true
+      schema:
+        type: string
+
+  schemas:
+    PresetsEnvelope:
+      type: object
+      properties:
+        presets:
+          type: array
+          items:
+            type: object

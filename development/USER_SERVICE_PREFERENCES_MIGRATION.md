@@ -18,10 +18,11 @@ the abstraction the HTTP handlers depend on:
 listByUser(userId, opts?)              -> Promise<Preset[]>
 upsertForUser(userId, presets, opts?)  -> Promise<Preset[]>  // full set after upsert
 clearForUser(userId, opts?)            -> Promise<Preset[]>  // always []
+removePresetForUser(userId, key, opts?) -> Promise<Preset[]>  // remaining; user-service uses HTTP delete-item
 init()                                 -> Promise<void>
 ```
 
-Integration HTTP: `DELETE /v1/donor-setup/preferences?user_id=<id>` (Bearer required) clears that user’s presets — implemented for local store and delegated to user-service `PUT { presets: [] }` when `PREFERENCES_BACKEND=user_service`.
+Integration HTTP: `DELETE /v1/donor-setup/preferences?user_id=<id>` (Bearer required) clears that user’s presets — implemented for local store and delegated to user-service `PUT { presets: [] }` when `PREFERENCES_BACKEND=user_service`. Single-row removal uses `POST /v1/donor-setup/preferences/delete-item`, which forwards to **`POST /v1/users/{user_id}/donor-presets/delete-item`** on user-service (one round-trip; no GET+PUT in integration).
 
 Two implementations:
 
@@ -42,6 +43,8 @@ Endpoints (under `sharebridge-user-service`):
   - Body: `{ presets: Preset[] }` — full upsert; server is responsible
     for dedupe by `(restaurant_name, order_url)` (latest wins) to match
     today's `PreferencesStore` behavior.
+- `POST   /v1/users/{user_id}/donor-presets/delete-item` → `200 { presets: Preset[] }`
+  - Body: `{ restaurant_name, order_url }` — removes one row by the same natural key (trimmed).
 
 `Preset` shape (matches existing donor preset payload):
 

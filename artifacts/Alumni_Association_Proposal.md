@@ -59,18 +59,18 @@ ShareBridge makes helping someone with food safer, more private, and easier to t
 
 **GitHub Repository Structure:** We have already set up a comprehensive repository structure for the project:
 
-**Repository:** https://github.com/sharingbridge/sharebridge
+**Repository:** https://github.com/sharingbridge/sharingbridge
 
-- **Main Repository:** `sharebridge` - Contains all documentation and coordination
+- **Main Repository:** `sharingbridge` - Contains all documentation and coordination
   - Business requirements and technical architecture
   - Implementation approach and contributor guidelines
   - AI-powered development prompts
 
 - **Service Repositories:** Independent repositories for each component:
-  - Frontend: `sharebridge-mobile-app`, `sharebridge-web-app`
-  - Backend: `sharebridge-api-gateway`, `sharebridge-order-service`, `sharebridge-user-service`, `sharebridge-integration-service`, `sharebridge-notification-service`
-  - AI/ML: `sharebridge-ai-safety`, `sharebridge-photo-service`
-  - Infrastructure: `sharebridge-infra`, `sharebridge-deployment`
+  - Frontend: `sharingbridge-mobile-app`, `sharingbridge-web-app`
+  - Backend: `sharingbridge-api-gateway`, `sharingbridge-order-service`, `sharingbridge-user-service`, `sharingbridge-integration-service`, `sharingbridge-notification-service`
+  - AI/ML: `sharingbridge-ai-safety`, `sharingbridge-photo-service`
+  - Infrastructure: `sharingbridge-infra`, `sharingbridge-deployment`
 
 - **Documentation Available:**
   - Complete business requirements
@@ -216,10 +216,10 @@ All we request is permission to use the name and occasional help connecting with
 ---
 
 **Appendices:**
-- [Technical Architecture Document](https://github.com/sharingbridge/sharebridge/blob/main/design/ShareBridge_Technical_Architecture.md)
-- [Detailed Business Requirements](https://github.com/sharingbridge/sharebridge/blob/main/requirements/ShareBridge_Business_Requirement.md)
-- [Implementation Approach](https://github.com/sharingbridge/sharebridge/blob/main/development/IMPLEMENTATION_APPROACH.md)
-- [Call for Contributors](https://github.com/sharingbridge/sharebridge/blob/main/development/CALL_FOR_CONTRIBUTORS.md)
+- [Technical Architecture Document](https://github.com/sharingbridge/sharingbridge/blob/main/design/ShareBridge_Technical_Architecture.md)
+- [Detailed Business Requirements](https://github.com/sharingbridge/sharingbridge/blob/main/requirements/ShareBridge_Business_Requirement.md)
+- [Implementation Approach](https://github.com/sharingbridge/sharingbridge/blob/main/development/IMPLEMENTATION_APPROACH.md)
+- [Call for Contributors](https://github.com/sharingbridge/sharingbridge/blob/main/development/CALL_FOR_CONTRIBUTORS.md)
 
 ---
 

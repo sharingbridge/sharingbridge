@@ -51,7 +51,7 @@ Develop and test all ShareBridge components using free-tier platforms with near-
 | **Version Control** | GitHub | Unlimited private repos | Keep GitHub |
 | **API Gateway** | Self-hosted Kong (Docker) | Manual setup | Keep or move to AWS |
 
-**How this relates to donor-setup code today:** The table and diagrams below assume backend services eventually use **Supabase Postgres** (or equivalent) for durable data. The **shipped donor-setup path** (`sharebridge-integration-service` + `sharebridge-user-service`) currently persists preferences and donor profile/presets in **JSON files** so the team can ship contracts and integration without standing up a database first. Treat that as an intentional **staging step** (mini MVP); migrate user-scoped state to Postgres when you need deploy durability, replicas, or alignment with this doc’s full free-tier stack. See `development/AGENT_HANDOFF.md` section **MVP staging (mini vs matured)**.
+**How this relates to donor-setup code today:** The table and diagrams below assume backend services eventually use **Supabase Postgres** (or equivalent) for durable data. The **shipped donor-setup path** (`sharingbridge-integration-service` + `sharingbridge-user-service`) currently persists preferences and donor profile/presets in **JSON files** so the team can ship contracts and integration without standing up a database first. Treat that as an intentional **staging step** (mini MVP); migrate user-scoped state to Postgres when you need deploy durability, replicas, or alignment with this doc’s full free-tier stack. See `development/AGENT_HANDOFF.md` section **MVP staging (mini vs matured)**.
 
 ---
 
@@ -59,12 +59,12 @@ Develop and test all ShareBridge components using free-tier platforms with near-
 
 ```bash
 # 1. Clone repository
-git clone https://github.com/yourusername/sharebridge
-cd sharebridge
+git clone https://github.com/yourusername/sharingbridge
+cd sharingbridge
 
 # 2. Set up Supabase database
 # - Sign up at supabase.com (no credit card required)
-# - Create project: sharebridge-dev
+# - Create project: sharingbridge-dev
 # - Run schema from ../design/ShareBridge_Technical_Architecture.md
 
 # 3. Configure environment variables
@@ -112,10 +112,10 @@ docker-compose up
 ## Client Application Workstreams (Parallel to Backend Phases)
 
 The backend/infrastructure phases below run in parallel with explicit frontend tracks:
-- `sharebridge-mobile-app` (React Native or Flutter)
-- `sharebridge-web-app` (React/Next.js)
+- `sharingbridge-mobile-app` (React Native or Flutter)
+- `sharingbridge-web-app` (React/Next.js)
 
-### Mobile App Workstream (`sharebridge-mobile-app`)
+### Mobile App Workstream (`sharingbridge-mobile-app`)
 
 **Weeks 1-2 (Foundation):**
 - Project bootstrap, navigation shell, environment setup, API client scaffolding
@@ -138,7 +138,7 @@ The backend/infrastructure phases below run in parallel with explicit frontend t
 - Beta distribution (TestFlight / internal Android track)
 - MVP release checklist and rollout playbook
 
-### Web App Workstream (`sharebridge-web-app`)
+### Web App Workstream (`sharingbridge-web-app`)
 
 **Weeks 1-2 (Foundation):**
 - App shell, auth/session setup, role-aware route scaffolding
@@ -167,7 +167,7 @@ The backend/infrastructure phases below run in parallel with explicit frontend t
 
 ```bash
 # Sign up at https://supabase.com (no credit card required)
-# Create project: sharebridge-dev
+# Create project: sharingbridge-dev
 
 # Enable PostGIS extension via Supabase Dashboard
 # SQL Editor → Run:
@@ -229,7 +229,7 @@ CMD ["npm", "start"]
 git init
 git add .
 git commit -m "Initial backend"
-git remote add origin https://github.com/yourusername/sharebridge-api
+git remote add origin https://github.com/yourusername/sharingbridge-api
 git push -u origin main
 
 # 3. Deploy on Render.com

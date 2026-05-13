@@ -2,13 +2,13 @@
 
 This document provides copy-ready MVP bootstrap issue definitions for the core repos:
 
-- `sharebridge-api-gateway`
-- `sharebridge-user-service`
-- `sharebridge-order-service`
-- `sharebridge-integration-service`
-- `sharebridge-notification-service`
-- `sharebridge-mobile-app`
-- `sharebridge-web-app`
+- `sharingbridge-api-gateway`
+- `sharingbridge-user-service`
+- `sharingbridge-order-service`
+- `sharingbridge-integration-service`
+- `sharingbridge-notification-service`
+- `sharingbridge-mobile-app`
+- `sharingbridge-web-app`
 
 Source-of-truth alignment:
 
@@ -39,7 +39,7 @@ Each issue below should be closed only when all relevant items are demonstrably 
 
 ---
 
-## 1) `sharebridge-api-gateway`
+## 1) `sharingbridge-api-gateway`
 
 **Issue title:** `MVP Bootstrap: API Gateway routing, auth edge, and workflow orchestration endpoints`
 
@@ -62,7 +62,7 @@ Each issue below should be closed only when all relevant items are demonstrably 
 
 ---
 
-## 2) `sharebridge-user-service`
+## 2) `sharingbridge-user-service`
 
 **Issue title:** `MVP Bootstrap: donor auth/profile and pre-field setup preferences`
 
@@ -81,13 +81,13 @@ Each issue below should be closed only when all relevant items are demonstrably 
 - [ ] BRD step 1 (Donor Setup) is fully supported through API + persistence
 - [ ] Beneficiary is not treated as a registered login user in service design
 - [ ] User service stores only required non-financial profile/config data
-- [ ] Auth/session behavior is consumable by both `sharebridge-mobile-app` and `sharebridge-web-app`
+- [ ] Auth/session behavior is consumable by both `sharingbridge-mobile-app` and `sharingbridge-web-app`
 - [ ] Core setup APIs are documented and versioned
 - [ ] Setup model cleanly stores AI suggestion provenance (confidence/source type) separately from donor-confirmed preferences
 
 ---
 
-## 3) `sharebridge-order-service`
+## 3) `sharingbridge-order-service`
 
 **Issue title:** `MVP Bootstrap: order intent lifecycle, safety gate, and delivery-status timeline`
 
@@ -110,7 +110,7 @@ Each issue below should be closed only when all relevant items are demonstrably 
 
 ---
 
-## 4) `sharebridge-integration-service`
+## 4) `sharingbridge-integration-service`
 
 **Issue title:** `MVP Bootstrap: vendor integration, instruction-pack assembly, secure artifact references`
 
@@ -135,7 +135,7 @@ Each issue below should be closed only when all relevant items are demonstrably 
 
 ---
 
-## 5) `sharebridge-notification-service`
+## 5) `sharingbridge-notification-service`
 
 **Issue title:** `MVP Bootstrap: event-driven donor notifications and completion confirmation`
 
@@ -158,7 +158,7 @@ Each issue below should be closed only when all relevant items are demonstrably 
 
 ---
 
-## 6) `sharebridge-mobile-app`
+## 6) `sharingbridge-mobile-app`
 
 **Issue title:** `MVP Bootstrap: donor-seeker interaction flow mobile UX (setup -> safety -> instruction -> vendor redirect)`
 
@@ -182,7 +182,7 @@ Each issue below should be closed only when all relevant items are demonstrably 
 
 ---
 
-## 7) `sharebridge-web-app`
+## 7) `sharingbridge-web-app`
 
 **Issue title:** `MVP Bootstrap: web operations view for order monitoring, history, and exception handling`
 
@@ -207,12 +207,12 @@ Each issue below should be closed only when all relevant items are demonstrably 
 
 ## Suggested Execution Order
 
-1. `sharebridge-user-service` + `sharebridge-api-gateway` foundations
-2. `sharebridge-order-service` core state machine and events
-3. `sharebridge-integration-service` instruction-pack + vendor adapter skeleton
-4. `sharebridge-notification-service` event subscribers and delivery channels
-5. `sharebridge-mobile-app` donor-seeker interaction flow implementation
-6. `sharebridge-web-app` operations and history dashboards
+1. `sharingbridge-user-service` + `sharingbridge-api-gateway` foundations
+2. `sharingbridge-order-service` core state machine and events
+3. `sharingbridge-integration-service` instruction-pack + vendor adapter skeleton
+4. `sharingbridge-notification-service` event subscribers and delivery channels
+5. `sharingbridge-mobile-app` donor-seeker interaction flow implementation
+6. `sharingbridge-web-app` operations and history dashboards
 
 Parallelization recommendation:
 

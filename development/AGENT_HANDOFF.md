@@ -38,13 +38,13 @@ The **donor-setup slice** that is live in code is intentionally a **minimal MVP*
 
 ## Current Implementation Status
 
-### `sharebridge-integration-service` (donor setup MVP shipped)
+### `sharingbridge-integration-service` (donor setup MVP shipped)
 - `POST /v1/donor-setup/suggest-vendors` — mock top-5 vendor/menu suggestions.
 - `POST /v1/donor-setup/preferences` — save donor presets, `user_id` derived from auth headers.
 - `GET /v1/donor-setup/preferences` — fetch presets, header-derived `user_id` (legacy `?user_id=` still accepted).
 - File-backed preferences store (`src/preferencesStore.js`) accessed via a `PreferencesRepository` abstraction (`src/preferencesRepository.js`).
   - `LocalPreferencesRepository` is wired today.
-  - `UserServicePreferencesRepository` is wired to `sharebridge-user-service` (`GET/PUT /v1/users/{user_id}/donor-presets`, **`POST …/donor-presets/delete-item`** for single-row delete) and forwards donor auth headers.
+  - `UserServicePreferencesRepository` is wired to `sharingbridge-user-service` (`GET/PUT /v1/users/{user_id}/donor-presets`, **`POST …/donor-presets/delete-item`** for single-row delete) and forwards donor auth headers.
   - Backend selected by `PREFERENCES_BACKEND` env (`local` default, `user_service` requires `USER_SERVICE_BASE_URL`).
 - Auth context (`src/authContext.js`): verifies signed bearer tokens (HS256) issued by user-service. `X-User-Id` fallback is removed. Missing/invalid token → `401 missing_auth_context`; URL/payload mismatch vs token subject → `403 user_id_mismatch`.
 - HTTP server is exposed as a factory (`createIntegrationServer`) so tests can boot it against a temp DB.
@@ -52,7 +52,7 @@ The **donor-setup slice** that is live in code is intentionally a **minimal MVP*
 - `POST /v1/donor-setup/preferences/delete-item` removes one preset by `(restaurant_name, order_url)`; user-service mode calls **`POST /v1/users/{id}/donor-presets/delete-item`** (no GET+PUT read-modify-write).
 - 40 tests, all green via `npm test`; `npm run backfill:user-service-presets` migrates `data/preferences.json` → user-service (see migration doc).
 
-### `sharebridge-mobile-app` (donor setup MVP shipped)
+### `sharingbridge-mobile-app` (donor setup MVP shipped)
 - Donor setup screen wired to integration-service: search → suggestions → confirm-and-save.
 - Startup loads presets from server, with local `shared_preferences` fallback cache when the server is unreachable.
 - HTTP API client (`lib/features/donor_setup/data/http_donor_setup_api_client.dart`) supports request timeout, exponential-backoff retry, and typed exceptions (`DonorSetupNetworkException`, `DonorSetupTimeoutException`, `DonorSetupBadRequestException`, `DonorSetupServerException`, `DonorSetupResponseException`). Mutating saves do not retry on 5xx (no double-write).
@@ -63,19 +63,19 @@ The **donor-setup slice** that is live in code is intentionally a **minimal MVP*
 - 28 tests, all green via `flutter test`.
 
 ### Other repos
-- `sharebridge-user-service`: MVP skeleton bootstrapped (Node HTTP service + tests) with:
+- `sharingbridge-user-service`: MVP skeleton bootstrapped (Node HTTP service + tests) with:
   - donor user model storage (`id`, `phone`, `email`, `created_at`) via file-backed `UserStore`.
   - `POST /v1/auth/token` issuing signed bearer tokens (JWT HS256).
   - `GET/PUT /v1/users/{user_id}/donor-presets` with preset validation and dedupe by `(restaurant_name, order_url)` (latest wins); **`POST /v1/users/{user_id}/donor-presets/delete-item`** removes one preset by that key in one request.
   - auth handling aligned with integration-service semantics for 401 (`missing_auth_context`) and 403 (`user_id_mismatch`).
   - **37** Node tests green via `npm test` (HTTP roundtrips + preset validation/`UserStore` + `tokenService`/`authContext` unit coverage).
   - GitHub Actions CI: Node 20, `npm install`, `npm test` on push/PR; branch protection on `main` requires passing check **`test`** (alongside existing review/signature rules).
-- `sharebridge-api-gateway`, `sharebridge-order-service`, `sharebridge-notification-service`, `sharebridge-ai-safety`, `sharebridge-photo-service`, `sharebridge-web-app`, `sharebridge-infra`, `sharebridge-deployment`: README only, no code yet.
+- `sharingbridge-api-gateway`, `sharingbridge-order-service`, `sharingbridge-notification-service`, `sharingbridge-ai-safety`, `sharingbridge-photo-service`, `sharingbridge-web-app`, `sharingbridge-infra`, `sharingbridge-deployment`: README only, no code yet.
 
 ## Quick Runbook
 
 Integration service:
-- `cd sharebridge-integration-service`
+- `cd sharingbridge-integration-service`
 - `npm install`
 - `npm test`
 - `npm start` → listens on `http://localhost:8080`
@@ -83,7 +83,7 @@ Integration service:
 - Preferences endpoints require a valid signed bearer token from user-service.
 
 Mobile app:
-- `cd sharebridge-mobile-app`
+- `cd sharingbridge-mobile-app`
 - `flutter pub get`
 - `flutter test`
 - Fetch token first: `POST http://localhost:8081/v1/auth/token` with `{"user_id":"demo-user"}` and copy `token`.
@@ -96,7 +96,7 @@ Manual end-to-end and API smoke steps live in `testing/MANUAL_TESTING_GUIDE.md` 
 
 Do this before starting the next feature thread:
 
-1. **CI on GitHub** — Open the latest workflow run on `main` for each repo you changed (for example `sharingbridge-user-service` or legacy `sharebridge-*` slugs until renames land). Confirm the **`test`** job (and any other required checks) are green; fix failures before layering more changes.
+1. **CI on GitHub** — Open the latest workflow run on `main` for each repo you changed (for example `sharingbridge-user-service`, `sharingbridge-integration-service`, `sharingbridge-mobile-app`, or the coordination repo `sharingbridge`). Confirm the **`test`** job (and any other required checks) are green; fix failures before layering more changes.
 2. **Manual smoke** — Short pass from `testing/MANUAL_TESTING_GUIDE.md`: mint token, suggest, save presets, single-row delete (`delete-item`), clear all, mobile **Copy link** / **Suggest again** / saved-presets flows.
 3. **Branch protection alignment** — If org rules expect PRs + required checks (and direct `main` pushes only work via bypass), use **feature branches + PRs** next time so reviews and status checks run normally.
 4. **Roadmap next slice** — After the above, pick the next MVP milestone from `development/IMPLEMENTATION_APPROACH.md` and the BRD (e.g. donor-seeker flow, real vendor search replacing mock suggest, managed DB for durability).
@@ -105,7 +105,7 @@ Do this before starting the next feature thread:
 
 The GitHub organization is **`sharingbridge`** (`https://github.com/sharingbridge`). Local clones should use `origin` URLs under that host (see `development/GITHUB_ORG_AND_REPO_RENAMES.md`).
 
-**Repository slugs** on GitHub may still be `sharebridge` / `sharebridge-*` until each repo is renamed in **Settings → General → Repository name**; after renaming a repo to `sharingbridge-*`, run `git remote set-url origin https://github.com/sharingbridge/<new-slug>.git` (or `scripts/set-remotes-sharingbridge.ps1` when the local folder name matches the slug).
+**Repository slugs** on GitHub under **`sharingbridge`** use names like `sharingbridge` (coordination/docs) and `sharingbridge-*` (services). Local clone directories may still use older folder names until you rename them; **`git remote set-url origin https://github.com/sharingbridge/<slug>.git`** (or `scripts/set-remotes-sharingbridge.ps1`) must match the **GitHub** slug, not necessarily the disk folder name—see `development/GITHUB_ORG_AND_REPO_RENAMES.md`.
 
 Renaming local directories to `sharingbridge-*` may require closing IDEs and terminals that lock those paths (Windows “access denied” / “in use”), then reopening the workspace.
 
@@ -125,7 +125,7 @@ Tasks #1-#5 are complete. Remaining priority order:
    - Remove `PreferencesStore` / `LocalPreferencesRepository` when no deployment needs local file mode.
 
 ## Follow-ups Surfaced in Prior Sessions
-- Backfill tooling: `sharebridge-integration-service` → `npm run backfill:user-service-presets` (documented in `development/USER_SERVICE_PREFERENCES_MIGRATION.md`).
+- Backfill tooling: `sharingbridge-integration-service` → `npm run backfill:user-service-presets` (documented in `development/USER_SERVICE_PREFERENCES_MIGRATION.md`).
 - Retire integration-service file-backed store and `LocalPreferencesRepository` after production cutover is verified (not yet removed from code).
 
 ## Recently Shipped (chronological, newest last)
@@ -142,14 +142,14 @@ Tasks #1-#5 are complete. Remaining priority order:
 - `feat`: send donor identity via auth headers from mobile app.
 - `docs`: add `testing/` folder with `MANUAL_TESTING_GUIDE.md` for shipped modules.
 - `docs`: clean up unused `prompting/` folders, retire `development/PROMPTS.md`, and refocus README + CALL_FOR_CONTRIBUTORS on AGENT_HANDOFF as the live coordination doc.
-- `feat`: bootstrap `sharebridge-user-service` skeleton with demo-token auth endpoint, donor-presets GET/PUT APIs, file-backed donor model/preset storage, and green roundtrip tests for token + presets + 401/403 auth paths.
-- `ci`: add minimal GitHub Actions CI workflows for `sharebridge-integration-service` (Node 20, `npm install`, `npm test`) and `sharebridge-mobile-app` (Flutter stable, `flutter pub get`, `flutter test`) on push/PR.
+- `feat`: bootstrap `sharingbridge-user-service` skeleton with demo-token auth endpoint, donor-presets GET/PUT APIs, file-backed donor model/preset storage, and green roundtrip tests for token + presets + 401/403 auth paths.
+- `ci`: add minimal GitHub Actions CI workflows for `sharingbridge-integration-service` (Node 20, `npm install`, `npm test`) and `sharingbridge-mobile-app` (Flutter stable, `flutter pub get`, `flutter test`) on push/PR.
 - `feat`: mobile donor-setup polish — replace hard-coded manual area with editable field, distinguish empty server presets from server-unreachable fallback behavior, and add clear cache/sign-out action; extend widget tests for new behaviors.
 - `feat`: wire `UserServicePreferencesRepository` to live user-service donor-presets APIs, forward auth headers from integration-service requests, propagate upstream 4xx errors, and add coverage for repository HTTP behavior plus integration-to-user-service roundtrip path.
 - `feat`: replace demo auth with signed token flow — user-service now mints JWT tokens, integration-service verifies token signature/claims and rejects `X-User-Id` fallback, mobile sends bearer token via `AUTH_TOKEN`; test suites updated and green.
 - `feat`: add `backfill:user-service-presets` script and tests to migrate `PreferencesStore` JSON into user-service via signed tokens.
-- `ci`: add GitHub Actions workflow for `sharebridge-user-service` (Node 20, `npm test`).
-- `test`: expand `sharebridge-user-service` with `tokenService` and `authContext` unit tests; read token defaults from env at mint/verify time for test isolation.
+- `ci`: add GitHub Actions workflow for `sharingbridge-user-service` (Node 20, `npm test`).
+- `test`: expand `sharingbridge-user-service` with `tokenService` and `authContext` unit tests; read token defaults from env at mint/verify time for test isolation.
 - `test`: add `UserStore` file-backed persistence/dedupe tests, HTTP edges (`/health`, 404, invalid JSON, validation, URL-encoded `user_id`), and trim phone/email on merge-in to match create behavior.
 - `docs`: refresh `USER_SERVICE_PREFERENCES_MIGRATION.md` for current contract and backfill; document Render/Railway secret-manager tech debt in `IMPLEMENTATION_APPROACH.md`.
 - `docs`: clarify **MVP staging (mini vs matured)** in `AGENT_HANDOFF.md` and tie donor-setup file persistence to the Supabase-oriented roadmap in `IMPLEMENTATION_APPROACH.md`.

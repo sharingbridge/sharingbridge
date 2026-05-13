@@ -276,15 +276,15 @@ Notes:
 ### 3.0 Client Architecture (Mobile & Web Repos)
 
 This section defines frontend ownership and contracts for:
-- `sharebridge-mobile-app`
-- `sharebridge-web-app`
+- `sharingbridge-mobile-app`
+- `sharingbridge-web-app`
 
 **Repo Responsibilities:**
-- **Mobile app (`sharebridge-mobile-app`)**
+- **Mobile app (`sharingbridge-mobile-app`)**
   - Donor field workflow: setup (including AI-assisted vendor/menu onboarding), donor-seeker interaction flow, consent capture, safety check trigger, instruction-pack generation/copy
   - Device capabilities: camera, geolocation, deep-link launch, push notification handling
   - Field reliability: offline draft state, retry queue for unstable networks, clear user recovery paths
-- **Web app (`sharebridge-web-app`)**
+- **Web app (`sharingbridge-web-app`)**
   - Admin/coordinator dashboard views (order status, vendor monitoring, support workflows)
   - Analytics and operational visibility (maps, trends, queue/processing health)
   - Browser-first management flows for vendor/admin operations

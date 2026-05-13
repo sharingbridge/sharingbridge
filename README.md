@@ -37,28 +37,28 @@ Product-level assumptions are maintained in one place: [ShareBridge_Business_Req
 
 ## Repository Structure
 
-This is the **master repository** for ShareBridge, containing documentation and overall coordination.
+This is the **master repository** for ShareBridge (GitHub: [`sharingbridge/sharingbridge`](https://github.com/sharingbridge/sharingbridge)), containing documentation and overall coordination.
 
 ### Child Repositories (Independent Development)
 
 **Frontend:**
-- `sharebridge-mobile-app` - Mobile application (Flutter)
-- `sharebridge-web-app` - Web application (React/Next.js)
+- `sharingbridge-mobile-app` - Mobile application (Flutter)
+- `sharingbridge-web-app` - Web application (React/Next.js)
 
 **Backend Services:**
-- `sharebridge-api-gateway` - API gateway and routing
-- `sharebridge-order-service` - Order management
-- `sharebridge-user-service` - User authentication and profiles
-- `sharebridge-integration-service` - Vendor integrations (Swiggy, Zomato)
-- `sharebridge-notification-service` - Notifications
+- `sharingbridge-api-gateway` - API gateway and routing
+- `sharingbridge-order-service` - Order management
+- `sharingbridge-user-service` - User authentication and profiles
+- `sharingbridge-integration-service` - Vendor integrations (Swiggy, Zomato)
+- `sharingbridge-notification-service` - Notifications
 
 **AI/ML:**
-- `sharebridge-ai-safety` - Location safety assessment
-- `sharebridge-photo-service` - Face detection and verification
+- `sharingbridge-ai-safety` - Location safety assessment
+- `sharingbridge-photo-service` - Face detection and verification
 
 **Infrastructure:**
-- `sharebridge-infra` - Infrastructure as Code
-- `sharebridge-deployment` - CI/CD pipelines
+- `sharingbridge-infra` - Infrastructure as Code
+- `sharingbridge-deployment` - CI/CD pipelines
 
 Each repository evolves independently. Coordination happens here through GitHub Discussions and `development/AGENT_HANDOFF.md`.
 

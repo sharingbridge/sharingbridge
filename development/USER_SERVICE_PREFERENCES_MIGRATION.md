@@ -4,14 +4,14 @@ Status: **Baseline implemented; cutover and tear-down are ops steps.**
 
 ## Why this exists
 
-For MVP velocity, donor presets are owned by `sharebridge-integration-service`
+For MVP velocity, donor presets are owned by `sharingbridge-integration-service`
 (file-backed `PreferencesStore`). Long-term, user-scoped state belongs in
-`sharebridge-user-service`. This document captures the contract and the
+`sharingbridge-user-service`. This document captures the contract and the
 migration steps so the swap is mechanical.
 
 ## Current boundary (in code)
 
-`sharebridge-integration-service/src/preferencesRepository.js` defines
+`sharingbridge-integration-service/src/preferencesRepository.js` defines
 the abstraction the HTTP handlers depend on:
 
 ```
@@ -36,7 +36,7 @@ Selection is driven by env:
 
 ## Planned user-service contract
 
-Endpoints (under `sharebridge-user-service`):
+Endpoints (under `sharingbridge-user-service`):
 
 - `GET    /v1/users/{user_id}/donor-presets` → `200 { presets: Preset[] }`
 - `PUT    /v1/users/{user_id}/donor-presets` → `200 { presets: Preset[] }`
@@ -77,10 +77,10 @@ Errors:
 2. **Integration remote repository** — `UserServicePreferencesRepository` uses `fetch()` to those endpoints (implemented).
 3. **Backfill file store → user-service** (once per environment, before or right after flip):
 
-   From `sharebridge-integration-service`, with user-service running and using the **same** `AUTH_TOKEN_SECRET` as local minting expects:
+   From `sharingbridge-integration-service`, with user-service running and using the **same** `AUTH_TOKEN_SECRET` as local minting expects:
 
    ```powershell
-   cd D:\path\to\sharebridge-integration-service
+   cd D:\path\to\sharingbridge-integration-service
    $env:USER_SERVICE_BASE_URL = "http://localhost:8081"   # or production URL
    $env:PREFERENCES_DB_PATH = ".\data\preferences.json"    # default if omitted
    # Optional: $env:BACKFILL_DRY_RUN = "1"                   # log only

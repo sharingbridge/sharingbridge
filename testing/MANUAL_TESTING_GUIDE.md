@@ -1,25 +1,27 @@
 # Manual Testing Guide — Completed Modules
 
 This guide walks through how to verify the donor-setup modules that
-have shipped across `sharebridge-integration-service` and
-`sharebridge-mobile-app`. It pairs **automated test suites** with
+have shipped across `sharingbridge-integration-service` and
+`sharingbridge-mobile-app`. It pairs **automated test suites** with
 **manual API smoke tests** and an **end-to-end** flow on the mobile app.
 
 All commands assume **PowerShell on Windows**. Translate to bash as
 needed.
 
+**Path note:** GitHub repository slugs use the `sharingbridge-*` prefix. Examples use `D:\kannan\sharebridge_repos\sharingbridge-…`. If your clone directories are still named `sharebridge-*`, substitute that folder name in `cd` commands.
+
 ## Modules in scope
 
 | # | Module | Where it lives |
 |---|--------|----------------|
-| 1 | Donor setup `suggest-vendors` (mock top-5) | `sharebridge-integration-service/src/server.js`, `src/suggestVendors.js` |
-| 2 | Preferences save/fetch HTTP API | `sharebridge-integration-service/src/server.js`, `src/preferencesStore.js` |
-| 3 | Preferences repository boundary toward user-service | `sharebridge-integration-service/src/preferencesRepository.js` |
-| 4 | Signed-token auth context (JWT Bearer) | `sharebridge-integration-service/src/authContext.js`, `src/tokenService.js` |
-| 5 | Mobile donor setup UI + repository | `sharebridge-mobile-app/lib/features/donor_setup/**` |
-| 6 | Mobile HTTP client (timeout, retry, typed errors, auth headers) | `sharebridge-mobile-app/lib/features/donor_setup/data/http_donor_setup_api_client.dart` |
-| 7 | Mobile auth context | `sharebridge-mobile-app/lib/features/donor_setup/data/auth_context.dart` |
-| 8 | Mobile cache fallback (`shared_preferences`) | `sharebridge-mobile-app/lib/features/donor_setup/presentation/pages/donor_setup_page.dart` |
+| 1 | Donor setup `suggest-vendors` (mock top-5) | `sharingbridge-integration-service/src/server.js`, `src/suggestVendors.js` |
+| 2 | Preferences save/fetch HTTP API | `sharingbridge-integration-service/src/server.js`, `src/preferencesStore.js` |
+| 3 | Preferences repository boundary toward user-service | `sharingbridge-integration-service/src/preferencesRepository.js` |
+| 4 | Signed-token auth context (JWT Bearer) | `sharingbridge-integration-service/src/authContext.js`, `src/tokenService.js` |
+| 5 | Mobile donor setup UI + repository | `sharingbridge-mobile-app/lib/features/donor_setup/**` |
+| 6 | Mobile HTTP client (timeout, retry, typed errors, auth headers) | `sharingbridge-mobile-app/lib/features/donor_setup/data/http_donor_setup_api_client.dart` |
+| 7 | Mobile auth context | `sharingbridge-mobile-app/lib/features/donor_setup/data/auth_context.dart` |
+| 8 | Mobile cache fallback (`shared_preferences`) | `sharingbridge-mobile-app/lib/features/donor_setup/presentation/pages/donor_setup_page.dart` |
 
 ## Prerequisites
 
@@ -27,10 +29,10 @@ needed.
 - Flutter 3.16+ on `PATH` (and a target device — Windows desktop, web,
   or an Android emulator at minimum).
 - Both repos cloned alongside this one:
-  - `D:\kannan\sharebridge_repos\sharebridge-integration-service`
-  - `D:\kannan\sharebridge_repos\sharebridge-mobile-app`
+  - `D:\kannan\sharebridge_repos\sharingbridge-integration-service`
+  - `D:\kannan\sharebridge_repos\sharingbridge-mobile-app`
 - User service cloned and runnable for token minting:
-  - `D:\kannan\sharebridge_repos\sharebridge-user-service`
+  - `D:\kannan\sharebridge_repos\sharingbridge-user-service`
 - Port `8080` free locally.
 - Port `8081` free locally.
 
@@ -40,7 +42,7 @@ This guide describes the **donor-setup MVP** path: symmetric HS256 tokens and a 
 
 Tokens are signed and verified with that **symmetric** secret (`AUTH_TOKEN_SECRET`).
 
-- **You do not have to set it for basic local smoke tests.** If the variable is unset, both `sharebridge-user-service` and `sharebridge-integration-service` use the same **built-in dev default** from each repo’s `src/tokenService.js` (`sharebridge-dev-secret-change-me`). Tokens minted on user-service `:8081` will verify on integration-service `:8080` as long as you did not change the secret on one side only.
+- **You do not have to set it for basic local smoke tests.** If the variable is unset, both `sharingbridge-user-service` and `sharingbridge-integration-service` use the same **built-in dev default** from each repo’s `src/tokenService.js` (`sharebridge-dev-secret-change-me`). Tokens minted on user-service `:8081` will verify on integration-service `:8080` as long as you did not change the secret on one side only.
 
 - **Set it explicitly** when you want to match staging/prod habits or avoid relying on the default string. The value must be **identical** on both servers before each `npm start`:
 
@@ -59,7 +61,7 @@ Tokens are signed and verified with that **symmetric** secret (`AUTH_TOKEN_SECRE
 ### 1a. Integration service (Node.js, currently 40 tests)
 
 ```powershell
-cd D:\kannan\sharebridge_repos\sharebridge-integration-service
+cd D:\kannan\sharebridge_repos\sharingbridge-integration-service
 npm install     # first time only
 npm test
 ```
@@ -91,7 +93,7 @@ Expected output footer:
 ### 1b. Mobile app (Flutter, currently 28 tests)
 
 ```powershell
-cd D:\kannan\sharebridge_repos\sharebridge-mobile-app
+cd D:\kannan\sharebridge_repos\sharingbridge-mobile-app
 flutter pub get   # first time only
 flutter test
 ```
@@ -113,7 +115,7 @@ Expected last line: `All tests passed!`.
 ### 1c. User service (Node.js, currently 37 tests)
 
 ```powershell
-cd D:\kannan\sharebridge_repos\sharebridge-user-service
+cd D:\kannan\sharebridge_repos\sharingbridge-user-service
 npm install       # first time only
 npm test
 ```
@@ -140,7 +142,7 @@ Expected output footer:
 Start user-service in one PowerShell window:
 
 ```powershell
-cd D:\kannan\sharebridge_repos\sharebridge-user-service
+cd D:\kannan\sharebridge_repos\sharingbridge-user-service
 npm install   # first time only
 npm start
 # User service listening on 8081
@@ -149,7 +151,7 @@ npm start
 Start integration-service in a second PowerShell window:
 
 ```powershell
-cd D:\kannan\sharebridge_repos\sharebridge-integration-service
+cd D:\kannan\sharebridge_repos\sharingbridge-integration-service
 npm start
 # Integration service listening on 8080
 ```
@@ -337,14 +339,14 @@ $mobileToken = (Invoke-RestMethod -Method Post -Uri http://localhost:8081/v1/aut
 ### 3a. Windows desktop
 
 ```powershell
-cd D:\kannan\sharebridge_repos\sharebridge-mobile-app
+cd D:\kannan\sharebridge_repos\sharingbridge-mobile-app
 flutter run -d windows --dart-define=API_BASE_URL=http://localhost:8080 --dart-define=USER_ID=alice --dart-define=AUTH_TOKEN=$mobileToken
 ```
 
 ### 3b. Android emulator
 
 ```powershell
-cd D:\kannan\sharebridge_repos\sharebridge-mobile-app
+cd D:\kannan\sharebridge_repos\sharingbridge-mobile-app
 flutter run --dart-define=API_BASE_URL=http://10.0.2.2:8080 --dart-define=USER_ID=alice --dart-define=AUTH_TOKEN=$mobileToken
 ```
 
@@ -382,14 +384,14 @@ Pick one approach:
 1. **Wipe the local integration file store** (typical dev: `PREFERENCES_BACKEND=local`): stop `npm start` on integration-service, delete the data file or folder, restart.
 
    ```powershell
-   cd D:\kannan\sharebridge_repos\sharebridge-integration-service
+   cd D:\kannan\sharebridge_repos\sharingbridge-integration-service
    Remove-Item -Recurse -Force data -ErrorAction SilentlyContinue
    npm start
    ```
 
    To clear **only one user**, edit `data\preferences.json` and remove that user’s array under `byUser` (or set it to `[]`), then restart the server.
 
-2. **User-service backend** (`PREFERENCES_BACKEND=user_service`): presets live in user-service. Either delete that user’s presets in `sharebridge-user-service\data\user-service-store.json` under `donorPresets` (while the service is stopped), or **replace with an empty list** via API (same bearer token as the app):
+2. **User-service backend** (`PREFERENCES_BACKEND=user_service`): presets live in user-service. Either delete that user’s presets in `sharingbridge-user-service\data\user-service-store.json` under `donorPresets` (while the service is stopped), or **replace with an empty list** via API (same bearer token as the app):
 
    ```powershell
    $token = "<paste token from POST /v1/auth/token>"
@@ -408,7 +410,7 @@ Pick one approach:
 To wipe persisted donor presets and start over (same as §3e option 1):
 
 ```powershell
-cd D:\kannan\sharebridge_repos\sharebridge-integration-service
+cd D:\kannan\sharebridge_repos\sharingbridge-integration-service
 Remove-Item -Recurse -Force data -ErrorAction SilentlyContinue
 npm start
 ```
@@ -423,7 +425,7 @@ Windows).
 Use this **before or right after** you point integration-service at user-service presets (`PREFERENCES_BACKEND=user_service`). Requires user-service running and the **same `AUTH_TOKEN_SECRET`** as used for `/v1/auth/token`:
 
 ```powershell
-cd D:\kannan\sharebridge_repos\sharebridge-integration-service
+cd D:\kannan\sharebridge_repos\sharingbridge-integration-service
 $env:USER_SERVICE_BASE_URL = "http://localhost:8081"
 # Dry run: $env:BACKFILL_DRY_RUN = "1"
 npm run backfill:user-service-presets
@@ -433,9 +435,9 @@ See `development/USER_SERVICE_PREFERENCES_MIGRATION.md` for the full cutover che
 
 ## 5. What "good" looks like (acceptance summary)
 
-- `npm test` in `sharebridge-integration-service` reports `# pass 39 / # fail 0`.
-- `npm test` in `sharebridge-user-service` reports `# pass 37 / # fail 0`.
-- `flutter test` in `sharebridge-mobile-app` ends with `All tests passed!` (**28 tests**).
+- `npm test` in `sharingbridge-integration-service` reports `# pass 40 / # fail 0`.
+- `npm test` in `sharingbridge-user-service` reports `# pass 37 / # fail 0`.
+- `flutter test` in `sharingbridge-mobile-app` ends with `All tests passed!` (**28 tests**).
 - `Invoke-RestMethod http://localhost:8080/health` returns `ok=True`.
 - Step 2c returns HTTP 200 with `saved_count=1`; step 2d echoes the
   same preset back.

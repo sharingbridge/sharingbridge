@@ -8,8 +8,8 @@ system without reading code.
 
 - [`MANUAL_TESTING_GUIDE.md`](./MANUAL_TESTING_GUIDE.md) — step-by-step
   validation of every donor-setup module that has shipped so far:
-  automated suites in `sharebridge-integration-service` and
-  `sharebridge-mobile-app`, manual API smoke tests, and an end-to-end
+  automated suites in `sharingbridge-integration-service` and
+  `sharingbridge-mobile-app`, manual API smoke tests, and an end-to-end
   walkthrough on Windows desktop / Android emulator.
 
 ## Conventions

@@ -24,7 +24,7 @@ Get-ChildItem $root -Directory | ForEach-Object {
 
 In each repo: **Settings → General → Repository name**.
 
-Use the same slug you want locally (see table). GitHub keeps redirects from the old name for a period, but update links and remotes explicitly when you can.
+The table below lists **old GitHub slugs** (before rename) and **new** `sharingbridge*` names. GitHub keeps redirects from the old name for a period, but update links and remotes explicitly when you can.
 
 | Slug before | Slug after (example) |
 |-------------|----------------------|
@@ -81,7 +81,7 @@ Get-ChildItem $root -Directory | ForEach-Object {
 }
 ```
 
-You can also run `scripts/set-remotes-sharingbridge.ps1` from the docs repo (default `-Root` is the parent of `sharebridge`, i.e. `sharebridge_repos` when you use that layout; pass `-Root` explicitly otherwise).
+You can also run `scripts/set-remotes-sharingbridge.ps1` from the coordination repo clone (default `-Root` is the parent of that clone—often `sharebridge_repos` on disk; pass `-Root` explicitly if your layout differs).
 
 ## 4. Rename local folders to match (run outside Cursor if needed)
 

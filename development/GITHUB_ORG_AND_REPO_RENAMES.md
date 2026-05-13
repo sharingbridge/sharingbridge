@@ -43,15 +43,32 @@ Use the same slug you want locally (see table). GitHub keeps redirects from the 
 
 Rule: replace the leading `sharebridge` segment with `sharingbridge` (so `sharebridge` → `sharingbridge`, and `sharebridge-foo` → `sharingbridge-foo`).
 
-## 3. Match `origin` to the new slug after GitHub rename
+## 3. Match `origin` to the new GitHub slug after repository rename
 
-When the GitHub slug matches the folder name `FOLDER`:
+GitHub slug is now `sharingbridge` or `sharingbridge-*`, but your local directory might still be named `sharebridge` / `sharebridge-*` until you rename folders (§4). **`git` only cares about `origin` URL**, not the folder name—so set the remote from the **folder name** using the same prefix swap rule as on GitHub.
+
+Skip **`demo-repository`** if that clone still tracks an unchanged slug.
 
 ```powershell
-git remote set-url origin "https://github.com/sharingbridge/<FOLDER>.git"
+$root = "D:\kannan\sharebridge_repos"   # adjust
+Get-ChildItem $root -Directory | ForEach-Object {
+  if (-not (Test-Path (Join-Path $_.FullName ".git"))) { return }
+  $folder = $_.Name
+  if ($folder -eq "demo-repository") {
+    Write-Host "SKIP demo-repository (leave origin as-is unless you rename it on GitHub)"
+    return
+  }
+  $slug = $folder -replace "^sharebridge", "sharingbridge"
+  $url = "https://github.com/sharingbridge/$slug.git"
+  git -C $_.FullName remote set-url origin $url
+  git -C $_.FullName fetch origin
+  Write-Host "OK $folder -> $url"
+}
 ```
 
-Or run from the parent of all clones:
+### When local folder name already matches GitHub
+
+If you have already renamed directories to `sharingbridge-*`, you can point `origin` at the folder basename:
 
 ```powershell
 $root = "D:\kannan\sharebridge_repos"   # adjust
@@ -64,9 +81,7 @@ Get-ChildItem $root -Directory | ForEach-Object {
 }
 ```
 
-This only works when **local directory name** equals **GitHub repository slug**.
-
-You can also run `scripts/set-remotes-sharingbridge.ps1` from the docs repo clone (pass `-Root` to the parent folder that contains all repositories).
+You can also run `scripts/set-remotes-sharingbridge.ps1` from the docs repo (default `-Root` is the parent of `sharebridge`, i.e. `sharebridge_repos` when you use that layout; pass `-Root` explicitly otherwise).
 
 ## 4. Rename local folders to match (run outside Cursor if needed)
 
@@ -84,7 +99,7 @@ Get-ChildItem $root -Directory | Where-Object { $_.Name -match "^sharebridge" } 
 }
 ```
 
-Then reopen the workspace (or add the new paths). Re-run section 3 so `origin` matches the new folder names.
+Then reopen the workspace (or add the new paths). If you used §3’s prefix mapping while folders were still `sharebridge-*`, **`origin` is already correct** and you do not need to change remotes again after renaming folders.
 
 ## 5. Follow-up elsewhere
 

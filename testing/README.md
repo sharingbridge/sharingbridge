@@ -1,6 +1,6 @@
-# ShareBridge Testing Docs
+# SharingBridge Testing Docs
 
-Living folder for testing direction across the ShareBridge repos. Each
+Living folder for testing direction across the SharingBridge repos. Each
 document is scoped so contributors can verify a specific slice of the
 system without reading code.
 

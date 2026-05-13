@@ -1,10 +1,10 @@
-# **ShareBridge - Digital Alms Platform**
+# **SharingBridge - Digital Alms Platform**
 
 ## **Problem Statement**
 When meeting people seeking alms, donors face a moral dilemma: offering cash may support unintended uses (substance abuse, exploitation) rather than basic needs like food and shelter. There's no reliable mechanism to ensure charitable donations are used exclusively for essential necessities.
 
 ## **Solution**
-ShareBridge is a mobile/web application that enables donors to provide food and essential items to alms seekers through verified third-party delivery services, eliminating cash transactions while maintaining dignity and convenience for both parties. **The platform acts as a facilitator only - all payments are processed directly through the vendor's payment system.**
+SharingBridge is a mobile/web application that enables donors to provide food and essential items to alms seekers through verified third-party delivery services, eliminating cash transactions while maintaining dignity and convenience for both parties. **The platform acts as a facilitator only - all payments are processed directly through the vendor's payment system.**
 
 ### **Core Workflow:**
 1. **Donor Setup (Before Field Use)** - Donor can use an AI-assisted setup flow (fixed prompt + structured output) to discover local preferred vendors and starter menu templates, then confirms/edits saved payment redirect preferences for quick ordering.
@@ -26,7 +26,7 @@ This section defines product constraints for volunteer-led, agile delivery.
 
 - **Charitable intent, light process:** Development is expected to be **iterative** (short cycles, progressive refinement). Edge cases—especially **privacy** and **unhappy paths**—are specified and hardened **over time**, not all upfront.
 - **Beneficiaries:** Beneficiaries are **not registered users** and do not log in.
-- **Facilitation, not finance:** ShareBridge is a **facilitator**. The platform **does not own financial tracking responsibility**—no authoritative **ledger of record**, settlement, or institutional money-handling role. **Payments and balances live with vendors and licensed payment providers.** The product may store **non-authoritative** data needed for coordination and UX (for example order state, external vendor order references), only as narrowly as implementation requires, and with retention rules to be tightened as privacy work proceeds.
+- **Facilitation, not finance:** SharingBridge is a **facilitator**. The platform **does not own financial tracking responsibility**—no authoritative **ledger of record**, settlement, or institutional money-handling role. **Payments and balances live with vendors and licensed payment providers.** The product may store **non-authoritative** data needed for coordination and UX (for example order state, external vendor order references), only as narrowly as implementation requires, and with retention rules to be tightened as privacy work proceeds.
 - **Pledges and community pools:** Pledges describe **voluntary intent** from willing participants, **not legally binding commitments** and not a regulated pooled account unless a future scope explicitly says otherwise (with professional advice). **Orchestration**—who gets notified when, how intent becomes a fulfilled order, expiry, partial fulfillment, cancellation—**is not fully specified yet** and will be designed as those features mature.
 - **Direct vendor flow:** Optional flow; implementation details are still being finalized. Same money principle applies: **no platform-owned financial responsibility.**
 
@@ -115,7 +115,7 @@ This section defines product constraints for volunteer-led, agile delivery.
 - **Photo verification** at both ends (order & delivery)
 - **Real-time notifications** for order status (push, in-app, email by default; SMS optional/future)
 - **Privacy-first design** (encrypted photo storage, limited retention)
-- **Payment delegation** - Money movement and authoritative records live with vendors and licensed payment providers; ShareBridge does not own financial tracking responsibility (see *Operating Constraints*)
+- **Payment delegation** - Money movement and authoritative records live with vendors and licensed payment providers; SharingBridge does not own financial tracking responsibility (see *Operating Constraints*)
 - **Webhook integration** for order tracking without payment handling
 
 ### **Technology Stack (Proposed):**
@@ -151,14 +151,14 @@ Small food vendors/restaurants pledge their donation capacity without preparing 
   - System sends batch notifications (e.g., "3 orders in your area, prepare now")
   - Vendors receive social recognition badges based on fulfilled pledges
 - **Benefits:** Zero food waste, realistic capacity planning, batch efficiency for vendors, faster fulfillment
-- **Status:** Fulfillment, handoff, and reconciliation with payment providers are still being refined; the non-negotiable rule remains that ShareBridge does not own financial tracking responsibility.
+- **Status:** Fulfillment, handoff, and reconciliation with payment providers are still being refined; the non-negotiable rule remains that SharingBridge does not own financial tracking responsibility.
 
 #### **3. Crowdfunding Orders**
 Enable multiple people to contribute to a single order when one person cannot afford it alone.
 - **How it works:**
   - Person spots seeker but cannot afford full meal
   - Creates a "request for help" with seeker photo and location
-  - Request shared with nearby ShareBridge users
+  - Request shared with nearby SharingBridge users
   - Multiple donors contribute small amounts (₹20, ₹50, etc.)
   - Order placed once threshold reached
   - All contributors notified of delivery
@@ -170,7 +170,7 @@ Enable multiple people to contribute to a single order when one person cannot af
 **Document Status:** Business Requirement Document  
 **Date:** December 25, 2025  
 **Last aligned (operating assumptions):** May 5, 2026  
-**Project:** ShareBridge Platform
+**Project:** SharingBridge Platform
 
 ---
 

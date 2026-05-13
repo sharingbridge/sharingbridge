@@ -1,9 +1,9 @@
-# ShareBridge Agent Handoff
+# SharingBridge Agent Handoff
 
 > **Live coordination doc for AI-assisted coding sessions.** Read this first when picking up the project. Update the "Recently Shipped" and "Next Recommended Tasks" sections as work lands so the next session has fresh context.
 
 ## Goal
-Deliver the MVP **donor-setup → donor-seeker interaction → vendor redirect → delivery confirmation** flow. The integration service is the platform's facilitator. ShareBridge is never the system of record for money.
+Deliver the MVP **donor-setup → donor-seeker interaction → vendor redirect → delivery confirmation** flow. The integration service is the platform's facilitator. SharingBridge is never the system of record for money.
 
 ## Approach (Locked)
 - Backend payment model: provider/vendor-hosted only.
@@ -15,8 +15,8 @@ Deliver the MVP **donor-setup → donor-seeker interaction → vendor redirect �
 - Backend API stack (MVP): Node.js + NestJS direction; integration-service today is a lightweight Node http server for fast iteration.
 
 ## Site Map (Source of Truth)
-- BRD assumptions: `requirements/ShareBridge_Business_Requirement.md`
-- Technical architecture: `design/ShareBridge_Technical_Architecture.md`
+- BRD assumptions: `requirements/SharingBridge_Business_Requirement.md`
+- Technical architecture: `design/SharingBridge_Technical_Architecture.md`
 - Donor setup sequence: `design/Donor_Setup_AI_Search_Sequence.md`
 - API contract: `design/contracts/donor_setup_suggest_vendors.openapi.yaml`
 - Integration preferences API: `design/contracts/donor_setup_preferences.openapi.yaml`
@@ -109,7 +109,7 @@ The GitHub organization is **`sharingbridge`** (`https://github.com/sharingbridg
 
 Renaming local directories to `sharingbridge-*` may require closing IDEs and terminals that lock those paths (Windows “access denied” / “in use”), then reopening the workspace.
 
-Crate/npm **package names** and Dart import paths (`sharebridge_mobile_app`, etc.) are **not** renamed by GitHub moves; treat those as a separate effort if you want code identifiers to match the new brand.
+Crate/npm **package names** and Dart import paths (`sharingbridge_mobile_app`, etc.) are **not** automatically renamed by GitHub org/repo moves; update `pubspec.yaml` / `package.json` and imports in the app repos when you adopt the new identifier.
 
 ## Next Recommended Tasks
 

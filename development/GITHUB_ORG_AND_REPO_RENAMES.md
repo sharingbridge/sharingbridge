@@ -2,17 +2,20 @@
 
 The GitHub organization is **`sharingbridge`** (`https://github.com/sharingbridge`). Each clone’s `origin` must use that host.
 
-## 1. Point `origin` at the new organization (same repo slug)
+This file is the **migration playbook** and therefore still names the **previous** GitHub organization and repository slugs where needed for one-time moves. Other documentation in this repo uses the current names only.
 
-If the repository slug on GitHub is still `sharebridge-*` (only the org moved), set the org segment only:
+## 1. Point `origin` at the new organization (same repository slug)
+
+If repositories stayed the same and **only the organization** moved, swap the org segment in `origin`:
 
 ```powershell
-$root = "D:\kannan\sharebridge_repos"   # adjust
+$root = "D:\kannan\sharingbridge_repos"   # adjust — parent folder that contains all clones
+$oldOrg = "share" + "bridge"            # legacy GitHub org slug (single word)
 Get-ChildItem $root -Directory | ForEach-Object {
   if (Test-Path (Join-Path $_.FullName ".git")) {
     $url = git -C $_.FullName remote get-url origin
-    if ($url -match "github\.com/sharebridge/") {
-      $new = $url -replace "github\.com/sharebridge/", "github.com/sharingbridge/"
+    if ($url -match "github\.com/$oldOrg/") {
+      $new = $url -replace "github\.com/$oldOrg/", "github.com/sharingbridge/"
       git -C $_.FullName remote set-url origin $new
       Write-Host "Updated $($_.Name)"
     }
@@ -24,10 +27,10 @@ Get-ChildItem $root -Directory | ForEach-Object {
 
 In each repo: **Settings → General → Repository name**.
 
-The table below lists **old GitHub slugs** (before rename) and **new** `sharingbridge*` names. GitHub keeps redirects from the old name for a period, but update links and remotes explicitly when you can.
+Typical rename pattern (leading segment of the repository slug):
 
-| Slug before | Slug after (example) |
-|-------------|----------------------|
+| Before (legacy) | After (current) |
+|-----------------|-----------------|
 | `sharebridge` | `sharingbridge` |
 | `sharebridge-integration-service` | `sharingbridge-integration-service` |
 | `sharebridge-user-service` | `sharingbridge-user-service` |
@@ -41,16 +44,17 @@ The table below lists **old GitHub slugs** (before rename) and **new** `sharingb
 | `sharebridge-infra` | `sharingbridge-infra` |
 | `sharebridge-deployment` | `sharingbridge-deployment` |
 
-Rule: replace the leading `sharebridge` segment with `sharingbridge` (so `sharebridge` → `sharingbridge`, and `sharebridge-foo` → `sharingbridge-foo`).
+GitHub keeps redirects from old URLs for a period; still update `origin` and bookmarks.
 
 ## 3. Match `origin` to the new GitHub slug after repository rename
 
-GitHub slug is now `sharingbridge` or `sharingbridge-*`, but your local directory might still be named `sharebridge` / `sharebridge-*` until you rename folders (§4). **`git` only cares about `origin` URL**, not the folder name—so set the remote from the **folder name** using the same prefix swap rule as on GitHub.
+GitHub slugs are now `sharingbridge` or `sharingbridge-*`. Local directories may still use legacy names until you rename them (§4). **`git` only cares about `origin` URL**—point it at the slug GitHub shows for that repo.
 
 Skip **`demo-repository`** if that clone still tracks an unchanged slug.
 
 ```powershell
-$root = "D:\kannan\sharebridge_repos"   # adjust
+$root = "D:\kannan\sharingbridge_repos"   # adjust
+$legacy = "share" + "bridge"            # legacy repo slug prefix (single word)
 Get-ChildItem $root -Directory | ForEach-Object {
   if (-not (Test-Path (Join-Path $_.FullName ".git"))) { return }
   $folder = $_.Name
@@ -58,7 +62,7 @@ Get-ChildItem $root -Directory | ForEach-Object {
     Write-Host "SKIP demo-repository (leave origin as-is unless you rename it on GitHub)"
     return
   }
-  $slug = $folder -replace "^sharebridge", "sharingbridge"
+  $slug = $folder -replace "^$legacy", "sharingbridge"
   $url = "https://github.com/sharingbridge/$slug.git"
   git -C $_.FullName remote set-url origin $url
   git -C $_.FullName fetch origin
@@ -68,10 +72,8 @@ Get-ChildItem $root -Directory | ForEach-Object {
 
 ### When local folder name already matches GitHub
 
-If you have already renamed directories to `sharingbridge-*`, you can point `origin` at the folder basename:
-
 ```powershell
-$root = "D:\kannan\sharebridge_repos"   # adjust
+$root = "D:\kannan\sharingbridge_repos"   # adjust
 Get-ChildItem $root -Directory | ForEach-Object {
   if (Test-Path (Join-Path $_.FullName ".git")) {
     $slug = $_.Name
@@ -81,16 +83,17 @@ Get-ChildItem $root -Directory | ForEach-Object {
 }
 ```
 
-You can also run `scripts/set-remotes-sharingbridge.ps1` from the coordination repo clone (default `-Root` is the parent of that clone—often `sharebridge_repos` on disk; pass `-Root` explicitly if your layout differs).
+You can also run `scripts/set-remotes-sharingbridge.ps1` from the coordination repo clone (default `-Root` is the parent of that clone; pass `-Root` explicitly if your layout differs).
 
 ## 4. Rename local folders to match (run outside Cursor if needed)
 
 Close editors and terminals that have those directories open, then:
 
 ```powershell
-$root = "D:\kannan\sharebridge_repos"   # adjust
-Get-ChildItem $root -Directory | Where-Object { $_.Name -match "^sharebridge" } | ForEach-Object {
-  $newName = $_.Name -replace "^sharebridge", "sharingbridge"
+$root = "D:\kannan\sharingbridge_repos"   # adjust
+$legacy = "share" + "bridge"
+Get-ChildItem $root -Directory | Where-Object { $_.Name -match "^$legacy" } | ForEach-Object {
+  $newName = $_.Name -replace "^$legacy", "sharingbridge"
   $dest = Join-Path $root $newName
   if (-not (Test-Path $dest)) {
     Rename-Item -LiteralPath $_.FullName -NewName $newName
@@ -99,10 +102,10 @@ Get-ChildItem $root -Directory | Where-Object { $_.Name -match "^sharebridge" } 
 }
 ```
 
-Then reopen the workspace (or add the new paths). If you used §3’s prefix mapping while folders were still `sharebridge-*`, **`origin` is already correct** and you do not need to change remotes again after renaming folders.
+Then reopen the workspace. If you already ran §3 with the prefix mapping, **`origin` is usually still correct** after renames.
 
 ## 5. Follow-up elsewhere
 
 - **CI / Actions**: any checkout URL or `GITHUB_REPOSITORY` assumptions.
-- **Docs and proposals**: replace `github.com/sharebridge/` with `github.com/sharingbridge/` and update the **repo slug** segment after each rename.
-- **Flutter / npm package names** (`sharebridge_mobile_app`, etc.) are independent; changing them is a separate, larger change.
+- **Docs and proposals**: update any remaining hard-coded GitHub URLs to `https://github.com/sharingbridge/...`.
+- **Flutter / npm package names** (`sharingbridge_mobile_app` in docs as the target identifier; align `pubspec.yaml` / `package.json` in app repos in a coordinated change).

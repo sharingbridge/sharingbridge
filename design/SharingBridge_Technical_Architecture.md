@@ -1,6 +1,6 @@
-# ShareBridge - Technical Architecture Document
+# SharingBridge - Technical Architecture Document
 
-**Project:** ShareBridge - Digital Alms Platform  
+**Project:** SharingBridge - Digital Alms Platform  
 **Version:** 1.0  
 **Date:** December 25, 2025  
 **Status:** Design Phase  
@@ -10,7 +10,7 @@
 
 ## Assumptions Reference
 
-For product-level assumptions, use [ShareBridge_Business_Requirement.md](../requirements/ShareBridge_Business_Requirement.md), section **“Operating Constraints & Assumptions”** as the single source of truth.
+For product-level assumptions, use [SharingBridge_Business_Requirement.md](../requirements/SharingBridge_Business_Requirement.md), section **“Operating Constraints & Assumptions”** as the single source of truth.
 
 If this architecture document conflicts with that BRD section (for example in proposed pledge or ledger schemas), follow the BRD.
 
@@ -735,21 +735,21 @@ class ShadowfaxAdapter implements LogisticsAdapter { ... }
 ```
 
 **Deep Link Flow (External Vendors - Swiggy/Zomato/UberEats) with Secure Beneficiary Data:**
-1. ShareBridge creates order intent with beneficiary data
+1. SharingBridge creates order intent with beneficiary data
 2. Generate secure, time-limited link containing beneficiary identification details (location, facial description, photo URL)
 3. Embed secure link in vendor-specific deep link or instruction text
-4. ShareBridge generates deep link: `swiggy://order?cart={encoded_cart}&instructions={secure_link_instructions}`
+4. SharingBridge generates deep link: `swiggy://order?cart={encoded_cart}&instructions={secure_link_instructions}`
 5. App opens vendor's order page (in-app browser or native app)
 6. User completes order on vendor platform, instructions include secure beneficiary data access
 7. Vendor/logistics assigns delivery executive
 8. Delivery executive accesses secure link with role-scoped token for beneficiary identification
 9. Executive locates and delivers to beneficiary using provided details
 10. Executive reports delivery completion via secure link endpoint
-11. ShareBridge receives delivery confirmation and updates status
+11. SharingBridge receives delivery confirmation and updates status
 12. Secure link remains active until delivery completion, then expires after a 30-minute look-back window
 
 **Interim Manual Flow (MVP - No API Access):**
-1. Donor captures beneficiary photo in ShareBridge app
+1. Donor captures beneficiary photo in SharingBridge app
 2. App surfaces donor's pre-stored preferred deep-link order options and generates secure beneficiary instruction text
 3. App provides copy-paste functionality for instructions
 4. Donor selects the ready-made deep-link option and pastes instructions into vendor's delivery notes field, without typing during the seeker interaction
@@ -760,7 +760,7 @@ class ShadowfaxAdapter implements LogisticsAdapter { ... }
 1. Donor pays via vendor-hosted or licensed-provider-hosted payment link
 2. Order sent to pledged vendor (restaurant/home kitchen)
 3. Vendor prepares food and marks order as READY
-4. ShareBridge automatically triggers logistics partner API (Dunzo/Porter/Shadowfax)
+4. SharingBridge automatically triggers logistics partner API (Dunzo/Porter/Shadowfax)
 5. Logistics partner assigns delivery executive for pickup
 6. Delivery executive picks up from vendor and delivers to seeker
 7. Delivery confirmation with photo upload
@@ -1652,14 +1652,14 @@ Production / Global Scale:
 
 **Queue Topics:**
 ```
-ShareBridge.orders.created
-ShareBridge.orders.updated
-ShareBridge.orders.completed
-ShareBridge.safety.assessed
-ShareBridge.photos.uploaded
-ShareBridge.notifications.send
-ShareBridge.vendor.webhook
-ShareBridge.analytics.event
+SharingBridge.orders.created
+SharingBridge.orders.updated
+SharingBridge.orders.completed
+SharingBridge.safety.assessed
+SharingBridge.photos.uploaded
+SharingBridge.notifications.send
+SharingBridge.vendor.webhook
+SharingBridge.analytics.event
 ```
 
 **Queue Configuration:**
@@ -1677,9 +1677,9 @@ notification.send:
 ```
 
 **Consumer Services:**
-- Notification Service → `ShareBridge.notifications.send`
-- Analytics Service → `ShareBridge.analytics.event`
-- Order Service → `ShareBridge.vendor.webhook`
+- Notification Service → `SharingBridge.notifications.send`
+- Analytics Service → `SharingBridge.analytics.event`
+- Order Service → `SharingBridge.vendor.webhook`
 
 ---
 
@@ -1690,7 +1690,7 @@ notification.send:
 
 **Base URL:**
 ```
-https://api.ShareBridge.com/v1
+https://api.SharingBridge.com/v1
 ```
 
 **Authentication:**
@@ -1747,7 +1747,7 @@ GET /api/v1/auth/oauth/:provider/start
 Response: { auth_url }  # provider examples: google, apple
 
 GET /api/v1/auth/oauth/:provider/callback?code=...
-Response: { user, token }  # ShareBridge-issued JWT access + refresh tokens
+Response: { user, token }  # SharingBridge-issued JWT access + refresh tokens
 
 POST /api/v1/auth/refresh
 Body: { refresh_token }
@@ -1861,9 +1861,9 @@ Response: { orders[], stats: { total_donations, total_amount } }
 2. User is redirected to provider auth/consent screen
 3. Provider redirects to /api/v1/auth/oauth/:provider/callback with auth code
 4. User Service exchanges code for provider token at provider token endpoint
-5. User Service fetches provider profile and maps/creates ShareBridge user
-6. User Service issues ShareBridge JWT tokens (access + refresh)
-7. Client uses ShareBridge JWT for all /api/v1 API calls
+5. User Service fetches provider profile and maps/creates SharingBridge user
+6. User Service issues SharingBridge JWT tokens (access + refresh)
+7. Client uses SharingBridge JWT for all /api/v1 API calls
 ```
 
 **JWT Structure:**
@@ -1981,7 +1981,7 @@ To address privacy concerns with sharing beneficiary personal details, pictures,
 
 **Deep Link Flow with Privacy Protection:**
 ```
-1. ShareBridge creates order intent with beneficiary data (local database)
+1. SharingBridge creates order intent with beneficiary data (local database)
 2. Generate secure external link containing:
    - Beneficiary location coordinates
    - Facial features description (AI-generated from photo or local LLM inference)
@@ -1994,7 +1994,7 @@ To address privacy concerns with sharing beneficiary personal details, pictures,
 6. Delivery personnel access secure link via app instructions and identify the seeker through the delivery app using AI-backed description/photo guidance
 7. Personnel uses description and photo to locate/identify beneficiary
 8. Personnel reports delivery completion via secure link endpoint
-9. ShareBridge receives webhook/callback on delivery status
+9. SharingBridge receives webhook/callback on delivery status
 10. Secure link stays active until delivery completion, then auto-expires after 30 minutes
 
 Interim Manual Approach (MVP):
@@ -2007,7 +2007,7 @@ Interim Manual Approach (MVP):
 **Limitations:**
 - Less control over order flow
 - Dependency on vendor callback reliability
-- User leaves ShareBridge app temporarily
+- User leaves SharingBridge app temporarily
 - Payment tracking complexity
 - Manual interim step requires user action
 
@@ -2028,7 +2028,7 @@ Benefits:
 
 Implementation:
 - Partner with local restaurants, home kitchens, and food vendors
-- Vendors onboard via ShareBridge Vendor Portal (web/mobile)
+- Vendors onboard via SharingBridge Vendor Portal (web/mobile)
 - Automated order notification to vendors (push, SMS, in-app)
 - Vendor capacity pledge system (hourly slots)
 - Vendors mark orders as READY via app
@@ -2037,8 +2037,8 @@ Implementation:
 - NO manual steps - fully digital workflow
 
 Key Difference from External Vendors:
-- Payment still happens on vendor/provider-hosted links (not inside ShareBridge)
-- ShareBridge coordinates delivery logistics
+- Payment still happens on vendor/provider-hosted links (not inside SharingBridge)
+- SharingBridge coordinates delivery logistics
 - Vendors prepare food; orchestration and tracking are automated by platform
 ```
 
@@ -2147,7 +2147,7 @@ async handleWebhook(
   
   // 4. Update order status
   await this.orderService.updateStatus(
-    orderUpdate.ShareBridgeOrderId,
+    orderUpdate.SharingBridgeOrderId,
     orderUpdate.status,
     {
       vendorOrderId: orderUpdate.vendorOrderId,
@@ -2258,7 +2258,7 @@ const client = twilio(accountSid, authToken);
 
 async function sendOTP(phoneNumber, otp) {
   await client.messages.create({
-    body: `Your ShareBridge OTP is: ${otp}. Valid for 5 minutes.`,
+    body: `Your SharingBridge OTP is: ${otp}. Valid for 5 minutes.`,
     from: process.env.TWILIO_PHONE,
     to: phoneNumber
   });
@@ -2308,7 +2308,7 @@ sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 async function sendReceipt(email, orderData) {
   await sgMail.send({
     to: email,
-    from: 'noreply@ShareBridge.org',
+    from: 'noreply@SharingBridge.org',
     templateId: 'd-xxxxx', // Dynamic template
     dynamicTemplateData: {
       orderId: orderData.id,
@@ -2330,7 +2330,7 @@ const s3 = new AWS.S3();
 
 async function uploadPhoto(file, orderId) {
   const params = {
-    Bucket: 'ShareBridge-photos',
+    Bucket: 'SharingBridge-photos',
     Key: `orders/${orderId}/${Date.now()}-${file.name}`,
     Body: file.buffer,
     ContentType: file.mimetype,
@@ -2419,7 +2419,7 @@ Week 4: Production Readiness
 - Analytics - JavaScript tag integration
 
 **Moderate Customization Required For:**
-- Monitoring/APM - Custom dashboards for ShareBridge-specific metrics
+- Monitoring/APM - Custom dashboards for SharingBridge-specific metrics
 - Error Tracking - Custom error contexts and user data attachments
 
 ---
@@ -2866,7 +2866,7 @@ def process_seeker_photo(image_file):
     
     # 5. Encrypt and upload
     encrypted = encrypt_image(watermarked)
-    url = upload_to_s3(encrypted, bucket='ShareBridge-photos')
+    url = upload_to_s3(encrypted, bucket='SharingBridge-photos')
     
     return url
 ```
@@ -2948,7 +2948,7 @@ spec:
     spec:
       containers:
       - name: order-service
-        image: ShareBridge/order-service:1.0.0
+        image: SharingBridge/order-service:1.0.0
         ports:
         - containerPort: 3000
         env:
@@ -3062,10 +3062,10 @@ spec:
 ├─────────────────────────────────────────────────────────────┤
 │                                                              │
 │  Route 53 Geolocation Routing                               │
-│  ├── US/Canada → api-us-east.sharebridge.com               │
-│  ├── Europe → api-eu-west.sharebridge.com                  │
-│  ├── Asia → api-asia-south.sharebridge.com                 │
-│  └── Default → api-us-east.sharebridge.com                 │
+│  ├── US/Canada → api-us-east.sharingbridge.com               │
+│  ├── Europe → api-eu-west.sharingbridge.com                  │
+│  ├── Asia → api-asia-south.sharingbridge.com                 │
+│  └── Default → api-us-east.sharingbridge.com                 │
 │                                                              │
 │  Region: US-East                                            │
 │  ├── API Gateway + Load Balancer (3 AZs)                   │
@@ -3363,7 +3363,7 @@ Backups:
 
 **Document Status:** Draft v1.0  
 **Next Review:** Q1 2026  
-**Owner:** ShareBridge Engineering Team
+**Owner:** SharingBridge Engineering Team
 
 ---
 

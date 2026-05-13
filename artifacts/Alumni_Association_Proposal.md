@@ -1,4 +1,4 @@
-# Proposal for ShareBridge Platform Development
+# Proposal for SharingBridge Platform Development
 ## Under the Aegis of Madras Institute of Technology Alumni Association
 
 **Date:** January 15, 2026  
@@ -13,20 +13,20 @@
 
 ## Executive Summary
 
-ShareBridge is a simple platform to help people donate food and essentials to those who need it. It uses modern technology to make the process clear and fair for everyone.
+SharingBridge is a simple platform to help people donate food and essentials to those who need it. It uses modern technology to make the process clear and fair for everyone.
 
-Final year students can use ShareBridge as a real project for their studies, working with current tools and real problems.
+Final year students can use SharingBridge as a real project for their studies, working with current tools and real problems.
 
 The project uses open technologies, making it easy for students and others to participate.
 
 ---
 
-## How ShareBridge Works: A Real Example
+## How SharingBridge Works: A Real Example
 
 
 
 
-Imagine you are walking along a roadside and someone approaches you, saying they need money to buy food. Before offering to help, you open the ShareBridge app. The app automatically detects your current location and checks if food delivery is possible and safe at that spot. If the app confirms delivery is available, you then ask the person if you can order food for them. If they agree, you explain that the food will be delivered to their location in a short time.
+Imagine you are walking along a roadside and someone approaches you, saying they need money to buy food. Before offering to help, you open the SharingBridge app. The app automatically detects your current location and checks if food delivery is possible and safe at that spot. If the app confirms delivery is available, you then ask the person if you can order food for them. If they agree, you explain that the food will be delivered to their location in a short time.
 
 You use the app to place the order. The app arranges the delivery through a food delivery service.
 
@@ -38,12 +38,12 @@ The delivery partner brings the food directly to the person in need. You receive
 
 ---
 
-## How is ShareBridge Different from Just Using a Food Delivery App?
+## How is SharingBridge Different from Just Using a Food Delivery App?
 
 
 With a regular food delivery app, you can order food for someone, but you have to handle everything yourself—finding the location, making sure it’s safe, and hoping the food reaches the right person. You might not feel comfortable sharing your contact details or handling cash.
 
-ShareBridge makes this process easier and safer:
+SharingBridge makes this process easier and safer:
 - The app checks if the delivery spot is safe using AI.
 - You don’t need to share your phone number or personal details with the person in need.
 - The platform sends you a photo as proof when the food is delivered.
@@ -51,7 +51,7 @@ ShareBridge makes this process easier and safer:
 - You can join with other donors to help more people or bigger needs.
 - The app can track if offers are being misused by checking prior deliveries to the same person or location, helping prevent repeated misuse.
 
-ShareBridge makes helping someone with food safer, more private, and easier to track for misuse.
+SharingBridge makes helping someone with food safer, more private, and easier to track for misuse.
 
 ---
 
@@ -84,9 +84,9 @@ ShareBridge makes helping someone with food safer, more private, and easier to t
 
 ## Platform Overview
 
-### What is ShareBridge?
+### What is SharingBridge?
 
-ShareBridge is a facilitator platform that:
+SharingBridge is a facilitator platform that:
 - Connects donors with people seeking alms in a respectful manner
 - Validates delivery location safety using AI
 - Creates orders through available food delivery platforms
@@ -139,7 +139,7 @@ ShareBridge is a facilitator platform that:
 
 ### 3. **Student Project Opportunities**
 
-ShareBridge is a good choice for final year projects. Students can:
+SharingBridge is a good choice for final year projects. Students can:
 
 - Work on a real platform with modern tools (cloud, AI, mobile/web)
   - Solve real problems
@@ -196,7 +196,7 @@ We will start small and improve as we go:
 
 ## Call to Action
 
-We respectfully request the **[College Name] Alumni Association** to grant permission to develop and publish ShareBridge under the association's name.
+We respectfully request the **[College Name] Alumni Association** to grant permission to develop and publish SharingBridge under the association's name.
 
 **Optional Support:** If convenient, a one-time announcement to alumni would help find interested volunteers.
 
@@ -207,7 +207,7 @@ We respectfully request the **[College Name] Alumni Association** to grant permi
 ## Conclusion
 
 
-ShareBridge lets the **Madras Institute of Technology Alumni Association** support a social initiative with minimal effort. Lending the association's name gives credibility and reach, while the association gets positive recognition at no cost.
+SharingBridge lets the **Madras Institute of Technology Alumni Association** support a social initiative with minimal effort. Lending the association's name gives credibility and reach, while the association gets positive recognition at no cost.
 
 All we request is permission to use the name and occasional help connecting with alumni expertise.
 
@@ -216,8 +216,8 @@ All we request is permission to use the name and occasional help connecting with
 ---
 
 **Appendices:**
-- [Technical Architecture Document](https://github.com/sharingbridge/sharingbridge/blob/main/design/ShareBridge_Technical_Architecture.md)
-- [Detailed Business Requirements](https://github.com/sharingbridge/sharingbridge/blob/main/requirements/ShareBridge_Business_Requirement.md)
+- [Technical Architecture Document](https://github.com/sharingbridge/sharingbridge/blob/main/design/SharingBridge_Technical_Architecture.md)
+- [Detailed Business Requirements](https://github.com/sharingbridge/sharingbridge/blob/main/requirements/SharingBridge_Business_Requirement.md)
 - [Implementation Approach](https://github.com/sharingbridge/sharingbridge/blob/main/development/IMPLEMENTATION_APPROACH.md)
 - [Call for Contributors](https://github.com/sharingbridge/sharingbridge/blob/main/development/CALL_FOR_CONTRIBUTORS.md)
 

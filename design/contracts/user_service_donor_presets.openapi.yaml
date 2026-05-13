@@ -1,6 +1,6 @@
 openapi: 3.0.3
 info:
-  title: ShareBridge User Service — Donor presets
+  title: SharingBridge User Service — Donor presets
   version: 0.2.0
   description: |
     Authoritative donor preset storage when integration-service uses

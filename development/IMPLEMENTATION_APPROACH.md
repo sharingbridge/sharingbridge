@@ -1,4 +1,4 @@
-# ShareBridge - Implementation Approach
+# SharingBridge - Implementation Approach
 
 **Version:** 2.0  
 **Date:** January 7, 2026  
@@ -8,7 +8,7 @@
 
 ## Executive Summary
 
-This document provides two implementation paths for ShareBridge:
+This document provides two implementation paths for SharingBridge:
 
 1. **Free Tier Development Track** - Zero-cost development and testing using free platforms
 2. **Production Scale Track** - Global infrastructure for 100K+ orders/day
@@ -18,7 +18,7 @@ This document provides two implementation paths for ShareBridge:
 **Production Budget:** $255/month → $3,750/month (scaling)  
 **Team Size:** 3-5 engineers
 
-**Product assumptions reference:** Use [ShareBridge_Business_Requirement.md](../requirements/ShareBridge_Business_Requirement.md), section **“Operating Constraints & Assumptions”** as the source of truth for product-level assumptions.
+**Product assumptions reference:** Use [SharingBridge_Business_Requirement.md](../requirements/SharingBridge_Business_Requirement.md), section **“Operating Constraints & Assumptions”** as the source of truth for product-level assumptions.
 
 ---
 
@@ -26,7 +26,7 @@ This document provides two implementation paths for ShareBridge:
 
 ### Overview
 
-Develop and test all ShareBridge components using free-tier platforms with near-zero upfront infrastructure costs. Migrate to production AWS infrastructure only when all components are ready.
+Develop and test all SharingBridge components using free-tier platforms with near-zero upfront infrastructure costs. Migrate to production AWS infrastructure only when all components are ready.
 
 **Total Development Cost Target:** ~$0 (within free-tier limits)  
 **Migration Time:** 1 week  
@@ -65,7 +65,7 @@ cd sharingbridge
 # 2. Set up Supabase database
 # - Sign up at supabase.com (no credit card required)
 # - Create project: sharingbridge-dev
-# - Run schema from ../design/ShareBridge_Technical_Architecture.md
+# - Run schema from ../design/SharingBridge_Technical_Architecture.md
 
 # 3. Configure environment variables
 cp .env.example .env
@@ -177,7 +177,7 @@ CREATE EXTENSION IF NOT EXISTS pgvector;
 
 **Database Schema:**
 ```sql
--- Run all schema from ../design/ShareBridge_Technical_Architecture.md
+-- Run all schema from ../design/SharingBridge_Technical_Architecture.md
 -- Use Supabase SQL Editor or migrate tool
 ```
 
@@ -285,7 +285,7 @@ cloudinary.config({
 // Upload seeker photo
 const uploadSeekerPhoto = async (file) => {
   const result = await cloudinary.uploader.upload(file, {
-    folder: 'sharebridge/seekers',
+    folder: 'sharingbridge/seekers',
     transformation: [
       { width: 800, height: 800, crop: 'limit' },
       { quality: 'auto' }
@@ -397,7 +397,7 @@ const { Resend } = require('resend');
 const resend = new Resend('re_your_api_key');
 
 await resend.emails.send({
-  from: 'sharebridge@yourdomain.com',
+  from: 'sharingbridge@yourdomain.com',
   to: 'donor@example.com',
   subject: 'Order Confirmation',
   html: '<p>Your donation was successful!</p>'
@@ -617,7 +617,7 @@ services:
   postgres:
     image: postgis/postgis:15-3.3-alpine
     environment:
-      POSTGRES_DB: sharebridge
+      POSTGRES_DB: sharingbridge
       POSTGRES_PASSWORD: dev123
     ports:
       - "5432:5432"
@@ -634,7 +634,7 @@ services:
     ports:
       - "3000:3000"
     environment:
-      DATABASE_URL: postgresql://postgres:dev123@postgres:5432/sharebridge
+      DATABASE_URL: postgresql://postgres:dev123@postgres:5432/sharingbridge
       REDIS_URL: redis://redis:6379
     depends_on:
       - postgres
@@ -768,26 +768,26 @@ Once all components are developed and tested on free platforms, migrate to produ
 ```bash
 # 1. Export from Supabase
 pg_dump -h db.your-project.supabase.co -U postgres -d postgres \
-  --schema=public --no-owner --no-acl > sharebridge_dump.sql
+  --schema=public --no-owner --no-acl > sharingbridge_dump.sql
 
 # 2. Create AWS RDS PostgreSQL instance
 aws rds create-db-instance \
-  --db-instance-identifier sharebridge-prod \
+  --db-instance-identifier sharingbridge-prod \
   --db-instance-class db.t3.medium \
   --engine postgres \
   --engine-version 15.3 \
-  --master-username sharebridge \
+  --master-username sharingbridge \
   --master-user-password "YOUR_SECURE_PASSWORD" \
   --allocated-storage 100
 
 # 3. Install PostGIS on RDS
-psql -h sharebridge-prod.xyz.rds.amazonaws.com -U sharebridge -d postgres
+psql -h sharingbridge-prod.xyz.rds.amazonaws.com -U sharingbridge -d postgres
 CREATE EXTENSION postgis;
 CREATE EXTENSION pgvector;
 
 # 4. Import data
-psql -h sharebridge-prod.xyz.rds.amazonaws.com -U sharebridge -d postgres \
-  < sharebridge_dump.sql
+psql -h sharingbridge-prod.xyz.rds.amazonaws.com -U sharingbridge -d postgres \
+  < sharingbridge_dump.sql
 
 # 5. Verify data integrity
 SELECT COUNT(*) FROM users;
@@ -828,14 +828,14 @@ const migratePhotos = async () => {
     // 3. Upload to S3
     const s3Key = `seekers/${photo.id}.jpg`;
     await s3.putObject({
-      Bucket: 'sharebridge-photos-prod',
+      Bucket: 'sharingbridge-photos-prod',
       Key: s3Key,
       Body: buffer,
       ContentType: 'image/jpeg'
     }).promise();
 
     // 4. Update database with S3 URL
-    const s3Url = `https://sharebridge-photos-prod.s3.amazonaws.com/${s3Key}`;
+    const s3Url = `https://sharingbridge-photos-prod.s3.amazonaws.com/${s3Key}`;
     await db.query(
       'UPDATE orders SET seeker_photo_url = $1 WHERE id = $2',
       [s3Url, photo.id]
@@ -862,11 +862,11 @@ const migratePhotos = async () => {
 aws ec2 run-instances \
   --image-id ami-0c55b159cbfafe1f0 \
   --instance-type t3.medium \
-  --key-name sharebridge-prod \
+  --key-name sharingbridge-prod \
   --security-group-ids sg-xxxxx
 
 # 2. SSH and setup
-ssh -i sharebridge-prod.pem ec2-user@your-ec2-ip
+ssh -i sharingbridge-prod.pem ec2-user@your-ec2-ip
 
 # Install Docker
 sudo yum update -y
@@ -875,33 +875,33 @@ sudo service docker start
 sudo usermod -a -G docker ec2-user
 
 # 3. Pull and run container
-docker pull yourusername/sharebridge-api:latest
+docker pull yourusername/sharingbridge-api:latest
 docker run -d \
   -p 80:3000 \
-  -e DATABASE_URL=postgresql://sharebridge:pass@rds-endpoint/postgres \
+  -e DATABASE_URL=postgresql://sharingbridge:pass@rds-endpoint/postgres \
   -e REDIS_URL=redis://elasticache-endpoint:6379 \
-  -e AWS_S3_BUCKET=sharebridge-photos-prod \
-  --name sharebridge-api \
-  yourusername/sharebridge-api:latest
+  -e AWS_S3_BUCKET=sharingbridge-photos-prod \
+  --name sharingbridge-api \
+  yourusername/sharingbridge-api:latest
 ```
 
 **Option B: AWS ECS (Serverless, auto-scaling)**
 
 ```bash
 # 1. Create ECS cluster
-aws ecs create-cluster --cluster-name sharebridge-prod
+aws ecs create-cluster --cluster-name sharingbridge-prod
 
 # 2. Push Docker image to ECR
-aws ecr create-repository --repository-name sharebridge-api
-docker tag sharebridge-api:latest 123456789.dkr.ecr.us-east-1.amazonaws.com/sharebridge-api
-docker push 123456789.dkr.ecr.us-east-1.amazonaws.com/sharebridge-api
+aws ecr create-repository --repository-name sharingbridge-api
+docker tag sharingbridge-api:latest 123456789.dkr.ecr.us-east-1.amazonaws.com/sharingbridge-api
+docker push 123456789.dkr.ecr.us-east-1.amazonaws.com/sharingbridge-api
 
 # 3. Create task definition (task-def.json)
 {
-  "family": "sharebridge-api",
+  "family": "sharingbridge-api",
   "containerDefinitions": [{
     "name": "api",
-    "image": "123456789.dkr.ecr.us-east-1.amazonaws.com/sharebridge-api",
+    "image": "123456789.dkr.ecr.us-east-1.amazonaws.com/sharingbridge-api",
     "memory": 512,
     "cpu": 256,
     "essential": true,
@@ -918,9 +918,9 @@ docker push 123456789.dkr.ecr.us-east-1.amazonaws.com/sharebridge-api
 
 # 4. Create service
 aws ecs create-service \
-  --cluster sharebridge-prod \
+  --cluster sharingbridge-prod \
   --service-name api \
-  --task-definition sharebridge-api \
+  --task-definition sharingbridge-api \
   --desired-count 2 \
   --launch-type FARGATE
 ```
@@ -940,13 +940,13 @@ aws ecs create-service \
 ```bash
 # 1. Create ElastiCache cluster
 aws elasticache create-replication-group \
-  --replication-group-id sharebridge-prod-redis \
+  --replication-group-id sharingbridge-prod-redis \
   --engine redis \
   --cache-node-type cache.t3.micro \
   --num-cache-clusters 1
 
 # 2. Update application env variable
-REDIS_URL=redis://sharebridge-prod-redis.xxxxx.cache.amazonaws.com:6379
+REDIS_URL=redis://sharingbridge-prod-redis.xxxxx.cache.amazonaws.com:6379
 
 # 3. No data migration needed (cache starts fresh)
 ```
@@ -954,8 +954,8 @@ REDIS_URL=redis://sharebridge-prod-redis.xxxxx.cache.amazonaws.com:6379
 **Message Queue:**
 ```bash
 # 1. Create SQS queues
-aws sqs create-queue --queue-name sharebridge-order-created
-aws sqs create-queue --queue-name sharebridge-order-completed
+aws sqs create-queue --queue-name sharingbridge-order-created
+aws sqs create-queue --queue-name sharingbridge-order-completed
 
 # 2. Update application code
 # Replace Redis Streams/PubSub queue path with AWS SQS SDK
@@ -963,7 +963,7 @@ const AWS = require('aws-sdk');
 const sqs = new AWS.SQS({ region: 'us-east-1' });
 
 await sqs.sendMessage({
-  QueueUrl: 'https://sqs.us-east-1.amazonaws.com/123456789/sharebridge-order-created',
+  QueueUrl: 'https://sqs.us-east-1.amazonaws.com/123456789/sharingbridge-order-created',
   MessageBody: JSON.stringify({ orderId: '123' })
 }).promise();
 ```
@@ -981,7 +981,7 @@ await sqs.sendMessage({
 
 ```bash
 # 1. Update DNS records (Route53 or your provider)
-# Point api.sharebridge.com → AWS Load Balancer
+# Point api.sharingbridge.com → AWS Load Balancer
 
 # 2. Gradual traffic shift
 # - 10% production traffic → new AWS setup
@@ -1071,13 +1071,13 @@ await sqs.sendMessage({
 *Note: This section applies only if scaling to 100K+ orders/day across multiple continents. Skip this for initial launch.*
 # AWS RDS Setup
 aws rds create-db-instance-read-replica \
-  --db-instance-identifier sharebridge-eu-west-replica \
-  --source-db-instance-identifier sharebridge-primary \
+  --db-instance-identifier sharingbridge-eu-west-replica \
+  --source-db-instance-identifier sharingbridge-primary \
   --region eu-west-1
 
 aws rds create-db-instance-read-replica \
-  --db-instance-identifier sharebridge-asia-south-replica \
-  --source-db-instance-identifier sharebridge-primary \
+  --db-instance-identifier sharingbridge-asia-south-replica \
+  --source-db-instance-identifier sharingbridge-primary \
   --region ap-south-1
 ```
 
@@ -1099,7 +1099,7 @@ sudo apt-get install pgbouncer
 
 # Configure /etc/pgbouncer/pgbouncer.ini
 [databases]
-sharebridge = host=sharebridge-primary.rds.amazonaws.com port=5432 dbname=sharebridge
+sharingbridge = host=sharingbridge-primary.rds.amazonaws.com port=5432 dbname=sharingbridge
 
 [pgbouncer]
 pool_mode = transaction
@@ -1112,16 +1112,16 @@ max_db_connections = 100
 ```javascript
 // Before (direct connection)
 const dbConfig = {
-  host: 'sharebridge-primary.rds.amazonaws.com',
+  host: 'sharingbridge-primary.rds.amazonaws.com',
   port: 5432,
-  database: 'sharebridge'
+  database: 'sharingbridge'
 };
 
 // After (through PgBouncer)
 const dbConfig = {
   host: 'localhost',  // PgBouncer on same server
   port: 6432,         // PgBouncer port
-  database: 'sharebridge'
+  database: 'sharingbridge'
 };
 ```
 
@@ -1219,7 +1219,7 @@ sudo systemctl restart postgresql
 ```bash
 # AWS ElastiCache Redis Clusters
 aws elasticache create-replication-group \
-  --replication-group-id sharebridge-us-east-redis \
+  --replication-group-id sharingbridge-us-east-redis \
   --replication-group-description "US East Redis Cluster" \
   --engine redis \
   --cache-node-type cache.r6g.large \
@@ -1303,13 +1303,13 @@ async function findNearbySeekers(lat, lng, radiusKm) {
 #### Step 1.7: Set Up CloudFront CDN
 ```bash
 # Create S3 buckets in each region
-aws s3 mb s3://sharebridge-photos-us-east --region us-east-1
-aws s3 mb s3://sharebridge-photos-eu-west --region eu-west-1
-aws s3 mb s3://sharebridge-photos-asia-south --region ap-south-1
+aws s3 mb s3://sharingbridge-photos-us-east --region us-east-1
+aws s3 mb s3://sharingbridge-photos-eu-west --region eu-west-1
+aws s3 mb s3://sharingbridge-photos-asia-south --region ap-south-1
 
 # Enable cross-region replication
 aws s3api put-bucket-replication \
-  --bucket sharebridge-photos-us-east \
+  --bucket sharingbridge-photos-us-east \
   --replication-configuration file://replication-config.json
 ```
 
@@ -1319,13 +1319,13 @@ aws s3api put-bucket-replication \
   "Origins": [
     {
       "Id": "S3-us-east",
-      "DomainName": "sharebridge-photos-us-east.s3.amazonaws.com",
+      "DomainName": "sharingbridge-photos-us-east.s3.amazonaws.com",
       "OriginPath": "",
       "CustomHeaders": []
     },
     {
       "Id": "S3-eu-west",
-      "DomainName": "sharebridge-photos-eu-west.s3.amazonaws.com"
+      "DomainName": "sharingbridge-photos-eu-west.s3.amazonaws.com"
     }
   ],
   "DefaultCacheBehavior": {
@@ -1345,7 +1345,7 @@ aws s3api put-bucket-replication \
 // Photo upload to nearest region
 async function uploadPhoto(photo, userLocation) {
   const nearestRegion = determineNearestRegion(userLocation);
-  const bucket = `sharebridge-photos-${nearestRegion}`;
+  const bucket = `sharingbridge-photos-${nearestRegion}`;
   
   // Get pre-signed URL
   const uploadUrl = s3.getSignedUrl('putObject', {
@@ -1387,7 +1387,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: order-service
-  namespace: sharebridge-us-east
+  namespace: sharingbridge-us-east
 spec:
   replicas: 3
   selector:
@@ -1398,12 +1398,12 @@ spec:
     spec:
       containers:
       - name: order-service
-        image: sharebridge/order-service:1.0.0
+        image: sharingbridge/order-service:1.0.0
         env:
         - name: DB_HOST
           value: localhost:6432  # PgBouncer
         - name: DB_REPLICA
-          value: sharebridge-us-east-replica
+          value: sharingbridge-us-east-replica
         - name: REDIS_CLUSTER
           value: redis-us-east-cluster
         - name: AWS_REGION
@@ -1442,7 +1442,7 @@ kubectl apply -f k8s/asia-south/ --context asia-south-cluster
       {
         "Action": "CREATE",
         "ResourceRecordSet": {
-          "Name": "api.sharebridge.com",
+          "Name": "api.sharingbridge.com",
           "Type": "A",
           "GeoLocation": {
             "ContinentCode": "NA"
@@ -1458,7 +1458,7 @@ kubectl apply -f k8s/asia-south/ --context asia-south-cluster
       {
         "Action": "CREATE",
         "ResourceRecordSet": {
-          "Name": "api.sharebridge.com",
+          "Name": "api.sharingbridge.com",
           "Type": "A",
           "GeoLocation": {
             "ContinentCode": "EU"
@@ -1472,7 +1472,7 @@ kubectl apply -f k8s/asia-south/ --context asia-south-cluster
       {
         "Action": "CREATE",
         "ResourceRecordSet": {
-          "Name": "api.sharebridge.com",
+          "Name": "api.sharingbridge.com",
           "Type": "A",
           "GeoLocation": {
             "ContinentCode": "AS"
@@ -1641,9 +1641,9 @@ async function getOrder(orderId, userRegion) {
 
 function getDBReplica(region) {
   const replicas = {
-    'us-east': 'sharebridge-us-east-replica',
-    'eu-west': 'sharebridge-eu-west-replica',
-    'asia-south': 'sharebridge-asia-south-replica'
+    'us-east': 'sharingbridge-us-east-replica',
+    'eu-west': 'sharingbridge-eu-west-replica',
+    'asia-south': 'sharingbridge-asia-south-replica'
   };
   return db.connect(replicas[region]);
 }
@@ -1688,7 +1688,7 @@ async function publishGlobalEvent(eventType, data) {
   const sns = new AWS.SNS({ region: 'us-east-1' });
   
   await sns.publish({
-    TopicArn: `arn:aws:sns:us-east-1:123456789:sharebridge-${eventType}`,
+    TopicArn: `arn:aws:sns:us-east-1:123456789:sharingbridge-${eventType}`,
     Message: JSON.stringify(data),
     MessageAttributes: {
       eventType: { DataType: 'String', StringValue: eventType }
@@ -1700,18 +1700,18 @@ async function publishGlobalEvent(eventType, data) {
 **Queue Setup:**
 ```bash
 # Create queues in each region
-aws sqs create-queue --queue-name sharebridge-order-created --region us-east-1
-aws sqs create-queue --queue-name sharebridge-order-created --region eu-west-1
-aws sqs create-queue --queue-name sharebridge-order-created --region ap-south-1
+aws sqs create-queue --queue-name sharingbridge-order-created --region us-east-1
+aws sqs create-queue --queue-name sharingbridge-order-created --region eu-west-1
+aws sqs create-queue --queue-name sharingbridge-order-created --region ap-south-1
 
 # Create SNS topic for cross-region events
-aws sns create-topic --name sharebridge-global-events --region us-east-1
+aws sns create-topic --name sharingbridge-global-events --region us-east-1
 
 # Subscribe regional SQS queues to SNS topic
 aws sns subscribe \
-  --topic-arn arn:aws:sns:us-east-1:123456789:sharebridge-global-events \
+  --topic-arn arn:aws:sns:us-east-1:123456789:sharingbridge-global-events \
   --protocol sqs \
-  --notification-endpoint arn:aws:sqs:us-east-1:123456789:sharebridge-order-created
+  --notification-endpoint arn:aws:sqs:us-east-1:123456789:sharingbridge-order-created
 ```
 
 **Deliverables:**
@@ -1759,7 +1759,7 @@ export let options = {
 export default function() {
   // Test order creation
   const createOrderRes = http.post(
-    'https://api.sharebridge.com/api/v1/orders',
+    'https://api.sharingbridge.com/api/v1/orders',
     JSON.stringify({
       location: { lat: 12.9716, lng: 77.5946 },
       items: [{ name: 'Meal', quantity: 1 }]
@@ -1796,17 +1796,17 @@ export default function() {
 #### Step 4.2: Disaster Recovery Drills
 ```bash
 # Test 1: Primary database failover
-aws rds failover-db-cluster --db-cluster-identifier sharebridge-primary
+aws rds failover-db-cluster --db-cluster-identifier sharingbridge-primary
 
 # Test 2: Regional API failure
 # Simulate US-East region failure
 aws ec2 stop-instances --instance-ids $(kubectl get nodes -o jsonpath='{.items[*].spec.providerID}' --context us-east)
 
 # Verify traffic reroutes to EU-West
-dig api.sharebridge.com @8.8.8.8
+dig api.sharingbridge.com @8.8.8.8
 
 # Test 3: Cache cluster failure
-aws elasticache test-failover --replication-group-id sharebridge-us-east-redis --node-group-id 0001
+aws elasticache test-failover --replication-group-id sharingbridge-us-east-redis --node-group-id 0001
 ```
 
 **Failover Scenarios:**
@@ -1952,8 +1952,8 @@ Expected Savings: $1,200/month (25% reduction)
 ### Rollback Strategy
 ```bash
 # Phase 1 Rollback: Remove read replicas
-aws rds delete-db-instance --db-instance-identifier sharebridge-eu-west-replica
-aws rds delete-db-instance --db-instance-identifier sharebridge-asia-south-replica
+aws rds delete-db-instance --db-instance-identifier sharingbridge-eu-west-replica
+aws rds delete-db-instance --db-instance-identifier sharingbridge-asia-south-replica
 
 # Phase 2 Rollback: Revert to single region
 aws route53 change-resource-record-sets --hosted-zone-id Z123 --change-batch file://rollback-dns.json

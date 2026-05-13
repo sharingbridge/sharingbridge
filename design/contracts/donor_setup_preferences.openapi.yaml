@@ -1,6 +1,6 @@
 openapi: 3.0.3
 info:
-  title: ShareBridge Integration Service — Donor Setup Preferences
+  title: SharingBridge Integration Service — Donor Setup Preferences
   version: 0.2.0
   description: |
     HTTP API exposed by **sharingbridge-integration-service** for donor preset

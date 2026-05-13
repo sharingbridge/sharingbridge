@@ -1,4 +1,4 @@
-# ShareBridge - Digital Alms Platform
+# SharingBridge - Digital Alms Platform
 
 > Transforming traditional alms-giving into a modern, accountable, and dignified process
 
@@ -6,11 +6,11 @@
 
 ## Overview
 
-ShareBridge is a mobile/web application that enables donors to provide food and essential items to alms seekers through verified third-party delivery services, eliminating cash transactions while maintaining dignity and convenience for both parties.
+SharingBridge is a mobile/web application that enables donors to provide food and essential items to alms seekers through verified third-party delivery services, eliminating cash transactions while maintaining dignity and convenience for both parties.
 
 ## Contributor notes (read this first)
 
-Product-level assumptions are maintained in one place: [ShareBridge_Business_Requirement.md](requirements/ShareBridge_Business_Requirement.md), section **“Operating Constraints & Assumptions.”** Refer to that section as the source of truth.
+Product-level assumptions are maintained in one place: [SharingBridge_Business_Requirement.md](requirements/SharingBridge_Business_Requirement.md), section **“Operating Constraints & Assumptions.”** Refer to that section as the source of truth.
 
 **🤖 AI-Assisted Development:** This project is being built primarily through AI-assisted coding sessions. Live coordination, decisions, and the next set of recommended tasks are tracked in [AGENT_HANDOFF.md](development/AGENT_HANDOFF.md). Conversations are not archived in the repo — durable knowledge lives in design/, requirements/, development/, and testing/ docs.
 
@@ -25,19 +25,19 @@ Product-level assumptions are maintained in one place: [ShareBridge_Business_Req
 
 ## Documentation
 
-- [Business Requirements](requirements/ShareBridge_Business_Requirement.md) - Complete business case and benefits
-- [Technical Architecture](design/ShareBridge_Technical_Architecture.md) - Detailed technical design
+- [Business Requirements](requirements/SharingBridge_Business_Requirement.md) - Complete business case and benefits
+- [Technical Architecture](design/SharingBridge_Technical_Architecture.md) - Detailed technical design
 - [API Contracts](design/contracts/donor_setup_suggest_vendors.openapi.yaml) - Shared request/response contracts and examples
 - [Implementation Approach](development/IMPLEMENTATION_APPROACH.md) - Development strategy and free-tier options
 - [MVP Bootstrap Issues](development/MVP_BOOTSTRAP_ISSUES.md) - Per-repo kickoff issue/checklist definitions
 - [Agent Handoff](development/AGENT_HANDOFF.md) - Live coordination doc and next recommended tasks
 - [Manual Testing Guide](testing/MANUAL_TESTING_GUIDE.md) - How to verify the modules shipped so far
-- [Initial Requirements](requirements/ShareBridge_initial_requirement.txt) - Original concept
+- [Initial Requirements](requirements/SharingBridge_initial_requirement.txt) - Original concept
 - [Call for Contributors](development/CALL_FOR_CONTRIBUTORS.md) - How to get involved (technical & non-technical)
 
 ## Repository Structure
 
-This is the **master repository** for ShareBridge (GitHub: [`sharingbridge/sharingbridge`](https://github.com/sharingbridge/sharingbridge)), containing documentation and overall coordination.
+This is the **master repository** for SharingBridge (GitHub: [`sharingbridge/sharingbridge`](https://github.com/sharingbridge/sharingbridge)), containing documentation and overall coordination.
 
 ### Child Repositories (Independent Development)
 
@@ -71,7 +71,7 @@ Each repository evolves independently. Coordination happens here through GitHub 
 
 ## Problem Statement
 
-When meeting people seeking alms, donors face a moral dilemma: offering cash may support unintended uses rather than basic needs. ShareBridge ensures charitable intent is fulfilled by providing food and essentials through verified delivery services.
+When meeting people seeking alms, donors face a moral dilemma: offering cash may support unintended uses rather than basic needs. SharingBridge ensures charitable intent is fulfilled by providing food and essentials through verified delivery services.
 
 ## Solution
 
@@ -79,7 +79,7 @@ A facilitator platform that:
 1. Connects donors with alms seekers
 2. Validates delivery location safety using AI
 3. Creates orders through established food delivery platforms (or future direct-vendor flows)
-4. Redirects payment to vendor or licensed provider systems (ShareBridge does not own financial tracking responsibility)
+4. Redirects payment to vendor or licensed provider systems (SharingBridge does not own financial tracking responsibility)
 5. Confirms delivery with photo verification
 
 ## Technology Stack
@@ -149,7 +149,7 @@ All contributions will be licensed under the MIT License.
 
 ## Contact
 
-For inquiries about the ShareBridge project, please contact the development team.
+For inquiries about the SharingBridge project, please contact the development team.
 
 ---
 

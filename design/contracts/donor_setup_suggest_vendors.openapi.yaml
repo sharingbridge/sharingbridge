@@ -1,6 +1,6 @@
 openapi: 3.0.3
 info:
-  title: ShareBridge Donor Setup Suggest Vendors API
+  title: SharingBridge Donor Setup Suggest Vendors API
   version: 0.1.0
   description: |
     Contract for AI-assisted donor setup vendor/menu suggestions.

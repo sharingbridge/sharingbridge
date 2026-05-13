@@ -1,4 +1,4 @@
-ShareBridge Mobile/Web App
+SharingBridge Mobile/Web App
 Need:
 •	When someone seeks alms on our way we get a dilemma whether to offer money for food or consider if the money could be used for wrong purposes. Need a mechanism to ensure money gets spent only on food and basic needs 
 Possible solutions:
@@ -13,9 +13,9 @@ Working:
 •	Offeror takes a snap, places a food order.
 •	The app prechecks using AI if the location is safe for delivery against speeding vehicles, not causing traffic jams, lighting and not being a lonely spot, checks other orders already made in the past hour, any warning set by the delivery crew.
 •	Then the app interacts with the food delivery vendors/apps/websites and places and order.
-•	The food delivery app (external) recognizes the transaction coming from ShareBridge. Checks any discount, tax adjustments and sends price quote.
-•	Offeror confirms in ShareBridge and pays to the food delivery app.
+•	The food delivery app (external) recognizes the transaction coming from SharingBridge. Checks any discount, tax adjustments and sends price quote.
+•	Offeror confirms in SharingBridge and pays to the food delivery app.
 •	Offeror conveys the delivery on the way and moves on.
 •	Delivery crew identifies the seeker and delivers the goods.
 •	Delivery crew asks if a snap can be taken for the delivery and uploads the snap against the order and moves on.
-•	The Delivery app notifies the offeror and ShareBridge about the delivery completion and passes the snap to ShareBridge. The offeror can check the snaps and details in ShareBridge.
+•	The Delivery app notifies the offeror and SharingBridge about the delivery completion and passes the snap to SharingBridge. The offeror can check the snaps and details in SharingBridge.

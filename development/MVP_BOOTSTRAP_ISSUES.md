@@ -1,4 +1,4 @@
-# ShareBridge MVP Bootstrap Issues Checklist
+# SharingBridge MVP Bootstrap Issues Checklist
 
 This document provides copy-ready MVP bootstrap issue definitions for the core repos:
 
@@ -12,13 +12,13 @@ This document provides copy-ready MVP bootstrap issue definitions for the core r
 
 Source-of-truth alignment:
 
-- BRD: `requirements/ShareBridge_Business_Requirement.md` -> `Core Workflow` + `Operating Constraints & Assumptions`
+- BRD: `requirements/SharingBridge_Business_Requirement.md` -> `Core Workflow` + `Operating Constraints & Assumptions`
 - Technical architecture and implementation approach must follow BRD assumptions
 
 Locked constraints reflected in all issues:
 
 - Provider/vendor-hosted payment links only (no platform-owned checkout flow)
-- No authoritative ShareBridge financial ledger or settlement ownership
+- No authoritative SharingBridge financial ledger or settlement ownership
 - Delivery data access via technical controls only (no NDA dependency)
 - Secure instruction/photo link active until delivery completion + 30-minute look-back, then expiry
 - Queue strategy: Redis Streams/PubSub for MVP; AWS SQS/SNS as scale path
@@ -174,7 +174,7 @@ Each issue below should be closed only when all relevant items are demonstrably 
 **Acceptance criteria:**
 
 - [ ] Mobile UX supports BRD steps 1-11 in user-correct sequence
-- [ ] Payment UX clearly exits ShareBridge into provider/vendor-hosted flow
+- [ ] Payment UX clearly exits SharingBridge into provider/vendor-hosted flow
 - [ ] No UI implies platform-owned wallet/ledger behavior
 - [ ] Error states cover safety check failure, vendor callback delay, and network interruption
 - [ ] App stores only required local transient state and protects sensitive references

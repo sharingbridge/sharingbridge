@@ -23,28 +23,26 @@ Get-ChildItem $root -Directory | ForEach-Object {
 }
 ```
 
-## 2. Rename repositories on GitHub (optional but recommended)
+## 2. Canonical repository slugs (under org `sharingbridge`)
 
-In each repo: **Settings → General → Repository name**.
+Use these names on GitHub and in local clone folders so `origin` URLs stay predictable (`https://github.com/sharingbridge/<slug>.git`):
 
-Typical rename pattern (leading segment of the repository slug):
+| Role | Slug |
+|------|------|
+| Coordination / documentation | `sharingbridge` |
+| Integration (donor setup API) | `sharingbridge-integration-service` |
+| User service (auth + donor presets) | `sharingbridge-user-service` |
+| Mobile app | `sharingbridge-mobile-app` |
+| Web app | `sharingbridge-web-app` |
+| API gateway | `sharingbridge-api-gateway` |
+| Order service | `sharingbridge-order-service` |
+| Notifications | `sharingbridge-notification-service` |
+| AI safety | `sharingbridge-ai-safety` |
+| Photo service | `sharingbridge-photo-service` |
+| Infra | `sharingbridge-infra` |
+| Deployment | `sharingbridge-deployment` |
 
-| Before (legacy) | After (current) |
-|-----------------|-----------------|
-| `sharebridge` | `sharingbridge` |
-| `sharebridge-integration-service` | `sharingbridge-integration-service` |
-| `sharebridge-user-service` | `sharingbridge-user-service` |
-| `sharebridge-mobile-app` | `sharingbridge-mobile-app` |
-| `sharebridge-api-gateway` | `sharingbridge-api-gateway` |
-| `sharebridge-order-service` | `sharingbridge-order-service` |
-| `sharebridge-notification-service` | `sharingbridge-notification-service` |
-| `sharebridge-ai-safety` | `sharingbridge-ai-safety` |
-| `sharebridge-photo-service` | `sharingbridge-photo-service` |
-| `sharebridge-web-app` | `sharingbridge-web-app` |
-| `sharebridge-infra` | `sharingbridge-infra` |
-| `sharebridge-deployment` | `sharingbridge-deployment` |
-
-GitHub keeps redirects from old URLs for a period; still update `origin` and bookmarks.
+If you renamed an organization or repository earlier, GitHub may still redirect old URLs for a while—update `origin` and bookmarks to the canonical URLs above.
 
 ## 3. Match `origin` to the new GitHub slug after repository rename
 

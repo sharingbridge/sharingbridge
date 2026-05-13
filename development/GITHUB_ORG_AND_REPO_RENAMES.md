@@ -2,7 +2,7 @@
 
 The GitHub organization is **`sharingbridge`** (`https://github.com/sharingbridge`). Each clone’s `origin` must use that host.
 
-This file is the **migration playbook** and therefore still names the **previous** GitHub organization and repository slugs where needed for one-time moves. Other documentation in this repo uses the current names only.
+This file is the **migration playbook** for Git remotes and local folder layout under the **`sharingbridge`** GitHub organization.
 
 ## 1. Point `origin` at the new organization (same repository slug)
 

@@ -91,6 +91,19 @@ Mobile app:
 
 Manual end-to-end and API smoke steps live in `testing/MANUAL_TESTING_GUIDE.md` (includes **§3d–3e**: why suggest/mock looks static, how to **clear saved presets** on disk or via user-service `PUT`, local **merge** vs user-service **replace**).
 
+## Post-ship checklist (after `main` pushes or large merges)
+
+Do this before starting the next feature thread:
+
+1. **CI on GitHub** — Open the latest workflow run on `main` for each repo you changed (`sharebridge-user-service`, `sharebridge-integration-service`, `sharebridge-mobile-app`, `sharebridge` as applicable). Confirm the **`test`** job (and any other required checks) are green; fix failures before layering more changes.
+2. **Manual smoke** — Short pass from `testing/MANUAL_TESTING_GUIDE.md`: mint token, suggest, save presets, single-row delete (`delete-item`), clear all, mobile **Copy link** / **Suggest again** / saved-presets flows.
+3. **Branch protection alignment** — If org rules expect PRs + required checks (and direct `main` pushes only work via bypass), use **feature branches + PRs** next time so reviews and status checks run normally.
+4. **Roadmap next slice** — After the above, pick the next MVP milestone from `development/IMPLEMENTATION_APPROACH.md` and the BRD (e.g. donor-seeker flow, real vendor search replacing mock suggest, managed DB for durability).
+
+## GitHub organization rename (optional)
+
+Renaming the GitHub org (for example from `sharebridge` to `sharingbridge`) is **supported by GitHub** and old URLs **redirect for a period**, but plan an explicit sweep: update every **`git remote`** clone, documentation links, CI deploy targets, badges, and any hard-coded `github.com/org/repo` strings. Crate/npm **package names** and in-repo folder names (`sharebridge-mobile-app`, etc.) do not change automatically; keep them as-is unless you intentionally re-scope branding and imports in a dedicated rename effort.
+
 ## Next Recommended Tasks
 
 Tasks #1-#5 are complete. Remaining priority order:

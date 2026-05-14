@@ -8,9 +8,9 @@ system without reading code.
 
 - [`MANUAL_TESTING_GUIDE.md`](./MANUAL_TESTING_GUIDE.md) — step-by-step
   validation of shipped **donor-setup** modules (integration-service +
-  mobile) and the **donor–seeker field MVP-0** slice on mobile: automated
+  mobile) and **Offer food help** on mobile: automated
   `flutter test` / `npm test`, manual API smoke, E2E donor setup, and
-  manual field-flow steps on Windows desktop / Android emulator.
+  manual handoff steps on Windows desktop / Android emulator.
 
 ## Conventions
 

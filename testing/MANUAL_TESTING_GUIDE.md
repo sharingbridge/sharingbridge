@@ -9,7 +9,7 @@ pairs **automated test suites** with **manual API smoke tests** and
 All commands assume **PowerShell on Windows**. Translate to bash as
 needed.
 
-**Path note:** GitHub repository slugs use the `sharingbridge-*` prefix. Examples assume sibling service clones live under one parent folder, e.g. `D:\kannan\sharingbridge\sharingbridge-mobile-app` (coordination docs often live in `D:\kannan\sharingbridge\sharingbridge`). Adjust drive and parent path for your machine. If you still keep an older parent folder name such as `sharingbridge_repos`, substitute it in every `cd` (see `development/GITHUB_ORG_AND_REPO_RENAMES.md`).
+**Path note:** GitHub repository slugs use the `sharingbridge-*` prefix. Examples assume sibling service clones live under one parent folder, e.g. `D:\kannan\sharingbridge\sharingbridge-mobile-app` (coordination docs often live in `D:\kannan\sharingbridge\sharingbridge`). Adjust drive and parent path for your machine; use the same substitution in every `cd` if your layout differs (see `development/GITHUB_ORG_AND_REPO_RENAMES.md`).
 
 ## Modules in scope
 

@@ -23,7 +23,7 @@ needed.
 | 6 | Mobile HTTP client (timeout, retry, typed errors, auth headers) | `sharingbridge-mobile-app/lib/features/donor_setup/data/http_donor_setup_api_client.dart` |
 | 7 | Mobile auth context | `sharingbridge-mobile-app/lib/features/donor_setup/data/auth_context.dart` |
 | 8 | Mobile cache fallback (`shared_preferences`) | `sharingbridge-mobile-app/lib/features/donor_setup/presentation/pages/donor_setup_page.dart` |
-| 9 | Mobile home hub + **Offer food help** (dignity + photo-consent guidance; AI-stub instructions + copy; preset vendor deep links) | `sharingbridge-mobile-app/lib/presentation/app_home_page.dart`, `lib/features/donor_seeker_interaction/**` |
+| 9 | Mobile home hub + **Offer food help** (3 steps: guidance → optional reference photo + **Get AI delivery instructions** (stub) → copy + vendor deep links) | `sharingbridge-mobile-app/lib/presentation/app_home_page.dart`, `lib/features/donor_seeker_interaction/**` |
 
 ## Prerequisites
 
@@ -92,7 +92,7 @@ Expected output footer:
 # fail 0
 ```
 
-### 1b. Mobile app (Flutter, currently 32 tests)
+### 1b. Mobile app (Flutter, currently 34 tests)
 
 ```powershell
 cd D:\kannan\sharingbridge\sharingbridge-mobile-app
@@ -111,8 +111,8 @@ Coverage at a glance:
 | `test/features/donor_setup/data/http_donor_setup_api_client_test.dart` | retry-then-success, persistent 5xx, 4xx mapping, malformed JSON, no-retry on save 5xx, **`DELETE` clear presets**, **`POST` delete-item**, auth headers on the wire |
 | `test/features/donor_setup/presentation/donor_setup_page_test.dart` | search; **Copy link** / **Open vendor page** / **Suggest again**; confirm saves **without** collapsing list to saved-only; success status + snackbar; presets navigation; slow-load race; cache clear |
 | `test/features/donor_setup/presentation/donor_presets_page_test.dart` | saved-presets list; copy/open; per-row **Remove**; **Clear all** |
-| `test/features/donor_seeker_interaction/donor_seeker_interaction_page_test.dart` | home hub opens **Offer food help**; copy enables **Open …** vendor buttons; snackbar after copy |
-| `test/features/donor_seeker_interaction/delivery_instruction_stub_test.dart` | stub instruction text includes dignity, photo consent, preset lines |
+| `test/features/donor_seeker_interaction/donor_seeker_interaction_page_test.dart` | home hub opens **Offer food help**; **Continue** → **Get AI delivery instructions** (injected stub) → copy enables **Open …**; snackbar after copy |
+| `test/features/donor_seeker_interaction/delivery_instruction_stub_test.dart` | stub text: dignity, consent, presets; optional photo/verbal lines |
 | `test/widget_test.dart` | app boots with **SharingBridge** home hub (Donor setup + Offer food help) |
 
 Expected last line: `All tests passed!`.
@@ -376,14 +376,14 @@ The mobile client now sends only `Authorization: Bearer <AUTH_TOKEN>`.
 
 ### 3f. Offer food help (donor–seeker handoff)
 
-Uses the same authed **`GET …/preferences`** load as Donor Setup (saved presets). There is **no** separate field-flow draft in `shared_preferences` for this screen.
+Uses the same authed **`GET …/preferences`** load as Donor Setup (saved presets). There is **no** separate field-flow draft in `shared_preferences` for this screen. The flow is **three steps** (see the step label at the top of the screen).
 
 1. From the home hub, tap **Offer food help**.
-2. Read **Quick guidance**: treat personal details with care; ask **consent before photos** (use a verbal description if they decline).
-3. Under **Delivery instructions (AI draft)**, review the generated block (today: deterministic stub from saved presets; live AI later). Tap **Copy instructions** — a **SnackBar** confirms copy; **Open …** buttons for each saved preset become enabled.
-4. Tap an **Open …** row (shows app and restaurant) to launch the preset **http/https** order URL in the browser or vendor app (`url_launcher`). Paste the copied text into that app’s delivery-notes field.
+2. **Step 1 — Guidance:** read dignity and **photo consent** text, then tap **Continue to photo and instructions**.
+3. **Step 2 — Photo and AI:** optionally tap **Add reference photo** (camera or gallery; requires OS permission the first time). Optionally fill **Handover notes**. Tap **Get AI delivery instructions** — today this runs a **local stub** with a short delay (replace with a real API when wired). Use the app bar **Back** arrow to return to guidance and clear the photo/notes for this session.
+4. **Step 3 — Paste in vendor app:** review the text in the filled card, tap **Copy instructions** (SnackBar confirms copy), then **Open …** rows unlock for each saved preset with a valid **http/https** link. Paste into the vendor app’s delivery-notes field.
 
-If presets fail to load (offline/server), you still get stub instructions to copy; vendor buttons stay disabled when there is no valid link.
+If presets fail to load (offline/server), you can still generate stub copy; **Open …** stays disabled when there is no valid link.
 
 ### 3d. Why Suggest Vendors and Saved presets can both look “static”
 
@@ -457,7 +457,7 @@ Earlier MVP builds stored a field draft under `sharingbridge_field_interaction_d
 
 - `npm test` in `sharingbridge-integration-service` reports `# pass 40 / # fail 0`.
 - `npm test` in `sharingbridge-user-service` reports `# pass 37 / # fail 0`.
-- `flutter test` in `sharingbridge-mobile-app` ends with `All tests passed!` (**32 tests**).
+- `flutter test` in `sharingbridge-mobile-app` ends with `All tests passed!` (**34 tests**).
 - `Invoke-RestMethod http://localhost:8080/health` returns `ok=True`.
 - Step 2c returns HTTP 200 with `saved_count=1`; step 2d echoes the
   same preset back.
@@ -468,4 +468,4 @@ Earlier MVP builds stored a field draft under `sharingbridge_field_interaction_d
 - Step 3c shows the mobile UI loading server presets on cold start,
   saving new picks (full mock list remains after save; **Saved presets** shows server truth),
   and falling back to the local cache when the backend is offline.
-- Step **3f** opens **Offer food help**, copies AI-stub instructions, and opens saved vendor links after copy.
+- Step **3f** walks **Offer food help** (guidance → photo/notes + AI stub → copy + vendor links).

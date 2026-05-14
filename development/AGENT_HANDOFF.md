@@ -54,7 +54,7 @@ The **donor-setup slice** that is live in code is intentionally a **minimal MVP*
 
 ### `sharingbridge-mobile-app` (donor setup MVP shipped; Offer food help handoff)
 - **Home hub** (`lib/presentation/app_home_page.dart`): entry to **Donor setup** vs **Offer food help**.
-- **Donor–seeker interaction (`Offer food help`):** short **Quick guidance** on personal details and **photo consent**; **Delivery instructions (AI draft)** built by `buildDeliveryInstructionsStub` from saved presets (live AI/API later); **Copy instructions** then enables per-preset **Open …** buttons that call `launchUrl` on each preset’s **http/https** `order_url` (`lib/features/donor_seeker_interaction/presentation/pages/donor_seeker_interaction_page.dart`, `application/delivery_instruction_stub.dart`). Next slices: real instruction generation, secure photo reference, richer vendor deep links.
+- **Donor–seeker interaction (`Offer food help`):** three steps — **guidance** → **optional reference photo** (`image_picker` camera/gallery) plus verbal notes, then **Get AI delivery instructions** (`requestStubDeliveryInstructions` simulates API latency; `buildDeliveryInstructionsStub` for text) → **Card.filled** result, **Copy instructions**, then per-preset **Open …** via `launchUrl` on **http/https** `order_url`. Inject `deliveryInstructionsRequest` / `referencePhotoPick` for tests. Next: real vision + instruction HTTP API, upload pipeline for reference images.
 - Donor setup screen wired to integration-service: search → suggestions → confirm-and-save.
 - Startup loads presets from server, with local `shared_preferences` fallback cache when the server is unreachable.
 - HTTP API client (`lib/features/donor_setup/data/http_donor_setup_api_client.dart`) supports request timeout, exponential-backoff retry, and typed exceptions (`DonorSetupNetworkException`, `DonorSetupTimeoutException`, `DonorSetupBadRequestException`, `DonorSetupServerException`, `DonorSetupResponseException`). Mutating saves do not retry on 5xx (no double-write).
@@ -62,7 +62,7 @@ The **donor-setup slice** that is live in code is intentionally a **minimal MVP*
 - `AuthContext` (`lib/features/donor_setup/data/auth_context.dart`) sources `user_id` from `--dart-define=USER_ID=...` and signed token from `--dart-define=AUTH_TOKEN=...`, and sends only `Authorization: Bearer <token>`.
 - Donor Setup list shows **full `menu_items`** per suggestion (not only the first item); integration-service **suggest-vendors** mock is still **query-independent** (fixed venues/menus until real search ships).
 - Donor Setup: suggestion rows include **Copy link**, **Open vendor page**, **Suggest again** (re-runs search); after **Confirm and Save** the full suggestion list stays visible (only checkboxes clear) and a **SnackBar** confirms save. App bar **Saved presets**: **Copy link** / **Open link**; per-row **Remove**; **Clear all** (`DELETE` + offline cache).
-- 32 tests, all green via `flutter test`.
+- 34 tests, all green via `flutter test`.
 
 ### Other repos
 - `sharingbridge-user-service`: MVP skeleton bootstrapped (Node HTTP service + tests) with:
@@ -164,3 +164,4 @@ Tasks #1-#5 are complete. Remaining priority order:
 - `feat` (mobile): Donor Setup **Copy link**, **Open vendor page**, **Suggest again**; integration README + manual guide + migration doc aligned to current counts and flows.
 - `feat` (mobile): Home hub + donor–seeker **Offer food help** flow (consent, safety gate, beneficiary notes, local draft persistence); `flutter test` count **30**.
 - `feat` (mobile): **Offer food help** redesign — dignity + photo-consent guidance; stub delivery instructions + copy; vendor deep links after copy; remove field draft persistence; `flutter test` **32**.
+- `feat` (mobile): **Offer food help** — 3-step flow, optional `image_picker` reference photo, async `requestStubDeliveryInstructions` AI placeholder, `Card.filled` instruction area; `flutter test` **34**.

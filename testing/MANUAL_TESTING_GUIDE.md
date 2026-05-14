@@ -92,7 +92,7 @@ Expected output footer:
 # fail 0
 ```
 
-### 1b. Mobile app (Flutter, currently 30 tests)
+### 1b. Mobile app (Flutter, currently 31 tests)
 
 ```powershell
 cd D:\kannan\sharingbridge\sharingbridge-mobile-app
@@ -111,7 +111,7 @@ Coverage at a glance:
 | `test/features/donor_setup/data/http_donor_setup_api_client_test.dart` | retry-then-success, persistent 5xx, 4xx mapping, malformed JSON, no-retry on save 5xx, **`DELETE` clear presets**, **`POST` delete-item**, auth headers on the wire |
 | `test/features/donor_setup/presentation/donor_setup_page_test.dart` | search; **Copy link** / **Open vendor page** / **Suggest again**; confirm saves **without** collapsing list to saved-only; success status + snackbar; presets navigation; slow-load race; cache clear |
 | `test/features/donor_setup/presentation/donor_presets_page_test.dart` | saved-presets list; copy/open; per-row **Remove**; **Clear all** |
-| `test/features/donor_seeker_interaction/donor_seeker_interaction_page_test.dart` | home hub opens field flow; consent/safety gates; **Save & close** persists `FieldInteractionDraft` in `shared_preferences` |
+| `test/features/donor_seeker_interaction/donor_seeker_interaction_page_test.dart` | home hub opens field flow; consent/safety gates; **AppBar / system back** go to previous step (not home) until step 0; **Save & close** persists draft |
 | `test/widget_test.dart` | app boots with **SharingBridge** home hub (Donor setup + Offer food help) |
 
 Expected last line: `All tests passed!`.
@@ -379,7 +379,8 @@ No backend call yet; draft is stored under `sharingbridge_field_interaction_draf
 
 1. From the home hub, tap **Offer food help**.
 2. Step through **Start here** → **Consent** (both checkboxes required) → **Quick safety** (self-assessment checkbox) → **Beneficiary details** (optional text). **Continue** shows inline error text if a gate is not satisfied.
-3. Tap **Save & close** on the last step — the screen closes and the draft is persisted on this device only. Re-open **Offer food help** to see **Last saved:** timestamp on the beneficiary step when a draft exists.
+3. The app bar **Back** arrow and the device **system back** gesture move to the **previous step** while you are past **Start here**; on **Start here** only, they close this screen and return to the **SharingBridge** home hub (same behavior as the bottom **Back** button).
+4. Tap **Save & close** on the last step — the screen closes and the draft is persisted on this device only. Re-open **Offer food help** to see **Last saved:** timestamp on the beneficiary step when a draft exists.
 
 Instruction pack, secure photo upload, and vendor redirect are **not** in this build; see `development/AGENT_HANDOFF.md` next tasks.
 
@@ -455,7 +456,7 @@ The **Offer food help** flow stores one draft under the `shared_preferences` key
 
 - `npm test` in `sharingbridge-integration-service` reports `# pass 40 / # fail 0`.
 - `npm test` in `sharingbridge-user-service` reports `# pass 37 / # fail 0`.
-- `flutter test` in `sharingbridge-mobile-app` ends with `All tests passed!` (**30 tests**).
+- `flutter test` in `sharingbridge-mobile-app` ends with `All tests passed!` (**31 tests**).
 - `Invoke-RestMethod http://localhost:8080/health` returns `ok=True`.
 - Step 2c returns HTTP 200 with `saved_count=1`; step 2d echoes the
   same preset back.

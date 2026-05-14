@@ -62,7 +62,7 @@ The **donor-setup slice** that is live in code is intentionally a **minimal MVP*
 - `AuthContext` (`lib/features/donor_setup/data/auth_context.dart`) sources `user_id` from `--dart-define=USER_ID=...` and signed token from `--dart-define=AUTH_TOKEN=...`, and sends only `Authorization: Bearer <token>`.
 - Donor Setup list shows **full `menu_items`** per suggestion (not only the first item); integration-service **suggest-vendors** mock is still **query-independent** (fixed venues/menus until real search ships).
 - Donor Setup: suggestion rows include **Copy link**, **Open vendor page**, **Suggest again** (re-runs search); after **Confirm and Save** the full suggestion list stays visible (only checkboxes clear) and a **SnackBar** confirms save. App bar **Saved presets**: **Copy link** / **Open link**; per-row **Remove**; **Clear all** (`DELETE` + offline cache).
-- 30 tests, all green via `flutter test`.
+- 31 tests, all green via `flutter test`.
 
 ### Other repos
 - `sharingbridge-user-service`: MVP skeleton bootstrapped (Node HTTP service + tests) with:

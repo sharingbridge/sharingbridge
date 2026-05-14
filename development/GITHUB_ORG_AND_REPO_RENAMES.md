@@ -9,7 +9,7 @@ This file is the **migration playbook** for Git remotes and local folder layout 
 If repositories stayed the same and **only the organization** moved, swap the org segment in `origin`:
 
 ```powershell
-$root = "D:\kannan\sharingbridge_repos"   # adjust — parent folder that contains all clones
+$root = "D:\kannan\sharingbridge"   # adjust — parent folder that contains all clones
 $oldOrg = "share" + "bridge"            # legacy GitHub org slug (single word)
 Get-ChildItem $root -Directory | ForEach-Object {
   if (Test-Path (Join-Path $_.FullName ".git")) {
@@ -51,7 +51,7 @@ GitHub slugs are now `sharingbridge` or `sharingbridge-*`. Local directories may
 Skip **`demo-repository`** if that clone still tracks an unchanged slug.
 
 ```powershell
-$root = "D:\kannan\sharingbridge_repos"   # adjust
+$root = "D:\kannan\sharingbridge"   # adjust
 $legacy = "share" + "bridge"            # legacy repo slug prefix (single word)
 Get-ChildItem $root -Directory | ForEach-Object {
   if (-not (Test-Path (Join-Path $_.FullName ".git"))) { return }
@@ -71,7 +71,7 @@ Get-ChildItem $root -Directory | ForEach-Object {
 ### When local folder name already matches GitHub
 
 ```powershell
-$root = "D:\kannan\sharingbridge_repos"   # adjust
+$root = "D:\kannan\sharingbridge"   # adjust
 Get-ChildItem $root -Directory | ForEach-Object {
   if (Test-Path (Join-Path $_.FullName ".git")) {
     $slug = $_.Name
@@ -88,7 +88,7 @@ You can also run `scripts/set-remotes-sharingbridge.ps1` from the coordination r
 Close editors and terminals that have those directories open, then:
 
 ```powershell
-$root = "D:\kannan\sharingbridge_repos"   # adjust
+$root = "D:\kannan\sharingbridge"   # adjust
 $legacy = "share" + "bridge"
 Get-ChildItem $root -Directory | Where-Object { $_.Name -match "^$legacy" } | ForEach-Object {
   $newName = $_.Name -replace "^$legacy", "sharingbridge"

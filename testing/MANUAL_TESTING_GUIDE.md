@@ -9,7 +9,7 @@ pairs **automated test suites** with **manual API smoke tests** and
 All commands assume **PowerShell on Windows**. Translate to bash as
 needed.
 
-**Path note:** GitHub repository slugs use the `sharingbridge-*` prefix. Examples use `D:\kannan\sharingbridge_repos\sharingbridge-…`. If your clone directories still use **legacy** folder names from before the rename, substitute those directory names in `cd` commands (see `development/GITHUB_ORG_AND_REPO_RENAMES.md`).
+**Path note:** GitHub repository slugs use the `sharingbridge-*` prefix. Examples assume sibling service clones live under one parent folder, e.g. `D:\kannan\sharingbridge\sharingbridge-mobile-app` (coordination docs often live in `D:\kannan\sharingbridge\sharingbridge`). Adjust drive and parent path for your machine. If you still keep an older parent folder name such as `sharingbridge_repos`, substitute it in every `cd` (see `development/GITHUB_ORG_AND_REPO_RENAMES.md`).
 
 ## Modules in scope
 
@@ -31,10 +31,10 @@ needed.
 - Flutter 3.16+ on `PATH` (and a target device — Windows desktop, web,
   or an Android emulator at minimum).
 - Both repos cloned alongside this one:
-  - `D:\kannan\sharingbridge_repos\sharingbridge-integration-service`
-  - `D:\kannan\sharingbridge_repos\sharingbridge-mobile-app`
+  - `D:\kannan\sharingbridge\sharingbridge-integration-service`
+  - `D:\kannan\sharingbridge\sharingbridge-mobile-app`
 - User service cloned and runnable for token minting:
-  - `D:\kannan\sharingbridge_repos\sharingbridge-user-service`
+  - `D:\kannan\sharingbridge\sharingbridge-user-service`
 - Port `8080` free locally.
 - Port `8081` free locally.
 
@@ -63,7 +63,7 @@ Tokens are signed and verified with that **symmetric** secret (`AUTH_TOKEN_SECRE
 ### 1a. Integration service (Node.js, currently 40 tests)
 
 ```powershell
-cd D:\kannan\sharingbridge_repos\sharingbridge-integration-service
+cd D:\kannan\sharingbridge\sharingbridge-integration-service
 npm install     # first time only
 npm test
 ```
@@ -95,7 +95,7 @@ Expected output footer:
 ### 1b. Mobile app (Flutter, currently 30 tests)
 
 ```powershell
-cd D:\kannan\sharingbridge_repos\sharingbridge-mobile-app
+cd D:\kannan\sharingbridge\sharingbridge-mobile-app
 flutter pub get   # first time only
 flutter test
 ```
@@ -119,7 +119,7 @@ Expected last line: `All tests passed!`.
 ### 1c. User service (Node.js, currently 37 tests)
 
 ```powershell
-cd D:\kannan\sharingbridge_repos\sharingbridge-user-service
+cd D:\kannan\sharingbridge\sharingbridge-user-service
 npm install       # first time only
 npm test
 ```
@@ -146,7 +146,7 @@ Expected output footer:
 Start user-service in one PowerShell window:
 
 ```powershell
-cd D:\kannan\sharingbridge_repos\sharingbridge-user-service
+cd D:\kannan\sharingbridge\sharingbridge-user-service
 npm install   # first time only
 npm start
 # User service listening on 8081
@@ -155,7 +155,7 @@ npm start
 Start integration-service in a second PowerShell window:
 
 ```powershell
-cd D:\kannan\sharingbridge_repos\sharingbridge-integration-service
+cd D:\kannan\sharingbridge\sharingbridge-integration-service
 npm start
 # Integration service listening on 8080
 ```
@@ -343,14 +343,14 @@ $mobileToken = (Invoke-RestMethod -Method Post -Uri http://localhost:8081/v1/aut
 ### 3a. Windows desktop
 
 ```powershell
-cd D:\kannan\sharingbridge_repos\sharingbridge-mobile-app
+cd D:\kannan\sharingbridge\sharingbridge-mobile-app
 flutter run -d windows --dart-define=API_BASE_URL=http://localhost:8080 --dart-define=USER_ID=alice --dart-define=AUTH_TOKEN=$mobileToken
 ```
 
 ### 3b. Android emulator
 
 ```powershell
-cd D:\kannan\sharingbridge_repos\sharingbridge-mobile-app
+cd D:\kannan\sharingbridge\sharingbridge-mobile-app
 flutter run --dart-define=API_BASE_URL=http://10.0.2.2:8080 --dart-define=USER_ID=alice --dart-define=AUTH_TOKEN=$mobileToken
 ```
 
@@ -398,7 +398,7 @@ Pick one approach:
 1. **Wipe the local integration file store** (typical dev: `PREFERENCES_BACKEND=local`): stop `npm start` on integration-service, delete the data file or folder, restart.
 
    ```powershell
-   cd D:\kannan\sharingbridge_repos\sharingbridge-integration-service
+   cd D:\kannan\sharingbridge\sharingbridge-integration-service
    Remove-Item -Recurse -Force data -ErrorAction SilentlyContinue
    npm start
    ```
@@ -424,7 +424,7 @@ Pick one approach:
 To wipe persisted donor presets and start over (same as §3e option 1):
 
 ```powershell
-cd D:\kannan\sharingbridge_repos\sharingbridge-integration-service
+cd D:\kannan\sharingbridge\sharingbridge-integration-service
 Remove-Item -Recurse -Force data -ErrorAction SilentlyContinue
 npm start
 ```
@@ -439,7 +439,7 @@ Windows).
 Use this **before or right after** you point integration-service at user-service presets (`PREFERENCES_BACKEND=user_service`). Requires user-service running and the **same `AUTH_TOKEN_SECRET`** as used for `/v1/auth/token`:
 
 ```powershell
-cd D:\kannan\sharingbridge_repos\sharingbridge-integration-service
+cd D:\kannan\sharingbridge\sharingbridge-integration-service
 $env:USER_SERVICE_BASE_URL = "http://localhost:8081"
 # Dry run: $env:BACKFILL_DRY_RUN = "1"
 npm run backfill:user-service-presets

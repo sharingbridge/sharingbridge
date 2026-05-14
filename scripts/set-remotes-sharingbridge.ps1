@@ -12,7 +12,7 @@
 # Optional: -Root "D:\path\to\parent-of-repos"
 
 param(
-  # Default: parent of the coordination repo clone (e.g. …/sharingbridge_repos/sharingbridge/scripts → …/sharingbridge_repos).
+  # Default: parent of the coordination repo clone (e.g. …/sharingbridge/sharingbridge/scripts → …/sharingbridge).
   [string] $Root = (Resolve-Path (Join-Path $PSScriptRoot "..\..")).Path
 )
 

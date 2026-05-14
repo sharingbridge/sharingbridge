@@ -164,9 +164,9 @@ Each issue below should be closed only when all relevant items are demonstrably 
 
 **Scope checklist:**
 
-- [ ] Bootstrap app shell, auth/session wiring, and API client base
-- [ ] Build donor setup screens (AI-assisted local vendor/menu suggestions + manual edit + confirmation, then saved payment preferences)
-- [ ] Build donor-seeker interaction flow screens (consent, quick safety check, beneficiary capture)
+- [x] Bootstrap app shell, auth/session wiring, and API client base
+- [x] Build donor setup screens (AI-assisted local vendor/menu suggestions + manual edit + confirmation, then saved payment preferences)
+- [x] Build donor-seeker interaction flow screens (consent, quick safety check, beneficiary capture)
 - [ ] Display generated instruction pack with one-tap copy + secure reference awareness
 - [ ] Implement external vendor redirect/return handling with state recovery
 - [ ] Add order status timeline and completion confirmation views

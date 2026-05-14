@@ -7,10 +7,10 @@ system without reading code.
 ## Index
 
 - [`MANUAL_TESTING_GUIDE.md`](./MANUAL_TESTING_GUIDE.md) — step-by-step
-  validation of every donor-setup module that has shipped so far:
-  automated suites in `sharingbridge-integration-service` and
-  `sharingbridge-mobile-app`, manual API smoke tests, and an end-to-end
-  walkthrough on Windows desktop / Android emulator.
+  validation of shipped **donor-setup** modules (integration-service +
+  mobile) and the **donor–seeker field MVP-0** slice on mobile: automated
+  `flutter test` / `npm test`, manual API smoke, E2E donor setup, and
+  manual field-flow steps on Windows desktop / Android emulator.
 
 ## Conventions
 

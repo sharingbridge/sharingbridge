@@ -52,7 +52,9 @@ The **donor-setup slice** that is live in code is intentionally a **minimal MVP*
 - `POST /v1/donor-setup/preferences/delete-item` removes one preset by `(restaurant_name, order_url)`; user-service mode calls **`POST /v1/users/{id}/donor-presets/delete-item`** (no GET+PUT read-modify-write).
 - 40 tests, all green via `npm test`; `npm run backfill:user-service-presets` migrates `data/preferences.json` → user-service (see migration doc).
 
-### `sharingbridge-mobile-app` (donor setup MVP shipped)
+### `sharingbridge-mobile-app` (donor setup MVP shipped; donor–seeker field slice started)
+- **Home hub** (`lib/presentation/app_home_page.dart`): entry to **Donor setup** (before field) vs **Offer food help** (BRD steps 2–5 in progress).
+- **Donor–seeker interaction (MVP-0):** stepped flow — start framing, **consent** checkboxes, **quick safety** self-check (deterministic; map/AI deferred per architecture doc), **beneficiary** text fields; draft persisted on-device via `shared_preferences` (`FieldInteractionDraft`, `field_interaction_local_storage.dart`). Next slices: instruction pack, secure photo, vendor handoff (BRD 6–8).
 - Donor setup screen wired to integration-service: search → suggestions → confirm-and-save.
 - Startup loads presets from server, with local `shared_preferences` fallback cache when the server is unreachable.
 - HTTP API client (`lib/features/donor_setup/data/http_donor_setup_api_client.dart`) supports request timeout, exponential-backoff retry, and typed exceptions (`DonorSetupNetworkException`, `DonorSetupTimeoutException`, `DonorSetupBadRequestException`, `DonorSetupServerException`, `DonorSetupResponseException`). Mutating saves do not retry on 5xx (no double-write).
@@ -60,7 +62,7 @@ The **donor-setup slice** that is live in code is intentionally a **minimal MVP*
 - `AuthContext` (`lib/features/donor_setup/data/auth_context.dart`) sources `user_id` from `--dart-define=USER_ID=...` and signed token from `--dart-define=AUTH_TOKEN=...`, and sends only `Authorization: Bearer <token>`.
 - Donor Setup list shows **full `menu_items`** per suggestion (not only the first item); integration-service **suggest-vendors** mock is still **query-independent** (fixed venues/menus until real search ships).
 - Donor Setup: suggestion rows include **Copy link**, **Open vendor page**, **Suggest again** (re-runs search); after **Confirm and Save** the full suggestion list stays visible (only checkboxes clear) and a **SnackBar** confirms save. App bar **Saved presets**: **Copy link** / **Open link**; per-row **Remove**; **Clear all** (`DELETE` + offline cache).
-- 28 tests, all green via `flutter test`.
+- 30 tests, all green via `flutter test`.
 
 ### Other repos
 - `sharingbridge-user-service`: MVP skeleton bootstrapped (Node HTTP service + tests) with:
@@ -124,6 +126,8 @@ Tasks #1-#5 are complete. Remaining priority order:
    - Run backfill + `PREFERENCES_BACKEND=user_service` in a staging environment; confirm donor-setup flows.
    - Remove `PreferencesStore` / `LocalPreferencesRepository` when no deployment needs local file mode.
 
+3. **Donor–seeker flow (after MVP-0 field screens).** Instruction pack (AI-backed copy block), secure photo / reference storage, preset-backed vendor handoff and return-state recovery — see BRD steps 6–9 and `development/MVP_BOOTSTRAP_ISSUES.md` mobile checklist.
+
 ## Follow-ups Surfaced in Prior Sessions
 - Backfill tooling: `sharingbridge-integration-service` → `npm run backfill:user-service-presets` (documented in `development/USER_SERVICE_PREFERENCES_MIGRATION.md`).
 - Retire integration-service file-backed store and `LocalPreferencesRepository` after production cutover is verified (not yet removed from code).
@@ -158,3 +162,4 @@ Tasks #1-#5 are complete. Remaining priority order:
 - `fix` (mobile): After **Confirm and Save Presets**, keep the full mock suggestion list and clear only checkboxes; avoid stale `_loadInitialPresets` overwriting search results; snackbar on save.
 - `feat`: integration-service **`DELETE` donor-setup preferences** + `POST …/delete-item`; mobile **Clear all** + per-row **Remove**; user-service **`POST …/donor-presets/delete-item`** (single HTTP delete); OpenAPI: `donor_setup_preferences.openapi.yaml`, `user_service_donor_presets.openapi.yaml`.
 - `feat` (mobile): Donor Setup **Copy link**, **Open vendor page**, **Suggest again**; integration README + manual guide + migration doc aligned to current counts and flows.
+- `feat` (mobile): Home hub + donor–seeker **Offer food help** flow (consent, safety gate, beneficiary notes, local draft persistence); `flutter test` count **30**.

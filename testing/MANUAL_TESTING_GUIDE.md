@@ -1,9 +1,10 @@
 # Manual Testing Guide — Completed Modules
 
-This guide walks through how to verify the donor-setup modules that
-have shipped across `sharingbridge-integration-service` and
-`sharingbridge-mobile-app`. It pairs **automated test suites** with
-**manual API smoke tests** and an **end-to-end** flow on the mobile app.
+This guide walks through how to verify the donor-setup modules and the
+**donor–seeker field MVP-0 slice** that have shipped across
+`sharingbridge-integration-service` and `sharingbridge-mobile-app`. It
+pairs **automated test suites** with **manual API smoke tests** and
+**end-to-end** flows on the mobile app.
 
 All commands assume **PowerShell on Windows**. Translate to bash as
 needed.
@@ -22,6 +23,7 @@ needed.
 | 6 | Mobile HTTP client (timeout, retry, typed errors, auth headers) | `sharingbridge-mobile-app/lib/features/donor_setup/data/http_donor_setup_api_client.dart` |
 | 7 | Mobile auth context | `sharingbridge-mobile-app/lib/features/donor_setup/data/auth_context.dart` |
 | 8 | Mobile cache fallback (`shared_preferences`) | `sharingbridge-mobile-app/lib/features/donor_setup/presentation/pages/donor_setup_page.dart` |
+| 9 | Mobile home hub + donor–seeker field flow (consent, safety, beneficiary notes; local draft) | `sharingbridge-mobile-app/lib/presentation/app_home_page.dart`, `lib/features/donor_seeker_interaction/**` |
 
 ## Prerequisites
 
@@ -90,7 +92,7 @@ Expected output footer:
 # fail 0
 ```
 
-### 1b. Mobile app (Flutter, currently 28 tests)
+### 1b. Mobile app (Flutter, currently 30 tests)
 
 ```powershell
 cd D:\kannan\sharingbridge_repos\sharingbridge-mobile-app
@@ -109,6 +111,8 @@ Coverage at a glance:
 | `test/features/donor_setup/data/http_donor_setup_api_client_test.dart` | retry-then-success, persistent 5xx, 4xx mapping, malformed JSON, no-retry on save 5xx, **`DELETE` clear presets**, **`POST` delete-item**, auth headers on the wire |
 | `test/features/donor_setup/presentation/donor_setup_page_test.dart` | search; **Copy link** / **Open vendor page** / **Suggest again**; confirm saves **without** collapsing list to saved-only; success status + snackbar; presets navigation; slow-load race; cache clear |
 | `test/features/donor_setup/presentation/donor_presets_page_test.dart` | saved-presets list; copy/open; per-row **Remove**; **Clear all** |
+| `test/features/donor_seeker_interaction/donor_seeker_interaction_page_test.dart` | home hub opens field flow; consent/safety gates; **Save & close** persists `FieldInteractionDraft` in `shared_preferences` |
+| `test/widget_test.dart` | app boots with **SharingBridge** home hub (Donor setup + Offer food help) |
 
 Expected last line: `All tests passed!`.
 
@@ -354,7 +358,7 @@ The mobile client now sends only `Authorization: Bearer <AUTH_TOKEN>`.
 
 ### 3c. Walkthrough on the app
 
-1. App opens to **Donor Setup**. Because step 2c saved presets for
+1. App opens to the **SharingBridge** home hub with **Donor setup** and **Offer food help**. Tap **Donor setup** to open **Donor Setup** (same flow as before hub shipped). Because step 2c saved presets for
    `alice`, the page shows status "Loaded saved presets from server."
 2. Type something like `zomato a2b mini meals` → tap **Suggest Vendors** (or **Suggest again** to re-fetch with the same query). The mock backend returns the **same fixed** suggestions every time (it does **not** personalize by `query_text`); each row shows the **full** menu line, **Copy link**, and **Open vendor page** when the URL is `http`/`https`. Auth-protected endpoints carry `Authorization: Bearer <signed token>`.
 3. Check one or more suggestions → tap **Confirm and Save Presets**.
@@ -368,6 +372,16 @@ The mobile client now sends only `Authorization: Bearer <AUTH_TOKEN>`.
    unavailable (HTTP 500)." or "Network unavailable. Check your
    connection and retry." instead of stack traces.
 6. **Saved presets / order links**: tap the app-bar icon with tooltip **Saved presets** → **Saved presets** loads from the server (`GET /v1/donor-setup/preferences`). Each row shows the **order URL** (selectable text), **Copy link**, and **Open link**. Per-row **Remove** calls integration `POST /v1/donor-setup/preferences/delete-item` (user-service: `POST /v1/users/{id}/donor-presets/delete-item` when that backend is on). **Clear all** uses `DELETE …/preferences`. Pull-to-refresh reloads the list.
+
+### 3f. Donor–seeker field flow (MVP-0, device-only)
+
+No backend call yet; draft is stored under `sharingbridge_field_interaction_draft_v1` in `shared_preferences`.
+
+1. From the home hub, tap **Offer food help**.
+2. Step through **Start here** → **Consent** (both checkboxes required) → **Quick safety** (self-assessment checkbox) → **Beneficiary details** (optional text). **Continue** shows inline error text if a gate is not satisfied.
+3. Tap **Save & close** on the last step — the screen closes and the draft is persisted on this device only. Re-open **Offer food help** to see **Last saved:** timestamp on the beneficiary step when a draft exists.
+
+Instruction pack, secure photo upload, and vendor redirect are **not** in this build; see `development/AGENT_HANDOFF.md` next tasks.
 
 ### 3d. Why Suggest Vendors and Saved presets can both look “static”
 
@@ -433,11 +447,15 @@ npm run backfill:user-service-presets
 
 See `development/USER_SERVICE_PREFERENCES_MIGRATION.md` for the full cutover checklist.
 
+### 4c. Clear local donor–seeker field draft (MVP-0)
+
+The **Offer food help** flow stores one draft under the `shared_preferences` key `sharingbridge_field_interaction_draft_v1`. To reset: uninstall the app, clear app data, or use a dev-only prefs reset tool. There is no integration-service API for this draft yet.
+
 ## 5. What "good" looks like (acceptance summary)
 
 - `npm test` in `sharingbridge-integration-service` reports `# pass 40 / # fail 0`.
 - `npm test` in `sharingbridge-user-service` reports `# pass 37 / # fail 0`.
-- `flutter test` in `sharingbridge-mobile-app` ends with `All tests passed!` (**28 tests**).
+- `flutter test` in `sharingbridge-mobile-app` ends with `All tests passed!` (**30 tests**).
 - `Invoke-RestMethod http://localhost:8080/health` returns `ok=True`.
 - Step 2c returns HTTP 200 with `saved_count=1`; step 2d echoes the
   same preset back.
@@ -448,3 +466,4 @@ See `development/USER_SERVICE_PREFERENCES_MIGRATION.md` for the full cutover che
 - Step 3c shows the mobile UI loading server presets on cold start,
   saving new picks (full mock list remains after save; **Saved presets** shows server truth),
   and falling back to the local cache when the backend is offline.
+- Step **3f** completes the field flow gates and persists a local draft; clearing that draft requires app data clear / key removal (no server API for this slice yet).

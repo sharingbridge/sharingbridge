@@ -14,6 +14,7 @@
 | **This doc** | End-to-end journey + **diagrams**; shipped vs planned | Yes (Mermaid) |
 | **[Technical Architecture](SharingBridge_Technical_Architecture.md)** | Services, APIs, deep-link privacy, order states, safety/photo algorithms | Some ASCII blocks |
 | **[Implementation Approach](../development/IMPLEMENTATION_APPROACH.md)** | Build phases, free tier, **AI interactions** slice (safety, instruction pack, match) | Tables; links here |
+| **[AI Platform Integration](../development/AI_PLATFORM_INTEGRATION.md)** | **LangChain / LLM hosting**, orchestration service, bridges mobile → integration → AI → model APIs | Architecture + sequence diagrams |
 | **[Donor Setup AI Search Sequence](Donor_Setup_AI_Search_Sequence.md)** | Donor setup only (suggest → save presets) | Sequence diagram |
 | **[Manual Testing Guide](../testing/MANUAL_TESTING_GUIDE.md)** | How to **verify** shipped slices on a device | Commands, not product flow |
 | **[Agent Handoff](../development/AGENT_HANDOFF.md)** | What is **live in code today** and next tasks | Status bullets |

@@ -11,6 +11,7 @@ This document provides copy-ready MVP bootstrap issue definitions for the core r
 - `sharingbridge-web-app`
 - `sharingbridge-ai-safety`
 - `sharingbridge-photo-service`
+- `sharingbridge-ai-orchestration` (planned — LLM/LangChain; see `development/AI_PLATFORM_INTEGRATION.md`)
 
 Source-of-truth alignment:
 
@@ -252,19 +253,45 @@ Each issue below should be closed only when all relevant items are demonstrably 
 
 ---
 
+## 10) `sharingbridge-ai-orchestration` (planned)
+
+**Issue title:** `MVP Bootstrap: LLM orchestration service (LangChain) and integration bridge`
+
+**Scope checklist:**
+
+- [ ] Bootstrap Python (FastAPI) or Node service with health endpoint and Dockerfile
+- [ ] Add LangChain chains for `suggest-vendors` and `instruction-pack` with strict JSON schema validation
+- [ ] Expose **internal** routes: `POST /internal/v1/llm/suggest-vendors`, `POST /internal/v1/llm/instruction-pack`, `POST /internal/v1/llm/sanitize-text`
+- [ ] Deploy to Render/Railway; configure `OPENAI_API_KEY` (or equivalent) via platform env — no keys in mobile
+- [ ] Wire `sharingbridge-integration-service` to call orchestration via `AI_ORCHESTRATION_BASE_URL` + service token
+- [ ] Feature-flag mock vs live LLM in integration-service; safe fallback on malformed model output
+- [ ] Optional LangSmith tracing for dev/staging
+- [ ] Contract tests with mocked LLM responses (no live API in CI)
+
+**Acceptance criteria:**
+
+- [ ] Mobile continues to call **integration-service only**; no direct LLM endpoints on client
+- [ ] `suggest-vendors` can return real model output when flag enabled, with same public response shape as mock
+- [ ] `instruction-pack` returns structured fields per `IMPLEMENTATION_APPROACH.md` AI interactions section
+- [ ] Documented in `development/AI_PLATFORM_INTEGRATION.md` with sequence diagrams and env var list
+
+---
+
 ## Suggested Execution Order
 
 1. `sharingbridge-user-service` + `sharingbridge-api-gateway` foundations
 2. `sharingbridge-order-service` core state machine and events
-3. `sharingbridge-ai-safety` + `sharingbridge-photo-service` skeletons (parallel)
-4. `sharingbridge-integration-service` instruction-pack + vendor adapter skeleton
-5. `sharingbridge-notification-service` event subscribers and delivery channels
-6. `sharingbridge-mobile-app` AI interactions phases A–C, then D
-7. `sharingbridge-web-app` operations and history dashboards (match review, secure-link audit)
+3. `sharingbridge-ai-orchestration` skeleton + integration bridge (suggest-vendors behind flag)
+4. `sharingbridge-ai-safety` + `sharingbridge-photo-service` skeletons (parallel)
+5. `sharingbridge-integration-service` instruction-pack + vendor adapter skeleton (calls orchestration)
+6. `sharingbridge-notification-service` event subscribers and delivery channels
+7. `sharingbridge-mobile-app` AI interactions phases A–C, then D
+8. `sharingbridge-web-app` operations and history dashboards (match review, secure-link audit)
 
 Parallelization recommendation:
 
 - Backend foundation (`api-gateway`, `user`, `order`) in parallel with frontend shell setup (`mobile`, `web`)
+- `ai-orchestration` can start once integration-service has HTTP client scaffolding; wire `suggest-vendors` before instruction-pack
 - `ai-safety` and `photo-service` start once order intent schema includes safety + photo artifact fields
 - Integration and notifications start once order events/contracts are stable
 

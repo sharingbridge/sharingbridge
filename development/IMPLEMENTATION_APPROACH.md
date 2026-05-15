@@ -228,7 +228,9 @@ Delivery instruction: Please proceed to <geo_coordinates>. Identify the seeker u
 - TTL: secure links active until delivery completion + 30 minutes (architecture default).
 - Align “faceprint” language with counsel; store embeddings server-side only.
 
-See `development/MVP_BOOTSTRAP_ISSUES.md` §§3–4, 6, 8–9 for repo-level checklists.
+See `development/MVP_BOOTSTRAP_ISSUES.md` §§3–4, 6, 8–10 for repo-level checklists.
+
+**LLM hosting and bridges (LangChain, model APIs, mobile ↔ backend):** Not implemented in code today. Planning, env vars, sequences, and bootstrap checklist live in **`development/AI_PLATFORM_INTEGRATION.md`**. Rule: clients call integration-service (or gateway) only; orchestration service holds API keys and LangChain chains.
 
 ### Web App Workstream (`sharingbridge-web-app`)
 

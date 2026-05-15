@@ -30,6 +30,7 @@ Product-level assumptions are maintained in one place: [SharingBridge_Business_R
 - [Technical Architecture](design/SharingBridge_Technical_Architecture.md) - Detailed technical design
 - [API Contracts](design/contracts/donor_setup_suggest_vendors.openapi.yaml) - Shared request/response contracts and examples
 - [Implementation Approach](development/IMPLEMENTATION_APPROACH.md) - Development strategy and free-tier options
+- [AI Platform Integration](development/AI_PLATFORM_INTEGRATION.md) - LangChain/orchestration hosting, model APIs, and bridges from mobile/backend to AI modules (planned)
 - [MVP Bootstrap Issues](development/MVP_BOOTSTRAP_ISSUES.md) - Per-repo kickoff issue/checklist definitions
 - [Agent Handoff](development/AGENT_HANDOFF.md) - Live coordination doc and next recommended tasks
 - [Manual Testing Guide](testing/MANUAL_TESTING_GUIDE.md) - How to verify the modules shipped so far

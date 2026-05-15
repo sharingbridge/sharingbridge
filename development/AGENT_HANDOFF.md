@@ -72,7 +72,7 @@ The **donor-setup slice** that is live in code is intentionally a **minimal MVP*
   - auth handling aligned with integration-service semantics for 401 (`missing_auth_context`) and 403 (`user_id_mismatch`).
   - **37** Node tests green via `npm test` (HTTP roundtrips + preset validation/`UserStore` + `tokenService`/`authContext` unit coverage).
   - GitHub Actions CI: Node 20, `npm install`, `npm test` on push/PR; branch protection on `main` requires passing check **`test`** (alongside existing review/signature rules).
-- `sharingbridge-api-gateway`, `sharingbridge-order-service`, `sharingbridge-notification-service`, `sharingbridge-ai-safety`, `sharingbridge-photo-service`, `sharingbridge-web-app`, `sharingbridge-infra`, `sharingbridge-deployment`: README only, no code yet.
+- `sharingbridge-api-gateway`, `sharingbridge-order-service`, `sharingbridge-notification-service`, `sharingbridge-ai-safety`, `sharingbridge-photo-service`, `sharingbridge-ai-orchestration` (planned), `sharingbridge-web-app`, `sharingbridge-infra`, `sharingbridge-deployment`: README only, no code yet. **AI technical setup (LangChain, model hosting, API bridges):** see `development/AI_PLATFORM_INTEGRATION.md` — not implemented; integration `suggest-vendors` is mock, mobile instruction path is stub.
 
 ## Quick Runbook
 
@@ -128,7 +128,7 @@ Tasks #1-#5 are complete. Remaining priority order:
    - Run backfill + `PREFERENCES_BACKEND=user_service` in a staging environment; confirm donor-setup flows.
    - Remove `PreferencesStore` / `LocalPreferencesRepository` when no deployment needs local file mode.
 
-3. **AI interactions — donor–seeker field slice.** Execute phases A–D in `development/IMPLEMENTATION_APPROACH.md`: (A) safety assess + photo/geo upload, (B) `POST …/instruction-pack`, (C) copy/deep-link handoff polish, (D) delivery acknowledgement + donor↔delivery match. Bootstrap `sharingbridge-ai-safety` and `sharingbridge-photo-service` per `MVP_BOOTSTRAP_ISSUES.md` §§8–9.
+3. **AI platform + field slice.** Bootstrap `sharingbridge-ai-orchestration` (LangChain on Render/Railway) and wire integration-service per `development/AI_PLATFORM_INTEGRATION.md` §10. Then execute IMPLEMENTATION_APPROACH phases A–D (safety, photo, instruction-pack API, delivery match).
 
 ## Follow-ups Surfaced in Prior Sessions
 - Backfill tooling: `sharingbridge-integration-service` → `npm run backfill:user-service-presets` (documented in `development/USER_SERVICE_PREFERENCES_MIGRATION.md`).
@@ -168,3 +168,4 @@ Tasks #1-#5 are complete. Remaining priority order:
 - `feat` (mobile): **Offer food help** redesign — dignity + photo-consent guidance; stub delivery instructions + copy; vendor deep links after copy; remove field draft persistence; `flutter test` **32**.
 - `feat` (mobile): **Offer food help** — 3-step flow, optional `image_picker` reference photo, async `requestStubDeliveryInstructions` AI placeholder, `Card.filled` instruction area; `flutter test` **34**.
 - `docs`: **AI interactions — donor–seeker field slice** in `IMPLEMENTATION_APPROACH.md` (safety, deep links, instruction-pack template, photo match); `MVP_BOOTSTRAP_ISSUES.md` §§8–9 (`ai-safety`, `photo-service`) and expanded §§3–4, 6 checklists.
+- `docs`: **AI platform integration** — `AI_PLATFORM_INTEGRATION.md` (LangChain orchestration, hosting, mobile/backend bridges); `MVP_BOOTSTRAP_ISSUES.md` §10 (`ai-orchestration`).

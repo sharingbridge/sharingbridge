@@ -1,6 +1,6 @@
 # AI Platform Integration — Technical Plan
 
-**Status:** Planning (not implemented in application code yet)  
+**Status:** Deterministic MVP shipped (`sharingbridge-ai-orchestration` + integration bridge); live LLM (`AI_LLM_MODE=openai`) not wired yet  
 **Related:** [IMPLEMENTATION_APPROACH.md](./IMPLEMENTATION_APPROACH.md) (AI interactions slice), [SharingBridge_End_to_End_Workflow.md](../design/SharingBridge_End_to_End_Workflow.md), [Technical Architecture](../design/SharingBridge_Technical_Architecture.md) (Hybrid AI Strategy)
 
 ---
@@ -11,11 +11,11 @@
 
 | Capability | Shipped in code? | Where |
 |------------|-----------------|--------|
-| Donor setup vendor suggestions | **Mock only** | `sharingbridge-integration-service` → `suggestVendors.js` (fixed JSON, no LLM) |
-| Delivery instruction pack | **Mobile stub only** | `requestStubDeliveryInstructions` + `buildDeliveryInstructionsStub` |
+| Donor setup vendor suggestions | **Orchestration when flagged** | integration → ai-orchestration (deterministic ranking); mock fallback |
+| Delivery instruction pack | **API + fallback** | `POST /v1/donor-seeker/instruction-pack`; mobile stub if unreachable |
 | Locality safety scoring | **Not built** | Planned → `sharingbridge-location-safety` (README only) |
 | Photo upload, face embeddings, match | **Not built** | Planned → `sharingbridge-photo-service` (README only) |
-| LLM orchestration (LangChain or equivalent) | **Not documented or built** | This document |
+| LLM orchestration (LangChain or equivalent) | **Deterministic service built**; live LLM pending | `sharingbridge-ai-orchestration` |
 
 Mobile and backend **must not** call OpenAI/Anthropic (or similar) directly from the client. All model access goes through **backend AI modules** behind authenticated APIs.
 
@@ -280,13 +280,13 @@ Feature flag example: `AI_SUGGEST_VENDORS_ENABLED=true` in integration-service e
 
 ## Checklist: bootstrap AI platform (engineering)
 
-- [ ] Create `sharingbridge-ai-orchestration` repo (FastAPI + LangChain + Dockerfile)
+- [x] Create `sharingbridge-ai-orchestration` repo (FastAPI deterministic MVP + Dockerfile)
 - [ ] Deploy to Render/Railway; set model API keys in dashboard
-- [ ] Add `AI_ORCHESTRATION_BASE_URL` to integration-service
-- [ ] Implement internal client in integration-service with timeout + typed errors
-- [ ] Replace `buildSuggestVendorsResponse` mock path behind feature flag
-- [ ] Implement `POST /v1/donor-seeker/instruction-pack` calling orchestration
-- [ ] Update mobile: HTTP client for instruction-pack (remove stub default in prod builds)
+- [x] Add `AI_ORCHESTRATION_BASE_URL` to integration-service
+- [x] Implement internal client in integration-service with timeout + typed errors
+- [x] Replace `buildSuggestVendorsResponse` mock path behind feature flag
+- [x] Implement `POST /v1/donor-seeker/instruction-pack` calling orchestration
+- [x] Update mobile: HTTP client for instruction-pack (local stub fallback when API down)
 - [ ] Deploy location-safety and photo-service; wire IMPLEMENTATION_APPROACH phases A–D
 - [ ] Add LangSmith project for dev tracing (optional)
 - [ ] Document smoke steps in `testing/MANUAL_TESTING_GUIDE.md` when phase 1 ships

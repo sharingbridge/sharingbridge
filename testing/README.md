@@ -8,9 +8,10 @@ system without reading code.
 
 - [`MANUAL_TESTING_GUIDE.md`](./MANUAL_TESTING_GUIDE.md) — step-by-step
   validation of shipped **donor-setup** modules (integration-service +
-  mobile) and **Offer food help** on mobile: automated
-  `flutter test` / `npm test`, manual API smoke, E2E donor setup, and
-  manual handoff steps on Windows desktop / Android emulator.
+  **ai-orchestration** deterministic MVP + mobile) and **Offer food help**
+  on mobile: automated `pytest` / `npm test` / `flutter test`, manual API
+  smoke (three-service stack), E2E donor setup, and manual handoff steps on
+  Windows desktop / Android emulator.
 
 ## Conventions
 
@@ -26,6 +27,7 @@ system without reading code.
 ## Related
 
 - Implementation status & runbook: [`../development/AGENT_HANDOFF.md`](../development/AGENT_HANDOFF.md)
-- API contract: [`../design/contracts/donor_setup_suggest_vendors.openapi.yaml`](../design/contracts/donor_setup_suggest_vendors.openapi.yaml)
+- API contracts: [`../design/contracts/donor_setup_suggest_vendors.openapi.yaml`](../design/contracts/donor_setup_suggest_vendors.openapi.yaml) (suggest-vendors)
+- AI platform: [`../development/AI_PLATFORM_INTEGRATION.md`](../development/AI_PLATFORM_INTEGRATION.md)
 - End-to-end product workflow (diagrams): [`../design/SharingBridge_End_to_End_Workflow.md`](../design/SharingBridge_End_to_End_Workflow.md)
 - Donor setup sequence: [`../design/Donor_Setup_AI_Search_Sequence.md`](../design/Donor_Setup_AI_Search_Sequence.md)

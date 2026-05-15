@@ -38,8 +38,10 @@ The **donor-setup slice** that is live in code is intentionally a **minimal MVP*
 
 ## Current Implementation Status
 
-### `sharingbridge-integration-service` (donor setup MVP shipped)
-- `POST /v1/donor-setup/suggest-vendors` — mock top-5 vendor/menu suggestions.
+### `sharingbridge-integration-service` (donor setup + AI bridge shipped)
+- `POST /v1/donor-setup/suggest-vendors` — mock top-5 by default; calls `sharingbridge-ai-orchestration` when `AI_SUGGEST_VENDORS_ENABLED` + `AI_ORCHESTRATION_BASE_URL` are set (falls back to mock on upstream failure).
+- `POST /v1/donor-seeker/instruction-pack` — delivery instruction narrative; calls orchestration when `AI_INSTRUCTION_PACK_ENABLED` (server-side fallback template otherwise).
+- `src/aiOrchestrationClient.js`, `src/instructionPack.js`, `.env.example` for local three-service stack.
 - `POST /v1/donor-setup/preferences` — save donor presets, `user_id` derived from auth headers.
 - `GET /v1/donor-setup/preferences` — fetch presets, header-derived `user_id` (legacy `?user_id=` still accepted).
 - File-backed preferences store (`src/preferencesStore.js`) accessed via a `PreferencesRepository` abstraction (`src/preferencesRepository.js`).
@@ -50,17 +52,17 @@ The **donor-setup slice** that is live in code is intentionally a **minimal MVP*
 - HTTP server is exposed as a factory (`createIntegrationServer`) so tests can boot it against a temp DB.
 - `DELETE /v1/donor-setup/preferences?user_id=…` clears all presets for the authed user (local store `clearForUser`; user-service mode uses `PUT` with `[]`). Mobile **Saved presets → Clear all** calls this and clears offline cache.
 - `POST /v1/donor-setup/preferences/delete-item` removes one preset by `(restaurant_name, order_url)`; user-service mode calls **`POST /v1/users/{id}/donor-presets/delete-item`** (no GET+PUT read-modify-write).
-- 40 tests, all green via `npm test`; `npm run backfill:user-service-presets` migrates `data/preferences.json` → user-service (see migration doc).
+- 42 tests, all green via `npm test`; `npm run backfill:user-service-presets` migrates `data/preferences.json` → user-service (see migration doc).
 
 ### `sharingbridge-mobile-app` (donor setup MVP shipped; Offer food help handoff)
 - **Home hub** (`lib/presentation/app_home_page.dart`): entry to **Donor setup** vs **Offer food help**.
-- **Donor–seeker interaction (`Offer food help`):** three steps shipped — **guidance** → **optional reference photo** + verbal notes → **instruction stub** → **Copy** + preset **Open …** deep links. **Planned (documented):** locality safety API, cloud photo upload + geo, full instruction-pack template, delivery acknowledgement, donor↔delivery photo match — see `development/IMPLEMENTATION_APPROACH.md` **AI interactions — donor–seeker field slice** and `MVP_BOOTSTRAP_ISSUES.md` §§3–4, 6, 8–9.
+- **Donor–seeker interaction (`Offer food help`):** three steps shipped — **guidance** → **optional reference photo** + verbal notes → **instruction-pack API** (`POST /v1/donor-seeker/instruction-pack` via integration; local stub fallback if API unreachable) → **Copy** + preset **Open …** deep links. **Planned (documented):** locality safety API, cloud photo upload + geo, live LLM (`AI_LLM_MODE=openai`), delivery acknowledgement, donor↔delivery photo match — see `development/IMPLEMENTATION_APPROACH.md` **AI interactions — donor–seeker field slice** and `MVP_BOOTSTRAP_ISSUES.md` §§3–4, 6, 8–9.
 - Donor setup screen wired to integration-service: search → suggestions → confirm-and-save.
 - Startup loads presets from server, with local `shared_preferences` fallback cache when the server is unreachable.
 - HTTP API client (`lib/features/donor_setup/data/http_donor_setup_api_client.dart`) supports request timeout, exponential-backoff retry, and typed exceptions (`DonorSetupNetworkException`, `DonorSetupTimeoutException`, `DonorSetupBadRequestException`, `DonorSetupServerException`, `DonorSetupResponseException`). Mutating saves do not retry on 5xx (no double-write).
 - UI surfaces friendly error messages per typed exception.
 - `AuthContext` (`lib/features/donor_setup/data/auth_context.dart`) sources `user_id` from `--dart-define=USER_ID=...` and signed token from `--dart-define=AUTH_TOKEN=...`, and sends only `Authorization: Bearer <token>`.
-- Donor Setup list shows **full `menu_items`** per suggestion (not only the first item); integration-service **suggest-vendors** mock is still **query-independent** (fixed venues/menus until real search ships).
+- Donor Setup list shows **full `menu_items`** per suggestion (not only the first item); **suggest-vendors** is query-ranked when orchestration flags are on, else fixed mock.
 - Donor Setup: suggestion rows include **Copy link**, **Open vendor page**, **Suggest again** (re-runs search); after **Confirm and Save** the full suggestion list stays visible (only checkboxes clear) and a **SnackBar** confirms save. App bar **Saved presets**: **Copy link** / **Open link**; per-row **Remove**; **Clear all** (`DELETE` + offline cache).
 - 34 tests, all green via `flutter test`.
 
@@ -72,7 +74,8 @@ The **donor-setup slice** that is live in code is intentionally a **minimal MVP*
   - auth handling aligned with integration-service semantics for 401 (`missing_auth_context`) and 403 (`user_id_mismatch`).
   - **37** Node tests green via `npm test` (HTTP roundtrips + preset validation/`UserStore` + `tokenService`/`authContext` unit coverage).
   - GitHub Actions CI: Node 20, `npm install`, `npm test` on push/PR; branch protection on `main` requires passing check **`test`** (alongside existing review/signature rules).
-- `sharingbridge-api-gateway`, `sharingbridge-order-service`, `sharingbridge-notification-service`, `sharingbridge-location-safety`, `sharingbridge-photo-service`, `sharingbridge-ai-orchestration` (planned), `sharingbridge-web-app`, `sharingbridge-infra`, `sharingbridge-deployment`: README only, no code yet. **AI technical setup (LangChain, model hosting, API bridges):** see `development/AI_PLATFORM_INTEGRATION.md` — not implemented; integration `suggest-vendors` is mock, mobile instruction path is stub.
+- `sharingbridge-ai-orchestration`: **deterministic MVP shipped** (FastAPI, internal `suggest-vendors` + `instruction-pack`, 3 pytest tests). Live OpenAI/LangChain path not wired (`AI_LLM_MODE=openai` documented only).
+- `sharingbridge-api-gateway`, `sharingbridge-order-service`, `sharingbridge-notification-service`, `sharingbridge-location-safety`, `sharingbridge-photo-service`, `sharingbridge-web-app`, `sharingbridge-infra`, `sharingbridge-deployment`: README only or not started. **Next AI slice:** location-safety + photo-service per `IMPLEMENTATION_APPROACH.md` phases A–D.
 
 ## Quick Runbook
 
@@ -128,7 +131,7 @@ Tasks #1-#5 are complete. Remaining priority order:
    - Run backfill + `PREFERENCES_BACKEND=user_service` in a staging environment; confirm donor-setup flows.
    - Remove `PreferencesStore` / `LocalPreferencesRepository` when no deployment needs local file mode.
 
-3. **AI platform + field slice.** Bootstrap `sharingbridge-ai-orchestration` (LangChain on Render/Railway) and wire integration-service per `development/AI_PLATFORM_INTEGRATION.md` §10. Then execute IMPLEMENTATION_APPROACH phases A–D (safety, photo, instruction-pack API, delivery match).
+3. **AI platform + field slice.** Orchestration bridge + instruction-pack API are shipped (deterministic). Next: deploy orchestration to Render/Railway, optional `AI_LLM_MODE=openai`, then IMPLEMENTATION_APPROACH phases A–D (safety, photo upload, delivery match).
 
 ## Follow-ups Surfaced in Prior Sessions
 - Backfill tooling: `sharingbridge-integration-service` → `npm run backfill:user-service-presets` (documented in `development/USER_SERVICE_PREFERENCES_MIGRATION.md`).

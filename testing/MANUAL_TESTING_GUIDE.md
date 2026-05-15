@@ -2,9 +2,9 @@
 
 This guide walks through how to verify the donor-setup modules and the
 **Offer food help (donor–seeker handoff)** slice that have shipped across
-`sharingbridge-integration-service` and `sharingbridge-mobile-app`. It
-pairs **automated test suites** with **manual API smoke tests** and
-**end-to-end** flows on the mobile app.
+`sharingbridge-integration-service`, `sharingbridge-ai-orchestration`, and
+`sharingbridge-mobile-app`. It pairs **automated test suites** with
+**manual API smoke tests** and **end-to-end** flows on the mobile app.
 
 All commands assume **PowerShell on Windows**. Translate to bash as
 needed.
@@ -15,7 +15,8 @@ needed.
 
 | # | Module | Where it lives |
 |---|--------|----------------|
-| 1 | Donor setup `suggest-vendors` (mock top-5) | `sharingbridge-integration-service/src/server.js`, `src/suggestVendors.js` |
+| 1 | Donor setup `suggest-vendors` (mock or orchestration) | `sharingbridge-integration-service`, `sharingbridge-ai-orchestration` |
+| 1b | Donor–seeker `instruction-pack` | `sharingbridge-integration-service` → `sharingbridge-ai-orchestration` |
 | 2 | Preferences save/fetch HTTP API | `sharingbridge-integration-service/src/server.js`, `src/preferencesStore.js` |
 | 3 | Preferences repository boundary toward user-service | `sharingbridge-integration-service/src/preferencesRepository.js` |
 | 4 | Signed-token auth context (JWT Bearer) | `sharingbridge-integration-service/src/authContext.js`, `src/tokenService.js` |
@@ -23,20 +24,22 @@ needed.
 | 6 | Mobile HTTP client (timeout, retry, typed errors, auth headers) | `sharingbridge-mobile-app/lib/features/donor_setup/data/http_donor_setup_api_client.dart` |
 | 7 | Mobile auth context | `sharingbridge-mobile-app/lib/features/donor_setup/data/auth_context.dart` |
 | 8 | Mobile cache fallback (`shared_preferences`) | `sharingbridge-mobile-app/lib/features/donor_setup/presentation/pages/donor_setup_page.dart` |
-| 9 | Mobile home hub + **Offer food help** (3 steps: guidance → optional reference photo + **Get AI delivery instructions** (stub) → copy + vendor deep links) | `sharingbridge-mobile-app/lib/presentation/app_home_page.dart`, `lib/features/donor_seeker_interaction/**` |
+| 9 | Mobile home hub + **Offer food help** (3 steps: guidance → optional reference photo + **Get AI delivery instructions** (API with local fallback) → copy + vendor deep links) | `sharingbridge-mobile-app/lib/presentation/app_home_page.dart`, `lib/features/donor_seeker_interaction/**` |
 
 ## Prerequisites
 
 - Node.js 20+ on `PATH`.
 - Flutter 3.16+ on `PATH` (and a target device — Windows desktop, web,
   or an Android emulator at minimum).
-- Both repos cloned alongside this one:
+- Service repos cloned alongside this one:
+  - `D:\kannan\sharingbridge\sharingbridge-ai-orchestration`
   - `D:\kannan\sharingbridge\sharingbridge-integration-service`
   - `D:\kannan\sharingbridge\sharingbridge-mobile-app`
 - User service cloned and runnable for token minting:
   - `D:\kannan\sharingbridge\sharingbridge-user-service`
-- Port `8080` free locally.
-- Port `8081` free locally.
+- Port `8080` free locally (integration-service).
+- Port `8081` free locally (user-service).
+- Port `8091` free locally (ai-orchestration).
 
 ### Auth signing secret (`AUTH_TOKEN_SECRET`)
 
@@ -60,7 +63,7 @@ Tokens are signed and verified with that **symmetric** secret (`AUTH_TOKEN_SECRE
 
 ## 1. Automated test suites
 
-### 1a. Integration service (Node.js, currently 40 tests)
+### 1a. Integration service (Node.js, currently 42 tests)
 
 ```powershell
 cd D:\kannan\sharingbridge\sharingbridge-integration-service
@@ -79,6 +82,7 @@ Coverage at a glance:
 | `test/authContextRoundtrip.test.js` | signed-token flow, mismatch and missing-token guards (`403`/`401`), **`DELETE` without token → `401`** |
 | `test/userServicePreferencesRoundtrip.test.js` | integration-service → user-service backend path roundtrip, **`POST …/delete-item`** through stub user-service, upstream 403 surfacing |
 | `test/backfill-presets.test.js` | normalizing `PreferencesStore` rows for user-service backfill |
+| `test/orchestrationRoutes.test.js` | feature-flag wiring to mock orchestration HTTP (`suggest-vendors`, `instruction-pack`) |
 
 Each roundtrip test boots a real `http.Server` on port 0 against a
 temp-dir `PreferencesStore`, so the HTTP wiring under test is the same
@@ -87,9 +91,30 @@ code that runs in `npm start`.
 Expected output footer:
 
 ```
-# tests 40
-# pass 40
+# tests 42
+# pass 42
 # fail 0
+```
+
+### 1d. AI orchestration service (Python, currently 3 tests)
+
+```powershell
+cd D:\kannan\sharingbridge\sharingbridge-ai-orchestration
+python -m pip install -r requirements.txt   # first time only
+python -m pytest -q
+```
+
+| Test file | What it asserts |
+|-----------|-----------------|
+| `tests/test_orchestration.py` | `/health`, query-ranked `suggest-vendors`, `instruction-pack` includes verbal notes and presets |
+
+Expected last line: `3 passed`. CI uses Python 3.10+; local dev works on Python 3.7+ with pinned deps in `requirements.txt`.
+
+Run the API:
+
+```powershell
+$env:PORT = "8091"
+uvicorn app.main:app --host 0.0.0.0 --port 8091
 ```
 
 ### 1b. Mobile app (Flutter, currently 34 tests)
@@ -144,6 +169,14 @@ Expected output footer:
 
 ## 2. Manual API smoke tests
 
+### Three-service stack (recommended for AI paths)
+
+| Terminal | Service | Port |
+|----------|---------|------|
+| 1 | `sharingbridge-ai-orchestration` (`uvicorn … --port 8091`) | 8091 |
+| 2 | `sharingbridge-user-service` (`npm start`) | 8081 |
+| 3 | `sharingbridge-integration-service` with AI env (see §2a.1) | 8080 |
+
 Start user-service in one PowerShell window:
 
 ```powershell
@@ -153,15 +186,37 @@ npm start
 # User service listening on 8081
 ```
 
-Start integration-service in a second PowerShell window:
+Start ai-orchestration in a second PowerShell window (for deterministic AI):
+
+```powershell
+cd D:\kannan\sharingbridge\sharingbridge-ai-orchestration
+python -m pip install -r requirements.txt   # first time only
+$env:PORT = "8091"
+uvicorn app.main:app --host 0.0.0.0 --port 8091
+```
+
+Start integration-service in a third PowerShell window:
 
 ```powershell
 cd D:\kannan\sharingbridge\sharingbridge-integration-service
+$env:AI_ORCHESTRATION_BASE_URL = "http://localhost:8091"
+$env:AI_SUGGEST_VENDORS_ENABLED = "true"
+$env:AI_INSTRUCTION_PACK_ENABLED = "true"
 npm start
 # Integration service listening on 8080
 ```
 
-In a third window, drive the API.
+#### 2a.1 Integration AI env (copy from `.env.example`)
+
+| Variable | Example |
+|----------|---------|
+| `AI_ORCHESTRATION_BASE_URL` | `http://localhost:8091` |
+| `AI_SUGGEST_VENDORS_ENABLED` | `true` |
+| `AI_INSTRUCTION_PACK_ENABLED` | `true` |
+
+Without these flags, `suggest-vendors` uses the fixed mock list and `instruction-pack` uses integration’s server-side fallback template.
+
+In a fourth window, drive the API.
 
 First, mint a signed token from user-service (required for all preferences endpoints):
 
@@ -202,7 +257,7 @@ Invoke-RestMethod -Method Post -Uri http://localhost:8080/v1/donor-setup/suggest
   -ContentType application/json -Body $body
 ```
 
-Expect a `suggestions` array (≤ 5 entries) plus `generated_at`.
+Expect a `suggestions` array (≤ 5 entries) plus `generated_at`. With orchestration enabled, `source` is `orchestration` (or `deterministic` from the orchestration service) and **Swiggy/Zomato-heavy queries reorder** the list; with flags off, `source` is `mock` and results are fixed.
 
 ### 2c. Save presets via signed Bearer token (auth required)
 
@@ -331,9 +386,40 @@ Remove-Item Env:USER_SERVICE_BASE_URL
 npm start
 ```
 
+### 2i. Instruction pack (integration → orchestration)
+
+No bearer required for MVP (optional `user_id` in body). Orchestration flags should be on (§2a.1).
+
+```powershell
+$packBody = @{
+  user_id = "alice"
+  verbal_handover_notes = "Blue gate, ask for Raj"
+  has_reference_photo = $true
+  presets = @(
+    @{
+      restaurant_name = "A2B"
+      menu_items = @("Mini Meals")
+      app_name = "Zomato"
+      order_url = "https://www.zomato.com/chennai/a2b/order"
+    }
+  )
+} | ConvertTo-Json -Depth 5
+
+Invoke-RestMethod -Method Post -Uri http://localhost:8080/v1/donor-seeker/instruction-pack `
+  -ContentType application/json -Body $packBody
+```
+
+Expect HTTP 200, non-empty `delivery_instructions`, `pack_id`, and `source` of `orchestration` (or `deterministic` from upstream). Your handover notes and preset names should appear in the text.
+
+Direct orchestration health (optional):
+
+```powershell
+Invoke-RestMethod http://localhost:8091/health
+```
+
 ## 3. End-to-end with the mobile app
 
-Keep integration-service on `localhost:8080` and user-service on `localhost:8081`, then mint a token and run Flutter:
+Keep **ai-orchestration** on `8091`, integration-service on `8080`, and user-service on `8081` (with AI env vars from §2a.1), then mint a token and run Flutter:
 
 ```powershell
 $mobileToken = (Invoke-RestMethod -Method Post -Uri http://localhost:8081/v1/auth/token `
@@ -361,7 +447,7 @@ The mobile client now sends only `Authorization: Bearer <AUTH_TOKEN>`.
 
 1. App opens to the **SharingBridge** home hub with **Donor setup** and **Offer food help**. Tap **Donor setup** to open **Donor Setup** (same flow as before hub shipped). Because step 2c saved presets for
    `alice`, the page shows status "Loaded saved presets from server."
-2. Type something like `zomato a2b mini meals` → tap **Suggest Vendors** (or **Suggest again** to re-fetch with the same query). The mock backend returns the **same fixed** suggestions every time (it does **not** personalize by `query_text`); each row shows the **full** menu line, **Copy link**, and **Open vendor page** when the URL is `http`/`https`. Auth-protected endpoints carry `Authorization: Bearer <signed token>`.
+2. Type something like `zomato a2b mini meals` → tap **Suggest Vendors** (or **Suggest again**). With **orchestration enabled** (§2a.1), rankings change with query keywords; with flags off, the list is the **same fixed mock** every time. Each row shows the **full** menu line, **Copy link**, and **Open vendor page** when the URL is `http`/`https`. Auth-protected endpoints carry `Authorization: Bearer <signed token>`.
 3. Check one or more suggestions → tap **Confirm and Save Presets**.
    A **SnackBar** and green status show "Presets saved successfully." The **full suggestion list stays on screen** (only checkboxes clear) so you can save another subset or open **Saved presets** without losing unselected rows. Server state still updates (dedupe on save as before).
 4. **Cache fallback path**: stop the backend (Ctrl+C in step 2's
@@ -380,14 +466,14 @@ Uses the same authed **`GET …/preferences`** load as Donor Setup (saved preset
 
 1. From the home hub, tap **Offer food help**.
 2. **Step 1 — Guidance:** read dignity and **photo consent** text, then tap **Continue to photo and instructions**.
-3. **Step 2 — Photo and AI:** optionally tap **Add reference photo** (camera or gallery; requires OS permission the first time). Optionally fill **Handover notes**. Tap **Get AI delivery instructions** — today this runs a **local stub** with a short delay (replace with a real API when wired). Use the app bar **Back** arrow to return to guidance and clear the photo/notes for this session.
+3. **Step 2 — Photo and AI:** optionally tap **Add reference photo** (camera or gallery; requires OS permission the first time). Optionally fill **Handover notes**. Tap **Get AI delivery instructions** — the app calls `POST /v1/donor-seeker/instruction-pack` on integration-service (orchestration when enabled). If integration is unreachable, the app falls back to a **local stub**. Use the app bar **Back** arrow to return to guidance and clear the photo/notes for this session.
 4. **Step 3 — Paste in vendor app:** review the text in the filled card, tap **Copy instructions** (SnackBar confirms copy), then **Open …** rows unlock for each saved preset with a valid **http/https** link. Paste into the vendor app’s delivery-notes field.
 
 If presets fail to load (offline/server), you can still generate stub copy; **Open …** stays disabled when there is no valid link.
 
 ### 3d. Why Suggest Vendors and Saved presets can both look “static”
 
-- **Suggest Vendors** always hits the **same mock** (`POST /v1/donor-setup/suggest-vendors`): three fixed venues. That is expected until real search/AI replaces the mock.
+- **Suggest Vendors** uses `POST /v1/donor-setup/suggest-vendors`. With **`AI_SUGGEST_VENDORS_ENABLED`** and orchestration running, results are **query-ranked**; without those env vars, the integration service returns a **fixed mock** (three venues). That is expected until a live LLM provider is enabled.
 - **Saved presets** reflects **`GET …/preferences`**. After **Confirm and Save** on Donor Setup, the **suggestion** list is still the mock search result until you run **Suggest Vendors** again; use **Saved presets** to see persisted rows only.
 - **Clear cache / Sign out** on Donor Setup only clears the **phone’s offline cache** (`shared_preferences`). It does **not** delete presets on the server, so **Saved presets** will still show server rows after a refresh.
 
@@ -455,7 +541,8 @@ Earlier MVP builds stored a field draft under `sharingbridge_field_interaction_d
 
 ## 5. What "good" looks like (acceptance summary)
 
-- `npm test` in `sharingbridge-integration-service` reports `# pass 40 / # fail 0`.
+- `python -m pytest -q` in `sharingbridge-ai-orchestration` reports `3 passed`.
+- `npm test` in `sharingbridge-integration-service` reports `# pass 42 / # fail 0`.
 - `npm test` in `sharingbridge-user-service` reports `# pass 37 / # fail 0`.
 - `flutter test` in `sharingbridge-mobile-app` ends with `All tests passed!` (**34 tests**).
 - `Invoke-RestMethod http://localhost:8080/health` returns `ok=True`.
@@ -468,4 +555,5 @@ Earlier MVP builds stored a field draft under `sharingbridge_field_interaction_d
 - Step 3c shows the mobile UI loading server presets on cold start,
   saving new picks (full mock list remains after save; **Saved presets** shows server truth),
   and falling back to the local cache when the backend is offline.
-- Step **3f** walks **Offer food help** (guidance → photo/notes + AI stub → copy + vendor links).
+- Step **2i** returns a non-empty `delivery_instructions` string when orchestration is enabled.
+- Step **3f** walks **Offer food help** (guidance → photo/notes + instruction-pack API or fallback → copy + vendor links).

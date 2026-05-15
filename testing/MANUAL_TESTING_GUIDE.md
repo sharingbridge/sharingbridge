@@ -98,9 +98,13 @@ Expected output footer:
 
 ### 1d. AI orchestration service (Python, currently 3 tests)
 
+Use a **project venv** (avoids Anaconda `WinError 5` when pip tries to upgrade global `pytest`):
+
 ```powershell
 cd D:\kannan\sharingbridge\sharingbridge-ai-orchestration
-python -m pip install -r requirements.txt   # first time only
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+pip install -r requirements.txt
 python -m pytest -q
 ```
 
@@ -110,12 +114,14 @@ python -m pytest -q
 
 Expected last line: `3 passed`. CI uses Python 3.10+; local dev works on Python 3.7+ with pinned deps in `requirements.txt`.
 
-Run the API:
+Run the API (venv activated):
 
 ```powershell
 $env:PORT = "8091"
 uvicorn app.main:app --host 0.0.0.0 --port 8091
 ```
+
+If pip prints red errors but you still see `Uvicorn running on http://0.0.0.0:8091`, the server is up — confirm with `Invoke-RestMethod http://127.0.0.1:8091/health`.
 
 ### 1b. Mobile app (Flutter, currently 34 tests)
 
@@ -190,7 +196,9 @@ Start ai-orchestration in a second PowerShell window (for deterministic AI):
 
 ```powershell
 cd D:\kannan\sharingbridge\sharingbridge-ai-orchestration
-python -m pip install -r requirements.txt   # first time only
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+pip install -r requirements.txt   # first time only
 $env:PORT = "8091"
 uvicorn app.main:app --host 0.0.0.0 --port 8091
 ```

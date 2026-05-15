@@ -145,7 +145,7 @@ Maps BRD steps **3–11** to four AI-related capabilities. **Shipped today (mobi
 
 | Capability | Primary repo | Notes |
 |------------|--------------|--------|
-| Locality safety scoring | `sharingbridge-ai-safety` | Rule-based MVP (maps/places/daylight/history); see Week 7 below |
+| Locality safety scoring | `sharingbridge-location-safety` | Rule-based MVP (maps/places/daylight/history); see Week 7 below |
 | Reference + delivery photos, embeddings, match | `sharingbridge-photo-service` | Upload, face detection, donor↔delivery verification |
 | Instruction-pack assembly + secure links | `sharingbridge-integration-service` | Owns final vendor-facing text and TTL links |
 | Order intent, safety gate state, acknowledgement | `sharingbridge-order-service` | Persists interaction context and timeline |
@@ -216,7 +216,7 @@ Delivery instruction: Please proceed to <geo_coordinates>. Identify the seeker u
 
 | Phase | Scope | Repos |
 |-------|--------|-------|
-| **A — Capture & gates** | Safety API in field flow; photo upload + geo metadata | mobile, ai-safety, photo-service, order-service |
+| **A — Capture & gates** | Safety API in field flow; photo upload + geo metadata | mobile, location-safety, photo-service, order-service |
 | **B — Instruction API** | Instruction-pack endpoint + template; mobile client | integration-service, mobile |
 | **C — Handoff** | Copy + preset deep links (enhance text from API) | mobile (mostly done) |
 | **D — Verification** | Delivery acknowledgement UX, match job, notifications | photo-service, order-service, notification-service, web-app |
@@ -542,7 +542,7 @@ await admin.messaging().send({
 
 ---
 
-### **Week 7: AI Safety Assessment Service**
+### **Week 7: Location Safety Assessment Service**
 
 **Approach:** Rule-Based API Integration (No ML Training)
 

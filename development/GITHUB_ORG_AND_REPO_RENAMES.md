@@ -37,7 +37,7 @@ Use these names on GitHub and in local clone folders so `origin` URLs stay predi
 | API gateway | `sharingbridge-api-gateway` |
 | Order service | `sharingbridge-order-service` |
 | Notifications | `sharingbridge-notification-service` |
-| AI safety | `sharingbridge-ai-safety` |
+| Location safety (rule-based geo; not LLM) | `sharingbridge-location-safety` |
 | Photo service | `sharingbridge-photo-service` |
 | Infra | `sharingbridge-infra` |
 | Deployment | `sharingbridge-deployment` |
@@ -102,7 +102,30 @@ Get-ChildItem $root -Directory | Where-Object { $_.Name -match "^$legacy" } | Fo
 
 Then reopen the workspace. If you already ran §3 with the prefix mapping, **`origin` is usually still correct** after renames.
 
-## 5. Follow-up elsewhere
+## 5. Rename `sharingbridge-ai-safety` → `sharingbridge-location-safety`
+
+The old slug implied LLM/“AI stack”; the service is **rule-based locality safety** (maps, places, daylight, history). Renaming avoids confusion with `sharingbridge-ai-orchestration`.
+
+**On GitHub (you):** Repository **Settings → General → Repository name** → `sharingbridge-location-safety`. GitHub redirects the old URL for a while.
+
+**Local clone (after GitHub rename):**
+
+```powershell
+$root = "D:\kannan\sharingbridge"   # adjust
+$old = Join-Path $root "sharingbridge-ai-safety"
+$new = Join-Path $root "sharingbridge-location-safety"
+if (Test-Path $old) {
+  Rename-Item -LiteralPath $old -NewName "sharingbridge-location-safety"
+}
+if (Test-Path $new) {
+  git -C $new remote set-url origin https://github.com/sharingbridge/sharingbridge-location-safety.git
+  git -C $new fetch origin
+}
+```
+
+Coordination docs in `sharingbridge/sharingbridge` use the new slug only.
+
+## 6. Follow-up elsewhere
 
 - **CI / Actions**: any checkout URL or `GITHUB_REPOSITORY` assumptions.
 - **Docs and proposals**: update any remaining hard-coded GitHub URLs to `https://github.com/sharingbridge/...`.

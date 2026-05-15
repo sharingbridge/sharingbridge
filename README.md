@@ -55,7 +55,7 @@ This is the **master repository** for SharingBridge (GitHub: [`sharingbridge/sha
 - `sharingbridge-notification-service` - Notifications
 
 **AI/ML:**
-- `sharingbridge-ai-safety` - Location safety assessment
+- `sharingbridge-location-safety` - Location safety assessment (rule-based geo; not LLM)
 - `sharingbridge-photo-service` - Face detection and verification
 
 **Infrastructure:**
@@ -112,7 +112,7 @@ A facilitator platform that:
 Mobile/Web App → API Gateway → Microservices
                                     ├── User Service
                                     ├── Order Service
-                                    ├── AI Safety Service
+                                    ├── Location Safety Service
                                     ├── Photo Service
                                     ├── Integration Service
                                     └── Notification Service

@@ -76,8 +76,8 @@ Notes:
             ┌───────────────┼───────────────┐
             ▼               ▼               ▼
 ┌──────────────────┐ ┌─────────────┐ ┌─────────────┐
-│  Order Service   │ │ AI Safety   │ │   User      │
-│                  │ │  Service    │ │  Service    │
+│  Order Service   │ │  Location   │ │   User      │
+│                  │ │  Safety Svc │ │  Service    │
 └──────────────────┘ └─────────────┘ └─────────────┘
             │               │               │
             ▼               ▼               ▼
@@ -414,7 +414,7 @@ order_events
 
 ---
 
-### 3.3 AI Safety Service
+### 3.3 Location Safety Service (`sharingbridge-location-safety`)
 
 **Responsibilities:**
 - Location safety assessment

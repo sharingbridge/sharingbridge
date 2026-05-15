@@ -13,7 +13,7 @@
 |------------|-----------------|--------|
 | Donor setup vendor suggestions | **Mock only** | `sharingbridge-integration-service` → `suggestVendors.js` (fixed JSON, no LLM) |
 | Delivery instruction pack | **Mobile stub only** | `requestStubDeliveryInstructions` + `buildDeliveryInstructionsStub` |
-| Locality safety scoring | **Not built** | Planned → `sharingbridge-ai-safety` (README only) |
+| Locality safety scoring | **Not built** | Planned → `sharingbridge-location-safety` (README only) |
 | Photo upload, face embeddings, match | **Not built** | Planned → `sharingbridge-photo-service` (README only) |
 | LLM orchestration (LangChain or equivalent) | **Not documented or built** | This document |
 
@@ -26,7 +26,7 @@ Mobile and backend **must not** call OpenAI/Anthropic (or similar) directly from
 | Topic | Covered in existing docs? |
 |-------|---------------------------|
 | *That* AI should generate instructions / descriptions | Yes — BRD step 6, Technical Architecture “Hybrid AI Strategy” |
-| Rule-based **safety** (maps, daylight, places) | Yes — IMPLEMENTATION_APPROACH Week 7, ai-safety bootstrap §8 |
+| Rule-based **safety** (maps, daylight, places) | Yes — IMPLEMENTATION_APPROACH Week 7, location-safety bootstrap §8 |
 | **Photo** storage + embeddings + match | Yes — photo-service bootstrap §9, architecture §3.3 |
 | **LangChain** (or similar) setup on a host | **No** — until this doc |
 | Prompt chains, structured JSON, retries, fallbacks | Partially — Donor Setup sequence assumes external AI; no runtime |
@@ -58,7 +58,7 @@ flowchart TB
 
   subgraph ai["AI modules"]
     AIO[sharingbridge-ai-orchestration\nLangChain / LangServe\nprompts + structured output]
-    SAF[sharingbridge-ai-safety\nrule-based locality scoring]
+    SAF[sharingbridge-location-safety\nrule-based locality scoring]
     PHO[sharingbridge-photo-service\nupload + embeddings + match]
   end
 
@@ -94,7 +94,7 @@ flowchart TB
 | Donor setup: vendor/menu suggestions | `POST /v1/donor-setup/suggest-vendors` (integration) | Orchestration chain | LLM + strict JSON schema; location in prompt |
 | Instruction pack + dignity filter | `POST /v1/donor-seeker/instruction-pack` (integration) | Orchestration chain | LLM + template merge; optional vision on reference photo |
 | Beneficiary verbal notes sanitization | Same | Orchestration sub-chain | LLM policy pass |
-| Locality safety | `POST /v1/safety/assess` (ai-safety) | **No LLM required** for MVP | Rule-based + Maps/Places APIs |
+| Locality safety | `POST /v1/safety/assess` (location-safety) | **No LLM required** for MVP | Rule-based + Maps/Places APIs |
 | Reference photo storage | `POST /v1/photos/upload` (photo-service) | Storage pipeline | S3/Cloudinary |
 | Face embedding + donor↔delivery match | photo-service + order events | CV pipeline | Embedding model (e.g. FaceNet-class); not necessarily LLM |
 | Assistance history hint (optional) | order / photo-service | Embedding similarity | Architecture §3.3 |
@@ -105,7 +105,7 @@ flowchart TB
 
 ## Proposed repo: `sharingbridge-ai-orchestration`
 
-New service (skeleton today: **does not exist**; add to org alongside ai-safety and photo-service).
+New service (skeleton today: **does not exist**; add to org alongside location-safety and photo-service).
 
 **Responsibilities:**
 
@@ -136,7 +136,7 @@ Align with [IMPLEMENTATION_APPROACH.md](./IMPLEMENTATION_APPROACH.md) free tier 
 | Deployable | Host | Notes |
 |------------|------|--------|
 | `sharingbridge-ai-orchestration` | Render / Railway web service | Python (FastAPI) + LangChain; `PORT`, health check |
-| `sharingbridge-ai-safety` | Same or separate service | Node or Python; maps API keys |
+| `sharingbridge-location-safety` | Same or separate service | Node or Python; maps API keys |
 | `sharingbridge-photo-service` | Same or separate service | Upload + embedding worker |
 | Model APIs | Vendor cloud | OpenAI / Anthropic / Azure OpenAI |
 | LangSmith (optional) | LangChain SaaS | Tracing, evals — dev/staging |
@@ -241,7 +241,7 @@ sequenceDiagram
 
 **Not in LangChain:**
 
-- Safety score (call ai-safety HTTP from integration before starting instruction chain).
+- Safety score (call location-safety HTTP from integration before starting instruction chain).
 - Face match (photo-service after delivery upload).
 
 ---
@@ -253,7 +253,7 @@ sequenceDiagram
 | **0** (today) | Mocks/stubs | — |
 | **1** | Deploy `ai-orchestration` skeleton + health; wire integration `suggest-vendors` to LLM behind feature flag | `MOCK_SUGGESTIONS` |
 | **2** | `instruction-pack` public API + mobile HTTP client | `requestStubDeliveryInstructions` |
-| **3** | Deploy ai-safety + photo-service; wire safety gate + upload | Local-only photo path |
+| **3** | Deploy location-safety + photo-service; wire safety gate + upload | Local-only photo path |
 | **4** | Vision in instruction chain; delivery match job | Placeholder faceprint lines |
 
 Feature flag example: `AI_SUGGEST_VENDORS_ENABLED=true` in integration-service env.
@@ -287,7 +287,7 @@ Feature flag example: `AI_SUGGEST_VENDORS_ENABLED=true` in integration-service e
 - [ ] Replace `buildSuggestVendorsResponse` mock path behind feature flag
 - [ ] Implement `POST /v1/donor-seeker/instruction-pack` calling orchestration
 - [ ] Update mobile: HTTP client for instruction-pack (remove stub default in prod builds)
-- [ ] Deploy ai-safety and photo-service; wire IMPLEMENTATION_APPROACH phases A–D
+- [ ] Deploy location-safety and photo-service; wire IMPLEMENTATION_APPROACH phases A–D
 - [ ] Add LangSmith project for dev tracing (optional)
 - [ ] Document smoke steps in `testing/MANUAL_TESTING_GUIDE.md` when phase 1 ships
 

@@ -9,7 +9,7 @@ This document provides copy-ready MVP bootstrap issue definitions for the core r
 - `sharingbridge-notification-service`
 - `sharingbridge-mobile-app`
 - `sharingbridge-web-app`
-- `sharingbridge-ai-safety`
+- `sharingbridge-location-safety`
 - `sharingbridge-photo-service`
 - `sharingbridge-ai-orchestration` (planned — LLM/LangChain; see `development/AI_PLATFORM_INTEGRATION.md`)
 
@@ -212,7 +212,7 @@ Each issue below should be closed only when all relevant items are demonstrably 
 
 ---
 
-## 8) `sharingbridge-ai-safety`
+## 8) `sharingbridge-location-safety`
 
 **Issue title:** `MVP Bootstrap: locality safety assessment API for field flow gate`
 
@@ -282,7 +282,7 @@ Each issue below should be closed only when all relevant items are demonstrably 
 1. `sharingbridge-user-service` + `sharingbridge-api-gateway` foundations
 2. `sharingbridge-order-service` core state machine and events
 3. `sharingbridge-ai-orchestration` skeleton + integration bridge (suggest-vendors behind flag)
-4. `sharingbridge-ai-safety` + `sharingbridge-photo-service` skeletons (parallel)
+4. `sharingbridge-location-safety` + `sharingbridge-photo-service` skeletons (parallel)
 5. `sharingbridge-integration-service` instruction-pack + vendor adapter skeleton (calls orchestration)
 6. `sharingbridge-notification-service` event subscribers and delivery channels
 7. `sharingbridge-mobile-app` AI interactions phases A–C, then D
@@ -292,7 +292,7 @@ Parallelization recommendation:
 
 - Backend foundation (`api-gateway`, `user`, `order`) in parallel with frontend shell setup (`mobile`, `web`)
 - `ai-orchestration` can start once integration-service has HTTP client scaffolding; wire `suggest-vendors` before instruction-pack
-- `ai-safety` and `photo-service` start once order intent schema includes safety + photo artifact fields
+- `location-safety` and `photo-service` start once order intent schema includes safety + photo artifact fields
 - Integration and notifications start once order events/contracts are stable
 
 ---

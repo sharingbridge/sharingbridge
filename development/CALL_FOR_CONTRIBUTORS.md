@@ -115,14 +115,14 @@ The easiest way to contribute is through **GitHub Discussions**:
 
 ### 🤖 AI / ML Contributors
 
-**Repositories:** `sharingbridge-ai-safety`, `sharingbridge-photo-service`
+**Repositories:** `sharingbridge-location-safety`, `sharingbridge-photo-service`
 
 **What We Need:**
 - **Computer Vision Specialists** → `sharingbridge-photo-service`
   - Face detection and beneficiary assistance history matching
   - Privacy-preserving photo verification
 
-- **Location Intelligence Engineers** → `sharingbridge-ai-safety`
+- **Location Intelligence Engineers** → `sharingbridge-location-safety`
   - Safety assessment models
   - Traffic density analysis
   - Real-time location validation
@@ -387,7 +387,7 @@ Each repository contains:
 - `sharingbridge-notification-service` - Push notifications and alerts
 
 **AI/ML Repositories:**
-- `sharingbridge-ai-safety` - Location safety assessment models
+- `sharingbridge-location-safety` - Location safety assessment models
 - `sharingbridge-photo-service` - Face detection and beneficiary assistance history matching
 
 **Infrastructure Repositories:**
@@ -430,7 +430,7 @@ Each repository contains:
 **Step 2: Pick Your Repository**
 - **Frontend Developer?** → Fork `sharingbridge-mobile-app` or `sharingbridge-web-app`
 - **Backend Engineer?** → Choose any service repo that interests you
-- **AI/ML Engineer?** → Fork `sharingbridge-ai-safety` or `sharingbridge-photo-service`
+- **AI/ML Engineer?** → Fork `sharingbridge-location-safety` or `sharingbridge-photo-service`
 - **DevOps?** → Fork `sharingbridge-infra` or `sharingbridge-deployment`
 - **Documentation?** → Contribute to README files in relevant service repos
 

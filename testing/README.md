@@ -27,4 +27,5 @@ system without reading code.
 
 - Implementation status & runbook: [`../development/AGENT_HANDOFF.md`](../development/AGENT_HANDOFF.md)
 - API contract: [`../design/contracts/donor_setup_suggest_vendors.openapi.yaml`](../design/contracts/donor_setup_suggest_vendors.openapi.yaml)
+- End-to-end product workflow (diagrams): [`../design/SharingBridge_End_to_End_Workflow.md`](../design/SharingBridge_End_to_End_Workflow.md)
 - Donor setup sequence: [`../design/Donor_Setup_AI_Search_Sequence.md`](../design/Donor_Setup_AI_Search_Sequence.md)

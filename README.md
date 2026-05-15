@@ -26,6 +26,7 @@ Product-level assumptions are maintained in one place: [SharingBridge_Business_R
 ## Documentation
 
 - [Business Requirements](requirements/SharingBridge_Business_Requirement.md) - Complete business case and benefits
+- [End-to-End Workflow (diagrams)](design/SharingBridge_End_to_End_Workflow.md) - Full journey steps 1–12 with Mermaid flows; shipped vs planned
 - [Technical Architecture](design/SharingBridge_Technical_Architecture.md) - Detailed technical design
 - [API Contracts](design/contracts/donor_setup_suggest_vendors.openapi.yaml) - Shared request/response contracts and examples
 - [Implementation Approach](development/IMPLEMENTATION_APPROACH.md) - Development strategy and free-tier options

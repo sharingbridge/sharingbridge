@@ -169,4 +169,4 @@ Tasks #1-#5 are complete. Remaining priority order:
 - `feat` (mobile): **Offer food help** — 3-step flow, optional `image_picker` reference photo, async `requestStubDeliveryInstructions` AI placeholder, `Card.filled` instruction area; `flutter test` **34**.
 - `docs`: **AI interactions — donor–seeker field slice** in `IMPLEMENTATION_APPROACH.md` (safety, deep links, instruction-pack template, photo match); `MVP_BOOTSTRAP_ISSUES.md` §§8–9 (`location-safety`, `photo-service`) and expanded §§3–4, 6 checklists.
 - `docs`: **AI platform integration** — `AI_PLATFORM_INTEGRATION.md` (LangChain orchestration, hosting, mobile/backend bridges); `MVP_BOOTSTRAP_ISSUES.md` §10 (`ai-orchestration`).
-- `docs`: Repo slug **`sharingbridge-location-safety`** (renamed from `sharingbridge-ai-safety`); see `GITHUB_ORG_AND_REPO_RENAMES.md` §5.
+- `docs`: Repo slug **`sharingbridge-location-safety`** (rule-based geo safety; not LLM).

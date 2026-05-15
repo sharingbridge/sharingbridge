@@ -463,7 +463,7 @@ Each repository contains:
 - 🔄 Development team formation (IN PROGRESS - **YOU!**)
 - ⏳ Frontend development (Q1 2026)
 - ⏳ Backend services (Q1 2026)
-- ⏳ AI safety module (Q1-Q2 2026)
+- ⏳ Location safety service (`sharingbridge-location-safety`, Q1–Q2 2026)
 - ⏳ Vendor integrations (Q2 2026)
 - ⏳ Beta testing (Q2-Q3 2026)
 - ⏳ Public launch (Q4 2026)

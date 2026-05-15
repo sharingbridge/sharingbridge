@@ -153,25 +153,22 @@ Notes:
 │  │  - Order State Machine (Created→Validated→Ordered→          │  │
 │  │    Confirmed→InTransit→Delivered→Completed)                 │  │
 │  │  - Order History & Tracking                                 │  │
-│  │  - Beneficiary Assistance History Logic                     │  │
+│  │  - Safety gate state on order intent                        │  │
 │  └─────────────────────────────────────────────────────────────┘  │
 │                                                                      │
 │  ┌─────────────────────────────────────────────────────────────┐  │
-│  │  AI SAFETY SERVICE                                          │  │
-│  │  - Location Safety Scoring                                  │  │
-│  │  - Traffic Analysis (Google Maps API integration)           │  │
-│  │  - Time-of-day Safety Assessment                            │  │
-│  │  - Historical Data Analysis                                 │  │
-│  │  - ML Model Inference                                       │  │
+│  │  LOCATION SAFETY SERVICE (sharingbridge-location-safety)  │  │
+│  │  - Rule-based locality scoring (maps/places/daylight)       │  │
+│  │  - Traffic & time-of-day factors                          │  │
+│  │  - Historical delivery success at location                  │  │
 │  └─────────────────────────────────────────────────────────────┘  │
 │                                                                      │
 │  ┌─────────────────────────────────────────────────────────────┐  │
-│  │  PHOTO SERVICE                                              │  │
+│  │  PHOTO SERVICE (sharingbridge-photo-service)                │  │
 │  │  - Image Upload & Validation                                │  │
-│  │  - Image Compression & Optimization                         │  │
 │  │  - Encrypted Storage (S3/Azure Blob)                        │  │
-│  │  - Auto-deletion Policy (GDPR compliance)                   │  │
-│  │  - Face Detection (optional privacy blur)                   │  │
+│  │  - Face embeddings; assistance history (informational)      │  │
+│  │  - Donor ↔ delivery photo match                           │  │
 │  └─────────────────────────────────────────────────────────────┘  │
 │                                                                      │
 │  ┌─────────────────────────────────────────────────────────────┐  │
@@ -417,16 +414,17 @@ order_events
 ### 3.3 Location Safety Service (`sharingbridge-location-safety`)
 
 **Responsibilities:**
-- Location safety assessment
-- ML model inference
-- Historical data analysis
-- Risk scoring
+- Locality safety assessment for a given lat/lng + timestamp (BRD step 4)
+- Rule-based weighted scoring from external geo/traffic APIs
+- Historical delivery success rate at location
+- Delivery feedback ingestion for scoring inputs
+- **Out of scope here:** face embeddings, assistance-history matching, LLM instruction text (see Photo Service and AI orchestration)
 
-**Technology Stack:**
-- Framework: Python (FastAPI)
-- ML Framework: TensorFlow/PyTorch
-- Model Serving: TensorFlow Serving / TorchServe
-- Database: PostgreSQL (historical data)
+**Technology Stack (MVP):**
+- Framework: Node.js or Python (FastAPI)
+- External APIs: Google Maps / Places / OpenWeather; daylight library (e.g. SunCalc)
+- Database: PostgreSQL + PostGIS for assessment history and aggregates
+- Optional at scale: custom ML models — not required for MVP
 
 **Safety Assessment Factors:**
 
@@ -453,16 +451,6 @@ order_events
    - Success/failure rate
    - Delivery crew feedback
 
-5. **Beneficiary Assistance History Review (Informational Only - Non-Blocking)**
-   - Compare current beneficiary photo and location against recent help records
-   - Location proximity matching (within configurable radius)
-   - Time window check (default: 2 hours - lenient for edge cases)
-   - Provide recent assistance status and donor-friendly context
-   - Returns: assistance probability score + recent help details + guidance for compassionate decisions
-   - Lenient thresholds to accommodate lighting, angle, and appearance variations
-   - **Important: NEVER blocks donations - only informs donors about recent assistance history**
-   - Donors retain final discretion and compassion remains central
-
 **Safety Score Calculation:**
 ```python
 safety_score = (
@@ -475,144 +463,12 @@ safety_score = (
 # Threshold: >= 0.65 to proceed
 ```
 
-**Beneficiary Assistance History Matching Algorithm:**
-```python
-import numpy as np
-from datetime import datetime, timedelta
-
-class BeneficiaryHistoryChecker:
-    ASSISTANCE_WINDOW_HOURS = 2  # Configurable
-    PROXIMITY_RADIUS_METERS = 150  # Increased for leniency
-    MATCH_THRESHOLD = 0.78  # For detecting possible matches
-    HIGH_CONFIDENCE_THRESHOLD = 0.85  # High confidence match
-    MEDIUM_CONFIDENCE_THRESHOLD = 0.78  # Medium confidence match
-    
-    async def check_history(self, photo, location, timestamp, donor_id=None):
-        # 1. Extract facial embedding from photo
-        face_embedding = await self.extract_face_embedding(photo)
-        
-        if face_embedding is None:
-            return {
-                'recent_assistance': False,
-                'confidence': 'low',
-                'message': 'No clear face detected',
-                'donor_message': 'ℹ️ Face not clearly detected in photo. You may still proceed with your donation.',
-                'show_to_donor': False
-            }
-        
-        # 2. Find recent assistance records in proximity
-        time_threshold = timestamp - timedelta(hours=self.ASSISTANCE_WINDOW_HOURS)
-        
-        recent_records = await BeneficiaryHistory.objects.filter(
-            timestamp__gte=time_threshold,
-            location__dwithin=(location, self.PROXIMITY_RADIUS_METERS)
-        ).all()
-        
-        # 3. Compare face embeddings with lenient matching
-        best_match = None
-        best_similarity = 0
-        
-        for record in recent_records:
-            similarity = self.cosine_similarity(
-                face_embedding, 
-                record.face_embedding
-            )
-            
-            if similarity > best_similarity:
-                best_similarity = similarity
-                best_match = record
-        
-        # 4. Process best match - provide informational context only
-        if best_match and best_similarity >= self.MATCH_THRESHOLD:
-            order_details = await Order.objects.get(id=best_match.order_id)
-            time_ago_minutes = (timestamp - best_match.timestamp).seconds // 60
-            distance_meters = self.calculate_distance(location, best_match.location)
-            
-            is_high_confidence = best_similarity >= self.HIGH_CONFIDENCE_THRESHOLD
-            
-            donor_message = self._build_donor_message(
-                order_details, time_ago_minutes, distance_meters, 
-                best_similarity
-            )
-            
-            return {
-                'recent_assistance': is_high_confidence,
-                'possible_assistance': best_similarity >= self.MATCH_THRESHOLD,
-                'confidence': 'high' if is_high_confidence else 'medium',
-                'match_score': best_similarity,
-                'previous_order': {
-                    'order_id': best_match.order_id,
-                    'status': order_details.status,
-                    'donation_type': order_details.donation_type,
-                    'timestamp': best_match.timestamp,
-                    'time_ago_minutes': time_ago_minutes,
-                    'distance_meters': distance_meters
-                },
-                'message': f'Possible recent assistance found - {time_ago_minutes} minutes ago',
-                'donor_message': donor_message,
-                'show_to_donor': True
-            }
-        
-        # 5. No recent assistance found
-        return {
-            'recent_assistance': False,
-            'possible_assistance': False,
-            'confidence': 'high',
-            'message': 'No recent assistance found for this beneficiary',
-            'donor_message': 'ℹ️ No recent donations found for this person in the area.',
-            'show_to_donor': False
-        }
-    
-    def _build_donor_message(self, order, time_ago, distance, similarity):
-        """Build human-friendly informational message for donor (non-blocking)"""
-        status_text = {
-            'pending': 'is being processed',
-            'confirmed': 'was confirmed',
-            'in_progress': 'is in delivery',
-            'completed': 'was successfully delivered',
-            'cancelled': 'was cancelled'
-        }.get(order.status, 'exists')
-        
-        type_text = {
-            'food': 'food',
-            'cloth': 'clothing',
-            'shelter': 'shelter',
-            'blanket': 'blanket(s)',
-            'mosquito_net': 'mosquito net',
-            'washroom_access': 'washroom access',
-            'miscellaneous': 'assistance'
-        }.get(order.donation_type, 'help')
-        
-        confidence_text = 'likely' if similarity >= 0.85 else 'possibly'
-        
-        # Informational message without blocking suggestions
-        message = f"ℹ️ **For Your Information**\n\n"
-        message += f"This person {confidence_text} received {type_text} {time_ago} minutes ago (~{distance}m away).\n"
-        message += f"Previous order {status_text}.\n\n"
-        message += f"💙 **You can still proceed with your donation.** This information is provided for context only. "
-        message += f"There may be legitimate reasons for multiple requests (different needs, family members, etc.)."
-        
-        return message
-    
-    def cosine_similarity(self, embedding1, embedding2):
-        return np.dot(embedding1, embedding2) / (
-            np.linalg.norm(embedding1) * np.linalg.norm(embedding2)
-        )
-    
-    async def extract_face_embedding(self, photo):
-        """Use face recognition model (e.g., FaceNet, DeepFace)"""
-        # Implementation using TensorFlow/PyTorch model
-        # Returns 128-dimensional embedding vector
-        pass
-```
-
 **API Endpoints:**
 ```
 POST   /api/v1/safety/assess             # Assess location safety
-POST   /api/v1/safety/check-beneficiary-history    # Check beneficiary assistance history (informational only)
-GET    /api/v1/safety/history/:location  # Get historical data
-POST   /api/v1/safety/feedback           # Submit delivery feedback
-GET    /api/v1/safety/metrics            # Get safety metrics
+GET    /api/v1/safety/history?lat=&lng=&radius=  # Historical assessments near point
+POST   /api/v1/safety/feedback           # Submit delivery feedback (feeds historical score)
+GET    /api/v1/safety/metrics            # Aggregate safety metrics
 ```
 
 **Data Model:**
@@ -628,7 +484,7 @@ safety_assessments
 ├── historical_score (DECIMAL)
 ├── final_score (DECIMAL)
 ├── passed (BOOLEAN)
-├── ml_model_version (VARCHAR)
+├── scoring_version (VARCHAR)              # Rule-set / config version, not ML model
 └── assessment_data (JSONB)
 
 delivery_feedback
@@ -644,34 +500,48 @@ delivery_feedback
 
 ---
 
-### 3.4 Photo Service
+### 3.4 Photo Service (`sharingbridge-photo-service`)
 
 **Responsibilities:**
 - Image upload and validation
 - Image processing and compression
-- Secure storage with encryption
-- Auto-deletion for privacy
+- Secure storage with encryption and time-limited signed URLs
+- Face embeddings (e.g. FaceNet/DeepFace-class models)
+- **Assistance history review** (informational, non-blocking) — photo + location vs recent records
+- **Donor reference vs delivery acknowledgement photo match**
+- Auto-deletion / retention for privacy
 
 **Technology Stack:**
 - Framework: Node.js or Python
-- Storage: AWS S3 / Azure Blob Storage
+- Storage: AWS S3 / Azure Blob / Cloudinary (MVP)
 - Image Processing: Sharp (Node.js) / Pillow (Python)
+- Embeddings: pre-trained CV models (not LLM)
 - CDN: CloudFront / Azure CDN
 
 **Features:**
 - Image validation (format, size, content type)
 - Compression (reduce file size while maintaining quality)
-- Optional face detection for privacy
-- Watermarking with order ID
+- Optional face detection / blur for privacy
+- Watermarking with order ID where supported
 - Encrypted storage at rest
-- Time-based auto-deletion (30 days default)
+- Time-based auto-deletion (policy-driven)
+
+**Assistance history review (informational only):**
+- Compare current beneficiary photo and location to recent help records (default window ~2 hours, proximity ~150m)
+- Return donor-friendly context; **never block** donation
+- Lenient similarity thresholds for lighting/angle variation
+
+**Donor ↔ delivery match:**
+- On delivery acknowledgement upload, compare embedding to donor reference photo; persist `match_score` / `match_passed` on order timeline (via order-service events)
 
 **API Endpoints:**
 ```
-POST   /api/v1/photos/upload             # Upload photo
-GET    /api/v1/photos/:id                # Get photo (signed URL)
-DELETE /api/v1/photos/:id                # Delete photo
-GET    /api/v1/photos/order/:orderId     # Get all photos for order
+POST   /api/v1/photos/upload                        # photo_type: seeker_reference | delivery_acknowledgement
+GET    /api/v1/photos/:id                           # Signed URL
+DELETE /api/v1/photos/:id
+GET    /api/v1/photos/order/:orderId
+POST   /api/v1/photos/check-beneficiary-history       # Informational assistance-history hint
+POST   /api/v1/orders/:id/verify-delivery-match     # Or async job via order events
 ```
 
 **Data Model:**
@@ -1792,7 +1662,7 @@ DELETE /api/v1/orders/:id
 Response: { success: true }
 ```
 
-#### **Safety APIs**
+#### **Location safety APIs** (`sharingbridge-location-safety`)
 
 ```
 POST /api/v1/safety/assess
@@ -1807,7 +1677,7 @@ GET /api/v1/safety/history?lat=&lng=&radius=500
 Response: { assessments[], average_score }
 ```
 
-#### **Photo APIs**
+#### **Photo APIs** (`sharingbridge-photo-service`)
 
 ```
 POST /api/v1/photos/upload
@@ -1816,6 +1686,10 @@ Response: { photo_id, url, expires_at }
 
 GET /api/v1/photos/:id
 Response: { signed_url, expires_in }
+
+POST /api/v1/photos/check-beneficiary-history
+Body: { photo_id, lat, lng, timestamp }
+Response: { recent_assistance, donor_message, show_to_donor, match_score? }  # informational only
 ```
 
 #### **User APIs**
@@ -2427,9 +2301,9 @@ Week 4: Production Readiness
 ## 8. AI/ML Pipeline
 [↑ Back to Table of Contents](#table-of-contents)
 
-### 8.1 Safety Assessment Model
+### 8.1 Location Safety Assessment (`sharingbridge-location-safety`)
 
-**Approach: Rule-Based Scoring with Existing APIs (No Custom ML Training Required)**
+**Approach: Rule-based scoring with existing geo APIs (no custom ML training required for MVP)**
 
 **Architecture:**
 ```
@@ -2451,10 +2325,13 @@ Threshold: >= 0.65 for approval
 # 7. Optional: Public crime data APIs (government open data)
 ```
 
-**Hybrid AI Strategy: Remote + Local LLM**
-- Primary model: remote AI service APIs to generate structured delivery instructions and beneficiary descriptions.
-- Optional local LLM/on-device inference: capture text descriptions at donor interaction and assist delivery personnel when connectivity is limited or privacy-sensitive.
-- Structured response payloads are expected to include fields such as `delivery_instructions`, `beneficiary_description`, `order_template`, `privacy_notes`, and `delivery_notes`.
+**LLM orchestration (`sharingbridge-ai-orchestration`) — separate from location safety:**
+- Remote (and optional on-device) LLMs generate structured delivery instructions and dignity-filtered beneficiary descriptions.
+- Structured payloads include `delivery_instructions`, `beneficiary_description`, `order_template`, `privacy_notes`, `delivery_notes`.
+- See `development/AI_PLATFORM_INTEGRATION.md`.
+
+**Photo / CV (`sharingbridge-photo-service`) — separate from location safety and LLM:**
+- Face embeddings for assistance-history hints and donor↔delivery match; not LangChain.
 
 **Implementation (Rule-Based Scoring):**
 ```python
@@ -3131,7 +3008,7 @@ CPU < 30% → Scale down (-1 pod)
 Min replicas: 2
 Max replicas: 10
 
-# AI Safety Service Auto-scaling
+# Location Safety Service Auto-scaling
 Queue depth > 100 → Scale up (+1 pod)
 Queue depth < 20 → Scale down (-1 pod)
 Min replicas: 1

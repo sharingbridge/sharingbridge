@@ -75,18 +75,21 @@ This section defines product constraints for volunteer-led, agile delivery.
 - User authentication & authorization
 - Order history and transaction logs
 
-**3. AI Safety Module**
-- Location safety assessment:
-  - Traffic density analysis
-  - Lighting conditions (time-of-day aware)
-  - Public vs isolated area detection
-  - Historical delivery success rate
-- Beneficiary assistance history:
-  - Facial recognition matching (AI-powered)
-  - Location proximity check (within 100m)
-  - Time-based filtering (configurable: default 2 hours)
-  - Inform donor if beneficiary recently received help
-- Delivery crew feedback integration
+**3. Location Safety Module** (`sharingbridge-location-safety`)
+- **Locality safety assessment** for the field handover (BRD step 4 — Quick Safety Check):
+  - Traffic density analysis (e.g. maps APIs)
+  - Lighting / time-of-day (daylight scoring)
+  - Public vs isolated area detection (e.g. places data)
+  - Historical delivery success rate at location
+- Delivery crew feedback integration (improves historical scoring)
+- **Rule-based MVP** — external geo APIs + weighted scoring (threshold ≥ 0.65); **not** an LLM service (see `sharingbridge-ai-orchestration` for language models)
+
+**3b. Photo & Verification Module** (`sharingbridge-photo-service`)
+- Encrypted photo storage (reference at donor interaction; delivery acknowledgement)
+- Face embeddings and computer-vision pipelines (not LLM):
+  - **Assistance history review** (informational, non-blocking): compare photo + location to recent help within configurable time/proximity; inform donor only — never block donation
+  - **Donor ↔ delivery photo match** at handover verification
+- Optional privacy controls (e.g. blur) where supported
 
 **4. Integration Layer**
 - External food delivery API connectors (Swiggy, Zomato, Uber Eats)
@@ -110,7 +113,7 @@ This section defines product constraints for volunteer-led, agile delivery.
 - Crowdfunding campaign coordination (contributor visibility and thresholds; settlement via providers/vendors)
 
 ### **Key Technical Features:**
-- **AI-powered safety checks** using external APIs (Google Maps, Places) with rule-based scoring
+- **Location safety checks** using external geo APIs (Google Maps, Places, OpenWeather) with rule-based scoring
 - **Multi-vendor integration** for wider coverage
 - **Photo verification** at both ends (order & delivery)
 - **Real-time notifications** for order status (push, in-app, email by default; SMS optional/future)
@@ -121,8 +124,9 @@ This section defines product constraints for volunteer-led, agile delivery.
 ### **Technology Stack (Proposed):**
 - **Mobile:** React Native / Flutter
 - **Backend:** Node.js / Python (Django/FastAPI)
-- **Safety Assessment:** API-based (Google Maps, Places, OpenWeather) with rule-based scoring; Custom ML optional at scale (5000+ orders/day)
-- **Face Recognition:** Pre-trained models (FaceNet/DeepFace) for beneficiary assistance history matching
+- **Location safety:** `sharingbridge-location-safety` — API-based (Maps, Places, OpenWeather) with rule-based scoring; custom ML optional at very high scale
+- **Photo / face pipelines:** `sharingbridge-photo-service` — embeddings (e.g. FaceNet/DeepFace class models) for assistance-history hints and delivery match
+- **LLM orchestration:** `sharingbridge-ai-orchestration` — instruction pack and donor-setup suggestions (see coordination `AI_PLATFORM_INTEGRATION.md`)
 - **Database:** PostgreSQL with PostGIS for location data
 - **Cloud:** AWS/Azure/GCP
 - **APIs:** Food delivery platform APIs, Logistics partner APIs (Dunzo/Porter/Shadowfax)

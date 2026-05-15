@@ -124,8 +124,7 @@ The backend/infrastructure phases below run in parallel with explicit frontend t
 
 **Weeks 3-6 (Core Flow):**
 - Donor setup screens with AI-assisted local vendor/menu suggestions (fixed prompt + structured JSON, donor confirm/edit before save)
-- Donor-seeker interaction flow: consent capture, early safety check trigger, beneficiary capture
-- AI instruction-pack display and one-tap copy for vendor delivery notes
+- Donor-seeker interaction flow per **AI interactions — donor–seeker field slice** (below): locality safety gate, reference photo + geo capture, instruction-pack from API, copy + preset deep links
 - External payment/deep-link redirect flow and return-state recovery
 
 **Weeks 7-10 (Reliability):**
@@ -137,6 +136,99 @@ The backend/infrastructure phases below run in parallel with explicit frontend t
 - Device compatibility testing (Android + iOS)
 - Beta distribution (TestFlight / internal Android track)
 - MVP release checklist and rollout playbook
+
+### AI interactions — donor–seeker field slice (planned)
+
+Maps BRD steps **3–11** to four AI-related capabilities. **Shipped today (mobile):** dignity/consent guidance → optional reference photo + verbal notes → local instruction **stub** → copy + open saved preset **http/https** URLs. **Not yet wired:** locality safety API, cloud photo upload, full instruction template, delivery acknowledgement, donor↔delivery photo match.
+
+**Service ownership**
+
+| Capability | Primary repo | Notes |
+|------------|--------------|--------|
+| Locality safety scoring | `sharingbridge-ai-safety` | Rule-based MVP (maps/places/daylight/history); see Week 7 below |
+| Reference + delivery photos, embeddings, match | `sharingbridge-photo-service` | Upload, face detection, donor↔delivery verification |
+| Instruction-pack assembly + secure links | `sharingbridge-integration-service` | Owns final vendor-facing text and TTL links |
+| Order intent, safety gate state, acknowledgement | `sharingbridge-order-service` | Persists interaction context and timeline |
+| Field UX | `sharingbridge-mobile-app` | Stopovers, permissions, copy/deep-link handoff |
+
+**Target mobile stopover sequence (Offer food help)**
+
+1. **Guidance** — Personal-details sensitivity; voluntary consent before any photo (current step 1).
+2. **Locality safety** — Capture GPS → `POST /v1/safety/assess` → show score/pass/fail; donor may defer or abort per policy (replaces removed multi-step self-check).
+3. **Reference capture** — Camera/gallery → upload → store `seeker_photo_url`, photo-capture coordinates, and human-readable “photo taken at” label.
+4. **Instruction generation** — Call integration instruction-pack API (replaces `requestStubDeliveryInstructions`).
+5. **Vendor handoff** — Review pack → copy → enable **Open …** on saved preset deep links (current step 3 pattern).
+6. **Delivery acknowledgement** (delivery role / secure link, post-order) — Delivery photo in-app or gallery → mark completed; triggers match job and donor notification.
+
+**1) Safety checks in the locality**
+
+- **API:** `POST /v1/safety/assess` with `{ lat, lng, timestamp }` → `{ safety_score, is_safe, breakdown }` (threshold ≥ 0.65 per architecture).
+- **Implementation:** Week 7 `SafetyAssessmentService` (traffic, daylight, place type, historical rate).
+- **Product:** Non-blocking informational mode vs hard gate is a policy decision; document chosen behavior in order-service state machine.
+- **Acceptance:** Field flow does not proceed to photo capture until safety call completes (success or explicit donor override if allowed).
+
+**2) Capturing deep links**
+
+- **Pre-field (shipped):** Donor Setup saves preset `order_url` values (http/https) per vendor/restaurant.
+- **Field use:** Offer food help loads presets via `GET …/preferences`; after copy, `launchUrl` opens the chosen preset.
+- **Growth:** Integration-service builds vendor-specific deep links with embedded secure instruction reference (`ExternalVendorService` / architecture §3.5); OAuth/deep-link skeleton tracked in `MVP_BOOTSTRAP_ISSUES.md` §4.
+- **Acceptance:** Donor completes vendor payment outside SharingBridge; no in-app checkout.
+
+**3) Delivery instruction pack (AI-generated)**
+
+Integration-service assembles a structured payload and a single **copy-paste block** for vendor delivery notes. Minimum fields:
+
+| Field | Source |
+|-------|--------|
+| `beneficiary_description` | AI from photo + donor verbal notes (dignity-filtered) |
+| `faceprint_detail` | Redacted descriptor or secure reference — **not** raw embedding in vendor-visible text; legal/privacy review before wording |
+| `photo_capture_location_label` | Reverse-geocode or donor-confirmed label at capture time |
+| `geo_coordinates` | Lat/lng at photo capture |
+| `secure_photo_url` | Time-limited cloud URL (`sharingbridge-photo-service` + TTL per secure-link policy) |
+| `donor_display_name`, `seeker_display_name` | Donor-entered, AI-sensitized where needed |
+| `delivery_instructions` | Full preformatted narrative (template below) |
+| `order_template` | Lines from saved presets (restaurant, app, menu summary) |
+
+**Preformatted narrative template (policy-owned; integration-service renders):**
+
+```
+This order is placed by a donor for a food seeker via SharingBridge (<website_url>).
+
+Reference photo (time-limited): <secure_photo_url>
+Seeker identification detail: <faceprint_detail_or_redacted_descriptor>
+Geolocation: <lat>, <lng> (<photo_capture_location_label>)
+
+Donor notes (AI-sensitized): <manual_instruction>
+
+Delivery instruction: Please proceed to <geo_coordinates>. Identify the seeker using the notes above and, where permitted, the reference photo at the secure link. Tell the seeker that <donor_name> placed this order for <seeker_name> and hand over the package. Request consent before taking a delivery photo. Complete acknowledgement in SharingBridge (in-app or gallery upload) and mark delivery as completed.
+```
+
+**API (proposed):** `POST /v1/donor-seeker/instruction-pack` — inputs: order intent id, photo artifact id, coordinates, verbal notes, preset ids; outputs: fields above + `delivery_instructions` string. Mobile replaces stub when contract is stable.
+
+**4) Match donor reference photo and delivery acknowledgement photo**
+
+- **Distinct from** beneficiary **assistance history** matching (informational, non-blocking, ~2h window) in architecture §3.3.
+- **New pipeline:** On delivery acknowledgement upload, `sharingbridge-photo-service` compares embedding from donor reference vs delivery photo; persist `match_score`, `match_passed`, optional `needs_review` on order timeline.
+- **APIs:** `POST /v1/photos/upload` (typed: `seeker_reference` | `delivery_acknowledgement`); `POST /v1/orders/:id/verify-delivery-match` or async job via order events.
+- **Acceptance:** Donor notification (step 11) includes completion status; web ops can see match outcome without exposing raw biometric payloads in notifications.
+
+**Phased delivery plan**
+
+| Phase | Scope | Repos |
+|-------|--------|-------|
+| **A — Capture & gates** | Safety API in field flow; photo upload + geo metadata | mobile, ai-safety, photo-service, order-service |
+| **B — Instruction API** | Instruction-pack endpoint + template; mobile client | integration-service, mobile |
+| **C — Handoff** | Copy + preset deep links (enhance text from API) | mobile (mostly done) |
+| **D — Verification** | Delivery acknowledgement UX, match job, notifications | photo-service, order-service, notification-service, web-app |
+
+**Privacy checkpoints (before production copy in vendor apps)**
+
+- Consent required before reference photo; offer verbal-only path.
+- Minimize biometric data in paste text; prefer secure link for photo access.
+- TTL: secure links active until delivery completion + 30 minutes (architecture default).
+- Align “faceprint” language with counsel; store embeddings server-side only.
+
+See `development/MVP_BOOTSTRAP_ISSUES.md` §§3–4, 6, 8–9 for repo-level checklists.
 
 ### Web App Workstream (`sharingbridge-web-app`)
 

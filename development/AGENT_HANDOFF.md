@@ -54,7 +54,7 @@ The **donor-setup slice** that is live in code is intentionally a **minimal MVP*
 
 ### `sharingbridge-mobile-app` (donor setup MVP shipped; Offer food help handoff)
 - **Home hub** (`lib/presentation/app_home_page.dart`): entry to **Donor setup** vs **Offer food help**.
-- **Donor–seeker interaction (`Offer food help`):** three steps — **guidance** → **optional reference photo** (`image_picker` camera/gallery) plus verbal notes, then **Get AI delivery instructions** (`requestStubDeliveryInstructions` simulates API latency; `buildDeliveryInstructionsStub` for text) → **Card.filled** result, **Copy instructions**, then per-preset **Open …** via `launchUrl` on **http/https** `order_url`. Inject `deliveryInstructionsRequest` / `referencePhotoPick` for tests. Next: real vision + instruction HTTP API, upload pipeline for reference images.
+- **Donor–seeker interaction (`Offer food help`):** three steps shipped — **guidance** → **optional reference photo** + verbal notes → **instruction stub** → **Copy** + preset **Open …** deep links. **Planned (documented):** locality safety API, cloud photo upload + geo, full instruction-pack template, delivery acknowledgement, donor↔delivery photo match — see `development/IMPLEMENTATION_APPROACH.md` **AI interactions — donor–seeker field slice** and `MVP_BOOTSTRAP_ISSUES.md` §§3–4, 6, 8–9.
 - Donor setup screen wired to integration-service: search → suggestions → confirm-and-save.
 - Startup loads presets from server, with local `shared_preferences` fallback cache when the server is unreachable.
 - HTTP API client (`lib/features/donor_setup/data/http_donor_setup_api_client.dart`) supports request timeout, exponential-backoff retry, and typed exceptions (`DonorSetupNetworkException`, `DonorSetupTimeoutException`, `DonorSetupBadRequestException`, `DonorSetupServerException`, `DonorSetupResponseException`). Mutating saves do not retry on 5xx (no double-write).
@@ -126,7 +126,7 @@ Tasks #1-#5 are complete. Remaining priority order:
    - Run backfill + `PREFERENCES_BACKEND=user_service` in a staging environment; confirm donor-setup flows.
    - Remove `PreferencesStore` / `LocalPreferencesRepository` when no deployment needs local file mode.
 
-3. **Donor–seeker flow (iteration).** Replace instruction stub with AI-backed pack, secure photo / reference storage, stronger vendor handoff and return-state recovery — see BRD steps 6–9 and `development/MVP_BOOTSTRAP_ISSUES.md` mobile checklist.
+3. **AI interactions — donor–seeker field slice.** Execute phases A–D in `development/IMPLEMENTATION_APPROACH.md`: (A) safety assess + photo/geo upload, (B) `POST …/instruction-pack`, (C) copy/deep-link handoff polish, (D) delivery acknowledgement + donor↔delivery match. Bootstrap `sharingbridge-ai-safety` and `sharingbridge-photo-service` per `MVP_BOOTSTRAP_ISSUES.md` §§8–9.
 
 ## Follow-ups Surfaced in Prior Sessions
 - Backfill tooling: `sharingbridge-integration-service` → `npm run backfill:user-service-presets` (documented in `development/USER_SERVICE_PREFERENCES_MIGRATION.md`).
@@ -165,3 +165,4 @@ Tasks #1-#5 are complete. Remaining priority order:
 - `feat` (mobile): Home hub + donor–seeker **Offer food help** flow (consent, safety gate, beneficiary notes, local draft persistence); `flutter test` count **30**.
 - `feat` (mobile): **Offer food help** redesign — dignity + photo-consent guidance; stub delivery instructions + copy; vendor deep links after copy; remove field draft persistence; `flutter test` **32**.
 - `feat` (mobile): **Offer food help** — 3-step flow, optional `image_picker` reference photo, async `requestStubDeliveryInstructions` AI placeholder, `Card.filled` instruction area; `flutter test` **34**.
+- `docs`: **AI interactions — donor–seeker field slice** in `IMPLEMENTATION_APPROACH.md` (safety, deep links, instruction-pack template, photo match); `MVP_BOOTSTRAP_ISSUES.md` §§8–9 (`ai-safety`, `photo-service`) and expanded §§3–4, 6 checklists.

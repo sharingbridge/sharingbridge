@@ -9,6 +9,8 @@ This document provides copy-ready MVP bootstrap issue definitions for the core r
 - `sharingbridge-notification-service`
 - `sharingbridge-mobile-app`
 - `sharingbridge-web-app`
+- `sharingbridge-ai-safety`
+- `sharingbridge-photo-service`
 
 Source-of-truth alignment:
 
@@ -94,8 +96,9 @@ Each issue below should be closed only when all relevant items are demonstrably 
 **Scope checklist:**
 
 - [ ] Define order intent entity and status state machine for MVP path
-- [ ] Add early safety-check gate integration point before order placement progression
-- [ ] Persist beneficiary interaction-context metadata needed for coordination and delivery
+- [ ] Add early safety-check gate integration point before order placement progression (store `safety_score`, `is_safe`, assess timestamp on intent)
+- [ ] Persist beneficiary interaction-context metadata: reference photo artifact id, capture lat/lng, capture location label, instruction-pack id, delivery acknowledgement photo id
+- [ ] Add delivery acknowledgement state transition and `match_score` / `match_passed` / `needs_review` fields after photo-service verification
 - [ ] Publish/consume order domain events over Redis Streams/PubSub
 - [ ] Expose APIs for order create/read/status/history
 - [ ] Add retry/idempotency controls for event-driven transitions
@@ -117,9 +120,10 @@ Each issue below should be closed only when all relevant items are demonstrably 
 **Scope checklist:**
 
 - [ ] Implement vendor OAuth/deep-link integration skeleton (start, callback, token handling hooks)
-- [ ] Implement final instruction-pack assembly from donor/context inputs
+- [ ] Implement final instruction-pack assembly from donor/context inputs (structured fields + preformatted `delivery_instructions` narrative per `IMPLEMENTATION_APPROACH.md` AI interactions section)
+- [ ] Expose `POST /v1/donor-seeker/instruction-pack` (or gateway equivalent): photo artifact, geo, verbal notes, preset ids → pack + secure photo URL reference
 - [ ] Implement AI-assisted local vendor/menu suggestion endpoint using fixed prompt + strict JSON schema validation
-- [ ] Integrate secure photo + instruction storage reference generation
+- [ ] Integrate secure photo + instruction storage reference generation (TTL: delivery completion + 30 minutes)
 - [ ] Enforce secure link TTL policy: active until delivery completion + 30 minutes, then expire
 - [ ] Add vendor order submission adapter interfaces and mock provider implementation
 - [ ] Add webhook receiver skeleton for vendor status updates
@@ -166,10 +170,12 @@ Each issue below should be closed only when all relevant items are demonstrably 
 
 - [x] Bootstrap app shell, auth/session wiring, and API client base
 - [x] Build donor setup screens (AI-assisted local vendor/menu suggestions + manual edit + confirmation, then saved payment preferences)
-- [x] Build donor-seeker interaction flow screens (consent, quick safety check, beneficiary capture)
-- [ ] Display generated instruction pack with one-tap copy + secure reference awareness
-- [ ] Implement external vendor redirect/return handling with state recovery
-- [ ] Add order status timeline and completion confirmation views
+- [x] Build donor-seeker interaction flow screens (guidance, optional reference photo, verbal notes, instruction stub — see `IMPLEMENTATION_APPROACH.md` AI interactions)
+- [ ] Locality safety stopover: GPS → safety assess API before reference photo
+- [ ] Upload reference photo + capture geo coordinates and location label to backend
+- [ ] Replace instruction stub with `POST …/instruction-pack` client; display pack in review step with one-tap copy + secure reference awareness
+- [ ] Implement external vendor redirect/return handling with state recovery (preset deep links after copy — partial)
+- [ ] Add delivery acknowledgement capture (camera/gallery) and order status timeline with match outcome
 
 **Acceptance criteria:**
 
@@ -205,18 +211,61 @@ Each issue below should be closed only when all relevant items are demonstrably 
 
 ---
 
+## 8) `sharingbridge-ai-safety`
+
+**Issue title:** `MVP Bootstrap: locality safety assessment API for field flow gate`
+
+**Scope checklist:**
+
+- [ ] Bootstrap service with `POST /v1/safety/assess` (`lat`, `lng`, `timestamp`)
+- [ ] Implement rule-based scoring (traffic, daylight, place type, historical rate) per architecture
+- [ ] Return `{ safety_score, is_safe, breakdown }` with threshold ≥ 0.65
+- [ ] Add caching and API cost guards for maps/places providers
+- [ ] Contract tests and mock provider mode for CI
+
+**Acceptance criteria:**
+
+- [ ] BRD step 4 (Quick Safety Check) is callable from mobile field flow before photo capture
+- [ ] Order-service can persist assess result on order intent
+- [ ] Failures return typed errors consumable by mobile (timeout, unavailable, invalid coords)
+
+---
+
+## 9) `sharingbridge-photo-service`
+
+**Issue title:** `MVP Bootstrap: seeker reference upload, delivery acknowledgement, and donor↔delivery photo match`
+
+**Scope checklist:**
+
+- [ ] `POST /v1/photos/upload` with `photo_type`: `seeker_reference` | `delivery_acknowledgement`
+- [ ] Store artifacts in Cloudinary/S3 path with signed, time-limited access URLs
+- [ ] Extract face embedding for reference photos; optional dignity/privacy blur hooks
+- [ ] Implement donor reference vs delivery acknowledgement similarity job (`match_score`, `match_passed`)
+- [ ] Distinguish this pipeline from **assistance history** matching (informational, non-blocking) in architecture
+- [ ] Emit match outcome events for order-service and notification-service
+
+**Acceptance criteria:**
+
+- [ ] Integration-service can embed `secure_photo_url` in instruction pack
+- [ ] Order timeline records match outcome without exposing raw embeddings to clients
+- [ ] BRD step 10 delivery photo proof is supported end-to-end with technical access controls
+
+---
+
 ## Suggested Execution Order
 
 1. `sharingbridge-user-service` + `sharingbridge-api-gateway` foundations
 2. `sharingbridge-order-service` core state machine and events
-3. `sharingbridge-integration-service` instruction-pack + vendor adapter skeleton
-4. `sharingbridge-notification-service` event subscribers and delivery channels
-5. `sharingbridge-mobile-app` donor-seeker interaction flow implementation
-6. `sharingbridge-web-app` operations and history dashboards
+3. `sharingbridge-ai-safety` + `sharingbridge-photo-service` skeletons (parallel)
+4. `sharingbridge-integration-service` instruction-pack + vendor adapter skeleton
+5. `sharingbridge-notification-service` event subscribers and delivery channels
+6. `sharingbridge-mobile-app` AI interactions phases A–C, then D
+7. `sharingbridge-web-app` operations and history dashboards (match review, secure-link audit)
 
 Parallelization recommendation:
 
 - Backend foundation (`api-gateway`, `user`, `order`) in parallel with frontend shell setup (`mobile`, `web`)
+- `ai-safety` and `photo-service` start once order intent schema includes safety + photo artifact fields
 - Integration and notifications start once order events/contracts are stable
 
 ---

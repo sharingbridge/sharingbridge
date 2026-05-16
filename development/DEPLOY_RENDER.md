@@ -66,6 +66,7 @@ Deploy in this order so URLs and secrets exist before wiring integration.
 |---------|--------|
 | Runtime | **Docker** |
 | Dockerfile path | `./Dockerfile` |
+| **Start Command** | *(leave blank — uses Dockerfile `start.sh`)* |
 | Health check path | `/health` |
 
 **Environment:**
@@ -185,6 +186,7 @@ Same env vars and order. Per service:
 | `403` / invalid token | `AUTH_TOKEN_SECRET` mismatch between user and integration |
 | Suggest-vendors still mock-like | Check `AI_ORCHESTRATION_BASE_URL`, `AI_SUGGEST_VENDORS_ENABLED=true`, internal token on both AI + integration |
 | Orchestration timeout | Cold start: retry; increase `AI_ORCHESTRATION_TIMEOUT_MS` |
+| AI service **Exited with status 1** after Docker build | Open **Logs** for traceback. Clear **Start Command** on Render (must be empty for Docker). Redeploy latest `main` (uses `start.sh` + `python -m uvicorn`). |
 | Presets empty after redeploy | Expected on free tier without persistent disk; add disk or migrate DB |
 
 ---

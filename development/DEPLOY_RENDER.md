@@ -74,7 +74,7 @@ Deploy in this order so URLs and secrets exist before wiring integration.
 |-----|--------|
 | `AI_ORCHESTRATION_INTERNAL_TOKEN` | Same token you generated above |
 | `AI_LLM_MODE` | `deterministic` (no OpenAI key required) |
-| `SHARINGBRIDGE_WEBSITE_URL` | Your site or `https://sharingbridge.org` |
+| `SHARINGBRIDGE_WEBSITE_URL` | **Placeholder** link in courier paste text only (not API). Use `https://sharingbridge.org` or your GitHub/docs URL until you have a real program website. |
 
 **Save the service URL**, e.g. `https://sharingbridge-ai-orchestration.onrender.com`.
 

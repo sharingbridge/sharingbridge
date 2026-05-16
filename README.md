@@ -17,7 +17,7 @@ Product-level assumptions are maintained in one place: [SharingBridge_Business_R
 ## Key Features
 
 - 🤝 **Dignity-First Approach** - Respectful process for both donors and seekers
-- 🔒 **Location safety** - Rule-based locality assessment (maps/geo APIs; `sharingbridge-location-safety`)
+- 🔒 **Handover guidance** - Fixed in-app copy for consent and surroundings (BRD step 4); geo safety service deferred
 - 📱 **Multi-Platform** - iOS, Android, and Web applications
 - 🛡️ **Facilitator-only money** - Payments and authoritative financial records stay with vendors/providers; see BRD *Operating Constraints*
 - 📸 **Photo Verification** - Transparent delivery confirmation
@@ -55,7 +55,7 @@ This is the **master repository** for SharingBridge (GitHub: [`sharingbridge/sha
 - `sharingbridge-notification-service` - Notifications
 
 **AI/ML:**
-- `sharingbridge-location-safety` - Location safety assessment (rule-based geo; not LLM)
+- `sharingbridge-location-safety` - **Archived / deferred** (MVP uses mobile guidance only)
 - `sharingbridge-photo-service` - Face detection and verification
 
 **Infrastructure:**
@@ -79,7 +79,7 @@ When meeting people seeking alms, donors face a moral dilemma: offering cash may
 
 A facilitator platform that:
 1. Connects donors with alms seekers
-2. Validates delivery location safety using rule-based geo assessment (`sharingbridge-location-safety`)
+2. Shows handover guidance so the donor can judge consent and surroundings (mobile; no geo safety score in MVP)
 3. Creates orders through established food delivery platforms (or future direct-vendor flows)
 4. Redirects payment to vendor or licensed provider systems (SharingBridge does not own financial tracking responsibility)
 5. Confirms delivery with photo verification

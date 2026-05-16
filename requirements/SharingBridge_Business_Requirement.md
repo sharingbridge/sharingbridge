@@ -10,7 +10,7 @@ SharingBridge is a mobile/web application that enables donors to provide food an
 1. **Donor Setup (Before Field Use)** - Donor can use an AI-assisted setup flow (fixed prompt + structured output) to discover local preferred vendors and starter menu templates, then confirms/edits saved payment redirect preferences for quick ordering.
 2. **Real-World Trigger** - Workflow starts only when an alms seeker approaches the donor and asks for help.
 3. **Initial Conversation and Consent** - Donor confirms food help intent and gets consent to capture beneficiary details/photo for delivery identification.
-4. **Quick Safety Check (Early)** - During this initial interaction, the app checks whether delivery at the current location is reasonably safe and practical.
+4. **Quick Guidance (Early)** - During this initial interaction, the app shows short, fixed guidance on consent, handover conditions, and surroundings. The donor decides whether to continue; SharingBridge does not certify that a location is safe.
 5. **Create Order Intent** - Donor captures beneficiary context and chooses a prepared order option.
 6. **Generate Delivery Instruction Pack** - App uses AI to create clean, non-offensive delivery instructions from donor input (for example: visible appearance cues, current geolocation, order summary, and secure photo reference). Donor can copy-paste this text into the delivery app instruction field.
 7. **Store Photo + Instruction Securely** - App stores the beneficiary photo and generated instruction text in a secure external repository and includes only the required reference/link in delivery instructions.
@@ -75,14 +75,10 @@ This section defines product constraints for volunteer-led, agile delivery.
 - User authentication & authorization
 - Order history and transaction logs
 
-**3. Location Safety Module** (`sharingbridge-location-safety`)
-- **Locality safety assessment** for the field handover (BRD step 4 — Quick Safety Check):
-  - Traffic density analysis (e.g. maps APIs)
-  - Lighting / time-of-day (daylight scoring)
-  - Public vs isolated area detection (e.g. places data)
-  - Historical delivery success rate at location
-- Delivery crew feedback integration (improves historical scoring)
-- **Rule-based MVP** — external geo APIs + weighted scoring (threshold ≥ 0.65); **not** an LLM service (see `sharingbridge-ai-orchestration` for language models)
+**3. Field handover guidance (mobile — BRD step 4)**
+- **Fixed in-app guidance** in plain language (consent, surroundings, visibility, photo policy, donor judgment)
+- **Not** a backend safety score or pass/fail gate for MVP
+- Optional future: post-delivery feedback for ops analytics only (non-certifying); see coordination docs
 
 **3b. Photo & Verification Module** (`sharingbridge-photo-service`)
 - Encrypted photo storage (reference at donor interaction; delivery acknowledgement)
@@ -113,7 +109,7 @@ This section defines product constraints for volunteer-led, agile delivery.
 - Crowdfunding campaign coordination (contributor visibility and thresholds; settlement via providers/vendors)
 
 ### **Key Technical Features:**
-- **Location safety checks** using external geo APIs (Google Maps, Places, OpenWeather) with rule-based scoring
+- **Handover guidance** — fixed copy in the mobile field flow (BRD step 4); no geo safety score in MVP
 - **Multi-vendor integration** for wider coverage
 - **Photo verification** at both ends (order & delivery)
 - **Real-time notifications** for order status (push, in-app, email by default; SMS optional/future)
@@ -124,7 +120,7 @@ This section defines product constraints for volunteer-led, agile delivery.
 ### **Technology Stack (Proposed):**
 - **Mobile:** React Native / Flutter
 - **Backend:** Node.js / Python (Django/FastAPI)
-- **Location safety:** `sharingbridge-location-safety` — API-based (Maps, Places, OpenWeather) with rule-based scoring; custom ML optional at very high scale
+- **Field guidance:** `sharingbridge-mobile-app` — BRD step 4; `sharingbridge-location-safety` **deferred/archived** (see repo README)
 - **Photo / face pipelines:** `sharingbridge-photo-service` — embeddings (e.g. FaceNet/DeepFace class models) for assistance-history hints and delivery match
 - **LLM orchestration:** `sharingbridge-ai-orchestration` — instruction pack and donor-setup suggestions (see coordination `AI_PLATFORM_INTEGRATION.md`)
 - **Database:** PostgreSQL with PostGIS for location data

@@ -115,17 +115,15 @@ The easiest way to contribute is through **GitHub Discussions**:
 
 ### 🤖 AI / ML Contributors
 
-**Repositories:** `sharingbridge-location-safety`, `sharingbridge-photo-service`
+**Repositories:** `sharingbridge-photo-service`, `sharingbridge-ai-orchestration`
 
 **What We Need:**
 - **Computer Vision Specialists** → `sharingbridge-photo-service`
   - Face detection and beneficiary assistance history matching
   - Privacy-preserving photo verification
 
-- **Location Intelligence Engineers** → `sharingbridge-location-safety`
-  - Safety assessment models
-  - Traffic density analysis
-  - Real-time location validation
+- **LLM / orchestration** → `sharingbridge-ai-orchestration`
+  - Instruction-pack and suggest-vendors chains (hosted model APIs)
 
 - **ML Ops Engineers**
   - Model deployment and monitoring
@@ -387,8 +385,9 @@ Each repository contains:
 - `sharingbridge-notification-service` - Push notifications and alerts
 
 **AI/ML Repositories:**
-- `sharingbridge-location-safety` - Location safety assessment models
 - `sharingbridge-photo-service` - Face detection and beneficiary assistance history matching
+- `sharingbridge-ai-orchestration` - LLM instruction-pack and vendor suggestions
+- `sharingbridge-location-safety` - **Archived** (MVP uses mobile handover guidance only)
 
 **Infrastructure Repositories:**
 - `sharingbridge-infra` - Infrastructure as Code (Terraform/CloudFormation)
@@ -430,7 +429,7 @@ Each repository contains:
 **Step 2: Pick Your Repository**
 - **Frontend Developer?** → Fork `sharingbridge-mobile-app` or `sharingbridge-web-app`
 - **Backend Engineer?** → Choose any service repo that interests you
-- **AI/ML Engineer?** → Fork `sharingbridge-location-safety` or `sharingbridge-photo-service`
+- **AI/ML Engineer?** → Fork `sharingbridge-photo-service` or `sharingbridge-ai-orchestration`
 - **DevOps?** → Fork `sharingbridge-infra` or `sharingbridge-deployment`
 - **Documentation?** → Contribute to README files in relevant service repos
 
@@ -463,7 +462,7 @@ Each repository contains:
 - 🔄 Development team formation (IN PROGRESS - **YOU!**)
 - ⏳ Frontend development (Q1 2026)
 - ⏳ Backend services (Q1 2026)
-- ⏳ Location safety service (`sharingbridge-location-safety`, Q1–Q2 2026)
+- ~~Location safety service~~ **Deferred** — mobile Quick guidance (BRD step 4)
 - ⏳ Vendor integrations (Q2 2026)
 - ⏳ Beta testing (Q2-Q3 2026)
 - ⏳ Public launch (Q4 2026)

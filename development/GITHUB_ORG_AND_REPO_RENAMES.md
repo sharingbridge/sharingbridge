@@ -37,7 +37,7 @@ Use these names on GitHub and in local clone folders so `origin` URLs stay predi
 | API gateway | `sharingbridge-api-gateway` |
 | Order service | `sharingbridge-order-service` |
 | Notifications | `sharingbridge-notification-service` |
-| Location safety (rule-based geo; not LLM) | `sharingbridge-location-safety` |
+| Location safety (archived; mobile guidance for MVP) | `sharingbridge-location-safety` |
 | Photo service | `sharingbridge-photo-service` |
 | Infra | `sharingbridge-infra` |
 | Deployment | `sharingbridge-deployment` |

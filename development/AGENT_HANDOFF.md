@@ -56,7 +56,7 @@ The **donor-setup slice** that is live in code is intentionally a **minimal MVP*
 
 ### `sharingbridge-mobile-app` (donor setup MVP shipped; Offer food help handoff)
 - **Home hub** (`lib/presentation/app_home_page.dart`): entry to **Donor setup** vs **Offer food help**.
-- **Donor–seeker interaction (`Offer food help`):** three steps shipped — **guidance** → **optional reference photo** + verbal notes → **instruction-pack API** (`POST /v1/donor-seeker/instruction-pack` via integration; local stub fallback if API unreachable) → **Copy** + preset **Open …** deep links. **Planned (documented):** locality safety API, cloud photo upload + geo, live LLM (`AI_LLM_MODE=openai`), delivery acknowledgement, donor↔delivery photo match — see `development/IMPLEMENTATION_APPROACH.md` **AI interactions — donor–seeker field slice** and `MVP_BOOTSTRAP_ISSUES.md` §§3–4, 6, 8–9.
+- **Donor–seeker interaction (`Offer food help`):** three steps shipped — **Quick guidance** (fixed copy, BRD step 4) → **optional reference photo** + verbal notes → **instruction-pack API** (`POST /v1/donor-seeker/instruction-pack` via integration; local stub fallback if API unreachable) → **Copy** + preset **Open …** deep links. **Planned:** cloud photo upload + geo, live LLM (`AI_LLM_MODE=openai`), delivery acknowledgement, donor↔delivery photo match. **Deferred:** `sharingbridge-location-safety` (geo scoring archived) — see `IMPLEMENTATION_APPROACH.md` **AI interactions** and `MVP_BOOTSTRAP_ISSUES.md` §§9–10.
 - Donor setup screen wired to integration-service: search → suggestions → confirm-and-save.
 - Startup loads presets from server, with local `shared_preferences` fallback cache when the server is unreachable.
 - HTTP API client (`lib/features/donor_setup/data/http_donor_setup_api_client.dart`) supports request timeout, exponential-backoff retry, and typed exceptions (`DonorSetupNetworkException`, `DonorSetupTimeoutException`, `DonorSetupBadRequestException`, `DonorSetupServerException`, `DonorSetupResponseException`). Mutating saves do not retry on 5xx (no double-write).
@@ -75,7 +75,7 @@ The **donor-setup slice** that is live in code is intentionally a **minimal MVP*
   - **37** Node tests green via `npm test` (HTTP roundtrips + preset validation/`UserStore` + `tokenService`/`authContext` unit coverage).
   - GitHub Actions CI: Node 20, `npm install`, `npm test` on push/PR; branch protection on `main` requires passing check **`test`** (alongside existing review/signature rules).
 - `sharingbridge-ai-orchestration`: **deterministic MVP shipped** (FastAPI, internal `suggest-vendors` + `instruction-pack`, 3 pytest tests). Live OpenAI/LangChain path not wired (`AI_LLM_MODE=openai` documented only).
-- `sharingbridge-api-gateway`, `sharingbridge-order-service`, `sharingbridge-notification-service`, `sharingbridge-location-safety`, `sharingbridge-photo-service`, `sharingbridge-web-app`, `sharingbridge-infra`, `sharingbridge-deployment`: README only or not started. **Next AI slice:** location-safety + photo-service per `IMPLEMENTATION_APPROACH.md` phases A–D.
+- `sharingbridge-api-gateway`, `sharingbridge-order-service`, `sharingbridge-notification-service`, `sharingbridge-photo-service`, `sharingbridge-web-app`, `sharingbridge-infra`, `sharingbridge-deployment`: README only or not started. `sharingbridge-location-safety`: **archived** (MVP uses mobile guidance). **Next AI slice:** photo-service + optional live LLM per `IMPLEMENTATION_APPROACH.md` phases A–D.
 
 ## Quick Runbook
 
@@ -131,7 +131,7 @@ Tasks #1-#5 are complete. Remaining priority order:
    - Run backfill + `PREFERENCES_BACKEND=user_service` in a staging environment; confirm donor-setup flows.
    - Remove `PreferencesStore` / `LocalPreferencesRepository` when no deployment needs local file mode.
 
-3. **AI platform + field slice.** Orchestration bridge + instruction-pack API are shipped (deterministic). Next: deploy orchestration to Render/Railway, optional `AI_LLM_MODE=openai`, then IMPLEMENTATION_APPROACH phases A–D (safety, photo upload, delivery match).
+3. **AI platform + field slice.** Orchestration bridge + instruction-pack API + mobile **Quick guidance** shipped. Next: deploy orchestration to Render/Railway, optional `AI_LLM_MODE=openai`, then photo upload + delivery match (location-safety deferred).
 
 ## Follow-ups Surfaced in Prior Sessions
 - Backfill tooling: `sharingbridge-integration-service` → `npm run backfill:user-service-presets` (documented in `development/USER_SERVICE_PREFERENCES_MIGRATION.md`).

@@ -139,33 +139,31 @@ The backend/infrastructure phases below run in parallel with explicit frontend t
 
 ### AI interactions — donor–seeker field slice (planned)
 
-Maps BRD steps **3–11** to four AI-related capabilities. **Shipped today (mobile):** dignity/consent guidance → optional reference photo + verbal notes → local instruction **stub** → copy + open saved preset **http/https** URLs. **Not yet wired:** locality safety API, cloud photo upload, full instruction template, delivery acknowledgement, donor↔delivery photo match.
+Maps BRD steps **3–11** to AI-related capabilities. **Shipped today (mobile):** **Quick guidance** (fixed copy, BRD step 4) → optional reference photo + verbal notes → instruction-pack API (integration → ai-orchestration; local stub fallback) → copy + open saved preset **http/https** URLs. **Not yet wired:** cloud photo upload, delivery acknowledgement, donor↔delivery photo match. **Deferred:** rule-based locality safety API (`sharingbridge-location-safety` archived — donor judgment only).
 
 **Service ownership**
 
 | Capability | Primary repo | Notes |
 |------------|--------------|--------|
-| Locality safety scoring | `sharingbridge-location-safety` | Rule-based MVP (maps/places/daylight/history); see Week 7 below |
+| Handover guidance (BRD step 4) | `sharingbridge-mobile-app` | Fixed in-app copy; **no** geo safety score in MVP |
 | Reference + delivery photos, embeddings, match | `sharingbridge-photo-service` | Upload, face detection, donor↔delivery verification |
 | Instruction-pack assembly + secure links | `sharingbridge-integration-service` | Owns final vendor-facing text and TTL links |
-| Order intent, safety gate state, acknowledgement | `sharingbridge-order-service` | Persists interaction context and timeline |
+| Order intent, guidance acknowledged, acknowledgement | `sharingbridge-order-service` | Persists interaction context and timeline |
 | Field UX | `sharingbridge-mobile-app` | Stopovers, permissions, copy/deep-link handoff |
 
 **Target mobile stopover sequence (Offer food help)**
 
-1. **Guidance** — Personal-details sensitivity; voluntary consent before any photo (current step 1).
-2. **Locality safety** — Capture GPS → `POST /v1/safety/assess` → show score/pass/fail; donor may defer or abort per policy (replaces removed multi-step self-check).
-3. **Reference capture** — Camera/gallery → upload → store `seeker_photo_url`, photo-capture coordinates, and human-readable “photo taken at” label.
-4. **Instruction generation** — Call integration instruction-pack API (replaces `requestStubDeliveryInstructions`).
-5. **Vendor handoff** — Review pack → copy → enable **Open …** on saved preset deep links (current step 3 pattern).
-6. **Delivery acknowledgement** (delivery role / secure link, post-order) — Delivery photo in-app or gallery → mark completed; triggers match job and donor notification.
+1. **Guidance** — Fixed copy: consent, surroundings, visibility, photo policy, donor judgment (shipped step 1).
+2. **Reference capture** — Camera/gallery → upload (planned) → store `seeker_photo_url`, photo-capture coordinates, and human-readable “photo taken at” label.
+3. **Instruction generation** — Call integration instruction-pack API (shipped; stub fallback when API down).
+4. **Vendor handoff** — Review pack → copy → enable **Open …** on saved preset deep links (shipped step 3).
+5. **Delivery acknowledgement** (delivery role / secure link, post-order) — Delivery photo in-app or gallery → mark completed; triggers match job and donor notification.
 
-**1) Safety checks in the locality**
+**1) Handover guidance (BRD step 4 — shipped)**
 
-- **API:** `POST /v1/safety/assess` with `{ lat, lng, timestamp }` → `{ safety_score, is_safe, breakdown }` (threshold ≥ 0.65 per architecture).
-- **Implementation:** Week 7 `SafetyAssessmentService` (traffic, daylight, place type, historical rate).
-- **Product:** Non-blocking informational mode vs hard gate is a policy decision; document chosen behavior in order-service state machine.
-- **Acceptance:** Field flow does not proceed to photo capture until safety call completes (success or explicit donor override if allowed).
+- **Implementation:** `sharingbridge-mobile-app` — **Offer food help** step 1 **Quick guidance** (bullets + Continue).
+- **Product:** Informational only; donor always chooses whether to continue. No `safety_score`, no pass/fail gate.
+- **Deferred:** `sharingbridge-location-safety` rule-based scoring (repo archived; see Technical Architecture §3.3 as reference only).
 
 **2) Capturing deep links**
 
@@ -216,7 +214,7 @@ Delivery instruction: Please proceed to <geo_coordinates>. Identify the seeker u
 
 | Phase | Scope | Repos |
 |-------|--------|-------|
-| **A — Capture & gates** | Safety API in field flow; photo upload + geo metadata | mobile, location-safety, photo-service, order-service |
+| **A — Capture** | Guidance (done); photo upload + geo metadata | mobile, photo-service, order-service |
 | **B — Instruction API** | Instruction-pack endpoint + template; mobile client | integration-service, mobile |
 | **C — Handoff** | Copy + preset deep links (enhance text from API) | mobile (mostly done) |
 | **D — Verification** | Delivery acknowledgement UX, match job, notifications | photo-service, order-service, notification-service, web-app |
@@ -542,9 +540,11 @@ await admin.messaging().send({
 
 ---
 
-### **Week 7: Location Safety Assessment Service**
+### **Week 7: Location Safety Assessment Service** *(deferred — May 2026)*
 
-**Approach:** Rule-Based API Integration (No ML Training)
+> **Product decision:** BRD step 4 is **fixed mobile guidance**, not a geo safety service. The section below is **reference only** if post-delivery feedback analytics are reconsidered later. `sharingbridge-location-safety` is archived.
+
+**Approach (historical):** Rule-Based API Integration (No ML Training)
 
 **Platform:** Free tier APIs
 

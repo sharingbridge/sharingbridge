@@ -411,9 +411,11 @@ order_events
 
 ---
 
-### 3.3 Location Safety Service (`sharingbridge-location-safety`)
+### 3.3 Location Safety Service (`sharingbridge-location-safety`) *(deferred — MVP uses mobile guidance)*
 
-**Responsibilities:**
+> **Product decision (May 2026):** BRD step 4 is **fixed in-app guidance** in `sharingbridge-mobile-app` (Offer food help → Quick guidance). The service below is **not implemented**; `sharingbridge-location-safety` is archived. Retained as reference if post-delivery feedback analytics are reconsidered later.
+
+**Responsibilities (reference design):**
 - Locality safety assessment for a given lat/lng + timestamp (BRD step 4)
 - Rule-based weighted scoring from external geo/traffic APIs
 - Historical delivery success rate at location

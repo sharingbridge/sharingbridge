@@ -92,12 +92,12 @@ Each issue below should be closed only when all relevant items are demonstrably 
 
 ## 3) `sharingbridge-order-service`
 
-**Issue title:** `MVP Bootstrap: order intent lifecycle, safety gate, and delivery-status timeline`
+**Issue title:** `MVP Bootstrap: order intent lifecycle, guidance acknowledgment, and delivery-status timeline`
 
 **Scope checklist:**
 
 - [ ] Define order intent entity and status state machine for MVP path
-- [ ] Add early safety-check gate integration point before order placement progression (store `safety_score`, `is_safe`, assess timestamp on intent)
+- [ ] Optional: record `guidance_acknowledged_at` on order intent (mobile step 1); no geo `safety_score` in MVP
 - [ ] Persist beneficiary interaction-context metadata: reference photo artifact id, capture lat/lng, capture location label, instruction-pack id, delivery acknowledgement photo id
 - [ ] Add delivery acknowledgement state transition and `match_score` / `match_passed` / `needs_review` fields after photo-service verification
 - [ ] Publish/consume order domain events over Redis Streams/PubSub
@@ -183,7 +183,7 @@ Each issue below should be closed only when all relevant items are demonstrably 
 - [ ] Mobile UX supports BRD steps 1-11 in user-correct sequence
 - [ ] Payment UX clearly exits SharingBridge into provider/vendor-hosted flow
 - [ ] No UI implies platform-owned wallet/ledger behavior
-- [ ] Error states cover safety check failure, vendor callback delay, and network interruption
+- [ ] Error states cover vendor callback delay and network interruption (no geo safety gate in MVP)
 - [ ] App stores only required local transient state and protects sensitive references
 - [ ] AI onboarding never auto-commits suggestions; donor review/confirm is mandatory with low-confidence manual fallback
 
@@ -212,23 +212,11 @@ Each issue below should be closed only when all relevant items are demonstrably 
 
 ---
 
-## 8) `sharingbridge-location-safety`
+## 8) `sharingbridge-location-safety` *(deferred — May 2026)*
 
-**Issue title:** `MVP Bootstrap: locality safety assessment API for field flow gate`
+**Status:** Repo **archived** on GitHub. BRD step 4 is **fixed mobile guidance** (`sharingbridge-mobile-app` → Offer food help → Quick guidance). Do not bootstrap a scoring service for MVP.
 
-**Scope checklist:**
-
-- [ ] Bootstrap service with `POST /v1/safety/assess` (`lat`, `lng`, `timestamp`)
-- [ ] Implement rule-based scoring (traffic, daylight, place type, historical rate) per architecture
-- [ ] Return `{ safety_score, is_safe, breakdown }` with threshold ≥ 0.65
-- [ ] Add caching and API cost guards for maps/places providers
-- [ ] Contract tests and mock provider mode for CI
-
-**Acceptance criteria:**
-
-- [ ] BRD step 4 (Quick Safety Check) is callable from mobile field flow before photo capture
-- [ ] Order-service can persist assess result on order intent
-- [ ] Failures return typed errors consumable by mobile (timeout, unavailable, invalid coords)
+**Historical issue (cancelled):** locality safety assessment API (`POST /v1/safety/assess`, weighted geo score). See Technical Architecture §3.3 for reference design only.
 
 ---
 
@@ -282,7 +270,7 @@ Each issue below should be closed only when all relevant items are demonstrably 
 1. `sharingbridge-user-service` + `sharingbridge-api-gateway` foundations
 2. `sharingbridge-order-service` core state machine and events
 3. `sharingbridge-ai-orchestration` skeleton + integration bridge (suggest-vendors behind flag)
-4. `sharingbridge-location-safety` + `sharingbridge-photo-service` skeletons (parallel)
+4. `sharingbridge-photo-service` skeleton (location-safety deferred)
 5. `sharingbridge-integration-service` instruction-pack + vendor adapter skeleton (calls orchestration)
 6. `sharingbridge-notification-service` event subscribers and delivery channels
 7. `sharingbridge-mobile-app` AI interactions phases A–C, then D
@@ -292,7 +280,7 @@ Parallelization recommendation:
 
 - Backend foundation (`api-gateway`, `user`, `order`) in parallel with frontend shell setup (`mobile`, `web`)
 - `ai-orchestration` can start once integration-service has HTTP client scaffolding; wire `suggest-vendors` before instruction-pack
-- `location-safety` and `photo-service` start once order intent schema includes safety + photo artifact fields
+- `photo-service` starts once order intent schema includes photo artifact fields (guidance is mobile-only)
 - Integration and notifications start once order events/contracts are stable
 
 ---

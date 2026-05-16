@@ -69,7 +69,7 @@ SharingBridge makes helping someone with food safer, more private, and easier to
 - **Service Repositories:** Independent repositories for each component:
   - Frontend: `sharingbridge-mobile-app`, `sharingbridge-web-app`
   - Backend: `sharingbridge-api-gateway`, `sharingbridge-order-service`, `sharingbridge-user-service`, `sharingbridge-integration-service`, `sharingbridge-notification-service`
-  - AI/ML: `sharingbridge-location-safety`, `sharingbridge-photo-service`
+  - AI/ML: `sharingbridge-photo-service`, `sharingbridge-ai-orchestration` (location-safety deferred)
   - Infrastructure: `sharingbridge-infra`, `sharingbridge-deployment`
 
 - **Documentation Available:**

@@ -13,7 +13,8 @@
 |------------|-----------------|--------|
 | Donor setup vendor suggestions | **Orchestration when flagged** | integration → ai-orchestration (deterministic ranking); mock fallback |
 | Delivery instruction pack | **API + fallback** | `POST /v1/donor-seeker/instruction-pack`; mobile stub if unreachable |
-| Locality safety scoring | **Not built** | Planned → `sharingbridge-location-safety` (README only) |
+| Handover guidance (BRD step 4) | **Shipped** | `sharingbridge-mobile-app` — fixed **Quick guidance** copy |
+| Locality safety scoring | **Deferred / archived** | `sharingbridge-location-safety` — not MVP; repo archived |
 | Photo upload, face embeddings, match | **Not built** | Planned → `sharingbridge-photo-service` (README only) |
 | LLM orchestration (LangChain or equivalent) | **Deterministic service built**; live LLM pending | `sharingbridge-ai-orchestration` |
 
@@ -26,7 +27,7 @@ Mobile and backend **must not** call OpenAI/Anthropic (or similar) directly from
 | Topic | Covered in existing docs? |
 |-------|---------------------------|
 | *That* AI should generate instructions / descriptions | Yes — BRD step 6, Technical Architecture “Hybrid AI Strategy” |
-| Rule-based **safety** (maps, daylight, places) | Yes — IMPLEMENTATION_APPROACH Week 7, location-safety bootstrap §8 |
+| Fixed **handover guidance** (BRD step 4) | Yes — mobile Offer food help; geo safety **deferred** |
 | **Photo** storage + embeddings + match | Yes — photo-service bootstrap §9, architecture §3.3 |
 | **LangChain** (or similar) setup on a host | **No** — until this doc |
 | Prompt chains, structured JSON, retries, fallbacks | Partially — Donor Setup sequence assumes external AI; no runtime |
@@ -37,7 +38,7 @@ Mobile and backend **must not** call OpenAI/Anthropic (or similar) directly from
 
 ## Target architecture (bridge pattern)
 
-Clients talk only to **SharingBridge backend APIs**. The **AI orchestration layer** (LangChain recommended for MVP) runs as a deployable service and calls **model providers** and **specialist services** (photo, safety).
+Clients talk only to **SharingBridge backend APIs**. The **AI orchestration layer** (LangChain recommended for MVP) runs as a deployable service and calls **model providers** and **specialist services** (photo). Handover guidance (BRD step 4) is **in-app copy only** — not a backend service in MVP.
 
 ```mermaid
 flowchart TB
@@ -58,13 +59,11 @@ flowchart TB
 
   subgraph ai["AI modules"]
     AIO[sharingbridge-ai-orchestration\nLangChain / LangServe\nprompts + structured output]
-    SAF[sharingbridge-location-safety\nrule-based locality scoring]
     PHO[sharingbridge-photo-service\nupload + embeddings + match]
   end
 
   subgraph external["External providers"]
     LLM[Model APIs\nOpenAI / Anthropic / Azure OpenAI / local Ollama dev]
-    MAPS[Google Maps / Places / OpenWeather]
     STORE[Cloudinary / S3\nphoto blobs]
   end
 
@@ -74,11 +73,9 @@ flowchart TB
   G --> O
   G --> U
   I --> AIO
-  I --> SAF
   I --> PHO
   AIO --> LLM
   AIO --> PHO
-  SAF --> MAPS
   PHO --> STORE
   PHO --> LLM
 ```
@@ -94,7 +91,7 @@ flowchart TB
 | Donor setup: vendor/menu suggestions | `POST /v1/donor-setup/suggest-vendors` (integration) | Orchestration chain | LLM + strict JSON schema; location in prompt |
 | Instruction pack + dignity filter | `POST /v1/donor-seeker/instruction-pack` (integration) | Orchestration chain | LLM + template merge; optional vision on reference photo |
 | Beneficiary verbal notes sanitization | Same | Orchestration sub-chain | LLM policy pass |
-| Locality safety | `POST /v1/safety/assess` (location-safety) | **No LLM required** for MVP | Rule-based + Maps/Places APIs |
+| Handover guidance | Mobile **Offer food help** step 1 | **No backend** | Fixed copy; donor judgment |
 | Reference photo storage | `POST /v1/photos/upload` (photo-service) | Storage pipeline | S3/Cloudinary |
 | Face embedding + donor↔delivery match | photo-service + order events | CV pipeline | Embedding model (e.g. FaceNet-class); not necessarily LLM |
 | Assistance history hint (optional) | order / photo-service | Embedding similarity | Architecture §3.3 |
@@ -105,7 +102,7 @@ flowchart TB
 
 ## Proposed repo: `sharingbridge-ai-orchestration`
 
-New service (skeleton today: **does not exist**; add to org alongside location-safety and photo-service).
+New service (**shipped** deterministic MVP; live LLM pending). Add **photo-service** next; **location-safety** deferred/archived.
 
 **Responsibilities:**
 
@@ -136,7 +133,7 @@ Align with [IMPLEMENTATION_APPROACH.md](./IMPLEMENTATION_APPROACH.md) free tier 
 | Deployable | Host | Notes |
 |------------|------|--------|
 | `sharingbridge-ai-orchestration` | Render / Railway web service | Python (FastAPI) + LangChain; `PORT`, health check |
-| `sharingbridge-location-safety` | Same or separate service | Node or Python; maps API keys |
+| `sharingbridge-location-safety` | **Archived** — do not implement for MVP | — |
 | `sharingbridge-photo-service` | Same or separate service | Upload + embedding worker |
 | Model APIs | Vendor cloud | OpenAI / Anthropic / Azure OpenAI |
 | LangSmith (optional) | LangChain SaaS | Tracing, evals — dev/staging |
@@ -241,7 +238,7 @@ sequenceDiagram
 
 **Not in LangChain:**
 
-- Safety score (call location-safety HTTP from integration before starting instruction chain).
+- Handover guidance is mobile-only (no integration call).
 - Face match (photo-service after delivery upload).
 
 ---
@@ -253,7 +250,7 @@ sequenceDiagram
 | **0** (today) | Mocks/stubs | — |
 | **1** | Deploy `ai-orchestration` skeleton + health; wire integration `suggest-vendors` to LLM behind feature flag | `MOCK_SUGGESTIONS` |
 | **2** | `instruction-pack` public API + mobile HTTP client | `requestStubDeliveryInstructions` |
-| **3** | Deploy location-safety + photo-service; wire safety gate + upload | Local-only photo path |
+| **3** | Deploy photo-service; wire upload + delivery match | Local-only photo path |
 | **4** | Vision in instruction chain; delivery match job | Placeholder faceprint lines |
 
 Feature flag example: `AI_SUGGEST_VENDORS_ENABLED=true` in integration-service env.
@@ -287,7 +284,7 @@ Feature flag example: `AI_SUGGEST_VENDORS_ENABLED=true` in integration-service e
 - [x] Replace `buildSuggestVendorsResponse` mock path behind feature flag
 - [x] Implement `POST /v1/donor-seeker/instruction-pack` calling orchestration
 - [x] Update mobile: HTTP client for instruction-pack (local stub fallback when API down)
-- [ ] Deploy location-safety and photo-service; wire IMPLEMENTATION_APPROACH phases A–D
+- [ ] Deploy photo-service; wire IMPLEMENTATION_APPROACH phases A–D (guidance shipped on mobile; location-safety deferred)
 - [ ] Add LangSmith project for dev tracing (optional)
 - [ ] Document smoke steps in `testing/MANUAL_TESTING_GUIDE.md` when phase 1 ships
 

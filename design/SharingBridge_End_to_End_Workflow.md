@@ -34,7 +34,7 @@ flowchart TB
   subgraph field["Field encounter — Offer food help"]
     S2["2 Real-world trigger\nSeeker asks for help"]
     S3["3 Consent\nFood intent + photo consent"]
-    S4["4 Quick safety check\nLocality assess"]
+    S4["4 Quick guidance\nFixed in-app copy"]
     S5["5 Order intent\nBeneficiary context + preset choice"]
     S6["6 Instruction pack\nAI-generated delivery text"]
     S7["7 Secure store\nPhoto + instructions in cloud\nTime-limited links"]
@@ -66,10 +66,10 @@ Legend: ✅ shipped (partial or full) · 🟡 in progress / stub · ⬜ planned
 |------|--------|---------------------------|
 | 1 Donor setup | ✅ | [Donor_Setup_AI_Search_Sequence](Donor_Setup_AI_Search_Sequence.md); `sharingbridge-mobile-app` donor_setup |
 | 2 Trigger | ✅ (UX) | Home hub → **Offer food help** |
-| 3 Consent | 🟡 | Guidance copy; full consent gates planned in AI interactions |
-| 4 Safety | ⬜ | Architecture + [IMPLEMENTATION_APPROACH § AI interactions](../development/IMPLEMENTATION_APPROACH.md); not wired in app |
+| 3 Consent | 🟡 | Part of guidance step 1; photo consent in copy |
+| 4 Guidance | ✅ | Mobile **Quick guidance** (fixed copy); geo safety service deferred |
 | 5 Order intent | 🟡 | Presets loaded; formal order intent service ⬜ |
-| 6 Instruction pack | 🟡 | Local **stub**; API pack ⬜ |
+| 6 Instruction pack | 🟡 | API + stub fallback shipped; live LLM optional |
 | 7 Secure store | ⬜ | `sharingbridge-photo-service` planned |
 | 8–9 Vendor order + pay | 🟡 | Copy + open preset URL; OAuth/deep-link builder ⬜ |
 | 10 Deliver + photo | ⬜ | Delivery acknowledgement + match planned |
@@ -94,14 +94,13 @@ flowchart LR
   end
 
   subgraph target["Target field flow"]
-    G1[Guidance + consent]
-    G2[Safety assess\nGPS + API]
-    G3[Reference photo\n+ geo upload]
-    G4[Instruction pack API]
-    G5[Copy + vendor\ndeep link]
-    G6[Delivery ack +\nphoto match]
-    G1 --> G2 --> G3 --> G4 --> G5
-    G5 -.->|after order| G6
+    G1[Guidance\nshipped]
+    G2[Reference photo\n+ geo upload]
+    G3[Instruction pack API\nshipped]
+    G4[Copy + vendor\ndeep link\nshipped]
+    G5[Delivery ack +\nphoto match]
+    G1 --> G2 --> G3 --> G4
+    G4 -.->|after order| G5
   end
 ```
 
@@ -127,7 +126,7 @@ sequenceDiagram
 
   Note over D,C: Field encounter (steps 2–7, target)
   D->>M: Offer food help
-  M->>I: safety assess (planned)
+  Note over M: Quick guidance (step 4, in-app)
   D->>M: Consent + reference photo
   M->>P: Upload photo (planned)
   M->>I: instruction-pack (planned)

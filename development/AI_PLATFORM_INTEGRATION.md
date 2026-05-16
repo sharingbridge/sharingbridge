@@ -173,7 +173,7 @@ Integration-service additionally needs:
 
 ```bash
 AI_ORCHESTRATION_BASE_URL=http://localhost:8091
-AI_ORCHESTRATION_INTERNAL_TOKEN=   # shared secret service-to-service
+AI_ORCHESTRATION_INTERNAL_API_KEY=   # static service API key (integration → AI only)
 ```
 
 ---

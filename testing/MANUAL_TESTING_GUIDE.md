@@ -556,7 +556,7 @@ Use this after deploying per **[DEPLOY_RENDER.md](../development/DEPLOY_RENDER.m
 3. Call **hosted** integration `POST …/v1/donor-setup/suggest-vendors` and `POST …/v1/donor-seeker/instruction-pack` with `Authorization: Bearer <token>`.
 4. Run the mobile app with `--dart-define=API_BASE_URL=<integration-url>` and the minted token (see DEPLOY_RENDER § *Point the mobile app*).
 
-If suggest-vendors or instruction-pack fail, verify `AI_ORCHESTRATION_BASE_URL`, `AI_*_ENABLED=true`, and matching `AI_ORCHESTRATION_INTERNAL_TOKEN` on integration and ai-orchestration.
+If suggest-vendors or instruction-pack fail, verify `AI_ORCHESTRATION_BASE_URL`, `AI_*_ENABLED=true`, and matching `AI_ORCHESTRATION_INTERNAL_API_KEY` on integration and ai-orchestration.
 
 ---
 

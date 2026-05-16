@@ -12,17 +12,26 @@ Mobile talks **only** to integration-service. Integration calls user-service and
 
 ---
 
+## Naming: API key vs JWT
+
+| Env var | Role | Expires? |
+|---------|------|----------|
+| `AUTH_TOKEN_SECRET` | Signs **donor JWTs** (mobile → integration) | JWT yes (`AUTH_TOKEN_TTL_SECONDS`) |
+| `AI_ORCHESTRATION_INTERNAL_API_KEY` | **Service-to-service** static key (integration → AI) | No — rotate manually when needed |
+
+---
+
 ## Before you start
 
 - [Render](https://render.com) account (free tier is enough for demos).
 - GitHub repos connected to Render (same `sharingbridge` org).
-- Generate one shared internal token (PowerShell):
+- Generate one shared internal API key (PowerShell):
 
   ```powershell
   [Convert]::ToBase64String((1..32 | ForEach-Object { Get-Random -Maximum 256 }) -as [byte[]])
   ```
 
-  Use the same value for `AI_ORCHESTRATION_INTERNAL_TOKEN` on **ai-orchestration** and **integration-service**.
+  Use the same value for `AI_ORCHESTRATION_INTERNAL_API_KEY` on **ai-orchestration** and **integration-service** (static service API key, not an expiring user token).
 
 ---
 
@@ -73,7 +82,7 @@ Deploy in this order so URLs and secrets exist before wiring integration.
 
 | Key | Value |
 |-----|--------|
-| `AI_ORCHESTRATION_INTERNAL_TOKEN` | Same token you generated above |
+| `AI_ORCHESTRATION_INTERNAL_API_KEY` | Same API key you generated above |
 | `AI_LLM_MODE` | `deterministic` (no OpenAI key required) |
 | `SHARINGBRIDGE_WEBSITE_URL` | `pending` (default — no fake URL in courier text). When your site exists, set `https://your-real-site.example` |
 
@@ -104,7 +113,7 @@ Deploy in this order so URLs and secrets exist before wiring integration.
 | `PREFERENCES_BACKEND` | `user_service` |
 | `USER_SERVICE_BASE_URL` | User service URL (no trailing slash) |
 | `AI_ORCHESTRATION_BASE_URL` | AI orchestration URL (no trailing slash) |
-| `AI_ORCHESTRATION_INTERNAL_TOKEN` | Same as on ai-orchestration |
+| `AI_ORCHESTRATION_INTERNAL_API_KEY` | Same as on ai-orchestration |
 | `AI_ORCHESTRATION_TIMEOUT_MS` | `15000` |
 | `AI_SUGGEST_VENDORS_ENABLED` | `true` |
 | `AI_INSTRUCTION_PACK_ENABLED` | `true` |
@@ -184,7 +193,7 @@ Same env vars and order. Per service:
 |---------|-----|
 | `401 missing_auth_context` | Send `Authorization: Bearer <token>` from user-service |
 | `403` / invalid token | `AUTH_TOKEN_SECRET` mismatch between user and integration |
-| Suggest-vendors still mock-like | Check `AI_ORCHESTRATION_BASE_URL`, `AI_SUGGEST_VENDORS_ENABLED=true`, internal token on both AI + integration |
+| Suggest-vendors still mock-like | Check `AI_ORCHESTRATION_BASE_URL`, `AI_SUGGEST_VENDORS_ENABLED=true`, matching `AI_ORCHESTRATION_INTERNAL_API_KEY` on both services |
 | Orchestration timeout | Cold start: retry; increase `AI_ORCHESTRATION_TIMEOUT_MS` |
 | AI service **Exited with status 1** after Docker build | Open **Logs** for traceback. Clear **Start Command** on Render (must be empty for Docker). Redeploy latest `main` (uses `start.sh` + `python -m uvicorn`). |
 | Presets empty after redeploy | Expected on free tier without persistent disk; add disk or migrate DB |

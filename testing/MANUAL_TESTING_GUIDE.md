@@ -142,7 +142,7 @@ Coverage at a glance:
 | `test/features/donor_setup/data/http_donor_setup_api_client_test.dart` | retry-then-success, persistent 5xx, 4xx mapping, malformed JSON, no-retry on save 5xx, **`DELETE` clear presets**, **`POST` delete-item**, auth headers on the wire |
 | `test/features/donor_setup/presentation/donor_setup_page_test.dart` | search; **Copy link** / **Open vendor page** / **Suggest again**; confirm saves **without** collapsing list to saved-only; success status + snackbar; presets navigation; slow-load race; cache clear |
 | `test/features/donor_setup/presentation/donor_presets_page_test.dart` | saved-presets list; copy/open; per-row **Remove**; **Clear all** |
-| `test/features/donor_seeker_interaction/donor_seeker_interaction_page_test.dart` | home hub opens **Offer food help**; **Continue** → **Get AI delivery instructions** (injected stub) → copy enables **Open …**; snackbar after copy |
+| `test/features/donor_seeker_interaction/donor_seeker_interaction_page_test.dart` | home hub opens **Offer food help**; **Continue** → **Get AI delivery instructions** (injected stub) → **register donation intent** button → copy enables **Open …** |
 | `test/features/donor_seeker_interaction/delivery_instruction_stub_test.dart` | stub text: dignity, consent, presets; optional photo/verbal lines |
 | `test/widget_test.dart` | app boots with **SharingBridge** home hub (Donor setup + Offer food help) |
 
@@ -475,9 +475,19 @@ Uses the same authed **`GET …/preferences`** load as Donor Setup (saved preset
 1. From the home hub, tap **Offer food help**.
 2. **Step 1 — Guidance:** read dignity and **photo consent** text, then tap **Continue to photo and instructions**.
 3. **Step 2 — Photo and AI:** optionally tap **Add reference photo** (camera or gallery; requires OS permission the first time). Optionally fill **Handover notes**. Tap **Get AI delivery instructions** — the app calls `POST /v1/donor-seeker/instruction-pack` on integration-service (orchestration when enabled). If integration is unreachable, the app falls back to a **local stub**. Use the app bar **Back** arrow to return to guidance and clear the photo/notes for this session.
-4. **Step 3 — Paste in vendor app:** review the text in the filled card, tap **Copy instructions** (SnackBar confirms copy), then **Open …** rows unlock for each saved preset with a valid **http/https** link. Paste into the vendor app’s delivery-notes field.
+4. **Step 3 — Copy instructions and place order:** review the text in the filled card, tap **Copy instructions to clipboard and register donation intent**. The app copies to the clipboard and calls `POST /v1/donor-seeker/order-intents` on integration-service. On success you should see **Order intent registered** with a reference id and a SnackBar; **Open …** rows unlock for saved presets with valid **http/https** links. Paste into the vendor app’s delivery-notes field and complete payment there.
 
-If presets fail to load (offline/server), you can still generate stub copy; **Open …** stays disabled when there is no valid link.
+If presets fail to load (offline/server), you can still generate instructions; **Open …** stays disabled until registration succeeds. If order-intent registration fails, the SnackBar still confirms clipboard copy and you can open vendor apps manually.
+
+### 3f-b. Hosted backend + `flutter run` (Render)
+
+Use [configuration/mobile-client.md](../configuration/mobile-client.md). In one PowerShell session, in order:
+
+1. `cd` to `sharingbridge-mobile-app` (confirm `Test-Path .\pubspec.yaml` is `True`).
+2. Mint JWT: `POST https://sharingbridge-user-service.onrender.com/v1/auth/token` with `{"user_id":"demo-user"}`.
+3. `flutter run` with `--dart-define=API_BASE_URL=https://sharingbridge-integration-service.onrender.com`, `USER_ID`, and `AUTH_TOKEN=$token` (use the variable, not placeholder text).
+
+Walk through §3f on the device; step 3 button label must match **register donation intent**.
 
 ### 3d. Why Suggest Vendors and Saved presets can both look “static”
 
@@ -554,7 +564,8 @@ Use this after deploying per **[configuration/backend-render.md](../configuratio
 1. Confirm all three `/health` endpoints return `ok: true` (allow 30–60s on cold start).
 2. Mint a token from **hosted** user-service: `POST …/v1/auth/token` with `{"user_id":"demo-user"}`.
 3. Call **hosted** integration `POST …/v1/donor-setup/suggest-vendors` and `POST …/v1/donor-seeker/instruction-pack` with `Authorization: Bearer <token>`.
-4. Run the mobile app with `--dart-define=API_BASE_URL=<integration-url>` and the minted token (see [configuration/mobile-client.md](../configuration/mobile-client.md)).
+4. Optional: `POST …/v1/donor-seeker/order-intents` with the same Bearer token (see [configuration/backend-render.md](../configuration/backend-render.md) smoke script).
+5. Run the mobile app (see [configuration/mobile-client.md](../configuration/mobile-client.md) § Render — `cd` first, then mint token, then `flutter run`).
 
 If suggest-vendors or instruction-pack fail, verify `AI_ORCHESTRATION_BASE_URL`, `AI_*_ENABLED=true`, and matching `AI_ORCHESTRATION_INTERNAL_API_KEY` on integration and ai-orchestration.
 

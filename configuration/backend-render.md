@@ -111,7 +111,17 @@ Invoke-RestMethod -Method POST -Uri "$INT_URL/v1/donor-setup/suggest-vendors" `
 Invoke-RestMethod -Method POST -Uri "$INT_URL/v1/donor-seeker/instruction-pack" `
   -Headers $h -ContentType "application/json" `
   -Body '{"verbal_handover_notes":"Near main gate","has_reference_photo":false,"presets":[]}'
+
+Invoke-RestMethod -Method POST -Uri "$INT_URL/v1/donor-seeker/order-intents" `
+  -Headers $h -ContentType "application/json" `
+  -Body '{"pack_id":"smoke-pack-1","status":"instructions_copied","has_reference_photo":false,"presets_snapshot":[]}'
 ```
+
+---
+
+## Mobile app (after smoke)
+
+See [mobile-client.md](./mobile-client.md) — mint JWT, then `flutter run` from `sharingbridge-mobile-app`.
 
 ---
 

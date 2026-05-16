@@ -106,7 +106,7 @@ $h = @{ Authorization = "Bearer $token" }
 
 Invoke-RestMethod -Method POST -Uri "$INT_URL/v1/donor-setup/suggest-vendors" `
   -Headers $h -ContentType "application/json" `
-  -Body '{"query":"biryani","location":"Chennai"}'
+  -Body '{"query_text":"biryani","location_precision":"manual","manual_area":"Chennai"}'
 
 Invoke-RestMethod -Method POST -Uri "$INT_URL/v1/donor-seeker/instruction-pack" `
   -Headers $h -ContentType "application/json" `

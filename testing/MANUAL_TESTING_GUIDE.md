@@ -547,6 +547,19 @@ See `development/USER_SERVICE_PREFERENCES_MIGRATION.md` for the full cutover che
 
 Earlier MVP builds stored a field draft under `sharingbridge_field_interaction_draft_v1`. The current **Offer food help** screen does **not** use that key. To reset mobile state, use app data clear / uninstall only if you need a full wipe; donor-setup offline cache is separate (see **Clear cache / Sign out** on Donor Setup and §4 intro).
 
+## 4. Hosted backend smoke (Render)
+
+Use this after deploying per **[DEPLOY_RENDER.md](../development/DEPLOY_RENDER.md)** (Track A).
+
+1. Confirm all three `/health` endpoints return `ok: true` (allow 30–60s on cold start).
+2. Mint a token from **hosted** user-service: `POST …/v1/auth/token` with `{"user_id":"demo-user"}`.
+3. Call **hosted** integration `POST …/v1/donor-setup/suggest-vendors` and `POST …/v1/donor-seeker/instruction-pack` with `Authorization: Bearer <token>`.
+4. Run the mobile app with `--dart-define=API_BASE_URL=<integration-url>` and the minted token (see DEPLOY_RENDER § *Point the mobile app*).
+
+If suggest-vendors or instruction-pack fail, verify `AI_ORCHESTRATION_BASE_URL`, `AI_*_ENABLED=true`, and matching `AI_ORCHESTRATION_INTERNAL_TOKEN` on integration and ai-orchestration.
+
+---
+
 ## 5. What "good" looks like (acceptance summary)
 
 - `python -m pytest -q` in `sharingbridge-ai-orchestration` reports `3 passed`.

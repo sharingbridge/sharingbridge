@@ -131,7 +131,8 @@ Tasks #1-#5 are complete. Remaining priority order:
    - Run backfill + `PREFERENCES_BACKEND=user_service` in a staging environment; confirm donor-setup flows.
    - Remove `PreferencesStore` / `LocalPreferencesRepository` when no deployment needs local file mode.
 
-3. **AI platform + field slice.** Orchestration bridge + instruction-pack API + mobile **Quick guidance** shipped. Next: deploy orchestration to Render/Railway, optional `AI_LLM_MODE=openai`, then photo upload + delivery match (location-safety deferred).
+3. **Track A — hosted MVP backend.** Follow **[DEPLOY_RENDER.md](./DEPLOY_RENDER.md)** (Render Blueprint/`render.yaml` + Dockerfiles in each service repo). Smoke: MANUAL_TESTING_GUIDE §4. Then **Track B:** `sharingbridge-photo-service` + mobile upload.
+4. **AI platform + field slice (after deploy).** Optional `AI_LLM_MODE=openai`; delivery photo match (location-safety deferred).
 
 ## Follow-ups Surfaced in Prior Sessions
 - Backfill tooling: `sharingbridge-integration-service` → `npm run backfill:user-service-presets` (documented in `development/USER_SERVICE_PREFERENCES_MIGRATION.md`).

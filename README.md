@@ -30,7 +30,7 @@ Product-level assumptions are maintained in one place: [SharingBridge_Business_R
 - [Technical Architecture](design/SharingBridge_Technical_Architecture.md) - Detailed technical design
 - [API Contracts](design/contracts/donor_setup_suggest_vendors.openapi.yaml) - Shared request/response contracts and examples
 - [Implementation Approach](development/IMPLEMENTATION_APPROACH.md) - Development strategy and free-tier options
-- [Deploy to Render (MVP backend)](development/DEPLOY_RENDER.md) - Host user, integration, and ai-orchestration services
+- [Configuration](./configuration/README.md) - Render deploy, auth, mobile client, field handoff
 - [AI Platform Integration](development/AI_PLATFORM_INTEGRATION.md) - LangChain/orchestration hosting, model APIs, and bridges from mobile/backend to AI modules (planned)
 - [MVP Bootstrap Issues](development/MVP_BOOTSTRAP_ISSUES.md) - Per-repo kickoff issue/checklist definitions
 - [Agent Handoff](development/AGENT_HANDOFF.md) - Live coordination doc and next recommended tasks
@@ -140,7 +140,7 @@ We welcome contributors from all backgrounds - technical and non-technical!
 
 - **Technical Contributors:** Developers, DevOps, AI/ML engineers - see [CALL_FOR_CONTRIBUTORS.md](development/CALL_FOR_CONTRIBUTORS.md)
 - **Non-Technical Contributors:** Humanitarian workers, legal advisors, community volunteers, government liaisons - your expertise is crucial! Join our GitHub Discussions.
-- **AI-Assisted Development:** Most artifacts are generated through AI-assisted coding sessions. The live coordination doc is [AGENT_HANDOFF.md](development/AGENT_HANDOFF.md).
+- **AI-Assisted Development:** Code and docs are produced through AI-assisted sessions. Coordination: [AGENT_HANDOFF.md](development/AGENT_HANDOFF.md). Run/deploy setup: [configuration/](configuration/README.md).
 
 See [CALL_FOR_CONTRIBUTORS.md](development/CALL_FOR_CONTRIBUTORS.md) for detailed guidance.
 

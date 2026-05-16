@@ -84,24 +84,9 @@ docker-compose up
 # Total cost: $0
 ```
 
-**Render.com Setup (Detailed):**
-1. Sign in to `render.com` and click **New +** -> **Web Service**.
-2. Connect/select your GitHub repository and target branch (for example `main`).
-3. Choose deployment mode:
-   - **Docker** (if repo has a `Dockerfile`), or
-   - **Native build/start commands** (if not using Docker).
-4. Configure service settings:
-   - Build command / start command (or Docker auto-detection)
-   - Region
-   - Health check path (for example `/health`)
-5. Set environment variables in the Render dashboard:
-   - Open service -> **Environment** / **Environment Variables**
-   - Add required secrets (`DATABASE_URL`, `REDIS_URL`, `JWT_SECRET`, API keys, etc.)
-   - Save changes
-6. Trigger first deploy and confirm service URL responds.
-7. Enable/keep **Auto-Deploy** so new commits to the selected branch redeploy automatically.
+**Render (SharingBridge MVP backend):** See [configuration/backend-render.md](../configuration/backend-render.md).
 
-**Note:** Keep real secrets only in Render/local `.env`; commit only `.env.example` placeholders to Git.
+**Note:** Keep real secrets in Render dashboard or local `.env` only; commit `.env.example` placeholders to Git.
 
 **Tech debt (post‑MVP / AWS scale-out):** MVP targets (Render.com / Railway.app) use **platform environment variables** for `AUTH_TOKEN_SECRET` and related config—no separate paid “secrets manager” product is required for the first deploy. Centralized secret storage (e.g. AWS Secrets Manager, SSM Parameter Store with KMS, HashiCorp Vault) and **eliminating dev-default fallbacks in non-local environments** are **deferred** until after MVP or when workloads move to AWS as described later in this doc.
 

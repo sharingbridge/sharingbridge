@@ -549,12 +549,12 @@ Earlier MVP builds stored a field draft under `sharingbridge_field_interaction_d
 
 ## 4. Hosted backend smoke (Render)
 
-Use this after deploying per **[DEPLOY_RENDER.md](../development/DEPLOY_RENDER.md)** (Track A).
+Use this after deploying per **[configuration/backend-render.md](../configuration/backend-render.md)** (Track A).
 
 1. Confirm all three `/health` endpoints return `ok: true` (allow 30–60s on cold start).
 2. Mint a token from **hosted** user-service: `POST …/v1/auth/token` with `{"user_id":"demo-user"}`.
 3. Call **hosted** integration `POST …/v1/donor-setup/suggest-vendors` and `POST …/v1/donor-seeker/instruction-pack` with `Authorization: Bearer <token>`.
-4. Run the mobile app with `--dart-define=API_BASE_URL=<integration-url>` and the minted token (see DEPLOY_RENDER § *Point the mobile app*).
+4. Run the mobile app with `--dart-define=API_BASE_URL=<integration-url>` and the minted token (see [configuration/mobile-client.md](../configuration/mobile-client.md)).
 
 If suggest-vendors or instruction-pack fail, verify `AI_ORCHESTRATION_BASE_URL`, `AI_*_ENABLED=true`, and matching `AI_ORCHESTRATION_INTERNAL_API_KEY` on integration and ai-orchestration.
 

@@ -126,7 +126,7 @@ Integration-service maps public routes to these internal calls and attaches `use
 
 ## Hosting the AI modules (platform setup)
 
-Align with [IMPLEMENTATION_APPROACH.md](./IMPLEMENTATION_APPROACH.md) free tier (Render/Railway) for MVP; model keys in dashboard env vars (secrets manager deferred).
+Align with [IMPLEMENTATION_APPROACH.md](./IMPLEMENTATION_APPROACH.md) free tier (Render/Railway) for MVP; model keys in dashboard env vars (secrets manager deferred). **Render deploy:** [configuration/backend-render.md](../configuration/backend-render.md).
 
 ### Option A — Recommended MVP
 

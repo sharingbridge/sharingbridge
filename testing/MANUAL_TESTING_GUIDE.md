@@ -504,10 +504,11 @@ Empty state is normal before any intent is registered. Requires the same `AUTH_T
 
 Repository: `sharingbridge-web-app`. See [configuration/web-client.md](../configuration/web-client.md).
 
-1. On **integration-service**, set `WEB_CORS_ORIGINS=http://localhost:5173` (or your deployed web URL) and redeploy.
-2. `cd sharingbridge-web-app`, `npm install`, `npm run dev`, open http://localhost:5173.
-3. Mint JWT from user-service (same as mobile). Enter integration URL, user id, and token → **Connect**.
-4. After a mobile **Help a seeker** copy (§3f), **Refresh** — list and detail should match mobile history.
+1. On **integration-service**, set `WEB_CORS_ORIGINS=http://localhost:5173` (local only; production integration should use production web URL only) and redeploy.
+2. `cd sharingbridge-web-app`, `copy .env.example .env`, `npm install`, `npm run dev`, open http://localhost:5173.
+3. Mint JWT from user-service (same as mobile). In **ModHeader**, set `Authorization: Bearer <token>` for the integration host (do not paste token into the web page).
+4. Click **Refresh** on the dashboard. After a mobile **Help a seeker** copy (§3f), list and detail should match mobile history.
+5. Optional local shortcut: `VITE_AUTH_MODE=env` and `VITE_AUTH_TOKEN` in `.env` (never commit).
 
 ### 3d. Why Suggest Vendors and Saved presets can both look “static”
 

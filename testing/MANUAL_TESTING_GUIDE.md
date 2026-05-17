@@ -475,7 +475,8 @@ Uses the same authed **`GET …/preferences`** load as Donor Setup (saved preset
 1. From the home hub, tap **Offer food help**.
 2. **Step 1 — Guidance:** read dignity and **photo consent** text, then tap **Continue to photo and instructions**.
 3. **Step 2 — Photo and AI:** optionally tap **Add reference photo** (camera or gallery; requires OS permission the first time). Optionally fill **Handover notes**. Tap **Get AI delivery instructions** — the app calls `POST /v1/donor-seeker/instruction-pack` on integration-service (orchestration when enabled). If integration is unreachable, the app falls back to a **local stub**. Use the app bar **Back** arrow to return to guidance and clear the photo/notes for this session.
-4. **Step 3 — Copy instructions and place order:** review the text in the filled card, tap **Copy instructions to clipboard and register donation intent**. The app copies to the clipboard and calls `POST /v1/donor-seeker/order-intents` on integration-service. On success you should see **Order intent registered** with a reference id and a SnackBar; **Open …** rows unlock for saved presets with valid **http/https** links. Paste into the vendor app’s delivery-notes field and complete payment there.
+4. **Step 3 — Copy instructions and place order:** review the text in the filled card, tap **Copy instructions to clipboard and register donation intent**. The app copies to the clipboard and calls `POST /v1/donor-seeker/order-intents` on integration-service. On first success you should see **Order intent registered** with a reference id and a SnackBar saying **Donation intent registered**; **Open …** rows unlock for saved presets with valid **http/https** links. Paste into the vendor app’s delivery-notes field and complete payment there.
+5. **Repeat tap (same session):** tap the same button again without regenerating instructions. The server **updates** the existing intent for that `pack_id` (same reference id, HTTP `200`, `created: false` in the API body) — it does **not** create a second row. The SnackBar should say **Donation intent updated**; the reference id on screen stays the same.
 
 If presets fail to load (offline/server), you can still generate instructions; **Open …** stays disabled until registration succeeds. If order-intent registration fails, the SnackBar still confirms clipboard copy and you can open vendor apps manually.
 
@@ -564,8 +565,8 @@ Use this after deploying per **[configuration/backend-render.md](../configuratio
 1. Confirm all three `/health` endpoints return `ok: true` (allow 30–60s on cold start).
 2. Mint a token from **hosted** user-service: `POST …/v1/auth/token` with `{"user_id":"demo-user"}`.
 3. Call **hosted** integration `POST …/v1/donor-setup/suggest-vendors` and `POST …/v1/donor-seeker/instruction-pack` with `Authorization: Bearer <token>`.
-4. Optional: `POST …/v1/donor-seeker/order-intents` with the same Bearer token (see [configuration/backend-render.md](../configuration/backend-render.md) smoke script).
-5. Run the mobile app (see [configuration/mobile-client.md](../configuration/mobile-client.md) § Render — `cd` first, then mint token, then `flutter run`).
+4. `POST …/v1/donor-seeker/order-intents` with the same Bearer token (see [configuration/backend-render.md](../configuration/backend-render.md) smoke script). First call returns HTTP **201** and `created: true`. Repeat the **same** `pack_id` — expect HTTP **200**, `created: false`, and the **same** `order_intent_id`.
+5. Run the mobile app (see [configuration/mobile-client.md](../configuration/mobile-client.md) § Render — `cd` first, then mint token, then `flutter run`). In §3f step 3, repeat the copy button and confirm **Donation intent updated** with an unchanged reference id.
 
 If suggest-vendors or instruction-pack fail, verify `AI_ORCHESTRATION_BASE_URL`, `AI_*_ENABLED=true`, and matching `AI_ORCHESTRATION_INTERNAL_API_KEY` on integration and ai-orchestration.
 
@@ -588,4 +589,4 @@ If suggest-vendors or instruction-pack fail, verify `AI_ORCHESTRATION_BASE_URL`,
   saving new picks (full mock list remains after save; **Saved presets** shows server truth),
   and falling back to the local cache when the backend is offline.
 - Step **2i** returns a non-empty `delivery_instructions` string when orchestration is enabled.
-- Step **3f** walks **Offer food help** (guidance → photo/notes + instruction-pack API or fallback → copy + vendor links).
+- Step **3f** walks **Offer food help** (guidance → photo/notes + instruction-pack API or fallback → copy + vendor links; repeat copy updates the same donation intent).

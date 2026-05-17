@@ -112,9 +112,15 @@ Invoke-RestMethod -Method POST -Uri "$INT_URL/v1/donor-seeker/instruction-pack" 
   -Headers $h -ContentType "application/json" `
   -Body '{"verbal_handover_notes":"Near main gate","has_reference_photo":false,"presets":[]}'
 
-Invoke-RestMethod -Method POST -Uri "$INT_URL/v1/donor-seeker/order-intents" `
+$oi = Invoke-RestMethod -Method POST -Uri "$INT_URL/v1/donor-seeker/order-intents" `
   -Headers $h -ContentType "application/json" `
   -Body '{"pack_id":"smoke-pack-1","status":"instructions_copied","has_reference_photo":false,"presets_snapshot":[]}'
+# First POST: HTTP 201, created: true
+
+$oi2 = Invoke-RestMethod -Method POST -Uri "$INT_URL/v1/donor-seeker/order-intents" `
+  -Headers $h -ContentType "application/json" `
+  -Body '{"pack_id":"smoke-pack-1","status":"instructions_copied","has_reference_photo":true,"verbal_handover_notes":"repeat tap"}'
+# Repeat same pack_id: HTTP 200, created: false, same order_intent_id as $oi.order_intent_id
 ```
 
 ---

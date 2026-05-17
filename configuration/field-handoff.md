@@ -24,9 +24,11 @@ When the donor taps the step 3 button, the app:
 1. Copies `delivery_instructions` to the clipboard.
 2. Calls `POST /v1/donor-seeker/order-intents` on **integration-service** (authenticated).
 
+Repeated taps for the **same instruction pack** (`pack_id`) update the existing intent (same `order_intent_id`, new `updated_at`) instead of creating duplicates. The mobile client also sends `order_intent_id` when it already has one from an earlier tap in the session.
+
 Stored fields include `pack_id`, preset snapshot, reference-photo flag, and verbal notes. Data is file-backed on integration (`data/order-intents.json`) for MVP.
 
-**Verify (local or Render):** after copy, the app shows **Order intent registered** with a reference id, or an error SnackBar if the API fails (clipboard copy still succeeds).
+**Verify (local or Render):** after the first copy, the app shows **Order intent registered** with a reference id. A second tap on the same pack updates that intent (SnackBar **Donation intent updated**, same reference id). On API failure, clipboard copy still succeeds and an error SnackBar is shown.
 
 ## Donation intent dashboard (planned)
 

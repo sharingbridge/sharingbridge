@@ -59,9 +59,9 @@ Android emulator: `http://10.0.2.2:8080` for integration.
 
 | Screen | Backend |
 |--------|---------|
-| Donor setup | integration — suggest-vendors, save/load presets |
-| Offer food help | instruction-pack + `POST …/order-intents` on copy — see [field-handoff.md](./field-handoff.md) |
-| Donation history | `GET …/order-intents` — list and detail on home hub |
+| Vendor presets | integration — suggest-vendors, save/load presets |
+| Help a seeker | instruction-pack + `POST …/order-intents` on copy — see [field-handoff.md](./field-handoff.md) |
+| Order initiation history | `GET …/order-intents` — list and detail on home hub (after Help a seeker) |
 
 Offline: presets may cache in `shared_preferences` when integration is unreachable.
 

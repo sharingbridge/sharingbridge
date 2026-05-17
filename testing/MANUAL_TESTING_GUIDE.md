@@ -142,10 +142,10 @@ Coverage at a glance:
 | `test/features/donor_setup/data/http_donor_setup_api_client_test.dart` | retry-then-success, persistent 5xx, 4xx mapping, malformed JSON, no-retry on save 5xx, **`DELETE` clear presets**, **`POST` delete-item**, auth headers on the wire |
 | `test/features/donor_setup/presentation/donor_setup_page_test.dart` | search; **Copy link** / **Open vendor page** / **Suggest again**; confirm saves **without** collapsing list to saved-only; success status + snackbar; presets navigation; slow-load race; cache clear |
 | `test/features/donor_setup/presentation/donor_presets_page_test.dart` | saved-presets list; copy/open; per-row **Remove**; **Clear all** |
-| `test/features/donor_seeker_interaction/donor_seeker_interaction_page_test.dart` | home hub opens **Offer food help**; **Continue** → **Get AI delivery instructions** (injected stub) → **register donation intent** button → copy enables **Open …** |
-| `test/features/donor_seeker_interaction/donation_history_page_test.dart` | home hub → **Donation history**; list + detail with injected intents; empty state |
+| `test/features/donor_seeker_interaction/donor_seeker_interaction_page_test.dart` | home hub opens **Help a seeker**; **Continue** → **Get AI delivery instructions** (injected stub) → **register donation intent** button → copy enables **Open …** |
+| `test/features/donor_seeker_interaction/donation_history_page_test.dart` | home hub → **Order initiation history**; list + detail with injected intents; empty state |
 | `test/features/donor_seeker_interaction/delivery_instruction_stub_test.dart` | stub text: dignity, consent, presets; optional photo/verbal lines |
-| `test/widget_test.dart` | app boots with **SharingBridge** home hub (Donor setup + Offer food help) |
+| `test/widget_test.dart` | app boots with **SharingBridge** home hub (Vendor presets + Help a seeker + Order initiation history) |
 
 Expected last line: `All tests passed!`.
 
@@ -454,7 +454,7 @@ The mobile client now sends only `Authorization: Bearer <AUTH_TOKEN>`.
 
 ### 3c. Walkthrough on the app
 
-1. App opens to the **SharingBridge** home hub with **Donor setup** and **Offer food help**. Tap **Donor setup** to open **Donor Setup** (same flow as before hub shipped). Because step 2c saved presets for
+1. App opens to the **SharingBridge** home hub with **Vendor presets**, **Help a seeker**, and **Order initiation history**. Tap **Vendor presets** to open the presets screen (same flow as before hub shipped). Because step 2c saved presets for
    `alice`, the page shows status "Loaded saved presets from server."
 2. Type something like `zomato a2b mini meals` → tap **Suggest Vendors** (or **Suggest again**). With **orchestration enabled** (§2a.1), rankings change with query keywords; with flags off, the list is the **same fixed mock** every time. Each row shows the **full** menu line, **Copy link**, and **Open vendor page** when the URL is `http`/`https`. Auth-protected endpoints carry `Authorization: Bearer <signed token>`.
 3. Check one or more suggestions → tap **Confirm and Save Presets**.
@@ -469,11 +469,11 @@ The mobile client now sends only `Authorization: Bearer <AUTH_TOKEN>`.
    connection and retry." instead of stack traces.
 6. **Saved presets / order links**: tap the app-bar icon with tooltip **Saved presets** → **Saved presets** loads from the server (`GET /v1/donor-setup/preferences`). Each row shows the **order URL** (selectable text), **Copy link**, and **Open link**. Per-row **Remove** calls integration `POST /v1/donor-setup/preferences/delete-item` (user-service: `POST /v1/users/{id}/donor-presets/delete-item` when that backend is on). **Clear all** uses `DELETE …/preferences`. Pull-to-refresh reloads the list.
 
-### 3f. Offer food help (donor–seeker handoff)
+### 3f. Help a seeker (donor–seeker handoff)
 
 Uses the same authed **`GET …/preferences`** load as Donor Setup (saved presets). There is **no** separate field-flow draft in `shared_preferences` for this screen. The flow is **three steps** (see the step label at the top of the screen).
 
-1. From the home hub, tap **Offer food help**.
+1. From the home hub, tap **Help a seeker**.
 2. **Step 1 — Guidance:** read dignity and **photo consent** text, then tap **Continue to photo and instructions**.
 3. **Step 2 — Photo and AI:** optionally tap **Add reference photo** (camera or gallery; requires OS permission the first time). Optionally fill **Handover notes**. Tap **Get AI delivery instructions** — the app calls `POST /v1/donor-seeker/instruction-pack` on integration-service (orchestration when enabled). If integration is unreachable, the app falls back to a **local stub**. Use the app bar **Back** arrow to return to guidance and clear the photo/notes for this session.
 4. **Step 3 — Copy instructions and place order:** review the text in the filled card, tap **Copy instructions to clipboard and register donation intent**. The app copies to the clipboard and calls `POST /v1/donor-seeker/order-intents` on integration-service. On first success you should see **Order intent registered** with a reference id and a SnackBar saying **Donation intent registered**; **Open …** rows unlock for saved presets with valid **http/https** links. Paste into the vendor app’s delivery-notes field and complete payment there.
@@ -491,11 +491,11 @@ Use [configuration/mobile-client.md](../configuration/mobile-client.md). In one 
 
 Walk through §3f on the device; step 3 button label must match **register donation intent**.
 
-### 3g. Donation history (mobile dashboard)
+### 3g. Order initiation history (mobile dashboard)
 
-1. From the home hub, tap **Donation history**.
+1. From the home hub, tap **Order initiation history** (listed after **Help a seeker**).
 2. The app calls `GET /v1/donor-seeker/order-intents` with your Bearer token (newest first).
-3. After at least one successful **Offer food help** copy (§3f), you should see a row with the same reference id. Pull to refresh after registering another intent.
+3. After at least one successful **Help a seeker** copy (§3f), you should see a row with the same reference id. Pull to refresh after registering another intent.
 4. Tap a row → detail shows pack id, status, notes, and preset snapshot.
 
 Empty state is normal before any intent is registered. Requires the same `AUTH_TOKEN` / `API_BASE_URL` as other flows.
@@ -599,4 +599,4 @@ If suggest-vendors or instruction-pack fail, verify `AI_ORCHESTRATION_BASE_URL`,
   saving new picks (full mock list remains after save; **Saved presets** shows server truth),
   and falling back to the local cache when the backend is offline.
 - Step **2i** returns a non-empty `delivery_instructions` string when orchestration is enabled.
-- Step **3f** walks **Offer food help** (guidance → photo/notes + instruction-pack API or fallback → copy + vendor links; repeat copy updates the same donation intent).
+- Step **3f** walks **Help a seeker** (guidance → photo/notes + instruction-pack API or fallback → copy + vendor links; repeat copy updates the same order initiation).

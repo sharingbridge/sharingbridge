@@ -1,6 +1,6 @@
-# Field handoff configuration (Offer food help)
+# Field handoff configuration (Help a seeker)
 
-Mobile: **Offer food help** (`sharingbridge-mobile-app`).
+Mobile: **Help a seeker** (`sharingbridge-mobile-app`; home hub label).
 
 ## BRD step 4 — guidance (not a safety score)
 
@@ -35,7 +35,7 @@ Stored fields include `pack_id`, preset snapshot, reference-photo flag, and verb
 | Surface | Status |
 |---------|--------|
 | `GET /v1/donor-seeker/order-intents` | **Shipped** (integration-service, Bearer auth, newest first) |
-| Mobile **Donation history** (home hub) | **Shipped** — list + detail |
+| Mobile **Order initiation history** (home hub, after Help a seeker) | **Shipped** — list + detail |
 | Web ops view | **Planned** (next slice) |
 
 ## Backend services

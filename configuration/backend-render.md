@@ -72,6 +72,7 @@ Optional: persistent disk at `/app/data`.
 | `AI_ORCHESTRATION_BASE_URL` | `https://<ai-host>` (no trailing `/`) |
 | `AI_ORCHESTRATION_INTERNAL_API_KEY` | same as ai-orchestration |
 | `AI_ORCHESTRATION_TIMEOUT_MS` | `15000` |
+| `WEB_CORS_ORIGINS` | web app origin(s), e.g. `http://localhost:5173` or your static site URL (comma-separated) |
 | `AI_SUGGEST_VENDORS_ENABLED` | `true` |
 | `AI_INSTRUCTION_PACK_ENABLED` | `true` |
 

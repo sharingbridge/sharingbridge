@@ -500,6 +500,15 @@ Walk through §3f on the device; step 3 button label must match **register donat
 
 Empty state is normal before any intent is registered. Requires the same `AUTH_TOKEN` / `API_BASE_URL` as other flows.
 
+### 3h. Order initiation history (web dashboard)
+
+Repository: `sharingbridge-web-app`. See [configuration/web-client.md](../configuration/web-client.md).
+
+1. On **integration-service**, set `WEB_CORS_ORIGINS=http://localhost:5173` (or your deployed web URL) and redeploy.
+2. `cd sharingbridge-web-app`, `npm install`, `npm run dev`, open http://localhost:5173.
+3. Mint JWT from user-service (same as mobile). Enter integration URL, user id, and token → **Connect**.
+4. After a mobile **Help a seeker** copy (§3f), **Refresh** — list and detail should match mobile history.
+
 ### 3d. Why Suggest Vendors and Saved presets can both look “static”
 
 - **Suggest Vendors** uses `POST /v1/donor-setup/suggest-vendors`. With **`AI_SUGGEST_VENDORS_ENABLED`** and orchestration running, results are **query-ranked**; without those env vars, the integration service returns a **fixed mock** (three venues). That is expected until a live LLM provider is enabled.

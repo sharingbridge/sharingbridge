@@ -36,7 +36,7 @@ Stored fields include `pack_id`, preset snapshot, reference-photo flag, and verb
 |---------|--------|
 | `GET /v1/donor-seeker/order-intents` | **Shipped** (integration-service, Bearer auth, newest first) |
 | Mobile **Order initiation history** (home hub, after Help a seeker) | **Shipped** — list + detail |
-| Web ops view | **Planned** (next slice) |
+| Web **Order initiation history** | **Shipped** (`sharingbridge-web-app`) |
 
 ## Backend services
 

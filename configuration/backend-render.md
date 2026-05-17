@@ -44,6 +44,7 @@ See [authentication.md](./authentication.md) for secret generation.
 
 | Key | Value |
 |-----|--------|
+| `WEB_CORS_ORIGINS` | same web origin(s) as integration (for browser sign-in) |
 | `AUTH_TOKEN_SECRET` | generated |
 | `AUTH_TOKEN_ISSUER` | `sharingbridge-user-service` |
 | `AUTH_TOKEN_AUDIENCE` | `sharingbridge-clients` |

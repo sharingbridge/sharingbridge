@@ -30,14 +30,13 @@ Stored fields include `pack_id`, preset snapshot, reference-photo flag, and verb
 
 **Verify (local or Render):** after the first copy, the app shows **Order intent registered** with a reference id. A second tap on the same pack updates that intent (SnackBar **Donation intent updated**, same reference id). On API failure, clipboard copy still succeeds and an error SnackBar is shown.
 
-## Donation intent dashboard (planned)
+## Donation intent dashboard
 
-A **list/history UI** on mobile and web is **not shipped**. Planned work:
-
-- `GET /v1/donor-seeker/order-intents` (or order-service timeline) for the signed-in donor
-- Mobile screen and web ops view to browse past intents and status
-
-Until then, intents are persisted on the server for API inspection and future dashboards only.
+| Surface | Status |
+|---------|--------|
+| `GET /v1/donor-seeker/order-intents` | **Shipped** (integration-service, Bearer auth, newest first) |
+| Mobile **Donation history** (home hub) | **Shipped** — list + detail |
+| Web ops view | **Planned** (next slice) |
 
 ## Backend services
 

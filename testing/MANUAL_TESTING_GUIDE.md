@@ -143,6 +143,7 @@ Coverage at a glance:
 | `test/features/donor_setup/presentation/donor_setup_page_test.dart` | search; **Copy link** / **Open vendor page** / **Suggest again**; confirm saves **without** collapsing list to saved-only; success status + snackbar; presets navigation; slow-load race; cache clear |
 | `test/features/donor_setup/presentation/donor_presets_page_test.dart` | saved-presets list; copy/open; per-row **Remove**; **Clear all** |
 | `test/features/donor_seeker_interaction/donor_seeker_interaction_page_test.dart` | home hub opens **Offer food help**; **Continue** → **Get AI delivery instructions** (injected stub) → **register donation intent** button → copy enables **Open …** |
+| `test/features/donor_seeker_interaction/donation_history_page_test.dart` | home hub → **Donation history**; list + detail with injected intents; empty state |
 | `test/features/donor_seeker_interaction/delivery_instruction_stub_test.dart` | stub text: dignity, consent, presets; optional photo/verbal lines |
 | `test/widget_test.dart` | app boots with **SharingBridge** home hub (Donor setup + Offer food help) |
 
@@ -489,6 +490,15 @@ Use [configuration/mobile-client.md](../configuration/mobile-client.md). In one 
 3. `flutter run` with `--dart-define=API_BASE_URL=https://sharingbridge-integration-service.onrender.com`, `USER_ID`, and `AUTH_TOKEN=$token` (use the variable, not placeholder text).
 
 Walk through §3f on the device; step 3 button label must match **register donation intent**.
+
+### 3g. Donation history (mobile dashboard)
+
+1. From the home hub, tap **Donation history**.
+2. The app calls `GET /v1/donor-seeker/order-intents` with your Bearer token (newest first).
+3. After at least one successful **Offer food help** copy (§3f), you should see a row with the same reference id. Pull to refresh after registering another intent.
+4. Tap a row → detail shows pack id, status, notes, and preset snapshot.
+
+Empty state is normal before any intent is registered. Requires the same `AUTH_TOKEN` / `API_BASE_URL` as other flows.
 
 ### 3d. Why Suggest Vendors and Saved presets can both look “static”
 

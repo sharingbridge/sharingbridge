@@ -121,6 +121,9 @@ $oi2 = Invoke-RestMethod -Method POST -Uri "$INT_URL/v1/donor-seeker/order-inten
   -Headers $h -ContentType "application/json" `
   -Body '{"pack_id":"smoke-pack-1","status":"instructions_copied","has_reference_photo":true,"verbal_handover_notes":"repeat tap"}'
 # Repeat same pack_id: HTTP 200, created: false, same order_intent_id as $oi.order_intent_id
+
+Invoke-RestMethod -Uri "$INT_URL/v1/donor-seeker/order-intents" -Headers $h
+# Lists order_intents for the token subject (newest first)
 ```
 
 ---

@@ -18,6 +18,19 @@ SharingBridge MVP uses **two separate secrets**. They must not be confused.
 2. user-service signs a JWT (HS256) with `AUTH_TOKEN_SECRET`.
 3. Client calls **integration-service** with `Authorization: Bearer <jwt>`.
 
+**Identity on integration-service**
+
+- The JWT subject (`sub` / donor `user_id`) is the authenticated user.
+- Clients may omit `user_id` in JSON bodies and query strings when sending a valid Bearer token (mobile and web do this).
+- If both Bearer and `user_id` are sent, they **must match** or integration returns HTTP **403** `user_id_mismatch`.
+
+**Clients**
+
+| Client | How it gets a JWT |
+|--------|-------------------|
+| Mobile | Mint before `flutter run`; pass `--dart-define=AUTH_TOKEN=…` — see [mobile-client.md](./mobile-client.md) |
+| Web dashboard | In-app sign-in → user-service `POST /v1/auth/token` — see [web-client.md](./web-client.md) |
+
 **Render env (user-service and integration)**
 
 | Key | Typical value |
@@ -34,6 +47,10 @@ Generate (PowerShell):
 ```
 
 **Not in MVP:** OAuth2, Google/Apple sign-in, or federated IdP. Those would replace this stub in a later phase.
+
+### Browser clients (CORS, not a third secret)
+
+Web sign-in and dashboard API calls require **`WEB_CORS_ORIGINS`** on **both** user-service and integration-service (comma-separated origins). This is separate from `AUTH_TOKEN_SECRET`. See [web-client.md](./web-client.md) and [backend-render.md](./backend-render.md).
 
 ---
 
@@ -56,7 +73,8 @@ If unset on ai-orchestration, internal LLM routes allow unauthenticated calls (l
 
 ## Summary
 
-| Credential | Mobile sees it? | Expires? |
-|------------|-----------------|----------|
-| JWT (via `AUTH_TOKEN_SECRET`) | Yes (Bearer token) | Yes |
-| `AI_ORCHESTRATION_INTERNAL_API_KEY` | No | No |
+| Credential / setting | Mobile | Web | Expires? |
+|----------------------|--------|-----|----------|
+| JWT (via `AUTH_TOKEN_SECRET`) | Bearer in `AUTH_TOKEN` | Bearer in sessionStorage | Yes |
+| `AI_ORCHESTRATION_INTERNAL_API_KEY` | No | No | No (rotate manually) |
+| `WEB_CORS_ORIGINS` | N/A | Required on both backends | N/A |

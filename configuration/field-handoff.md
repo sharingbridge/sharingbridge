@@ -22,7 +22,9 @@ Handover suitability is **fixed in-app guidance**, not a backend geo score.
 When the donor taps the step 3 button, the app:
 
 1. Copies `delivery_instructions` to the clipboard.
-2. Calls `POST /v1/donor-seeker/order-intents` on **integration-service** (authenticated).
+2. Calls `POST /v1/donor-seeker/order-intents` on **integration-service** (Bearer JWT).
+
+When `AUTH_TOKEN` is set, the mobile client does **not** send `user_id` in the body — integration uses the JWT subject. See [mobile-client.md](./mobile-client.md) and [authentication.md](./authentication.md).
 
 Repeated taps for the **same instruction pack** (`pack_id`) update the existing intent (same `order_intent_id`, new `updated_at`) instead of creating duplicates. The mobile client also sends `order_intent_id` when it already has one from an earlier tap in the session.
 
@@ -36,7 +38,9 @@ Stored fields include `pack_id`, preset snapshot, reference-photo flag, and verb
 |---------|--------|
 | `GET /v1/donor-seeker/order-intents` | **Shipped** (integration-service, Bearer auth, newest first) |
 | Mobile **Order initiation history** (home hub, after Help a seeker) | **Shipped** — list + detail |
-| Web **Order initiation history** | **Shipped** (`sharingbridge-web-app`) |
+| Web **Order initiation history** | **Shipped** (`sharingbridge-web-app`) — [web-client.md](./web-client.md) |
+
+**Coordinator web wiring:** same donor `user_id` on sign-in as on mobile, and the same integration base URL (`VITE_API_BASE_URL` = mobile `API_BASE_URL`). Local vs Render stores are separate.
 
 ## Backend services
 
@@ -55,6 +59,5 @@ Stored fields include `pack_id`, preset snapshot, reference-photo flag, and verb
 - Reference photo upload (`sharingbridge-photo-service`)
 - Delivery acknowledgement and photo match
 - Live LLM (`AI_LLM_MODE=openai`)
-- Donation intent history UI (mobile + web)
 
 See [IMPLEMENTATION_APPROACH.md](../development/IMPLEMENTATION_APPROACH.md).

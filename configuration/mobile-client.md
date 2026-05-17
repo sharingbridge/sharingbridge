@@ -30,8 +30,10 @@ flutter run `
 | Define | Value |
 |--------|--------|
 | `API_BASE_URL` | integration-service `https://…onrender.com` (no trailing `/`) |
-| `USER_ID` | donor id used when minting the token |
+| `USER_ID` | donor id for local UI labels; should match the id used when minting the token |
 | `AUTH_TOKEN` | JWT string from user-service — **not** the literal text `<token …>` |
+
+When `AUTH_TOKEN` is set, the app **does not** send `user_id` in API bodies or query strings — integration-service uses the JWT subject only. `USER_ID` can differ from the token without `user_id_mismatch` (still align them for clarity).
 
 Use public `https://` on devices and emulators. Re-mint the JWT after ~1 hour.
 
@@ -55,6 +57,8 @@ flutter run `
 
 Android emulator: `http://10.0.2.2:8080` for integration.
 
+**Web dashboard:** [web-client.md](./web-client.md) lists the same order intents when sign-in user id and `VITE_API_BASE_URL` match mobile `USER_ID` / `API_BASE_URL`.
+
 ## Main flows
 
 | Screen | Backend |
@@ -65,4 +69,4 @@ Android emulator: `http://10.0.2.2:8080` for integration.
 
 Offline: presets may cache in `shared_preferences` when integration is unreachable.
 
-See [MANUAL_TESTING_GUIDE.md](../testing/MANUAL_TESTING_GUIDE.md) for full test steps.
+See [MANUAL_TESTING_GUIDE.md](../testing/MANUAL_TESTING_GUIDE.md) **§3** (mobile); web dashboard **§4**.

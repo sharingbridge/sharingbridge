@@ -8,10 +8,10 @@ system without reading code.
 
 - [`MANUAL_TESTING_GUIDE.md`](./MANUAL_TESTING_GUIDE.md) — step-by-step
   validation of shipped **donor-setup** modules (integration-service +
-  **ai-orchestration** deterministic MVP + mobile) and **Offer food help**
-  on mobile: automated `pytest` / `npm test` / `flutter test`, manual API
-  smoke (three-service stack), E2E donor setup, and manual handoff steps on
-  Windows desktop / Android emulator.
+  **ai-orchestration** deterministic MVP + mobile + web dashboard): automated
+  `pytest` / `npm test` / `flutter test` / Vitest; manual API smoke
+  (three-service stack); **§3** mobile E2E; **§4** web order initiation history;
+  **§6** hosted Render smoke.
 
 ## Conventions
 

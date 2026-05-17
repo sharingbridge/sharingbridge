@@ -79,6 +79,27 @@ Optional: persistent disk at `/app/data`.
 
 Do not set `PORT` (Render injects it).
 
+**`WEB_CORS_ORIGINS` on Render:** set on **both** user-service and integration-service to your deployed web origin only (e.g. `https://sharingbridge-web.onrender.com`). Omit `http://localhost:5173` in production. Paste the value in the dashboard or via each repo’s `render.yaml` (`sync: false` placeholder).
+
+---
+
+## Local `.env` (not used on Render)
+
+Both Node services load a repo-root `.env` on `npm start` via `dotenv` (`import "dotenv/config"` in `src/server.js`).
+
+```powershell
+cd sharingbridge-user-service
+copy .env.example .env
+# edit AUTH_TOKEN_SECRET, WEB_CORS_ORIGINS, …
+
+cd ..\sharingbridge-integration-service
+copy .env.example .env
+# match AUTH_TOKEN_SECRET; set USER_SERVICE_BASE_URL=http://localhost:8081
+# set WEB_CORS_ORIGINS=http://localhost:5173 when using sharingbridge-web-app locally
+```
+
+Web app: `sharingbridge-web-app/.env` from `.env.example` (`VITE_*` URLs). Rebuild or restart `npm run dev` after changing `VITE_*`.
+
 ---
 
 ## Deploy order
@@ -147,3 +168,5 @@ See [mobile-client.md](./mobile-client.md) — mint JWT, then `flutter run` from
 | `401 Invalid internal API key` | Match `AI_ORCHESTRATION_INTERNAL_API_KEY` |
 | AI not used | `AI_ORCHESTRATION_BASE_URL`, `AI_*_ENABLED=true` |
 | Presets lost on redeploy | user-service disk or DB later |
+| Browser **Failed to fetch** on web | `WEB_CORS_ORIGINS` on **both** backends includes the web origin; web `.env` `VITE_*` must point at the same API hosts you use for mobile |
+| Local env ignored | Copy `.env.example` → `.env` in each Node repo; restart `npm start` |

@@ -2,9 +2,9 @@
 
 This guide walks through how to verify the donor-setup modules and the
 **Offer food help (donor–seeker handoff)** slice that have shipped across
-`sharingbridge-integration-service`, `sharingbridge-ai-orchestration`, and
-`sharingbridge-mobile-app`. It pairs **automated test suites** with
-**manual API smoke tests** and **end-to-end** flows on the mobile app.
+`sharingbridge-integration-service`, `sharingbridge-ai-orchestration`,
+`sharingbridge-mobile-app`, and `sharingbridge-web-app`. It pairs **automated test suites** with
+**manual API smoke tests** and **end-to-end** flows on the **mobile app** and **web dashboard**.
 
 All commands assume **PowerShell on Windows**. Translate to bash as
 needed.
@@ -25,6 +25,7 @@ needed.
 | 7 | Mobile auth context | `sharingbridge-mobile-app/lib/features/donor_setup/data/auth_context.dart` |
 | 8 | Mobile cache fallback (`shared_preferences`) | `sharingbridge-mobile-app/lib/features/donor_setup/presentation/pages/donor_setup_page.dart` |
 | 9 | Mobile home hub + **Offer food help** (3 steps: guidance → optional reference photo + **Get AI delivery instructions** (API with local fallback) → copy + vendor deep links) | `sharingbridge-mobile-app/lib/presentation/app_home_page.dart`, `lib/features/donor_seeker_interaction/**` |
+| 10 | Web **Order initiation history** (coordinator dashboard) | `sharingbridge-web-app` — see **§4** |
 
 ## Prerequisites
 
@@ -35,6 +36,7 @@ needed.
   - `D:\kannan\sharingbridge\sharingbridge-ai-orchestration`
   - `D:\kannan\sharingbridge\sharingbridge-integration-service`
   - `D:\kannan\sharingbridge\sharingbridge-mobile-app`
+  - `D:\kannan\sharingbridge\sharingbridge-web-app` (for **§4** only)
 - User service cloned and runnable for token minting:
   - `D:\kannan\sharingbridge\sharingbridge-user-service`
 - Port `8080` free locally (integration-service).
@@ -123,7 +125,7 @@ uvicorn app.main:app --host 0.0.0.0 --port 8091
 
 If pip prints red errors but you still see `Uvicorn running on http://0.0.0.0:8091`, the server is up — confirm with `Invoke-RestMethod http://127.0.0.1:8091/health`.
 
-### 1b. Mobile app (Flutter, currently 34 tests)
+### 1b. Mobile app (Flutter, currently 53 tests)
 
 ```powershell
 cd D:\kannan\sharingbridge\sharingbridge-mobile-app
@@ -139,7 +141,10 @@ Coverage at a glance:
 | `test/features/donor_setup/application/confirm_presets_usecase_test.dart` | save delegation and empty-list guard |
 | `test/features/donor_setup/application/clear_presets_usecase_test.dart` | clear delegation to repository |
 | `test/features/donor_setup/data/suggest_vendors_response_dto_test.dart` | response DTO mapping and malformed payload handling |
-| `test/features/donor_setup/data/http_donor_setup_api_client_test.dart` | retry-then-success, persistent 5xx, 4xx mapping, malformed JSON, no-retry on save 5xx, **`DELETE` clear presets**, **`POST` delete-item**, auth headers on the wire |
+| `test/features/donor_setup/data/auth_context_test.dart` | omit / include `user_id` by Bearer presence; preference URI helpers |
+| `test/features/donor_setup/data/http_donor_setup_api_client_test.dart` | retry-then-success, persistent 5xx, 4xx mapping, malformed JSON, no-retry on save 5xx, **`DELETE` clear presets**, **`POST` delete-item**, auth headers, **Bearer omits `user_id` in body/query** |
+| `test/features/donor_seeker_interaction/data/http_order_intent_client_test.dart` | order-intent POST/GET auth payload |
+| `test/features/donor_seeker_interaction/data/http_instruction_pack_client_test.dart` | instruction-pack POST auth payload |
 | `test/features/donor_setup/presentation/donor_setup_page_test.dart` | search; **Copy link** / **Open vendor page** / **Suggest again**; confirm saves **without** collapsing list to saved-only; success status + snackbar; presets navigation; slow-load race; cache clear |
 | `test/features/donor_setup/presentation/donor_presets_page_test.dart` | saved-presets list; copy/open; per-row **Remove**; **Clear all** |
 | `test/features/donor_seeker_interaction/donor_seeker_interaction_page_test.dart` | home hub opens **Help a seeker**; **Continue** → **Get AI delivery instructions** (injected stub) → **register donation intent** button → copy enables **Open …** |
@@ -173,6 +178,22 @@ Expected output footer:
 # pass 37
 # fail 0
 ```
+
+### 1e. Web app (Vitest)
+
+```powershell
+cd D:\kannan\sharingbridge\sharingbridge-web-app
+npm install     # first time only
+npm test
+```
+
+| Test file | What it asserts |
+|-----------|-----------------|
+| `src/authSession.test.ts` | session save/load/expiry |
+| `src/config.test.ts` | `VITE_*` config from env |
+| `src/format.test.ts` | list/detail formatting helpers |
+
+Expected last line: tests passed (Vitest). End-to-end browser checks are in **§4**.
 
 ## 2. Manual API smoke tests
 
@@ -428,6 +449,8 @@ Invoke-RestMethod http://localhost:8091/health
 
 ## 3. End-to-end with the mobile app
 
+Flutter only. For the **web coordinator dashboard**, use **§4** (same backends, browser + Vite).
+
 Keep **ai-orchestration** on `8091`, integration-service on `8080`, and user-service on `8081` (with AI env vars from §2a.1), then mint a token and run Flutter:
 
 ```powershell
@@ -469,47 +492,6 @@ The mobile client now sends only `Authorization: Bearer <AUTH_TOKEN>`.
    connection and retry." instead of stack traces.
 6. **Saved presets / order links**: tap the app-bar icon with tooltip **Saved presets** → **Saved presets** loads from the server (`GET /v1/donor-setup/preferences`). Each row shows the **order URL** (selectable text), **Copy link**, and **Open link**. Per-row **Remove** calls integration `POST /v1/donor-setup/preferences/delete-item` (user-service: `POST /v1/users/{id}/donor-presets/delete-item` when that backend is on). **Clear all** uses `DELETE …/preferences`. Pull-to-refresh reloads the list.
 
-### 3f. Help a seeker (donor–seeker handoff)
-
-Uses the same authed **`GET …/preferences`** load as Donor Setup (saved presets). There is **no** separate field-flow draft in `shared_preferences` for this screen. The flow is **three steps** (see the step label at the top of the screen).
-
-1. From the home hub, tap **Help a seeker**.
-2. **Step 1 — Guidance:** read dignity and **photo consent** text, then tap **Continue to photo and instructions**.
-3. **Step 2 — Photo and AI:** optionally tap **Add reference photo** (camera or gallery; requires OS permission the first time). Optionally fill **Handover notes**. Tap **Get AI delivery instructions** — the app calls `POST /v1/donor-seeker/instruction-pack` on integration-service (orchestration when enabled). If integration is unreachable, the app falls back to a **local stub**. Use the app bar **Back** arrow to return to guidance and clear the photo/notes for this session.
-4. **Step 3 — Copy instructions and place order:** review the text in the filled card, tap **Copy instructions to clipboard and register donation intent**. The app copies to the clipboard and calls `POST /v1/donor-seeker/order-intents` on integration-service. On first success you should see **Order intent registered** with a reference id and a SnackBar saying **Donation intent registered**; **Open …** rows unlock for saved presets with valid **http/https** links. Paste into the vendor app’s delivery-notes field and complete payment there.
-5. **Repeat tap (same session):** tap the same button again without regenerating instructions. The server **updates** the existing intent for that `pack_id` (same reference id, HTTP `200`, `created: false` in the API body) — it does **not** create a second row. The SnackBar should say **Donation intent updated**; the reference id on screen stays the same.
-
-If presets fail to load (offline/server), you can still generate instructions; **Open …** stays disabled until registration succeeds. If order-intent registration fails, the SnackBar still confirms clipboard copy and you can open vendor apps manually.
-
-### 3f-b. Hosted backend + `flutter run` (Render)
-
-Use [configuration/mobile-client.md](../configuration/mobile-client.md). In one PowerShell session, in order:
-
-1. `cd` to `sharingbridge-mobile-app` (confirm `Test-Path .\pubspec.yaml` is `True`).
-2. Mint JWT: `POST https://sharingbridge-user-service.onrender.com/v1/auth/token` with `{"user_id":"demo-user"}`.
-3. `flutter run` with `--dart-define=API_BASE_URL=https://sharingbridge-integration-service.onrender.com`, `USER_ID`, and `AUTH_TOKEN=$token` (use the variable, not placeholder text).
-
-Walk through §3f on the device; step 3 button label must match **register donation intent**.
-
-### 3g. Order initiation history (mobile dashboard)
-
-1. From the home hub, tap **Order initiation history** (listed after **Help a seeker**).
-2. The app calls `GET /v1/donor-seeker/order-intents` with your Bearer token (newest first).
-3. After at least one successful **Help a seeker** copy (§3f), you should see a row with the same reference id. Pull to refresh after registering another intent.
-4. Tap a row → detail shows pack id, status, notes, and preset snapshot.
-
-Empty state is normal before any intent is registered. Requires the same `AUTH_TOKEN` / `API_BASE_URL` as other flows.
-
-### 3h. Order initiation history (web dashboard)
-
-Repository: `sharingbridge-web-app`. See [configuration/web-client.md](../configuration/web-client.md).
-
-1. On **integration-service** and **user-service**, set `WEB_CORS_ORIGINS=http://localhost:5173` (local only; production should use production web URL only, not localhost) and redeploy.
-2. `cd sharingbridge-web-app`, `copy .env.example .env`, `npm install`, `npm run dev`, open http://localhost:5173.
-3. **Sign in** with donor user id (e.g. `demo-user`) — the app mints a JWT via user-service (no ModHeader, no manual token paste).
-4. After a mobile **Help a seeker** copy (§3f), click **Refresh** — list and detail should match mobile history.
-5. **Sign out** clears the browser session; expired tokens prompt sign-in again.
-
 ### 3d. Why Suggest Vendors and Saved presets can both look “static”
 
 - **Suggest Vendors** uses `POST /v1/donor-setup/suggest-vendors`. With **`AI_SUGGEST_VENDORS_ENABLED`** and orchestration running, results are **query-ranked**; without those env vars, the integration service returns a **fixed mock** (three venues). That is expected until a live LLM provider is enabled.
@@ -546,9 +528,78 @@ Pick one approach:
 
 **Local merge caveat:** With the default **file-backed** integration store (`local`), each save **merges** presets by `(restaurant_name, order_url)`; older venues for that user are **not** removed if you omit them in a later save. To shrink the list you must clear storage (above) or use **user-service** mode, where `PUT` donor-presets **replaces** the full set.
 
-## 4. Cleanup / fresh slate
+### 3f. Help a seeker (donor–seeker handoff)
 
-To wipe persisted donor presets and start over (same as §3e option 1):
+Uses the same authed **`GET …/preferences`** load as Donor Setup (saved presets). There is **no** separate field-flow draft in `shared_preferences` for this screen. The flow is **three steps** (see the step label at the top of the screen).
+
+1. From the home hub, tap **Help a seeker**.
+2. **Step 1 — Guidance:** read dignity and **photo consent** text, then tap **Continue to photo and instructions**.
+3. **Step 2 — Photo and AI:** optionally tap **Add reference photo** (camera or gallery; requires OS permission the first time). Optionally fill **Handover notes**. Tap **Get AI delivery instructions** — the app calls `POST /v1/donor-seeker/instruction-pack` on integration-service (orchestration when enabled). If integration is unreachable, the app falls back to a **local stub**. Use the app bar **Back** arrow to return to guidance and clear the photo/notes for this session.
+4. **Step 3 — Copy instructions and place order:** review the text in the filled card, tap **Copy instructions to clipboard and register donation intent**. The app copies to the clipboard and calls `POST /v1/donor-seeker/order-intents` on integration-service. On first success you should see **Order intent registered** with a reference id and a SnackBar saying **Donation intent registered**; **Open …** rows unlock for saved presets with valid **http/https** links. Paste into the vendor app’s delivery-notes field and complete payment there.
+5. **Repeat tap (same session):** tap the same button again without regenerating instructions. The server **updates** the existing intent for that `pack_id` (same reference id, HTTP `200`, `created: false` in the API body) — it does **not** create a second row. The SnackBar should say **Donation intent updated**; the reference id on screen stays the same.
+
+If presets fail to load (offline/server), you can still generate instructions; **Open …** stays disabled until registration succeeds. If order-intent registration fails, the SnackBar still confirms clipboard copy and you can open vendor apps manually.
+
+### 3f-b. Hosted backend + `flutter run` (Render)
+
+Use [configuration/mobile-client.md](../configuration/mobile-client.md). In one PowerShell session, in order:
+
+1. `cd` to `sharingbridge-mobile-app` (confirm `Test-Path .\pubspec.yaml` is `True`).
+2. Mint JWT: `POST https://sharingbridge-user-service.onrender.com/v1/auth/token` with `{"user_id":"demo-user"}`.
+3. `flutter run` with `--dart-define=API_BASE_URL=https://sharingbridge-integration-service.onrender.com`, `USER_ID`, and `AUTH_TOKEN=$token` (use the variable, not placeholder text).
+
+Walk through §3f on the device; step 3 button label must match **register donation intent**.
+
+### 3g. Order initiation history (mobile dashboard)
+
+1. From the home hub, tap **Order initiation history** (listed after **Help a seeker**).
+2. The app calls `GET /v1/donor-seeker/order-intents` with your Bearer token (newest first).
+3. After at least one successful **Help a seeker** copy (§3f), you should see a row with the same reference id. Pull to refresh after registering another intent.
+4. Tap a row → detail shows pack id, status, notes, and preset snapshot.
+
+Empty state is normal before any intent is registered. Requires the same `AUTH_TOKEN` / `API_BASE_URL` as other flows. Coordinator view of the same data: **§4**.
+
+## 4. End-to-end with the web dashboard
+
+Repository: `sharingbridge-web-app`. Configuration: [configuration/web-client.md](../configuration/web-client.md).
+
+Keep **user-service** (`8081`), **integration-service** (`8080`), and (for AI paths) **ai-orchestration** (`8091`) running as in **§2**. The web app does not replace those services — it calls them from the browser.
+
+### 4a. Prerequisites (CORS and `.env`)
+
+1. Copy `.env.example` → `.env` in **user-service** and **integration-service** (or set in the shell). Include `WEB_CORS_ORIGINS=http://localhost:5173` on **both** backends. Restart each `npm start` after changes.
+2. In `sharingbridge-web-app`, copy `.env.example` → `.env` with:
+   - `VITE_API_BASE_URL=http://localhost:8080`
+   - `VITE_USER_SERVICE_BASE_URL=http://localhost:8081`
+3. Optional: register at least one order intent via mobile **§3f** (same donor id you will use on the web) so the dashboard is not empty on first load.
+
+### 4b. Run locally and sign in
+
+```powershell
+cd D:\kannan\sharingbridge\sharingbridge-web-app
+copy .env.example .env
+npm install
+npm run dev
+```
+
+Open http://localhost:5173 → enter donor user id (e.g. `demo-user` or `alice`) → **Sign in**. The app mints a JWT via user-service (no ModHeader, no manual token paste). **Sign out** clears the browser session; expired tokens prompt sign-in again.
+
+### 4c. Order initiation history
+
+1. After at least one successful mobile **Help a seeker** copy (**§3f**) for the **same** donor id, click **Refresh** on the web dashboard.
+2. List and detail should match mobile **Order initiation history** (**§3g**) — same reference ids, pack id, status, notes, preset snapshot.
+3. Select a row to open the detail pane.
+
+### 4d. Same user, same backend (empty list / mismatch)
+
+- Order intents are stored **per `user_id`** in integration-service (`data/order-intents.json` locally). Signing in as `demo-user` shows only intents for `demo-user` on **that** integration host (localhost vs Render are separate stores).
+- If mobile registered intents as `alice` but the web signs in as `demo-user`, the web list stays empty until you sign in as `alice` or register a copy as `demo-user` on mobile.
+- `VITE_API_BASE_URL` must match mobile `API_BASE_URL` (both localhost or both Render URLs).
+- To align mobile with web, mint and run mobile with the same donor id — see **§3** intro (`$mobileToken`) and [configuration/mobile-client.md](../configuration/mobile-client.md).
+
+## 5. Cleanup / fresh slate
+
+To wipe persisted donor presets and start over (same as §3e option 1; mobile-focused):
 
 ```powershell
 cd D:\kannan\sharingbridge\sharingbridge-integration-service
@@ -561,7 +612,7 @@ platform-specific shared preferences clear (e.g. uninstall and
 reinstall the app on Android, or delete the Flutter app data folder on
 Windows).
 
-### 4b. (Optional) Copy file-backed presets into user-service
+### 5b. (Optional) Copy file-backed presets into user-service
 
 Use this **before or right after** you point integration-service at user-service presets (`PREFERENCES_BACKEND=user_service`). Requires user-service running and the **same `AUTH_TOKEN_SECRET`** as used for `/v1/auth/token`:
 
@@ -574,11 +625,11 @@ npm run backfill:user-service-presets
 
 See `development/USER_SERVICE_PREFERENCES_MIGRATION.md` for the full cutover checklist.
 
-### 4c. Historical: local field draft key (no longer used)
+### 5c. Historical: local field draft key (no longer used)
 
-Earlier MVP builds stored a field draft under `sharingbridge_field_interaction_draft_v1`. The current **Offer food help** screen does **not** use that key. To reset mobile state, use app data clear / uninstall only if you need a full wipe; donor-setup offline cache is separate (see **Clear cache / Sign out** on Donor Setup and §4 intro).
+Earlier MVP builds stored a field draft under `sharingbridge_field_interaction_draft_v1`. The current **Help a seeker** screen does **not** use that key. To reset mobile state, use app data clear / uninstall only if you need a full wipe; donor-setup offline cache is separate (see **Clear cache / Sign out** on Donor Setup and **§3**).
 
-## 4. Hosted backend smoke (Render)
+## 6. Hosted backend smoke (Render)
 
 Use this after deploying per **[configuration/backend-render.md](../configuration/backend-render.md)** (Track A).
 
@@ -586,18 +637,19 @@ Use this after deploying per **[configuration/backend-render.md](../configuratio
 2. Mint a token from **hosted** user-service: `POST …/v1/auth/token` with `{"user_id":"demo-user"}`.
 3. Call **hosted** integration `POST …/v1/donor-setup/suggest-vendors` and `POST …/v1/donor-seeker/instruction-pack` with `Authorization: Bearer <token>`.
 4. `POST …/v1/donor-seeker/order-intents` with the same Bearer token (see [configuration/backend-render.md](../configuration/backend-render.md) smoke script). First call returns HTTP **201** and `created: true`. Repeat the **same** `pack_id` — expect HTTP **200**, `created: false`, and the **same** `order_intent_id`.
-5. Run the mobile app (see [configuration/mobile-client.md](../configuration/mobile-client.md) § Render — `cd` first, then mint token, then `flutter run`). In §3f step 3, repeat the copy button and confirm **Donation intent updated** with an unchanged reference id.
+5. Run the mobile app (see [configuration/mobile-client.md](../configuration/mobile-client.md) — `cd` first, then mint token, then `flutter run`). In **§3f** step 4, repeat the copy button and confirm **Donation intent updated** with an unchanged reference id.
+6. (Optional) Deploy `sharingbridge-web-app` as a Render static site; set `WEB_CORS_ORIGINS` on both backends to the static URL; sign in and **Refresh** — **§4**.
 
 If suggest-vendors or instruction-pack fail, verify `AI_ORCHESTRATION_BASE_URL`, `AI_*_ENABLED=true`, and matching `AI_ORCHESTRATION_INTERNAL_API_KEY` on integration and ai-orchestration.
 
 ---
 
-## 5. What "good" looks like (acceptance summary)
+## 7. What "good" looks like (acceptance summary)
 
 - `python -m pytest -q` in `sharingbridge-ai-orchestration` reports `3 passed`.
 - `npm test` in `sharingbridge-integration-service` reports `# pass 42 / # fail 0`.
 - `npm test` in `sharingbridge-user-service` reports `# pass 37 / # fail 0`.
-- `flutter test` in `sharingbridge-mobile-app` ends with `All tests passed!` (**34 tests**).
+- `flutter test` in `sharingbridge-mobile-app` ends with `All tests passed!` (**53 tests**, including auth payload guards on order-intent and instruction-pack HTTP clients).
 - `Invoke-RestMethod http://localhost:8080/health` returns `ok=True`.
 - Step 2c returns HTTP 200 with `saved_count=1`; step 2d echoes the
   same preset back.
@@ -610,3 +662,4 @@ If suggest-vendors or instruction-pack fail, verify `AI_ORCHESTRATION_BASE_URL`,
   and falling back to the local cache when the backend is offline.
 - Step **2i** returns a non-empty `delivery_instructions` string when orchestration is enabled.
 - Step **3f** walks **Help a seeker** (guidance → photo/notes + instruction-pack API or fallback → copy + vendor links; repeat copy updates the same order initiation).
+- Step **4c** shows web order initiation history matching mobile for the same donor id and integration host.

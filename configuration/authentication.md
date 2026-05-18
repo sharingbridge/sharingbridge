@@ -55,7 +55,7 @@ Wrong combination → HTTP **403** `wrong_client_role`.
 | `AUTH_TOKEN_TTL_SECONDS` | `3600` |
 | `GOOGLE_CLIENT_ID_WEB` | Web OAuth client ID (not the client secret) |
 | `GOOGLE_CLIENT_ID_ANDROID` | Android OAuth client ID (mobile) |
-| `WEB_CORS_ORIGINS` | web app origin(s) |
+| `WEB_CORS_ORIGINS` | Browser origin of the dashboard: local `http://localhost:5173`; on Render add `https://<static-site>.onrender.com` on **user-service and integration-service** — [backend-render.md](./backend-render.md) |
 
 **Dev-only mint (tests / manual smoke)**
 

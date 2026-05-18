@@ -182,7 +182,7 @@ copy .env.example .env
 | Variable | Example (local) |
 |----------|-------------------|
 | `GOOGLE_CLIENT_ID_WEB` | Same Web Client ID from Phase 0 |
-| `WEB_CORS_ORIGINS` | `http://localhost:5173` |
+| `WEB_CORS_ORIGINS` | `http://localhost:5173` only (local laptop `.env`; not the Render URL) |
 | `ALLOW_DEV_TOKEN_MINT` | `true` (local only) |
 | `AUTH_TOKEN_SECRET` | Shared secret (match integration-service) |
 
@@ -199,7 +199,7 @@ copy .env.example .env
 |----------|-------------------|
 | `AUTH_TOKEN_SECRET` | **Same** as user-service |
 | `USER_SERVICE_BASE_URL` | `http://localhost:8081` |
-| `WEB_CORS_ORIGINS` | `http://localhost:5173` |
+| `WEB_CORS_ORIGINS` | `http://localhost:5173` (same value as user-service) |
 
 ### 1.3 web-app
 
@@ -247,7 +247,7 @@ Deploy in order — [backend-render.md](./backend-render.md):
 | `GOOGLE_CLIENT_ID_ANDROID` | Android Client ID (when mobile uses Google) |
 | `ALLOW_DEV_TOKEN_MINT` | `false` |
 | `COORDINATOR_EMAILS` | Comma-separated coordinator emails (or persistent `data/coordinators.json`) |
-| `WEB_CORS_ORIGINS` | `http://localhost:5173` only for now, or update in Phase 4 |
+| `WEB_CORS_ORIGINS` | Optional until Phase 4: `http://localhost:5173` if you test local Vite against hosted APIs; otherwise set in Phase 4 |
 
 ### integration-service (Render environment)
 
@@ -255,7 +255,7 @@ Deploy in order — [backend-render.md](./backend-render.md):
 |----------|------------------|
 | `AUTH_TOKEN_SECRET` | Match user-service |
 | `USER_SERVICE_BASE_URL` | `https://<your-user-service>.onrender.com` |
-| `WEB_CORS_ORIGINS` | Same as user-service |
+| `WEB_CORS_ORIGINS` | **Identical** to user-service on Render (see Phase 4) |
 
 Note the two public URLs:
 
@@ -294,6 +294,24 @@ Do **not** set `VITE_ALLOW_DEV_SIGN_IN` on Render.
 
 **Depends on:** Phase 3 static site URL (exact `https://….onrender.com`).
 
+### 4.0 Backend CORS on Render (user-service **and** integration-service)
+
+In the **Render dashboard** (not your laptop `.env`), set the **same** `WEB_CORS_ORIGINS` on **both** Node services:
+
+```env
+WEB_CORS_ORIGINS=https://<your-static-site>.onrender.com
+```
+
+If you still open the dashboard at http://localhost:5173 while calling **hosted** APIs:
+
+```env
+WEB_CORS_ORIGINS=http://localhost:5173,https://<your-static-site>.onrender.com
+```
+
+Redeploy **user-service** and **integration-service** after saving. Local `.env` files are **not** read on Render.
+
+See [backend-render.md](./backend-render.md) § `WEB_CORS_ORIGINS`.
+
 ### 4.1 Google Console
 
 [Credentials](https://console.cloud.google.com/apis/credentials) → your **Web application** client → **Edit**.
@@ -307,27 +325,11 @@ https://<your-static-site>.onrender.com
 
 Same Web Client ID for local and Render.
 
-### 4.2 Backend CORS (both Node services on Render)
-
-**user-service** and **integration-service** → Environment:
-
-```env
-WEB_CORS_ORIGINS=http://localhost:5173,https://<your-static-site>.onrender.com
-```
-
-Production-only (no local browser against hosted APIs):
-
-```env
-WEB_CORS_ORIGINS=https://<your-static-site>.onrender.com
-```
-
-Redeploy **both** services after changing CORS.
-
-### 4.3 Static site rebuild (only if env changed)
+### 4.2 Static site rebuild (only if `VITE_*` changed)
 
 If you added or changed `VITE_*` after first deploy, trigger a **manual deploy** on the static site so Vite rebakes env into `dist/`.
 
-**Checkpoint:** browser can call Google GIS and both APIs from the live origin.
+**Checkpoint:** browser can call Google GIS and both APIs from the live origin; CORS on Render includes `https://<your-static-site>.onrender.com` on **both** backends (§4.0).
 
 ---
 

@@ -40,16 +40,19 @@ Secrets are **not** in `.env` for production builds.
 
 User-service and integration-service read repo-root `.env` on `npm start` (dotenv). Set `WEB_CORS_ORIGINS` there for local browser dev — see [backend-render.md](./backend-render.md) § Local `.env`.
 
-## CORS (both backends)
+## CORS (`WEB_CORS_ORIGINS` on both backends)
 
-Browsers require allowed origins on **both** services:
+The web app runs in the **browser**; user-service and integration-service must allow the **page origin** (where Vite or the static site is opened), not the API hostname.
 
-| Service | Env | Example (local dev) |
-|---------|-----|---------------------|
-| integration-service | `WEB_CORS_ORIGINS` | `http://localhost:5173` |
-| user-service | `WEB_CORS_ORIGINS` | `http://localhost:5173` |
+| Where the dashboard runs | Set on **user-service** + **integration-service** |
+|--------------------------|---------------------------------------------------|
+| Local: http://localhost:5173 | In each repo’s **local** `.env`: `WEB_CORS_ORIGINS=http://localhost:5173` |
+| Render static site: `https://….onrender.com` | In **Render** env for **both** services: `WEB_CORS_ORIGINS=https://<your-static-site>.onrender.com` |
+| Both local web and hosted web vs same APIs | Render: `http://localhost:5173,https://<your-static-site>.onrender.com` (comma-separated) |
 
-Production: list **only** your deployed web URL (omit localhost). Redeploy after changes.
+**Not** set in `sharingbridge-web-app/.env` — only on the two Node backends.
+
+Full matrix: [backend-render.md](./backend-render.md) § `WEB_CORS_ORIGINS`. After changing Render values, redeploy **both** services.
 
 ## Local run
 

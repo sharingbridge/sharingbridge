@@ -635,7 +635,8 @@ npm run dev
 - `VITE_API_BASE_URL` must match mobile `API_BASE_URL` (both localhost or both Render URLs).
 - `403 wrong_client_role` on web: Gmail not on coordinator allowlist, or donor account used on web (web is coordinator-only).
 - `401 invalid_google_token`: `VITE_GOOGLE_CLIENT_ID` must match `GOOGLE_CLIENT_ID_WEB`; add `http://localhost:5173` under Google **Authorized JavaScript origins**.
-- CORS errors: `WEB_CORS_ORIGINS` must include `http://localhost:5173` on **both** Node services.
+- CORS errors (local): `WEB_CORS_ORIGINS=http://localhost:5173` on **both** Node services in **local** `.env`.
+- CORS errors (hosted dashboard): set `WEB_CORS_ORIGINS=https://<static-site>.onrender.com` on **both** services in the **Render** dashboard — [backend-render.md](../configuration/backend-render.md).
 
 See [configuration/google-auth-setup.md](../configuration/google-auth-setup.md) troubleshooting.
 

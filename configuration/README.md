@@ -18,8 +18,8 @@ Operational and deployment configuration by application area. Design specs remai
 
 | Repo | Copy template | Keys to verify for web + mobile |
 |------|---------------|----------------------------------|
-| `sharingbridge-user-service` | `.env.example` → `.env` | `AUTH_TOKEN_SECRET`, `GOOGLE_CLIENT_ID_WEB`, `WEB_CORS_ORIGINS=http://localhost:5173`, coordinator allowlist — [google-auth-setup.md](./google-auth-setup.md) |
-| `sharingbridge-integration-service` | `.env.example` → `.env` | Same `AUTH_TOKEN_SECRET`, `USER_SERVICE_BASE_URL=http://localhost:8081`, `WEB_CORS_ORIGINS=http://localhost:5173`, `PREFERENCES_BACKEND` |
+| `sharingbridge-user-service` | `.env.example` → `.env` | `AUTH_TOKEN_SECRET`, `GOOGLE_CLIENT_ID_WEB`, `WEB_CORS_ORIGINS=http://localhost:5173` (local only), coordinator allowlist — [google-auth-setup.md](./google-auth-setup.md) |
+| `sharingbridge-integration-service` | `.env.example` → `.env` | Same `AUTH_TOKEN_SECRET`, `USER_SERVICE_BASE_URL=http://localhost:8081`, **same** `WEB_CORS_ORIGINS` as user-service, `PREFERENCES_BACKEND` |
 | `sharingbridge-web-app` | `.env.example` → `.env` | `VITE_GOOGLE_CLIENT_ID`, `VITE_API_BASE_URL=http://localhost:8080`, `VITE_USER_SERVICE_BASE_URL=http://localhost:8081` |
 | `sharingbridge-mobile-app` | — | Google: `GOOGLE_CLIENT_ID` + `USER_SERVICE_BASE_URL` + `API_BASE_URL`; or dev mint — [mobile-client.md](./mobile-client.md) |
 
@@ -34,7 +34,7 @@ Follow [e2e-deployment-sequence.md](./e2e-deployment-sequence.md) Phases 2–5 i
 | Step | Doc |
 |------|-----|
 | Deploy user-service → ai-orchestration → integration | [backend-render.md](./backend-render.md) |
-| Set `WEB_CORS_ORIGINS` on **both** Node services to static web URL | [e2e-deployment-sequence.md](./e2e-deployment-sequence.md) Phase 4 |
+| Set `WEB_CORS_ORIGINS` on **both** Node services **in Render** to static site URL (`https://…onrender.com`); keep `http://localhost:5173` in **local** `.env` only | [backend-render.md](./backend-render.md) § WEB_CORS_ORIGINS · [e2e-deployment-sequence.md](./e2e-deployment-sequence.md) Phase 4 |
 | Static site build env `VITE_*` → hosted API URLs | [e2e-deployment-sequence.md](./e2e-deployment-sequence.md) Phase 3 |
 | Mobile `API_BASE_URL` + Google / JWT | [mobile-client.md](./mobile-client.md) |
 

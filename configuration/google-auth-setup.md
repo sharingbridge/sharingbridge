@@ -178,6 +178,7 @@ AUTH_TOKEN_ISSUER=sharingbridge-user-service
 AUTH_TOKEN_AUDIENCE=sharingbridge-clients
 AUTH_TOKEN_TTL_SECONDS=3600
 
+# Local laptop only — browser origin for Vite (:5173). On Render, set https://<static-site>.onrender.com in the dashboard (both backends).
 WEB_CORS_ORIGINS=http://localhost:5173
 
 GOOGLE_CLIENT_ID_WEB=123456789-xxxx.apps.googleusercontent.com
@@ -200,6 +201,8 @@ Generate a secret (PowerShell):
 AUTH_TOKEN_SECRET=<same value as user-service>
 WEB_CORS_ORIGINS=http://localhost:5173
 ```
+
+Must match user-service. On **Render**, use `https://<static-site>.onrender.com` (or comma-list with localhost) on **both** services — see [backend-render.md](./backend-render.md).
 
 (Plus your existing AI / preferences vars.)
 
@@ -333,7 +336,9 @@ You can use **one** Web OAuth client for local and Render; both origins share th
 
 ### 7.3 Backend CORS on Render (both Node services)
 
-On **user-service** and **integration-service** in Render, set `WEB_CORS_ORIGINS` to **comma-separated** origins if you still develop locally:
+Set in the **Render dashboard** for **user-service** and **integration-service** (local laptop `.env` is not used on Render). Same value on both services. See [backend-render.md](./backend-render.md) § `WEB_CORS_ORIGINS`.
+
+Comma-separated if you still use local Vite against hosted APIs:
 
 ```env
 WEB_CORS_ORIGINS=http://localhost:5173,https://sharingbridge-web.onrender.com

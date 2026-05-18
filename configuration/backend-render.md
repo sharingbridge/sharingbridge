@@ -44,7 +44,11 @@ See [authentication.md](./authentication.md) for secret generation.
 
 | Key | Value |
 |-----|--------|
-| `WEB_CORS_ORIGINS` | same web origin(s) as integration (for browser sign-in) |
+| `WEB_CORS_ORIGINS` | On Render: `https://<static-site>.onrender.com` (see § WEB_CORS_ORIGINS). Local `.env`: `http://localhost:5173` |
+| `GOOGLE_CLIENT_ID_WEB` | Web OAuth client ID (same as `VITE_GOOGLE_CLIENT_ID`) |
+| `GOOGLE_CLIENT_ID_ANDROID` | Android OAuth client ID (when mobile uses Google) |
+| `COORDINATOR_EMAILS` | Comma-separated coordinator Gmail(s) for web dashboard |
+| `ALLOW_DEV_TOKEN_MINT` | `false` on Render |
 | `AUTH_TOKEN_SECRET` | generated |
 | `AUTH_TOKEN_ISSUER` | `sharingbridge-user-service` |
 | `AUTH_TOKEN_AUDIENCE` | `sharingbridge-clients` |
@@ -79,7 +83,25 @@ Optional: persistent disk at `/app/data`.
 
 Do not set `PORT` (Render injects it).
 
-**`WEB_CORS_ORIGINS` on Render:** set on **both** user-service and integration-service to your deployed web origin only (e.g. `https://sharingbridge-web.onrender.com`). Omit `http://localhost:5173` in production. Paste the value in the dashboard or via each repo’s `render.yaml` (`sync: false` placeholder).
+### `WEB_CORS_ORIGINS` — local laptop vs Render (both backends)
+
+CORS is enforced on **user-service** and **integration-service** (not on the static web repo). The value must list the **browser origin** where the dashboard runs (scheme + host + port), not the API URL.
+
+| Where you edit | When | Set `WEB_CORS_ORIGINS` to |
+|----------------|------|---------------------------|
+| **Local** `.env` in user-service **and** integration-service | `npm run dev` at http://localhost:5173 | `http://localhost:5173` |
+| **Render** dashboard for **both** Node services | After static site is deployed | `https://<your-static-site>.onrender.com` |
+| **Render** (optional) | You still use local Vite but APIs stay on Render | `http://localhost:5173,https://<your-static-site>.onrender.com` |
+
+Rules:
+
+1. **Same string** on user-service and integration-service (always).
+2. **Local `.env` does not apply on Render** — set env in the Render dashboard (or `render.yaml`) for hosted services.
+3. **Do not** put the Render static URL only in local `.env` unless you are testing local Vite against hosted APIs; for normal local dev, `http://localhost:5173` is enough on your laptop.
+4. **Do** add the Render static URL on **Render** user-service and integration-service when users open the **hosted** dashboard (Phase 4 in [e2e-deployment-sequence.md](./e2e-deployment-sequence.md)).
+5. Also add the static URL in **Google Console** → Web client → **Authorized JavaScript origins** (separate from CORS).
+
+Comma-separated, no trailing slashes, no paths. Redeploy both Node services after changing CORS on Render.
 
 ---
 

@@ -37,8 +37,9 @@ needed.
   - `D:\kannan\sharingbridge\sharingbridge-integration-service`
   - `D:\kannan\sharingbridge\sharingbridge-mobile-app`
   - `D:\kannan\sharingbridge\sharingbridge-web-app` (for **§4** only)
-- User service cloned and runnable for token minting:
+- User service cloned and runnable (Google sign-in + optional dev token mint):
   - `D:\kannan\sharingbridge\sharingbridge-user-service`
+- For **§4** (web) and Google mobile sign-in: complete [configuration/e2e-deployment-sequence.md](../configuration/e2e-deployment-sequence.md) **Phase 0–1** (Google Console, `VITE_GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_ID_WEB`, coordinator allowlist).
 - Port `8080` free locally (integration-service).
 - Port `8081` free locally (user-service).
 - Port `8091` free locally (ai-orchestration).
@@ -65,7 +66,7 @@ Tokens are signed and verified with that **symmetric** secret (`AUTH_TOKEN_SECRE
 
 ## 1. Automated test suites
 
-### 1a. Integration service (Node.js, currently 42 tests)
+### 1a. Integration service (Node.js, currently 46 tests)
 
 ```powershell
 cd D:\kannan\sharingbridge\sharingbridge-integration-service
@@ -154,7 +155,7 @@ Coverage at a glance:
 
 Expected last line: `All tests passed!`.
 
-### 1c. User service (Node.js, currently 37 tests)
+### 1c. User service (Node.js, currently 40 tests)
 
 ```powershell
 cd D:\kannan\sharingbridge\sharingbridge-user-service
@@ -193,7 +194,7 @@ npm test
 | `src/config.test.ts` | `VITE_*` config from env |
 | `src/format.test.ts` | list/detail formatting helpers |
 
-Expected last line: tests passed (Vitest). End-to-end browser checks are in **§4**.
+Expected: **6 passed** (Vitest). End-to-end browser checks are in **§4**.
 
 ## 2. Manual API smoke tests
 
@@ -451,12 +452,34 @@ Invoke-RestMethod http://localhost:8091/health
 
 Flutter only. For the **web coordinator dashboard**, use **§4** (same backends, browser + Vite).
 
-Keep **ai-orchestration** on `8091`, integration-service on `8080`, and user-service on `8081` (with AI env vars from §2a.1), then mint a token and run Flutter:
+Keep **ai-orchestration** on `8091`, integration-service on `8080`, and user-service on `8081` (with AI env vars from §2a.1).
+
+### 3-auth. Google Sign-In (donor, recommended)
+
+Requires [configuration/google-auth-setup.md](../configuration/google-auth-setup.md) (Android OAuth client + SHA-1, `GOOGLE_CLIENT_ID_ANDROID` on user-service, test users on Google **Audience**).
+
+```powershell
+cd D:\kannan\sharingbridge\sharingbridge-mobile-app
+flutter pub get
+flutter run -d <device> `
+  --dart-define=GOOGLE_CLIENT_ID=<Android OAuth client ID> `
+  --dart-define=USER_SERVICE_BASE_URL=http://localhost:8081 `
+  --dart-define=API_BASE_URL=http://localhost:8080
+```
+
+Android emulator: use `--dart-define=API_BASE_URL=http://10.0.2.2:8080`.
+
+1. App opens → **Continue with Google** (donor role; not on coordinator allowlist).
+2. Walk through **§3c** / **§3f** / **§3g** as below.
+
+### 3-dev. Dev token path (fallback)
+
+Use when Google is not configured yet (`ALLOW_DEV_TOKEN_MINT=true` on user-service):
 
 ```powershell
 $mobileToken = (Invoke-RestMethod -Method Post -Uri http://localhost:8081/v1/auth/token `
   -ContentType application/json `
-  -Body (@{ user_id = "alice" } | ConvertTo-Json)).token
+  -Body (@{ user_id = "alice"; role = "donor" } | ConvertTo-Json)).token
 ```
 
 ### 3a. Windows desktop
@@ -561,41 +584,60 @@ Empty state is normal before any intent is registered. Requires the same `AUTH_T
 
 ## 4. End-to-end with the web dashboard
 
-Repository: `sharingbridge-web-app`. Configuration: [configuration/web-client.md](../configuration/web-client.md).
+Repository: `sharingbridge-web-app`. Configuration: [configuration/web-client.md](../configuration/web-client.md). Deploy order (Google → local → Render): [configuration/e2e-deployment-sequence.md](../configuration/e2e-deployment-sequence.md).
 
 Keep **user-service** (`8081`), **integration-service** (`8080`), and (for AI paths) **ai-orchestration** (`8091`) running as in **§2**. The web app does not replace those services — it calls them from the browser.
 
-### 4a. Prerequisites (CORS and `.env`)
+### 4a. Prerequisites (Google, CORS, `.env`)
 
-1. Copy `.env.example` → `.env` in **user-service** and **integration-service** (or set in the shell). Include `WEB_CORS_ORIGINS=http://localhost:5173` on **both** backends. Restart each `npm start` after changes.
-2. In `sharingbridge-web-app`, copy `.env.example` → `.env` with:
+Complete [configuration/e2e-deployment-sequence.md](../configuration/e2e-deployment-sequence.md) **Phase 0–1** (Google Console Web client, test users, coordinator allowlist).
+
+1. **user-service** — copy `.env.example` → `.env`:
+   - `GOOGLE_CLIENT_ID_WEB` = same Web Client ID as web app
+   - `WEB_CORS_ORIGINS=http://localhost:5173`
+   - `data/coordinators.json` lists your coordinator Gmail(s)
+   - `ALLOW_DEV_TOKEN_MINT=true` only if using **Dev sign in** (optional)
+2. **integration-service** — `WEB_CORS_ORIGINS=http://localhost:5173`, same `AUTH_TOKEN_SECRET` as user-service. Restart after edits.
+3. **sharingbridge-web-app** — `.env`:
+   - `VITE_GOOGLE_CLIENT_ID` = Web Client ID
    - `VITE_API_BASE_URL=http://localhost:8080`
    - `VITE_USER_SERVICE_BASE_URL=http://localhost:8081`
-3. Optional: register at least one order intent via mobile **§3f** (same donor id you will use on the web) so the dashboard is not empty on first load.
+4. Optional: register at least one order intent via mobile **§3f** (**§3-auth** Google donor or **§3-dev**) so the coordinator dashboard is not empty on first **Refresh**.
 
-### 4b. Run locally and sign in
+No **client secret** in any `.env` for this flow.
+
+### 4b. Run locally and sign in (coordinator)
 
 ```powershell
 cd D:\kannan\sharingbridge\sharingbridge-web-app
 copy .env.example .env
+# Edit .env: VITE_GOOGLE_CLIENT_ID, API URLs
 npm install
 npm run dev
 ```
 
-Open http://localhost:5173 → enter donor user id (e.g. `demo-user` or `alice`) → **Sign in**. The app mints a JWT via user-service (no ModHeader, no manual token paste). **Sign out** clears the browser session; expired tokens prompt sign-in again.
+1. Open http://localhost:5173.
+2. **Sign in with Google** using a Gmail on the coordinator allowlist (`data/coordinators.json`).
+3. Dashboard loads (coordinator role). **Sign out** clears sessionStorage.
 
-### 4c. Order initiation history
+**Dev fallback:** `VITE_ALLOW_DEV_SIGN_IN=true` on web + `ALLOW_DEV_TOKEN_MINT=true` on user-service → **Dev sign in** with a coordinator user id.
 
-1. After at least one successful mobile **Help a seeker** copy (**§3f**) for the **same** donor id, click **Refresh** on the web dashboard.
-2. List and detail should match mobile **Order initiation history** (**§3g**) — same reference ids, pack id, status, notes, preset snapshot.
-3. Select a row to open the detail pane.
+### 4c. Order initiation history (coordinator view)
 
-### 4d. Same user, same backend (empty list / mismatch)
+1. After at least one successful mobile **Help a seeker** copy (**§3f**) on the **same** integration host (`localhost:8080` or hosted URL), click **Refresh** on the web dashboard.
+2. List shows **all** donors’ intents; each row includes the donor **`user_id`** assigned by user-service at Google sign-in.
+3. Detail should match mobile **Order initiation history** (**§3g**) for that donor — same reference id, pack id, status, notes, preset snapshot.
+4. Select a row to open the detail pane.
 
-- Order intents are stored **per `user_id`** in integration-service (`data/order-intents.json` locally). Signing in as `demo-user` shows only intents for `demo-user` on **that** integration host (localhost vs Render are separate stores).
-- If mobile registered intents as `alice` but the web signs in as `demo-user`, the web list stays empty until you sign in as `alice` or register a copy as `demo-user` on mobile.
+### 4d. Empty list / mismatch
+
+- Coordinators see intents for **every** donor on **that** integration API host. An empty list usually means no donor has registered an intent on **this** host yet (localhost vs Render are separate stores).
 - `VITE_API_BASE_URL` must match mobile `API_BASE_URL` (both localhost or both Render URLs).
-- To align mobile with web, mint and run mobile with the same donor id — see **§3** intro (`$mobileToken`) and [configuration/mobile-client.md](../configuration/mobile-client.md).
+- `403 wrong_client_role` on web: Gmail not on coordinator allowlist, or donor account used on web (web is coordinator-only).
+- `401 invalid_google_token`: `VITE_GOOGLE_CLIENT_ID` must match `GOOGLE_CLIENT_ID_WEB`; add `http://localhost:5173` under Google **Authorized JavaScript origins**.
+- CORS errors: `WEB_CORS_ORIGINS` must include `http://localhost:5173` on **both** Node services.
+
+See [configuration/google-auth-setup.md](../configuration/google-auth-setup.md) troubleshooting.
 
 ## 5. Cleanup / fresh slate
 
@@ -638,7 +680,7 @@ Use this after deploying per **[configuration/backend-render.md](../configuratio
 3. Call **hosted** integration `POST …/v1/donor-setup/suggest-vendors` and `POST …/v1/donor-seeker/instruction-pack` with `Authorization: Bearer <token>`.
 4. `POST …/v1/donor-seeker/order-intents` with the same Bearer token (see [configuration/backend-render.md](../configuration/backend-render.md) smoke script). First call returns HTTP **201** and `created: true`. Repeat the **same** `pack_id` — expect HTTP **200**, `created: false`, and the **same** `order_intent_id`.
 5. Run the mobile app (see [configuration/mobile-client.md](../configuration/mobile-client.md) — `cd` first, then mint token, then `flutter run`). In **§3f** step 4, repeat the copy button and confirm **Donation intent updated** with an unchanged reference id.
-6. (Optional) Deploy `sharingbridge-web-app` as a Render static site; set `WEB_CORS_ORIGINS` on both backends to the static URL; sign in and **Refresh** — **§4**.
+6. (Optional) Deploy `sharingbridge-web-app` as a Render static site per [configuration/e2e-deployment-sequence.md](../configuration/e2e-deployment-sequence.md) Phases 3–5; **Sign in with Google** on the live URL and **Refresh** — **§4**.
 
 If suggest-vendors or instruction-pack fail, verify `AI_ORCHESTRATION_BASE_URL`, `AI_*_ENABLED=true`, and matching `AI_ORCHESTRATION_INTERNAL_API_KEY` on integration and ai-orchestration.
 
@@ -647,8 +689,9 @@ If suggest-vendors or instruction-pack fail, verify `AI_ORCHESTRATION_BASE_URL`,
 ## 7. What "good" looks like (acceptance summary)
 
 - `python -m pytest -q` in `sharingbridge-ai-orchestration` reports `3 passed`.
-- `npm test` in `sharingbridge-integration-service` reports `# pass 42 / # fail 0`.
-- `npm test` in `sharingbridge-user-service` reports `# pass 37 / # fail 0`.
+- `npm test` in `sharingbridge-integration-service` reports `# pass 46 / # fail 0`.
+- `npm test` in `sharingbridge-user-service` reports `# pass 40 / # fail 0`.
+- `npm test` in `sharingbridge-web-app` (Vitest) reports **6 passed**.
 - `flutter test` in `sharingbridge-mobile-app` ends with `All tests passed!` (**53 tests**, including auth payload guards on order-intent and instruction-pack HTTP clients).
 - `Invoke-RestMethod http://localhost:8080/health` returns `ok=True`.
 - Step 2c returns HTTP 200 with `saved_count=1`; step 2d echoes the
@@ -662,4 +705,4 @@ If suggest-vendors or instruction-pack fail, verify `AI_ORCHESTRATION_BASE_URL`,
   and falling back to the local cache when the backend is offline.
 - Step **2i** returns a non-empty `delivery_instructions` string when orchestration is enabled.
 - Step **3f** walks **Help a seeker** (guidance → photo/notes + instruction-pack API or fallback → copy + vendor links; repeat copy updates the same order initiation).
-- Step **4c** shows web order initiation history matching mobile for the same donor id and integration host.
+- Step **4c** shows the coordinator web dashboard listing donor order intents (including donor `user_id`) after mobile **§3f** on the same integration host.

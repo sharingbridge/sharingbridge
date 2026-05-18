@@ -7,11 +7,13 @@ Repository: `sharingbridge-mobile-app` (Flutter).
 | Use | URL |
 |-----|-----|
 | **All donor APIs** (setup, suggest-vendors, instruction-pack, presets, order-intents) | **integration-service** only |
-| **Mint JWT** | **user-service** (`POST /v1/auth/token`) — run before `flutter run` (not in app UI yet) |
+| **Sign in** | **Google** in app → `POST /v1/auth/google` on user-service; optional dev `POST /v1/auth/token` below |
 
 Mobile must **not** call ai-orchestration directly.
 
-## `dart-define` (hosted Render)
+## `dart-define` (hosted Render, dev token)
+
+For production-style donor sign-in on device, use **Google Sign-In** with hosted `USER_SERVICE_BASE_URL` and `GOOGLE_CLIENT_ID` (see [e2e-deployment-sequence.md](./e2e-deployment-sequence.md)). The flow below uses **dev mint** (requires `ALLOW_DEV_TOKEN_MINT=true` on hosted user-service — off in production).
 
 Run in **this order** in the same PowerShell window:
 
@@ -43,21 +45,37 @@ Use public `https://` on devices and emulators. Re-mint the JWT after ~1 hour.
 - Pasting placeholder `<token from user-service …>` → PowerShell syntax error (`<` is redirection).
 - Running `flutter` before `$token = …` → empty `AUTH_TOKEN`.
 
-## `dart-define` (local three-service stack)
+## Google Sign-In (local, recommended)
+
+Full checklist: [google-auth-setup.md](./google-auth-setup.md).
 
 ```powershell
 cd D:\kannan\sharingbridge\sharingbridge-mobile-app
-$token = (Invoke-RestMethod -Method POST -Uri "http://localhost:8081/v1/auth/token" `
-  -ContentType "application/json" -Body '{"user_id":"demo-user"}').token
+flutter run `
+  --dart-define=GOOGLE_CLIENT_ID=<Android OAuth client ID from Google Cloud> `
+  --dart-define=USER_SERVICE_BASE_URL=http://localhost:8081 `
+  --dart-define=API_BASE_URL=http://localhost:8080
+```
+
+Android emulator: `--dart-define=API_BASE_URL=http://10.0.2.2:8080`
+
+Tap **Continue with Google** on launch. Coordinator emails (web allowlist) are rejected on mobile.
+
+## Dev token fallback (no Google)
+
+Requires `ALLOW_DEV_TOKEN_MINT=true` on user-service.
+
+```powershell
+cd D:\kannan\sharingbridge\sharingbridge-mobile-app
+$token = (Invoke-RestMethod -Method POST -Uri http://localhost:8081/v1/auth/token `
+  -ContentType "application/json" -Body '{"user_id":"demo-user","role":"donor"}').token
 flutter run `
   --dart-define=API_BASE_URL=http://localhost:8080 `
   --dart-define=USER_ID=demo-user `
   --dart-define=AUTH_TOKEN=$token
 ```
 
-Android emulator: `http://10.0.2.2:8080` for integration.
-
-**Web dashboard:** [web-client.md](./web-client.md) lists the same order intents when sign-in user id and `VITE_API_BASE_URL` match mobile `USER_ID` / `API_BASE_URL`.
+**Web dashboard (coordinator):** [web-client.md](./web-client.md) lists all donors’ order intents when `VITE_API_BASE_URL` matches mobile `API_BASE_URL` (same integration host).
 
 ## Main flows
 

@@ -4,8 +4,10 @@ Operational and deployment configuration by application area. Design specs remai
 
 | Document | Scope |
 |----------|--------|
+| [e2e-deployment-sequence.md](./e2e-deployment-sequence.md) | **Start here:** phased order (Google → local → Render backends → static site → CORS) |
 | [backend-render.md](./backend-render.md) | Host user-service, ai-orchestration, and integration-service on Render |
-| [authentication.md](./authentication.md) | Donor JWT and internal service API key |
+| [authentication.md](./authentication.md) | Google Sign-In, JWT roles, internal API key |
+| [google-auth-setup.md](./google-auth-setup.md) | **Step-by-step** Google OAuth + coordinator allowlist + local `.env` |
 | [mobile-client.md](./mobile-client.md) | Flutter `dart-define` values and hosted vs local URLs |
 | [web-client.md](./web-client.md) | Web dashboard (order initiation history) and CORS |
 | [field-handoff.md](./field-handoff.md) | Offer food help flow, guidance (BRD step 4), what is not automated |
@@ -16,20 +18,24 @@ Operational and deployment configuration by application area. Design specs remai
 
 | Repo | Copy template | Keys to verify for web + mobile |
 |------|---------------|----------------------------------|
-| `sharingbridge-user-service` | `.env.example` → `.env` | `AUTH_TOKEN_SECRET`, `WEB_CORS_ORIGINS=http://localhost:5173` |
+| `sharingbridge-user-service` | `.env.example` → `.env` | `AUTH_TOKEN_SECRET`, `GOOGLE_CLIENT_ID_WEB`, `WEB_CORS_ORIGINS=http://localhost:5173`, coordinator allowlist — [google-auth-setup.md](./google-auth-setup.md) |
 | `sharingbridge-integration-service` | `.env.example` → `.env` | Same `AUTH_TOKEN_SECRET`, `USER_SERVICE_BASE_URL=http://localhost:8081`, `WEB_CORS_ORIGINS=http://localhost:5173`, `PREFERENCES_BACKEND` |
-| `sharingbridge-web-app` | `.env.example` → `.env` | `VITE_API_BASE_URL=http://localhost:8080`, `VITE_USER_SERVICE_BASE_URL=http://localhost:8081` |
-| `sharingbridge-mobile-app` | — | Mint JWT; `flutter run` with `API_BASE_URL`, `USER_ID`, `AUTH_TOKEN` — [mobile-client.md](./mobile-client.md) |
+| `sharingbridge-web-app` | `.env.example` → `.env` | `VITE_GOOGLE_CLIENT_ID`, `VITE_API_BASE_URL=http://localhost:8080`, `VITE_USER_SERVICE_BASE_URL=http://localhost:8081` |
+| `sharingbridge-mobile-app` | — | Google: `GOOGLE_CLIENT_ID` + `USER_SERVICE_BASE_URL` + `API_BASE_URL`; or dev mint — [mobile-client.md](./mobile-client.md) |
+
+**Order of setup:** [e2e-deployment-sequence.md](./e2e-deployment-sequence.md) Phase 0 → Phase 1 before manual tests.
 
 Restart Node services after editing `.env`. Restart `npm run dev` after changing web `VITE_*`.
 
 ## Render checklist
 
+Follow [e2e-deployment-sequence.md](./e2e-deployment-sequence.md) Phases 2–5 in order.
+
 | Step | Doc |
 |------|-----|
 | Deploy user-service → ai-orchestration → integration | [backend-render.md](./backend-render.md) |
-| Set `WEB_CORS_ORIGINS` on **both** Node services to static web URL | [web-client.md](./web-client.md) |
-| Static site build env `VITE_*` → hosted API URLs | [web-client.md](./web-client.md) |
-| Mobile `API_BASE_URL` + minted JWT | [mobile-client.md](./mobile-client.md) |
+| Set `WEB_CORS_ORIGINS` on **both** Node services to static web URL | [e2e-deployment-sequence.md](./e2e-deployment-sequence.md) Phase 4 |
+| Static site build env `VITE_*` → hosted API URLs | [e2e-deployment-sequence.md](./e2e-deployment-sequence.md) Phase 3 |
+| Mobile `API_BASE_URL` + Google / JWT | [mobile-client.md](./mobile-client.md) |
 
 **Testing:** [MANUAL_TESTING_GUIDE.md](../testing/MANUAL_TESTING_GUIDE.md) — mobile **§3**, web dashboard **§4**

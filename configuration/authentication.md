@@ -92,7 +92,8 @@ integration-service reads `role` from the JWT. Coordinators receive every donorâ
 | Credential / setting | Mobile | Web | Expires? |
 |----------------------|--------|-----|----------|
 | Google `id_token` | Once per sign-in | Once per sign-in | Short (Google) |
-| SharingBridge JWT | Bearer (stored locally) | sessionStorage | Yes (~1 h) |
+| SharingBridge JWT | Bearer (stored locally) | sessionStorage (web); app secure storage (mobile) | Yes (~1 h) |
+| Last coordinator email (web only) | N/A | localStorage (for GIS account switch) | Until revoke / clear site data |
 | Coordinator allowlist | N/A | N/A | N/A (file/env) |
 | `AI_ORCHESTRATION_INTERNAL_API_KEY` | No | No | No (rotate manually) |
 | `WEB_CORS_ORIGINS` | N/A | Required on both backends | N/A |

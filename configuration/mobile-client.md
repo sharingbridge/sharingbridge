@@ -47,6 +47,8 @@ Use public `https://` on devices and emulators. Re-mint the JWT after ~1 hour.
 
 ## Google Sign-In (local, recommended)
 
+**Windows / Linux desktop:** `google_sign_in` is **not supported** — the app shows an explanation instead of `MissingPluginException`. Use an **Android emulator**, a physical Android device, or **macOS** for Google auth. Desktop dev fallback: `--dart-define=AUTH_TOKEN=…` (requires `ALLOW_DEV_TOKEN_MINT` on user-service).
+
 Full checklist: [google-auth-setup.md](./google-auth-setup.md).
 
 ```powershell

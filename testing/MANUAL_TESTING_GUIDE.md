@@ -617,8 +617,11 @@ npm run dev
 ```
 
 1. Open http://localhost:5173.
-2. **Sign in with Google** using a Gmail on the coordinator allowlist (`data/coordinators.json`).
-3. Dashboard loads (coordinator role). **Sign out** clears sessionStorage.
+2. **First visit:** sign-in page shows only a short allowlist line and **Sign in with Google** (no second button).
+3. **Sign in with Google** using a Gmail on the coordinator allowlist (`data/coordinators.json`). If Chrome shows the wrong account, choose **Use another account** in Google’s popup.
+4. Dashboard loads (coordinator role). Header shows coordinator email when the API returns it.
+5. **Sign out** clears sessionStorage and GIS auto-select for this app.
+6. **Returning visit:** sign-in page shows **Last signed in as** *email* and **Use a different Google account** (for another coordinator on the same machine). After a successful revoke, the page reloads; sign in with the other allowlisted Gmail.
 
 **Dev fallback:** `VITE_ALLOW_DEV_SIGN_IN=true` on web + `ALLOW_DEV_TOKEN_MINT=true` on user-service → **Dev sign in** with a coordinator user id.
 

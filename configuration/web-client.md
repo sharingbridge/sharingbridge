@@ -10,17 +10,31 @@ Repository: `sharingbridge-web-app` (Vite + React).
 
 ## How sign-in works (coordinator web)
 
-1. User opens the site → **Sign in** screen.
+1. User opens the site → **Coordinator sign in** screen (minimal copy).
 2. **Sign in with Google** (GIS) → browser obtains a Google `id_token`.
-3. App calls user-service `POST /v1/auth/google` with `{ "id_token", "client": "web" }`.
+3. App calls user-service `POST /v1/auth/google` with `{ "id_token", "client_type": "web" }`.
 4. user-service verifies the token, checks the **coordinator allowlist** (`data/coordinators.json` / `COORDINATOR_EMAILS`), mints a JWT with `role: coordinator`.
-5. JWT is stored in **sessionStorage** (this browser tab only).
-6. Dashboard calls integration-service with `Authorization: Bearer <jwt>` (coordinators list **all** order intents).
-7. On **401** or expiry → sign in again.
+5. JWT is stored in **sessionStorage** (`sharingbridge_web_session_v1`) for this site in the browser until **Sign out** or token expiry (~1 hour). Closing **all** tabs for this origin clears it.
+6. On successful sign-in, the coordinator **email** is also stored in **localStorage** (same browser only) so the app can offer **Use a different Google account** on later visits.
+7. Dashboard calls integration-service with `Authorization: Bearer <jwt>` (coordinators list **all** order intents).
+8. On **401** or expiry → sign in again.
 
 **No client secret** in `.env` — only the Web **Client ID** (`VITE_GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_ID_WEB`).
 
 **Local dev fallback:** `VITE_ALLOW_DEV_SIGN_IN=true` + user-service `ALLOW_DEV_TOKEN_MINT=true` → **Dev sign in** (coordinator role). See [google-auth-setup.md](./google-auth-setup.md).
+
+### Sign-in screen (first visit vs returning)
+
+| Situation | What you see |
+|-----------|----------------|
+| **First sign-in on this browser** (no prior coordinator login here) | Short allowlist line + **Sign in with Google** only |
+| **Returning** (signed in successfully before on this browser) | **Last signed in as** *email* + Google button + **Use a different Google account** |
+
+**Use a different Google account** calls Google Identity Services `revoke` for the last email, clears the stored hint, and reloads the page so another allowlisted coordinator can sign in. If revoke fails, use **Sign in with Google** and pick **Use another account** in Google’s dialog.
+
+Chrome may show **Continue as …** on the Google button; that is normal for the same person signing back in.
+
+**Sign out** (dashboard header) clears the SharingBridge session and calls GIS `disableAutoSelect()`.
 
 ## Build-time configuration
 

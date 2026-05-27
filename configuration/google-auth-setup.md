@@ -94,7 +94,7 @@ Open [APIs & Services → Credentials](https://console.cloud.google.com/apis/cre
 
 1. **+ Create credentials** → **OAuth client ID** → **Android**.
 2. Name: e.g. `SharingBridge Android (debug)`.
-3. **Package name** — from `sharingbridge-mobile-app/android/app/build.gradle` → `applicationId` (often `com.example.sharingbridge_mobile_app` or your org id).
+3. **Package name** — from `sharingbridge-mobile-app/android/app/build.gradle.kts` → `applicationId` (`app.sharingbridge`).
 4. **SHA-1 certificate fingerprint** — required for Android.
 
    **Debug keystore (local `flutter run`):**
@@ -117,9 +117,17 @@ Only if you run on iPhone/iPad:
 2. Bundle ID from Xcode / `ios/Runner.xcodeproj`.
 3. Set `GOOGLE_CLIENT_ID_IOS` in user-service `.env` (code reads it via `googleAuth.js`).
 
-### 2.4 Windows desktop (optional)
+### 2.4 Windows / Linux desktop
 
-Flutter **Windows** `google_sign_in` may need a **Desktop** OAuth client or use web client + `clientId` in code. For local MVP, prefer **Android emulator** or **Chrome web** for coordinators; Windows desktop Google sign-in is the least documented path.
+**Not supported** for Google Sign-In in the mobile app (`google_sign_in` has no Windows/Linux implementation). The sign-in screen explains this instead of crashing.
+
+| Goal | Approach |
+|------|----------|
+| Donor + Google + Render/local APIs | **Android emulator** or device — use **Android** OAuth client (§2.2) |
+| Coordinator | **Web dashboard** — **Web** OAuth client (§2.1) |
+| Donor on Windows desktop (dev only) | `flutter run -d windows` with `--dart-define=AUTH_TOKEN=…` (dev mint on user-service) |
+
+**macOS** `flutter run -d macos` can use the **Web** client ID in `--dart-define=GOOGLE_CLIENT_ID=…`.
 
 ---
 
@@ -251,9 +259,11 @@ Invoke-RestMethod http://localhost:8080/health
 ### 6.1 Coordinator (web)
 
 1. Open [http://localhost:5173](http://localhost:5173).
-2. Click **Sign in with Google** (GIS).
-3. Use an email listed in `coordinators.json`.
-4. Dashboard should load; **Refresh** shows order initiations (after a donor registers one on mobile).
+2. First visit: short allowlist message + **Sign in with Google** only.
+3. Click **Sign in with Google** (GIS). Use an email listed in `coordinators.json` (or pick **Use another account** in Google’s dialog if Chrome pre-selects the wrong Gmail).
+4. Dashboard should load; header shows coordinator email when available. **Sign out** clears the session.
+5. Next visit on the same browser: sign-in page shows **Last signed in as** *email* and **Use a different Google account** (disconnects that Google profile from this app, then reloads).
+6. **Refresh** on the dashboard shows order initiations (after a donor registers one on mobile).
 
 **Without Google yet:** set `VITE_ALLOW_DEV_SIGN_IN=true`, ensure `ALLOW_DEV_TOKEN_MINT=true`, use **Dev sign in** on the web page.
 
@@ -398,6 +408,7 @@ Details: [backend-render.md](./backend-render.md), [web-client.md](./web-client.
 | `Failed to fetch` on sign-in | CORS | `WEB_CORS_ORIGINS=http://localhost:5173` on **both** user-service and integration-service; restart |
 | Android sign-in fails | Wrong SHA-1 or package name | Re-create Android OAuth client with debug SHA-1 + correct `applicationId` |
 | `dev_auth_disabled` | Dev mint off | Set `ALLOW_DEV_TOKEN_MINT=true` for local dev only |
+| Wrong Google account on sign-in button | Chrome / GIS remembers last account | **Use a different Google account** (after at least one prior sign-in on this browser), or **Sign in with Google** → **Use another account** in Google’s dialog; or **Sign out** then sign in again |
 
 Verify Google token manually (optional):
 

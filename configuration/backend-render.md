@@ -10,7 +10,20 @@ Host three **Web Services** for Track A. Credentials: [authentication.md](./auth
 
 **Not on Render for MVP:** `sharingbridge-location-safety` (archived), api-gateway, order-service, photo-service.
 
-**Do not use:** Static Site, Private Service, Worker, Cron, Postgres, Key Value.
+**Do not use:** Static Site, Private Service, Worker, Cron, Key Value (for MVP app data).
+
+**PostgreSQL:** use [Render Postgres](https://render.com/docs/databases) for users, roles, and order intents — see [database.md](./database.md). Both Node services share one `DATABASE_URL`.
+
+---
+
+## PostgreSQL (recommended for production)
+
+1. **New +** → **PostgreSQL** → create `sharingbridge-db` (or similar).
+2. Copy **Internal Database URL** from the database **Connections** tab.
+3. Set **`DATABASE_URL`** on **user-service** and **integration-service** to that URL (same value on both).
+4. Apply schema and one-time JSON import — [database.md](./database.md).
+
+Deploy Postgres **before** or **with** the first DB-enabled deploy of the Node services. Without `DATABASE_URL`, services still use JSON files on disk (not durable on Render).
 
 ---
 
@@ -47,14 +60,15 @@ See [authentication.md](./authentication.md) for secret generation.
 | `WEB_CORS_ORIGINS` | On Render: `https://<static-site>.onrender.com` (see § WEB_CORS_ORIGINS). Local `.env`: `http://localhost:5173` |
 | `GOOGLE_CLIENT_ID_WEB` | Web OAuth client ID (same as `VITE_GOOGLE_CLIENT_ID`) |
 | `GOOGLE_CLIENT_ID_ANDROID` | Android OAuth client ID (when mobile uses Google) |
-| `COORDINATOR_EMAILS` | Comma-separated coordinator Gmail(s) for web dashboard |
+| `DATABASE_URL` | Render Postgres **internal** URL — [database.md](./database.md) |
+| `COORDINATOR_EMAILS` | Legacy file/env allowlist; **omit after DB cutover** — seed `user_roles` instead |
 | `ALLOW_DEV_TOKEN_MINT` | `false` on Render |
 | `AUTH_TOKEN_SECRET` | generated |
 | `AUTH_TOKEN_ISSUER` | `sharingbridge-user-service` |
 | `AUTH_TOKEN_AUDIENCE` | `sharingbridge-clients` |
 | `AUTH_TOKEN_TTL_SECONDS` | `3600` |
 
-Optional: persistent disk at `/app/data`.
+Optional (legacy JSON mode only): persistent disk at `/app/data`. Not needed when using Postgres.
 
 ### `sharingbridge-ai-orchestration`
 
@@ -78,6 +92,7 @@ Optional: persistent disk at `/app/data`.
 | `AI_ORCHESTRATION_INTERNAL_API_KEY` | same as ai-orchestration |
 | `AI_ORCHESTRATION_TIMEOUT_MS` | `15000` |
 | `WEB_CORS_ORIGINS` | web app origin(s), e.g. `http://localhost:5173` or your static site URL (comma-separated) |
+| `DATABASE_URL` | Same Postgres **internal** URL as user-service — [database.md](./database.md) |
 | `AI_SUGGEST_VENDORS_ENABLED` | `true` |
 | `AI_INSTRUCTION_PACK_ENABLED` | `true` |
 
@@ -126,9 +141,10 @@ Web app: `sharingbridge-web-app/.env` from `.env.example` (`VITE_*` URLs). Rebui
 
 ## Deploy order
 
-1. user-service → URL + `AUTH_TOKEN_SECRET`
-2. ai-orchestration → URL + API key + `SHARINGBRIDGE_WEBSITE_URL=pending`
-3. integration-service → both URLs + both secrets
+1. **PostgreSQL** (when using DB) → schema + migration — [database.md](./database.md)
+2. user-service → URL + `AUTH_TOKEN_SECRET` + `DATABASE_URL`
+3. ai-orchestration → URL + API key + `SHARINGBRIDGE_WEBSITE_URL=pending`
+4. integration-service → both URLs + both secrets + `DATABASE_URL`
 
 Blueprints: each repo’s `render.yaml`. Integration still needs pasted URLs and `AUTH_TOKEN_SECRET` after 1–2 exist.
 
@@ -189,6 +205,7 @@ See [mobile-client.md](./mobile-client.md) — mint JWT, then `flutter run` from
 | `403` / invalid JWT | Match `AUTH_TOKEN_SECRET` |
 | `401 Invalid internal API key` | Match `AI_ORCHESTRATION_INTERNAL_API_KEY` |
 | AI not used | `AI_ORCHESTRATION_BASE_URL`, `AI_*_ENABLED=true` |
-| Presets lost on redeploy | user-service disk or DB later |
+| Presets / intents lost on redeploy | Set `DATABASE_URL` on both Node services; use Render Postgres — [database.md](./database.md) |
+| `DATABASE_URL` / connection errors | Use **internal** URL; run schema SQL; redeploy both services |
 | Browser **Failed to fetch** on web | `WEB_CORS_ORIGINS` on **both** backends includes the web origin; web `.env` `VITE_*` must point at the same API hosts you use for mobile |
 | Local env ignored | Copy `.env.example` → `.env` in each Node repo; restart `npm start` |

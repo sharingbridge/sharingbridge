@@ -7,11 +7,12 @@ Sequential checklist for configuring SharingBridge from **Google OAuth** through
 | 0 | Google Web client + Client ID | [google-auth-setup.md](./google-auth-setup.md) Part 1–2 |
 | 1 | Local web + backends (Google sign-in) | [google-auth-setup.md](./google-auth-setup.md) Part 3–6, [web-client.md](./web-client.md) |
 | 2 | Render backends (user + integration) | [backend-render.md](./backend-render.md) |
+| 2b | Postgres + `DATABASE_URL` (when using DB) | [database.md](./database.md) |
 | 3 | Render static site (first deploy) | [web-client.md](./web-client.md) Deploy |
 | 4 | Google origin + CORS for live URL | [google-auth-setup.md](./google-auth-setup.md) Part 7 |
 | 5 | Verify hosted coordinator dashboard | [MANUAL_TESTING_GUIDE.md](../testing/MANUAL_TESTING_GUIDE.md) §4 |
 
-Architecture: [authentication.md](./authentication.md). Mobile (donor): [mobile-client.md](./mobile-client.md).
+Architecture: [authentication.md](./authentication.md). Persistence: [database.md](./database.md). Mobile (donor): [mobile-client.md](./mobile-client.md).
 
 ---
 
@@ -232,6 +233,17 @@ Optional: `VITE_ALLOW_DEV_SIGN_IN=true` only with `ALLOW_DEV_TOKEN_MINT=true` on
 
 **Depends on:** Render account + GitHub repos. **Does not** require static site URL yet.
 
+### Phase 2b — PostgreSQL (when DB migration is enabled)
+
+**Detail:** [database.md](./database.md)
+
+1. Create **Render Postgres** → copy **Internal Database URL**.
+2. Apply schema (primary/unique indexes automatic; secondary indexes on `updated_at` per [database.md](./database.md)).
+3. Run one-time import from existing JSON (if migrating).
+4. Set **`DATABASE_URL`** on **user-service** and **integration-service** (same URL).
+
+Skip 2b until service releases require `DATABASE_URL`; until then coordinators and order intents stay in JSON files (not durable on Render without a disk).
+
 Deploy in order — [backend-render.md](./backend-render.md):
 
 1. **user-service** (Web Service, Node 20).
@@ -246,7 +258,8 @@ Deploy in order — [backend-render.md](./backend-render.md):
 | `GOOGLE_CLIENT_ID_WEB` | Web Client ID from Phase 0 |
 | `GOOGLE_CLIENT_ID_ANDROID` | Android Client ID (when mobile uses Google) |
 | `ALLOW_DEV_TOKEN_MINT` | `false` |
-| `COORDINATOR_EMAILS` | Comma-separated coordinator emails (or persistent `data/coordinators.json`) |
+| `DATABASE_URL` | Render Postgres internal URL (DB mode) — [database.md](./database.md) |
+| `COORDINATOR_EMAILS` | Legacy only; use `user_roles` after DB cutover |
 | `WEB_CORS_ORIGINS` | Optional until Phase 4: `http://localhost:5173` if you test local Vite against hosted APIs; otherwise set in Phase 4 |
 
 ### integration-service (Render environment)
@@ -254,6 +267,7 @@ Deploy in order — [backend-render.md](./backend-render.md):
 | Variable | Production value |
 |----------|------------------|
 | `AUTH_TOKEN_SECRET` | Match user-service |
+| `DATABASE_URL` | **Same** as user-service — [database.md](./database.md) |
 | `USER_SERVICE_BASE_URL` | `https://<your-user-service>.onrender.com` |
 | `WEB_CORS_ORIGINS` | **Identical** to user-service on Render (see Phase 4) |
 

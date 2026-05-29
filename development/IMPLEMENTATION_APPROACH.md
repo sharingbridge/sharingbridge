@@ -225,6 +225,7 @@ See `development/MVP_BOOTSTRAP_ISSUES.md` §§3–4, 6, 8–10 for repo-level ch
 - Admin/coordinator dashboard: active orders, statuses, and exception views
 - Vendor/coordinator support views for order follow-up and issue handling
 - Search/filter panels for order timeline and beneficiary-assistance context
+- **Roadmap detail (sanitized):** [design/Future_Extensions.md](../design/Future_Extensions.md) — Phase A: donor marks payment done; Phase B: delivery photo; Phase C: locality demand + vendor bidding (direct donor→vendor payment, no platform escrow)
 
 **Weeks 7-10 (Monitoring + Governance):**
 - Operational analytics views (trend, success/failure reasons, regional status)

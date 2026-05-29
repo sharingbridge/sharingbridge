@@ -12,7 +12,7 @@ SharingBridge is a mobile/web application that enables donors to provide food an
 
 Product-level assumptions are maintained in one place: [SharingBridge_Business_Requirement.md](requirements/SharingBridge_Business_Requirement.md), section **“Operating Constraints & Assumptions.”** Refer to that section as the source of truth.
 
-**🤖 AI-Assisted Development:** This project is being built primarily through AI-assisted coding sessions. Live coordination, decisions, and the next set of recommended tasks are tracked in [AGENT_HANDOFF.md](development/AGENT_HANDOFF.md). Conversations are not archived in the repo — durable knowledge lives in design/, requirements/, development/, and testing/ docs.
+**🤖 AI-Assisted Development:** This project is being built primarily through AI-assisted coding sessions. Live coordination, decisions, doc map, and next tasks: [AGENT_HANDOFF.md](development/AGENT_HANDOFF.md). Conversations are not archived in the repo — durable knowledge lives in design/, requirements/, development/, and testing/ docs.
 
 ## Key Features
 
@@ -27,6 +27,7 @@ Product-level assumptions are maintained in one place: [SharingBridge_Business_R
 
 - [Business Requirements](requirements/SharingBridge_Business_Requirement.md) - Complete business case and benefits
 - [End-to-End Workflow (diagrams)](design/SharingBridge_End_to_End_Workflow.md) - Full journey steps 1–12 with Mermaid flows; shipped vs planned
+- [Future Extensions](design/Future_Extensions.md) - Order payment/delivery tracking, delivery proof, locality demand & vendor bidding (roadmap)
 - [Technical Architecture](design/SharingBridge_Technical_Architecture.md) - Detailed technical design
 - [API Contracts](design/contracts/donor_setup_suggest_vendors.openapi.yaml) - Shared request/response contracts and examples
 - [Implementation Approach](development/IMPLEMENTATION_APPROACH.md) - Development strategy and free-tier options
@@ -46,7 +47,7 @@ This is the **master repository** for SharingBridge (GitHub: [`sharingbridge/sha
 
 **Frontend:**
 - `sharingbridge-mobile-app` - Mobile application (Flutter)
-- `sharingbridge-web-app` - Web application (React/Next.js)
+- `sharingbridge-web-app` - Web application (Vite + React; coordinator dashboard)
 
 **Backend Services:**
 - `sharingbridge-api-gateway` - API gateway and routing

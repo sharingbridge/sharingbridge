@@ -1,12 +1,14 @@
 # SharingBridge configuration
 
-Operational and deployment configuration by application area. Design specs remain in `design/` and `requirements/`; this folder is for **how to run and wire** the MVP.
+Operational and deployment configuration by application area. **Full doc map:** [AGENT_HANDOFF.md](../development/AGENT_HANDOFF.md) § Documentation map. Design specs remain in `design/` and `requirements/`; this folder is for **how to run and wire** the MVP.
 
 | Document | Scope |
 |----------|--------|
 | [e2e-deployment-sequence.md](./e2e-deployment-sequence.md) | **Start here:** phased order (Google → local → Render backends → static site → CORS) |
 | [backend-render.md](./backend-render.md) | Host user-service, ai-orchestration, and integration-service on Render |
 | [authentication.md](./authentication.md) | Google Sign-In, JWT roles, internal API key |
+| [database.md](./database.md) | **PostgreSQL** setup (local + Render), schema, indexes, migration from JSON |
+| [Future Extensions](../design/Future_Extensions.md) | Roadmap: donor payment status, delivery proof, demand/vendor bidding |
 | [google-auth-setup.md](./google-auth-setup.md) | **Step-by-step** Google OAuth + coordinator allowlist + local `.env` |
 | [mobile-client.md](./mobile-client.md) | Flutter `dart-define` values and hosted vs local URLs |
 | [web-client.md](./web-client.md) | Web dashboard (order initiation history) and CORS |
@@ -18,8 +20,8 @@ Operational and deployment configuration by application area. Design specs remai
 
 | Repo | Copy template | Keys to verify for web + mobile |
 |------|---------------|----------------------------------|
-| `sharingbridge-user-service` | `.env.example` → `.env` | `AUTH_TOKEN_SECRET`, `GOOGLE_CLIENT_ID_WEB`, `WEB_CORS_ORIGINS=http://localhost:5173` (local only), coordinator allowlist — [google-auth-setup.md](./google-auth-setup.md) |
-| `sharingbridge-integration-service` | `.env.example` → `.env` | Same `AUTH_TOKEN_SECRET`, `USER_SERVICE_BASE_URL=http://localhost:8081`, **same** `WEB_CORS_ORIGINS` as user-service, `PREFERENCES_BACKEND` |
+| `sharingbridge-user-service` | `.env.example` → `.env` | `AUTH_TOKEN_SECRET`, `GOOGLE_CLIENT_ID_WEB`, `WEB_CORS_ORIGINS=http://localhost:5173` (local only), coordinator allowlist — [google-auth-setup.md](./google-auth-setup.md); **`DATABASE_URL`** when DB migration is enabled — [database.md](./database.md) |
+| `sharingbridge-integration-service` | `.env.example` → `.env` | Same `AUTH_TOKEN_SECRET`, `USER_SERVICE_BASE_URL=http://localhost:8081`, **same** `WEB_CORS_ORIGINS` as user-service, `PREFERENCES_BACKEND`, **`DATABASE_URL`** (same DB) — [database.md](./database.md) |
 | `sharingbridge-web-app` | `.env.example` → `.env` | `VITE_GOOGLE_CLIENT_ID`, `VITE_API_BASE_URL=http://localhost:8080`, `VITE_USER_SERVICE_BASE_URL=http://localhost:8081` |
 | `sharingbridge-mobile-app` | — | Google: `GOOGLE_CLIENT_ID` + `USER_SERVICE_BASE_URL` + `API_BASE_URL`; or dev mint — [mobile-client.md](./mobile-client.md) |
 
@@ -33,6 +35,7 @@ Follow [e2e-deployment-sequence.md](./e2e-deployment-sequence.md) Phases 2–5 i
 
 | Step | Doc |
 |------|-----|
+| Create Render Postgres + `DATABASE_URL` on both Node services (when using DB) | [database.md](./database.md) |
 | Deploy user-service → ai-orchestration → integration | [backend-render.md](./backend-render.md) |
 | Set `WEB_CORS_ORIGINS` on **both** Node services **in Render** to static site URL (`https://…onrender.com`); keep `http://localhost:5173` in **local** `.env` only | [backend-render.md](./backend-render.md) § WEB_CORS_ORIGINS · [e2e-deployment-sequence.md](./e2e-deployment-sequence.md) Phase 4 |
 | Static site build env `VITE_*` → hosted API URLs | [e2e-deployment-sequence.md](./e2e-deployment-sequence.md) Phase 3 |

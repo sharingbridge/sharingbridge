@@ -18,6 +18,7 @@
 | **[Donor Setup AI Search Sequence](Donor_Setup_AI_Search_Sequence.md)** | Donor setup only (suggest → save presets) | Sequence diagram |
 | **[Manual Testing Guide](../testing/MANUAL_TESTING_GUIDE.md)** | How to **verify** shipped slices on a device | Commands, not product flow |
 | **[Agent Handoff](../development/AGENT_HANDOFF.md)** | What is **live in code today** and next tasks | Status bullets |
+| **[Future Extensions](Future_Extensions.md)** | Order payment/delivery tracking, delivery proof, locality demand + vendor bidding | Roadmap; Mermaid |
 
 **Gap this doc fills:** The BRD defines *what* happens; the architecture defines *how* technically; the manual guide defines *how to test*. This file connects them with **visual flows** and marks **shipped / partial / planned**.
 
@@ -68,13 +69,13 @@ Legend: ✅ shipped (partial or full) · 🟡 in progress / stub · ⬜ planned
 | 2 Trigger | ✅ (UX) | Home hub → **Offer food help** |
 | 3 Consent | 🟡 | Part of guidance step 1; photo consent in copy |
 | 4 Guidance | ✅ | Mobile **Quick guidance** (fixed copy); geo safety service deferred |
-| 5 Order intent | 🟡 | Presets loaded; formal order intent service ⬜ |
-| 6 Instruction pack | 🟡 | API + stub fallback shipped; live LLM optional |
+| 5 Order intent | ✅ | `POST/GET /v1/donor-seeker/order-intents`; mobile register + history — [field-handoff.md](../configuration/field-handoff.md) |
+| 6 Instruction pack | ✅ | API + local stub fallback; live LLM optional — integration + ai-orchestration |
 | 7 Secure store | ⬜ | `sharingbridge-photo-service` planned |
 | 8–9 Vendor order + pay | 🟡 | Copy + open preset URL; OAuth/deep-link builder ⬜ |
-| 10 Deliver + photo | ⬜ | Delivery acknowledgement + match planned |
-| 11 Donor confirm | ⬜ | `sharingbridge-notification-service` |
-| 12 History | ⬜ | Web/mobile history views |
+| 10 Deliver + photo | ⬜ | Delivery acknowledgement + match planned — [Future_Extensions](Future_Extensions.md) Phase B |
+| 11 Donor confirm | ⬜ | `sharingbridge-notification-service`; donor **mark payment done** — Phase A |
+| 12 History | 🟡 | Mobile + coordinator web initiation history; full order ops — Phase A in [Future_Extensions](Future_Extensions.md) |
 
 ---
 

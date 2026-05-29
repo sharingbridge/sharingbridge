@@ -131,9 +131,13 @@ Only if you run on iPhone/iPad:
 
 ---
 
-## Part 3 — Coordinator allowlist (local DB)
+## Part 3 — Coordinator allowlist
 
 Coordinators are **not** chosen in Google Console. They are allowlisted **by email** in user-service.
+
+**Postgres (target):** grant `coordinator` in `user_roles` — [database.md](./database.md) § Coordinator seeding. No runtime `coordinators.json` after cutover.
+
+**Legacy (files, until DB migration):**
 
 ```powershell
 cd D:\kannan\sharingbridge\sharingbridge-user-service

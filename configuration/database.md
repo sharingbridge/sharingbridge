@@ -13,7 +13,7 @@ There is **no** runtime fallback to JSON files after cutover — import once, th
 | Data | Today (file) | Target (Supabase table) |
 |------|----------------|-------------------------|
 | Users, Google mapping | `user-service/data/user-service-store.json` | `users` |
-| Coordinator allowlist | `data/coordinators.json` + `COORDINATOR_EMAILS` | `user_roles` |
+| Coordinator role | — (seed in DB) | `user_roles` |
 | Donor presets | same JSON store | `donor_presets` |
 | Order intents | `integration-service/data/order-intents.json` | `order_intents` |
 
@@ -240,7 +240,7 @@ SELECT id, 'coordinator' FROM users WHERE email = 'your-coordinator@gmail.com'
 ON CONFLICT DO NOTHING;
 ```
 
-`COORDINATOR_EMAILS` / `coordinators.json` are still read on user-service startup to grant `coordinator` in `user_roles` when that email signs in.
+Coordinator access is **not** configured in `.env`. Grant `coordinator` with [coordinator-seed.sql](./coordinator-seed.sql) after the user exists in `users`.
 
 ---
 
@@ -287,8 +287,6 @@ Only if you **do not** want Supabase: Render → **New +** → **PostgreSQL**, c
 | `GOOGLE_CLIENT_ID_WEB` | Yes (user-service) | Unchanged |
 | `WEB_CORS_ORIGINS` | Yes | Unchanged — browser origin, not Supabase |
 
-**Deprecated after DB cutover:** `COORDINATOR_EMAILS` / runtime `coordinators.json` — use `user_roles` in Supabase instead.
-
 ---
 
 ## Tables
@@ -298,7 +296,7 @@ Only if you **do not** want Supabase: Render → **New +** → **PostgreSQL**, c
 | Table | Replaces (file mode) |
 |-------|----------------------|
 | `users` | `user-service-store.json` users |
-| `user_roles` | `coordinators.json` / `COORDINATOR_EMAILS` |
+| `user_roles` | coordinator / donor roles (SQL seed) |
 | `donor_presets` | donor presets in user-service store |
 | `order_intents` | `order-intents.json` |
 
@@ -318,15 +316,11 @@ Primary keys and `UNIQUE` constraints create indexes automatically; [schema.sql]
 
 ---
 
-## Coordinator seeding (replaces file allowlist)
+## Coordinator seeding
 
-Run in Supabase **SQL Editor** after the coordinator has signed in once (so `users` has a row), or after migration inserts users:
-
-```sql
-INSERT INTO user_roles (user_id, role)
-SELECT id, 'coordinator' FROM users WHERE email = 'your-coordinator@gmail.com'
-ON CONFLICT DO NOTHING;
-```
+1. Ensure a row exists in `users` (e.g. one Google sign-in on mobile as donor, or `npm run import:json` from legacy JSON).
+2. Run [coordinator-seed.sql](./coordinator-seed.sql) in psql, pgAdmin, or Supabase **SQL Editor** (edit the email in that file first).
+3. Sign in on the **web dashboard** with that Gmail — JWT will include `role: coordinator`.
 
 ---
 

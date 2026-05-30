@@ -21,12 +21,9 @@ SharingBridge uses **Google Sign-In** for production-style identity, plus **Shar
 
 **Role assignment**
 
-| Mode | Storage | Coordinator grant |
-|------|---------|-------------------|
-| **Target (Postgres)** | `user_roles` table — [database.md](./database.md) | SQL seed or one-time import from legacy allowlist |
-| **Legacy (files)** | `data/coordinators.json` + `COORDINATOR_EMAILS` | Email on allowlist → can receive `coordinator` role at sign-in |
+Roles are read from Postgres **`user_roles`** only — [database.md](./database.md) · [coordinator-seed.sql](./coordinator-seed.sql). There is no email allowlist in `.env` or JSON at runtime.
 
-Every Google user should have **`donor`** in `user_roles` (or legacy equivalent). **`coordinator`** is additional for allowlisted emails. Active role at sign-in still follows **client rules** below.
+Every Google user gets **`donor`** ensured at sign-in. **`coordinator`** is granted only via SQL (or legacy JSON import where `user.role` was `coordinator`). Active role at sign-in follows **client rules** below.
 
 **Client rules**
 

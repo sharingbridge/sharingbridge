@@ -51,28 +51,40 @@ Use public `https://` on devices and emulators. Re-mint the JWT after ~1 hour.
 
 Full checklist: [google-auth-setup.md](./google-auth-setup.md).
 
+**Android emulator** (both URLs must use the host alias — not `localhost`):
+
 ```powershell
 cd D:\kannan\sharingbridge\sharingbridge-mobile-app
-flutter run `
+flutter run -d emulator-5554 `
   --dart-define=GOOGLE_CLIENT_ID=<Android OAuth client ID from Google Cloud> `
+  --dart-define=USER_SERVICE_BASE_URL=http://10.0.2.2:8081 `
+  --dart-define=API_BASE_URL=http://10.0.2.2:8080
+```
+
+**Windows desktop** (Google Sign-In not supported; use dev token or emulator):
+
+```powershell
+flutter run -d windows `
+  --dart-define=GOOGLE_CLIENT_ID=... `
   --dart-define=USER_SERVICE_BASE_URL=http://localhost:8081 `
   --dart-define=API_BASE_URL=http://localhost:8080
 ```
 
-Android emulator: `--dart-define=API_BASE_URL=http://10.0.2.2:8080`
-
-Tap **Continue with Google** on launch. Coordinator emails (web allowlist) are rejected on mobile.
+Tap **Continue with Google** on launch. Accounts with **`coordinator`** in `user_roles` are rejected on mobile (web dashboard only).
 
 ## Dev token fallback (no Google)
 
 Requires `ALLOW_DEV_TOKEN_MINT=true` on user-service.
 
+Mint on the PC (`localhost:8081`). From an **emulator**, point the app at `10.0.2.2`:
+
 ```powershell
 cd D:\kannan\sharingbridge\sharingbridge-mobile-app
 $token = (Invoke-RestMethod -Method POST -Uri http://localhost:8081/v1/auth/token `
   -ContentType "application/json" -Body '{"user_id":"demo-user","role":"donor"}').token
-flutter run `
-  --dart-define=API_BASE_URL=http://localhost:8080 `
+flutter run -d emulator-5554 `
+  --dart-define=USER_SERVICE_BASE_URL=http://10.0.2.2:8081 `
+  --dart-define=API_BASE_URL=http://10.0.2.2:8080 `
   --dart-define=USER_ID=demo-user `
   --dart-define=AUTH_TOKEN=$token
 ```

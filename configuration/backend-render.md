@@ -52,7 +52,6 @@ See [authentication.md](./authentication.md) for secret generation.
 | `GOOGLE_CLIENT_ID_WEB` | Web OAuth client ID (same as `VITE_GOOGLE_CLIENT_ID`) |
 | `GOOGLE_CLIENT_ID_ANDROID` | Android OAuth client ID (when mobile uses Google) |
 | `DATABASE_URL` | **Supabase** database URI (same on integration-service) — [database.md](./database.md) |
-| `COORDINATOR_EMAILS` | Legacy file/env allowlist; **omit after DB cutover** — seed `user_roles` instead |
 | `ALLOW_DEV_TOKEN_MINT` | `false` on Render |
 | `AUTH_TOKEN_SECRET` | generated |
 | `AUTH_TOKEN_ISSUER` | `sharingbridge-user-service` |

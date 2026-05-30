@@ -187,7 +187,7 @@ copy .env.example .env
 | `ALLOW_DEV_TOKEN_MINT` | `true` (local only) |
 | `AUTH_TOKEN_SECRET` | Shared secret (match integration-service) |
 
-Coordinator allowlist: `data/coordinators.json` and/or `COORDINATOR_EMAILS` — [google-auth-setup.md](./google-auth-setup.md) Part 4.
+Coordinator role: Postgres `user_roles` — [coordinator-seed.sql](./coordinator-seed.sql) · [google-auth-setup.md](./google-auth-setup.md) Part 3.
 
 ### 1.2 integration-service
 
@@ -260,7 +260,6 @@ Deploy in order — [backend-render.md](./backend-render.md):
 | `GOOGLE_CLIENT_ID_ANDROID` | Android Client ID (when mobile uses Google) |
 | `ALLOW_DEV_TOKEN_MINT` | `false` |
 | `DATABASE_URL` | **Supabase** Postgres URI (DB mode) — [database.md](./database.md) |
-| `COORDINATOR_EMAILS` | Legacy only; use `user_roles` after DB cutover |
 | `WEB_CORS_ORIGINS` | Optional until Phase 4: `http://localhost:5173` if you test local Vite against hosted APIs; otherwise set in Phase 4 |
 
 ### integration-service (Render environment)
@@ -392,7 +391,7 @@ See [mobile-client.md](./mobile-client.md).
 | Google popup / `origin_mismatch` | 4 | Add exact static URL to **Authorized JavaScript origins** |
 | CORS error in browser console | 4 | `WEB_CORS_ORIGINS` on **both** backends includes static URL |
 | Sign-in works locally, not on Render | 3–4 | `VITE_GOOGLE_CLIENT_ID` set; rebuild static site; origins + CORS |
-| `403 wrong_client_role` on web | 1 / 2 | Email must be on coordinator allowlist; web client only for coordinators |
+| `403 wrong_client_role` on web | 1 / 2 | Grant `coordinator` in `user_roles` ([coordinator-seed.sql](./coordinator-seed.sql)); web client only for coordinators |
 | Empty dashboard on Render | 5 | Donor mobile must post to **same** `VITE_API_BASE_URL` host |
 | `401` / invalid token | 2 | `AUTH_TOKEN_SECRET` must match on user-service and integration-service |
 

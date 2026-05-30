@@ -9,7 +9,7 @@ Operational and deployment configuration by application area. **Full doc map:** 
 | [authentication.md](./authentication.md) | Google Sign-In, JWT roles, internal API key |
 | [database.md](./database.md) | **Supabase** + local Postgres (manual steps), [schema.sql](./schema.sql) |
 | [Future Extensions](../design/Future_Extensions.md) | Roadmap: donor payment status, delivery proof, demand/vendor bidding |
-| [google-auth-setup.md](./google-auth-setup.md) | **Step-by-step** Google OAuth + coordinator allowlist + local `.env` |
+| [google-auth-setup.md](./google-auth-setup.md) | **Step-by-step** Google OAuth + coordinator SQL seed + local `.env` |
 | [mobile-client.md](./mobile-client.md) | Flutter `dart-define` values and hosted vs local URLs |
 | [web-client.md](./web-client.md) | Web dashboard (order initiation history) and CORS |
 | [field-handoff.md](./field-handoff.md) | Offer food help flow, guidance (BRD step 4), what is not automated |
@@ -20,7 +20,7 @@ Operational and deployment configuration by application area. **Full doc map:** 
 
 | Repo | Copy template | Keys to verify for web + mobile |
 |------|---------------|----------------------------------|
-| `sharingbridge-user-service` | `.env.example` → `.env` | **`DATABASE_URL`** (required), `AUTH_TOKEN_SECRET`, `GOOGLE_CLIENT_ID_WEB`, `WEB_CORS_ORIGINS`, coordinator allowlist — [database.md](./database.md), [google-auth-setup.md](./google-auth-setup.md) |
+| `sharingbridge-user-service` | `.env.example` → `.env` | **`DATABASE_URL`** (required), `AUTH_TOKEN_SECRET`, `GOOGLE_CLIENT_ID_WEB`, `WEB_CORS_ORIGINS` — [database.md](./database.md), [google-auth-setup.md](./google-auth-setup.md) |
 | `sharingbridge-integration-service` | `.env.example` → `.env` | **Same `DATABASE_URL`**, same `AUTH_TOKEN_SECRET`, `USER_SERVICE_BASE_URL=http://localhost:8081`, **same** `WEB_CORS_ORIGINS`, `PREFERENCES_BACKEND` — [database.md](./database.md) |
 | `sharingbridge-web-app` | `.env.example` → `.env` | `VITE_GOOGLE_CLIENT_ID`, `VITE_API_BASE_URL=http://localhost:8080`, `VITE_USER_SERVICE_BASE_URL=http://localhost:8081` |
 | `sharingbridge-mobile-app` | — | Google: `GOOGLE_CLIENT_ID` + `USER_SERVICE_BASE_URL` + `API_BASE_URL`; or dev mint — [mobile-client.md](./mobile-client.md) |

@@ -13,7 +13,7 @@ Repository: `sharingbridge-web-app` (Vite + React).
 1. User opens the site → **Coordinator sign in** screen (minimal copy).
 2. **Sign in with Google** (GIS) → browser obtains a Google `id_token`.
 3. App calls user-service `POST /v1/auth/google` with `{ "id_token", "client_type": "web" }`.
-4. user-service verifies the token, checks the **coordinator allowlist** (`data/coordinators.json` / `COORDINATOR_EMAILS`), mints a JWT with `role: coordinator`.
+4. user-service verifies the token, loads **`user_roles`** from Postgres, mints a JWT with `role: coordinator` when that role is present.
 5. JWT is stored in **sessionStorage** (`sharingbridge_web_session_v1`) for this site in the browser until **Sign out** or token expiry (~1 hour). Closing **all** tabs for this origin clears it.
 6. On successful sign-in, the coordinator **email** is also stored in **localStorage** (same browser only) so the app can offer **Use a different Google account** on later visits.
 7. Dashboard calls integration-service with `Authorization: Bearer <jwt>` (coordinators list **all** order intents).
@@ -27,10 +27,10 @@ Repository: `sharingbridge-web-app` (Vite + React).
 
 | Situation | What you see |
 |-----------|----------------|
-| **First sign-in on this browser** (no prior coordinator login here) | Short allowlist line + **Sign in with Google** only |
+| **First sign-in on this browser** (no prior coordinator login here) | **Sign in with Google** |
 | **Returning** (signed in successfully before on this browser) | **Last signed in as** *email* + Google button + **Use a different Google account** |
 
-**Use a different Google account** calls Google Identity Services `revoke` for the last email, clears the stored hint, and reloads the page so another allowlisted coordinator can sign in. If revoke fails, use **Sign in with Google** and pick **Use another account** in Google’s dialog.
+**Use a different Google account** calls Google Identity Services `revoke` for the last email, clears the stored hint, and reloads the page so another coordinator (with `user_roles`) can sign in. If revoke fails, use **Sign in with Google** and pick **Use another account** in Google’s dialog.
 
 Chrome may show **Continue as …** on the Google button; that is normal for the same person signing back in.
 
@@ -78,8 +78,8 @@ npm run dev
 ```
 
 1. Set `WEB_CORS_ORIGINS=http://localhost:5173` on **user-service** and **integration-service**.
-2. Follow [google-auth-setup.md](./google-auth-setup.md) for Google client IDs and `data/coordinators.json`.
-3. Open http://localhost:5173 → **Sign in with Google** (coordinator emails only).
+2. Follow [google-auth-setup.md](./google-auth-setup.md) for Google client IDs and [coordinator-seed.sql](./coordinator-seed.sql).
+3. Open http://localhost:5173 → **Sign in with Google** (accounts with `coordinator` in `user_roles` only).
 4. **Refresh** after mobile donor registrations.
 
 Coordinators see **all** donors’ order intents on the integration host pointed to by `VITE_API_BASE_URL`. Mobile donors must use the **same** integration host (`API_BASE_URL`). Localhost and Render stores are separate.

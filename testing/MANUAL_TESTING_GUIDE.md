@@ -39,7 +39,8 @@ needed.
   - `D:\kannan\sharingbridge\sharingbridge-web-app` (for **§4** only)
 - User service cloned and runnable (Google sign-in + optional dev token mint):
   - `D:\kannan\sharingbridge\sharingbridge-user-service`
-- For **§4** (web) and Google mobile sign-in: complete [configuration/e2e-deployment-sequence.md](../configuration/e2e-deployment-sequence.md) **Phase 0–1** (Google Console, `VITE_GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_ID_WEB`, coordinator allowlist).
+- For **§4** (web): Google Web client + [coordinator-seed.sql](../configuration/coordinator-seed.sql) — [configuration/e2e-deployment-sequence.md](../configuration/e2e-deployment-sequence.md) **Phase 0–1**.
+- For **§3-auth** (mobile Google): Android OAuth client + SHA-1 on user-service — [configuration/google-auth-setup.md](../configuration/google-auth-setup.md) §2.2.
 - Port `8080` free locally (integration-service).
 - Port `8081` free locally (user-service).
 - Port `8091` free locally (ai-orchestration).
@@ -55,7 +56,7 @@ Both **`sharingbridge-user-service`** and **`sharingbridge-integration-service`*
 | 3 | Run [local-postgres-grants.sql](../configuration/local-postgres-grants.sql) as `postgres` (fixes `permission denied for table users`) |
 | 4 | Copy `.env.example` → `.env` in **both** Node repos; set the same `DATABASE_URL` (match your port, e.g. `5433`) |
 | 5 | Optional one-time: `npm run import:json` (user-service), `npm run import:order-intents` (integration-service) |
-| 6 | Coordinator: `data/coordinators.json` and/or `COORDINATOR_EMAILS` in user-service `.env`, or a row in `user_roles` after sign-in |
+| 6 | Coordinator: `coordinator` row in `user_roles` ([coordinator-seed.sql](../configuration/coordinator-seed.sql)) after the user exists in `users` |
 
 **Verify DB before starting apps (psql or pgAdmin on `sharingbridge`):**
 
@@ -476,56 +477,86 @@ Invoke-RestMethod http://localhost:8091/health
 
 Flutter only. For the **web coordinator dashboard**, use **§4** (same backends, browser + Vite).
 
-Keep **ai-orchestration** on `8091`, integration-service on `8080`, and user-service on `8081` (with AI env vars from §2a.1).
+Keep **ai-orchestration** on `8091`, **integration-service** on `8080`, and **user-service** on `8081` (with AI env vars from §2a.1). Start all three before `flutter run`.
 
-### 3-auth. Google Sign-In (donor, recommended)
+### 3-host. API URLs by device (read this first)
 
-Requires [configuration/google-auth-setup.md](../configuration/google-auth-setup.md) (Android OAuth client + SHA-1, `GOOGLE_CLIENT_ID_ANDROID` on user-service, test users on Google **Audience**).
+The app runs **inside** the emulator or on your PC. **`localhost` inside an Android emulator is the emulator itself**, not your Windows machine — so local backends must use the host alias **`10.0.2.2`** (Android’s special route to the PC).
+
+| Where you run the app | `USER_SERVICE_BASE_URL` | `API_BASE_URL` |
+|----------------------|-------------------------|----------------|
+| **Android emulator** (recommended for Google Sign-In) | `http://10.0.2.2:8081` | `http://10.0.2.2:8080` |
+| Windows desktop (`-d windows`) | `http://localhost:8081` | `http://localhost:8080` |
+| Physical Android phone (USB) | `http://<your-PC-LAN-IP>:8081` | `http://<your-PC-LAN-IP>:8080` |
+
+Use the **same row** for every `--dart-define` on one `flutter run`. Mixing `localhost` with the emulator causes **connection refused** on sign-in or API calls.
+
+Backends stay on your PC at `localhost:8080` / `8081`; only the **dart-defines** change per target.
+
+### 3-run. Start an Android emulator
 
 ```powershell
 cd D:\kannan\sharingbridge\sharingbridge-mobile-app
 flutter pub get
-flutter run -d <device> `
-  --dart-define=GOOGLE_CLIENT_ID=<Android OAuth client ID> `
-  --dart-define=USER_SERVICE_BASE_URL=http://localhost:8081 `
-  --dart-define=API_BASE_URL=http://localhost:8080
+flutter emulators                    # list AVDs
+flutter emulators --launch <emulator_id>   # e.g. Pixel_7_API_34
+flutter devices                      # note device id, e.g. emulator-5554
 ```
 
-Android emulator: use `--dart-define=API_BASE_URL=http://10.0.2.2:8080`.
+Wait until the emulator home screen is up, then use `-d <device_id>` in the commands below.
 
-1. App opens → **Continue with Google** (donor role; not on coordinator allowlist).
-2. Walk through **§3c** / **§3f** / **§3g** as below.
+### 3-auth. Google Sign-In on Android emulator (donor, recommended)
 
-### 3-dev. Dev token path (fallback)
+Requires [configuration/google-auth-setup.md](../configuration/google-auth-setup.md): **Android** OAuth client (package name + debug SHA-1), `GOOGLE_CLIENT_ID_ANDROID` in user-service `.env`, Gmail added as OAuth **test user**.
 
-Use when Google is not configured yet (`ALLOW_DEV_TOKEN_MINT=true` on user-service):
+```powershell
+cd D:\kannan\sharingbridge\sharingbridge-mobile-app
+flutter run -d emulator-5554 `
+  --dart-define=GOOGLE_CLIENT_ID=<Android OAuth client ID> `
+  --dart-define=USER_SERVICE_BASE_URL=http://10.0.2.2:8081 `
+  --dart-define=API_BASE_URL=http://10.0.2.2:8080
+```
+
+Replace `emulator-5554` with your `flutter devices` id.
+
+1. App opens → **Continue with Google** (donor). Accounts with **`coordinator`** in `user_roles` are rejected on mobile — use the web dashboard for those Gmail accounts ([coordinator-seed.sql](../configuration/coordinator-seed.sql) is web-only).
+2. Walk through **§3c** / **§3f** / **§3g**.
+
+**Windows desktop:** `google_sign_in` is not supported on `-d windows`; use the emulator for Google auth, or **§3-dev** with a dev token.
+
+### 3-dev. Dev token path (fallback, no Google)
+
+Requires `ALLOW_DEV_TOKEN_MINT=true` on user-service. Mint the token on the **PC** (`localhost:8081`); the app still uses **`10.0.2.2`** to reach the same servers from the emulator.
 
 ```powershell
 $mobileToken = (Invoke-RestMethod -Method Post -Uri http://localhost:8081/v1/auth/token `
   -ContentType application/json `
   -Body (@{ user_id = "alice"; role = "donor" } | ConvertTo-Json)).token
+
+cd D:\kannan\sharingbridge\sharingbridge-mobile-app
+flutter run -d emulator-5554 `
+  --dart-define=USER_SERVICE_BASE_URL=http://10.0.2.2:8081 `
+  --dart-define=API_BASE_URL=http://10.0.2.2:8080 `
+  --dart-define=USER_ID=alice `
+  --dart-define=AUTH_TOKEN=$mobileToken
 ```
 
-### 3a. Windows desktop
+**Windows desktop (dev token only):**
 
 ```powershell
-cd D:\kannan\sharingbridge\sharingbridge-mobile-app
-flutter run -d windows --dart-define=API_BASE_URL=http://localhost:8080 --dart-define=USER_ID=alice --dart-define=AUTH_TOKEN=$mobileToken
+flutter run -d windows `
+  --dart-define=API_BASE_URL=http://localhost:8080 `
+  --dart-define=USER_ID=alice `
+  --dart-define=AUTH_TOKEN=$mobileToken
 ```
 
-### 3b. Android emulator
-
-```powershell
-cd D:\kannan\sharingbridge\sharingbridge-mobile-app
-flutter run --dart-define=API_BASE_URL=http://10.0.2.2:8080 --dart-define=USER_ID=alice --dart-define=AUTH_TOKEN=$mobileToken
-```
-
-The mobile client now sends only `Authorization: Bearer <AUTH_TOKEN>`.
+With `AUTH_TOKEN` set, the app sends only `Authorization: Bearer <token>` (JWT subject is the user id).
 
 ### 3c. Walkthrough on the app
 
-1. App opens to the **SharingBridge** home hub with **Vendor presets**, **Help a seeker**, and **Order initiation history**. Tap **Vendor presets** to open the presets screen (same flow as before hub shipped). Because step 2c saved presets for
-   `alice`, the page shows status "Loaded saved presets from server."
+Use after **§3-auth** (Google) or **§3-dev** (token as `alice`). On the **emulator**, confirm **§3-host** URLs before debugging empty lists or connection errors.
+
+1. App opens to the **SharingBridge** home hub with **Vendor presets**, **Help a seeker**, and **Order initiation history**. Tap **Vendor presets**. If you ran API smoke **§2c** as `alice` with the same user id as the app, you may see "Loaded saved presets from server."; a new Google donor starts empty until you save presets.
 2. Type something like `zomato a2b mini meals` → tap **Suggest Vendors** (or **Suggest again**). With **orchestration enabled** (§2a.1), rankings change with query keywords; with flags off, the list is the **same fixed mock** every time. Each row shows the **full** menu line, **Copy link**, and **Open vendor page** when the URL is `http`/`https`. Auth-protected endpoints carry `Authorization: Bearer <signed token>`.
 3. Check one or more suggestions → tap **Confirm and Save Presets**.
    A **SnackBar** and green status show "Presets saved successfully." The **full suggestion list stays on screen** (only checkboxes clear) so you can save another subset or open **Saved presets** without losing unselected rows. Server state still updates (dedupe on save as before).
@@ -594,15 +625,28 @@ Uses the same authed **`GET …/preferences`** load as Donor Setup (saved preset
 
 If presets fail to load (offline/server), you can still generate instructions; **Open …** stays disabled until registration succeeds. If order-intent registration fails, the SnackBar still confirms clipboard copy and you can open vendor apps manually.
 
-### 3f-b. Hosted backend + `flutter run` (Render)
+### 3f-b. Hosted backend + Android emulator (Render)
 
-Use [configuration/mobile-client.md](../configuration/mobile-client.md). In one PowerShell session, in order:
+Use [configuration/mobile-client.md](../configuration/mobile-client.md). Public `https://` URLs work from emulators (no `10.0.2.2`).
 
-1. `cd` to `sharingbridge-mobile-app` (confirm `Test-Path .\pubspec.yaml` is `True`).
-2. Mint JWT: `POST https://sharingbridge-user-service.onrender.com/v1/auth/token` with `{"user_id":"demo-user"}`.
-3. `flutter run` with `--dart-define=API_BASE_URL=https://sharingbridge-integration-service.onrender.com`, `USER_ID`, and `AUTH_TOKEN=$token` (use the variable, not placeholder text).
+In one PowerShell session:
 
-Walk through §3f on the device; step 3 button label must match **register donation intent**.
+1. `cd` to `sharingbridge-mobile-app` (`Test-Path .\pubspec.yaml` is `True`).
+2. Mint JWT: `POST https://sharingbridge-user-service.onrender.com/v1/auth/token` with `{"user_id":"demo-user"}` (only if `ALLOW_DEV_TOKEN_MINT=true` on Render; production uses Google Sign-In with hosted `USER_SERVICE_BASE_URL`).
+3. Emulator example:
+
+```powershell
+$token = (Invoke-RestMethod -Method POST -Uri "https://sharingbridge-user-service.onrender.com/v1/auth/token" `
+  -ContentType "application/json" -Body '{"user_id":"demo-user"}').token
+
+flutter run -d emulator-5554 `
+  --dart-define=API_BASE_URL=https://sharingbridge-integration-service.onrender.com `
+  --dart-define=USER_SERVICE_BASE_URL=https://sharingbridge-user-service.onrender.com `
+  --dart-define=USER_ID=demo-user `
+  --dart-define=AUTH_TOKEN=$token
+```
+
+Walk through **§3f**; step 4 must show **Donation intent registered** (or **updated** on repeat).
 
 ### 3g. Order initiation history (mobile dashboard)
 
@@ -621,12 +665,12 @@ Keep **user-service** (`8081`), **integration-service** (`8080`), and (for AI pa
 
 ### 4a. Prerequisites (Google, CORS, `.env`)
 
-Complete [configuration/e2e-deployment-sequence.md](../configuration/e2e-deployment-sequence.md) **Phase 0–1** (Google Console Web client, test users, coordinator allowlist).
+Complete [configuration/e2e-deployment-sequence.md](../configuration/e2e-deployment-sequence.md) **Phase 0–1** (Google Console Web client, test users, coordinator SQL seed).
 
 1. **user-service** — copy `.env.example` → `.env`:
    - `GOOGLE_CLIENT_ID_WEB` = same Web Client ID as web app
    - `WEB_CORS_ORIGINS=http://localhost:5173`
-   - `data/coordinators.json` lists your coordinator Gmail(s)
+   - `user_roles` includes `coordinator` for your dashboard Gmail ([coordinator-seed.sql](../configuration/coordinator-seed.sql))
    - `ALLOW_DEV_TOKEN_MINT=true` only if using **Dev sign in** (optional)
 2. **integration-service** — `WEB_CORS_ORIGINS=http://localhost:5173`, same `AUTH_TOKEN_SECRET` as user-service. Restart after edits.
 3. **sharingbridge-web-app** — `.env`:
@@ -648,11 +692,11 @@ npm run dev
 ```
 
 1. Open http://localhost:5173.
-2. **First visit:** sign-in page shows only a short allowlist line and **Sign in with Google** (no second button).
-3. **Sign in with Google** using a Gmail on the coordinator allowlist (`data/coordinators.json`). If Chrome shows the wrong account, choose **Use another account** in Google’s popup.
+2. **First visit:** **Sign in with Google**.
+3. **Sign in with Google** using a Gmail that has the `coordinator` role in `user_roles`. If Chrome shows the wrong account, choose **Use another account** in Google’s popup.
 4. Dashboard loads (coordinator role). Header shows coordinator email when the API returns it.
 5. **Sign out** clears sessionStorage and GIS auto-select for this app.
-6. **Returning visit:** sign-in page shows **Last signed in as** *email* and **Use a different Google account** (for another coordinator on the same machine). After a successful revoke, the page reloads; sign in with the other allowlisted Gmail.
+6. **Returning visit:** sign-in page shows **Last signed in as** *email* and **Use a different Google account** (another Gmail with `coordinator` in `user_roles`). After revoke, reload and sign in with the other account.
 
 **Dev fallback:** `VITE_ALLOW_DEV_SIGN_IN=true` on web + `ALLOW_DEV_TOKEN_MINT=true` on user-service → **Dev sign in** with a coordinator user id.
 
@@ -667,7 +711,9 @@ npm run dev
 
 - Coordinators see intents for **every** donor on **that** integration API host. An empty list usually means no donor has registered an intent on **this** host yet (localhost vs Render are separate stores).
 - `VITE_API_BASE_URL` must match mobile `API_BASE_URL` (both localhost or both Render URLs).
-- `403 wrong_client_role` on web: Gmail not on coordinator allowlist, or donor account used on web (web is coordinator-only).
+- `403 wrong_client_role` on web: no `coordinator` in `user_roles` for that Gmail, or donor-only account used on web.
+- `403 wrong_client_role` on mobile (emulator): Gmail has `coordinator` in `user_roles` — use web, or remove that role in SQL for donor-only mobile testing.
+- **Connection refused** on emulator sign-in or API: you used `localhost` in dart-defines — switch both URLs to `http://10.0.2.2:8081` and `http://10.0.2.2:8080` (**§3-host**).
 - `401 invalid_google_token`: `VITE_GOOGLE_CLIENT_ID` must match `GOOGLE_CLIENT_ID_WEB`; add `http://localhost:5173` under Google **Authorized JavaScript origins**.
 - CORS errors (local): `WEB_CORS_ORIGINS=http://localhost:5173` on **both** Node services in **local** `.env`.
 - CORS errors (hosted dashboard): set `WEB_CORS_ORIGINS=https://<static-site>.onrender.com` on **both** services in the **Render** dashboard — [backend-render.md](../configuration/backend-render.md).
@@ -735,7 +781,8 @@ If suggest-vendors or instruction-pack fail, verify `AI_ORCHESTRATION_BASE_URL`,
 - Step 2f returns HTTP 403 with `code=user_id_mismatch`, and HTTP 401
   with `code=missing_auth_context`.
 - Step 2g shows alice and bob with disjoint preset lists.
-- Step 3c shows the mobile UI loading server presets on cold start,
+- **§3-auth** or **§3-dev** on an **Android emulator** uses `10.0.2.2` for both user-service and integration URLs (**§3-host**).
+- Step **§3c** shows the mobile UI loading server presets on cold start,
   saving new picks (full mock list remains after save; **Saved presets** shows server truth),
   and falling back to the local cache when the backend is offline.
 - Step **2i** returns a non-empty `delivery_instructions` string when orchestration is enabled.

@@ -131,41 +131,20 @@ Only if you run on iPhone/iPad:
 
 ---
 
-## Part 3 — Coordinator allowlist
+## Part 3 — Coordinator role (database only)
 
-Coordinators are **not** chosen in Google Console. They are allowlisted **by email** in user-service.
+Coordinators are **not** configured in Google Console or in user-service `.env`. The **`coordinator`** role lives in Postgres **`user_roles`**.
 
-**Postgres (target):** grant `coordinator` in `user_roles` — [database.md](./database.md) § Coordinator seeding. No runtime `coordinators.json` after cutover.
+**Bootstrap (local or Supabase):**
 
-**Legacy (files, until DB migration):**
-
-```powershell
-cd D:\kannan\sharingbridge\sharingbridge-user-service
-copy data\coordinators.json.example data\coordinators.json
-```
-
-Edit `data\coordinators.json`:
-
-```json
-{
-  "emails": [
-    "your.name@gmail.com"
-  ]
-}
-```
-
-Use the **same Gmail** you added as a **test user** on the consent screen.
-
-Alternative (no file): in user-service `.env`:
-
-```env
-COORDINATOR_EMAILS=your.name@gmail.com,teammate@gmail.com
-```
+1. Sign in once with the coordinator Gmail (mobile as donor is fine) so a row exists in **`users`**, **or** run `npm run import:json` if you migrated legacy data.
+2. Edit and run [coordinator-seed.sql](./coordinator-seed.sql) — see [database.md](./database.md) § Coordinator seeding.
+3. Sign in on the **web dashboard** with that same Gmail (test user on the OAuth consent screen).
 
 **Rules:**
 
-- Email on allowlist → role **`coordinator`** (may use **web** only).
-- Any other Google email → role **`donor`** (may use **mobile** only).
+- `user_roles` includes **`coordinator`** → may use **web** only.
+- Otherwise → **`donor`** (may use **mobile** only).
 - Donor signing into **web** → `403 wrong_client_role`.
 - Coordinator signing into **mobile** → `403 wrong_client_role`.
 
@@ -263,8 +242,8 @@ Invoke-RestMethod http://localhost:8080/health
 ### 6.1 Coordinator (web)
 
 1. Open [http://localhost:5173](http://localhost:5173).
-2. First visit: short allowlist message + **Sign in with Google** only.
-3. Click **Sign in with Google** (GIS). Use an email listed in `coordinators.json` (or pick **Use another account** in Google’s dialog if Chrome pre-selects the wrong Gmail).
+2. First visit: **Sign in with Google**.
+3. Click **Sign in with Google** (GIS). Use a Gmail that has **`coordinator`** in `user_roles` (run [coordinator-seed.sql](./coordinator-seed.sql) first). Pick **Use another account** in Google’s dialog if Chrome pre-selects the wrong Gmail.
 4. Dashboard should load; header shows coordinator email when available. **Sign out** clears the session.
 5. Next visit on the same browser: sign-in page shows **Last signed in as** *email* and **Use a different Google account** (disconnects that Google profile from this app, then reloads).
 6. **Refresh** on the dashboard shows order initiations (after a donor registers one on mobile).
@@ -273,19 +252,21 @@ Invoke-RestMethod http://localhost:8080/health
 
 ### 6.2 Donor (mobile)
 
+**Android emulator** — use `10.0.2.2` for **both** backends (see [MANUAL_TESTING_GUIDE.md](../testing/MANUAL_TESTING_GUIDE.md) §3-host):
+
 ```powershell
 cd D:\kannan\sharingbridge\sharingbridge-mobile-app
 flutter pub get
-flutter run -d <device> `
+flutter run -d emulator-5554 `
   --dart-define=GOOGLE_CLIENT_ID=<GOOGLE_CLIENT_ID_ANDROID> `
-  --dart-define=USER_SERVICE_BASE_URL=http://localhost:8081 `
-  --dart-define=API_BASE_URL=http://localhost:8080
+  --dart-define=USER_SERVICE_BASE_URL=http://10.0.2.2:8081 `
+  --dart-define=API_BASE_URL=http://10.0.2.2:8080
 ```
 
-Android emulator integration URL: `--dart-define=API_BASE_URL=http://10.0.2.2:8080`
+**Windows desktop:** same URLs with `localhost` (Google Sign-In not supported on Windows — use emulator or dev token).
 
 1. Tap **Continue with Google**.
-2. Use a Google account **not** on the coordinator allowlist (or any account — non-allowlisted emails become donors).
+2. Use a **donor** Gmail (no `coordinator` row in `user_roles`, or remove that role for mobile testing).
 3. Complete **Help a seeker** → copy instructions to register an order intent.
 4. On web (coordinator), **Refresh** — you should see that intent (with donor `user_id` in the list).
 
@@ -294,7 +275,9 @@ Android emulator integration URL: `--dart-define=API_BASE_URL=http://10.0.2.2:80
 ```powershell
 $token = (Invoke-RestMethod -Method POST -Uri http://localhost:8081/v1/auth/token `
   -ContentType application/json -Body '{"user_id":"demo-user","role":"donor"}').token
-flutter run --dart-define=API_BASE_URL=http://localhost:8080 `
+flutter run -d emulator-5554 `
+  --dart-define=USER_SERVICE_BASE_URL=http://10.0.2.2:8081 `
+  --dart-define=API_BASE_URL=http://10.0.2.2:8080 `
   --dart-define=AUTH_TOKEN=$token --dart-define=USER_ID=demo-user
 ```
 
@@ -374,19 +357,14 @@ GOOGLE_CLIENT_ID_ANDROID=<android client id>
 ALLOW_DEV_TOKEN_MINT=false
 ```
 
-### 7.4 Coordinator allowlist on Render
+### 7.4 Coordinator role on Render / Supabase
 
-Hosted user-service uses its own disk (or env). Either:
-
-- Set `COORDINATOR_EMAILS=you@gmail.com,…` in Render **user-service** environment, **or**
-- Use a persistent disk and upload `data/coordinators.json` (advanced).
-
-Local `data/coordinators.json` is **not** copied to Render automatically.
+Grant **`coordinator`** in **`user_roles`** on your Postgres instance (Supabase SQL Editor or psql) using [coordinator-seed.sql](./coordinator-seed.sql). No extra user-service env vars.
 
 ### 7.5 Verify hosted web
 
 1. Open `https://<your-static-site>.onrender.com`.
-2. **Sign in with Google** (allowlisted coordinator email).
+2. **Sign in with Google** (Gmail with `coordinator` in `user_roles`).
 3. Mobile app must use **hosted** integration URL (`API_BASE_URL` = same as `VITE_API_BASE_URL`) for intents to appear on the hosted dashboard.
 
 ### Order of operations (recommended)
@@ -405,8 +383,8 @@ Details: [backend-render.md](./backend-render.md), [web-client.md](./web-client.
 
 | Symptom | Likely cause | Fix |
 |---------|----------------|-----|
-| `403 wrong_client_role` on web | Gmail not on coordinator allowlist | Add email to `data/coordinators.json`; restart user-service |
-| `403 wrong_client_role` on mobile | Coordinator email used on phone | Use web for that account, or a non-allowlisted Gmail on mobile |
+| `403 wrong_client_role` on web | Gmail has no `coordinator` in `user_roles` | Run [coordinator-seed.sql](./coordinator-seed.sql) after the user row exists |
+| `403 wrong_client_role` on mobile | Account has `coordinator` in `user_roles` | Use web for that account, or remove `coordinator` from `user_roles` for donor-only mobile testing |
 | `401 invalid_google_token` | Wrong client ID or expired token | Web: `VITE_GOOGLE_CLIENT_ID` = Web client ID; user-service lists same ID in `GOOGLE_CLIENT_ID_WEB` |
 | Google popup “access blocked” | App in Testing, user not a test user | Add Gmail under OAuth consent → **Test users** |
 | `Failed to fetch` on sign-in | CORS | `WEB_CORS_ORIGINS=http://localhost:5173` on **both** user-service and integration-service; restart |
@@ -431,7 +409,7 @@ Invoke-RestMethod -Method POST -Uri http://localhost:8081/v1/auth/google `
 - [ ] OAuth consent screen configured + test users added
 - [ ] **Web** OAuth client → origins include `http://localhost:5173`
 - [ ] **Android** OAuth client → package name + debug SHA-1
-- [ ] `data/coordinators.json` lists coordinator Gmail(s)
+- [ ] `user_roles` includes `coordinator` for dashboard Gmail(s) ([coordinator-seed.sql](./coordinator-seed.sql))
 - [ ] user-service `.env`: Google client IDs, CORS, `AUTH_TOKEN_SECRET`
 - [ ] integration-service `.env`: same secret + CORS
 - [ ] web `.env`: `VITE_GOOGLE_CLIENT_ID`, API URLs

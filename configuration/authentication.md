@@ -23,16 +23,18 @@ SharingBridge uses **Google Sign-In** for production-style identity, plus **Shar
 
 Roles are read from Postgres **`user_roles`** only — [database.md](./database.md) · [coordinator-seed.sql](./coordinator-seed.sql). There is no email allowlist in `.env` or JSON at runtime.
 
-Every Google user gets **`donor`** ensured at sign-in. **`coordinator`** is granted only via SQL (or legacy JSON import where `user.role` was `coordinator`). Active role at sign-in follows **client rules** below.
+Every Google user gets **`donor`** ensured at sign-in. **`coordinator`** is granted via SQL ([coordinator-seed.sql](./coordinator-seed.sql)). A user may have **both** rows in `user_roles`.
 
-**Client rules**
+**Client rules (which hat for this JWT)**
 
-| `client_type` | Allowed role |
-|---------------|----------------|
-| `web` | **coordinator** only |
-| `android` / `ios` / `mobile` | **donor** only |
+| `client_type` | Requires in `user_roles` | JWT `role` minted |
+|---------------|--------------------------|-------------------|
+| `web` | `coordinator` | `coordinator` |
+| `android` / `ios` / `mobile` | `donor` | `donor` (even if they also have `coordinator`) |
 
-Wrong combination → HTTP **403** `wrong_client_role`.
+JWT also includes `roles` (full array). Integration-service enforces the minted `role` per endpoint.
+
+Wrong combination → HTTP **403** `wrong_client_role` (e.g. web sign-in without `coordinator`, or mobile without `donor`).
 
 ---
 

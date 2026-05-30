@@ -81,7 +81,7 @@ The **donor-setup slice** that is live in code is intentionally a **minimal MVP*
 - Donor Setup list shows **full `menu_items`** per suggestion (not only the first item); **suggest-vendors** is query-ranked when orchestration flags are on, else fixed mock.
 - Donor Setup: suggestion rows include **Copy link**, **Open vendor page**, **Suggest again** (re-runs search); after **Confirm and Save** the full suggestion list stays visible (only checkboxes clear) and a **SnackBar** confirms save. App bar **Saved presets**: **Copy link** / **Open link**; per-row **Remove**; **Clear all** (`DELETE` + offline cache).
 - **Order initiation history** on home hub; `POST/GET /v1/donor-seeker/order-intents` via `HttpOrderIntentClient`.
-- **Google Sign-In** (donor): `google_sign_in` → user-service `POST /v1/auth/google` (`client_type` mobile); coordinators blocked on mobile.
+- **Google Sign-In** (donor): `google_sign_in` → user-service `POST /v1/auth/google` (`client_type` mobile); JWT `role: donor` (users may also have `coordinator` in `user_roles` for web).
 - 53+ tests green via `flutter test` (see repo CI).
 
 ### `sharingbridge-user-service`

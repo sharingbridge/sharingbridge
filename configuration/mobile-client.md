@@ -70,7 +70,7 @@ flutter run -d windows `
   --dart-define=API_BASE_URL=http://localhost:8080
 ```
 
-Tap **Continue with Google** on launch. Accounts with **`coordinator`** in `user_roles` are rejected on mobile (web dashboard only).
+Tap **Continue with Google** on launch. Mobile mints JWT `role: donor`; users with both `donor` and `coordinator` in `user_roles` may use web and mobile with the same Gmail.
 
 ## Dev token fallback (no Google)
 

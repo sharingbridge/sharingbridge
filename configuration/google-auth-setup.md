@@ -143,10 +143,10 @@ Coordinators are **not** configured in Google Console or in user-service `.env`.
 
 **Rules:**
 
-- `user_roles` includes **`coordinator`** → may use **web** only.
-- Otherwise → **`donor`** (may use **mobile** only).
-- Donor signing into **web** → `403 wrong_client_role`.
-- Coordinator signing into **mobile** → `403 wrong_client_role`.
+- **`user_roles` may include both `donor` and `coordinator`** for the same user.
+- **Web** sign-in mints JWT `role: coordinator` (requires `coordinator` in `user_roles`).
+- **Mobile** sign-in mints JWT `role: donor` (requires `donor`; coordinators can also use the donor app).
+- Donor-only account on **web** → `403 wrong_client_role`.
 
 ---
 
@@ -266,7 +266,7 @@ flutter run -d emulator-5554 `
 **Windows desktop:** same URLs with `localhost` (Google Sign-In not supported on Windows — use emulator or dev token).
 
 1. Tap **Continue with Google**.
-2. Use a **donor** Gmail (no `coordinator` row in `user_roles`, or remove that role for mobile testing).
+2. Use a Gmail with **`donor`** in `user_roles` (default for all users). Coordinators with both roles can use mobile as donor and web as coordinator.
 3. Complete **Help a seeker** → copy instructions to register an order intent.
 4. On web (coordinator), **Refresh** — you should see that intent (with donor `user_id` in the list).
 
@@ -384,7 +384,7 @@ Details: [backend-render.md](./backend-render.md), [web-client.md](./web-client.
 | Symptom | Likely cause | Fix |
 |---------|----------------|-----|
 | `403 wrong_client_role` on web | Gmail has no `coordinator` in `user_roles` | Run [coordinator-seed.sql](./coordinator-seed.sql) after the user row exists |
-| `403 wrong_client_role` on mobile | Account has `coordinator` in `user_roles` | Use web for that account, or remove `coordinator` from `user_roles` for donor-only mobile testing |
+| `403 wrong_client_role` on mobile | Missing `donor` in `user_roles` | Sign in again (donor is ensured on each auth); check DB `user_roles` |
 | `401 invalid_google_token` | Wrong client ID or expired token | Web: `VITE_GOOGLE_CLIENT_ID` = Web client ID; user-service lists same ID in `GOOGLE_CLIENT_ID_WEB` |
 | Google popup “access blocked” | App in Testing, user not a test user | Add Gmail under OAuth consent → **Test users** |
 | `Failed to fetch` on sign-in | CORS | `WEB_CORS_ORIGINS=http://localhost:5173` on **both** user-service and integration-service; restart |

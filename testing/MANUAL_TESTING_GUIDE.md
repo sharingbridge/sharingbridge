@@ -519,7 +519,7 @@ flutter run -d emulator-5554 `
 
 Replace `emulator-5554` with your `flutter devices` id.
 
-1. App opens → **Continue with Google** (donor). Accounts with **`coordinator`** in `user_roles` are rejected on mobile — use the web dashboard for those Gmail accounts ([coordinator-seed.sql](../configuration/coordinator-seed.sql) is web-only).
+1. App opens → **Continue with Google** (donor JWT). Users with both **`donor`** and **`coordinator`** in `user_roles` can use mobile as donor and web as coordinator (same Gmail).
 2. Walk through **§3c** / **§3f** / **§3g**.
 
 **Windows desktop:** `google_sign_in` is not supported on `-d windows`; use the emulator for Google auth, or **§3-dev** with a dev token.
@@ -712,7 +712,7 @@ npm run dev
 - Coordinators see intents for **every** donor on **that** integration API host. An empty list usually means no donor has registered an intent on **this** host yet (localhost vs Render are separate stores).
 - `VITE_API_BASE_URL` must match mobile `API_BASE_URL` (both localhost or both Render URLs).
 - `403 wrong_client_role` on web: no `coordinator` in `user_roles` for that Gmail, or donor-only account used on web.
-- `403 wrong_client_role` on mobile (emulator): Gmail has `coordinator` in `user_roles` — use web, or remove that role in SQL for donor-only mobile testing.
+- `403 wrong_client_role` on mobile: account missing `donor` in `user_roles` (rare after sign-in; every user gets `donor` ensured).
 - **Connection refused** on emulator sign-in or API: you used `localhost` in dart-defines — switch both URLs to `http://10.0.2.2:8081` and `http://10.0.2.2:8080` (**§3-host**).
 - `401 invalid_google_token`: `VITE_GOOGLE_CLIENT_ID` must match `GOOGLE_CLIENT_ID_WEB`; add `http://localhost:5173` under Google **Authorized JavaScript origins**.
 - CORS errors (local): `WEB_CORS_ORIGINS=http://localhost:5173` on **both** Node services in **local** `.env`.

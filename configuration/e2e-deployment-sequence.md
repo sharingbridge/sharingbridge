@@ -31,7 +31,7 @@ flowchart TD
   G --> J[Phase 5: Live Google sign-in]
   H --> J
   I --> J
-  C --> K[user-service: GOOGLE_CLIENT_ID_WEB + coordinators]
+  C --> K[user-service: GOOGLE_CLIENT_ID_WEB + user_roles seed]
   K --> J
 ```
 
@@ -42,10 +42,10 @@ flowchart TD
 | Task | Blocked until you have… |
 |------|-------------------------|
 | Create Web OAuth client + Client ID | Google Cloud project only |
-| Local Google sign-in (web) | Client ID, `WEB_CORS_ORIGINS` on both Node services, coordinator allowlist |
+| Local Google sign-in (web) | Client ID, `WEB_CORS_ORIGINS` on both Node services, `coordinator` in `user_roles` |
 | Deploy Render static site | Repo on Render; hosted API URLs recommended |
 | Add Render URL to Google **Authorized JavaScript origins** | **Static site URL** from first deploy |
-| Hosted Google sign-in works | `VITE_GOOGLE_CLIENT_ID` on static site **and** Google origin **and** `WEB_CORS_ORIGINS` on both backends **and** coordinators on Render user-service |
+| Hosted Google sign-in works | `VITE_GOOGLE_CLIENT_ID` on static site **and** Google origin **and** `WEB_CORS_ORIGINS` on both backends **and** `coordinator` in Postgres `user_roles` |
 | Donor intents visible on hosted dashboard | Mobile (or API) uses the **same** integration host as `VITE_API_BASE_URL` |
 
 **Common misconception:** you need the Render static URL before creating the Google client — **no**. Create the Web client early with `http://localhost:5173`; add the Render origin after the first static deploy.
@@ -222,7 +222,7 @@ Optional: `VITE_ALLOW_DEV_SIGN_IN=true` only with `ALLOW_DEV_TOKEN_MINT=true` on
 1. Start user-service (`npm start`, port 8081).
 2. Start integration-service (`npm start`, port 8080).
 3. `npm run dev` in web-app → http://localhost:5173.
-4. **Sign in with Google** using an allowlisted coordinator email.
+4. **Sign in with Google** using a Gmail with `coordinator` in `user_roles`.
 5. **Refresh** after a donor registers an intent on mobile (local).
 
 **Checkpoint:** coordinator dashboard works on localhost with Google sign-in.
@@ -352,7 +352,7 @@ If you added or changed `VITE_*` after first deploy, trigger a **manual deploy**
 **Depends on:** Phases 0–4.
 
 1. Open `https://<your-static-site>.onrender.com`.
-2. **Sign in with Google** with a coordinator email on Render user-service allowlist.
+2. **Sign in with Google** with a Gmail that has `coordinator` in `user_roles` (Supabase/Postgres seed).
 3. **Refresh** — order initiations appear when donors used the **same** integration host (`VITE_API_BASE_URL` = mobile `API_BASE_URL`).
 
 Manual test steps: [MANUAL_TESTING_GUIDE.md](../testing/MANUAL_TESTING_GUIDE.md) **§4**.

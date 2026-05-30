@@ -15,7 +15,7 @@ Architecture reference: [authentication.md](./authentication.md).
 | **Web OAuth client** | `sharingbridge-web-app` (coordinators) |
 | **Android OAuth client** | `sharingbridge-mobile-app` (donors) |
 | **user-service** | Verifies Google `id_token`, assigns role, mints JWT |
-| **Coordinator allowlist** | Which Google **emails** get coordinator role on web |
+| **Coordinator role** | `user_roles` in Postgres ([coordinator-seed.sql](./coordinator-seed.sql)) — not `.env` |
 
 Official Google docs:
 

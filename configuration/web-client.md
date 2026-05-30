@@ -101,7 +101,7 @@ Coordinators see **all** donors’ order intents on the integration host pointed
 6. **Google Console** → Web OAuth client → **Authorized JavaScript origins**: add `https://<your-static-site>.onrender.com` **and** keep `http://localhost:5173` for local dev.
 7. On **user-service** and **integration-service**, set `WEB_CORS_ORIGINS` to both origins if needed:  
    `http://localhost:5173,https://sharingbridge-web.onrender.com` → redeploy both.
-8. Sign in on the live site with a **coordinator** Google account (allowlisted on user-service). See [google-auth-setup.md](./google-auth-setup.md) §7.
+8. Sign in on the live site with a **coordinator** Google account (`coordinator` in `user_roles`). See [google-auth-setup.md](./google-auth-setup.md) §7.
 
 See [e2e-deployment-sequence.md](./e2e-deployment-sequence.md), [MANUAL_TESTING_GUIDE.md](../testing/MANUAL_TESTING_GUIDE.md) **§4**, and [backend-render.md](./backend-render.md).
 

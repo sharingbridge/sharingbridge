@@ -58,7 +58,7 @@ PostGIS is **not** required for the MVP schema below (add later for geo features
 
 **Verify:** **Table Editor** → each table exists with no rows until sign-in / migration.
 
-**Coordinator access (after first web sign-in):** use [§ Coordinator seeding](#coordinator-seeding-replaces-file-allowlist) to insert into `user_roles`, or rely on app code + migration script when DB mode ships.
+**Coordinator access:** after a row exists in `users`, run [coordinator-seed.sql](./coordinator-seed.sql) — see [§ Coordinator seeding](#coordinator-seeding).
 
 ---
 

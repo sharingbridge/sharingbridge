@@ -28,7 +28,7 @@ When `AUTH_TOKEN` is set, the mobile client does **not** send `user_id` in the b
 
 Repeated taps for the **same instruction pack** (`pack_id`) update the existing intent (same `order_intent_id`, new `updated_at`) instead of creating duplicates. The mobile client also sends `order_intent_id` when it already has one from an earlier tap in the session.
 
-Stored fields include `pack_id`, preset snapshot, reference-photo flag, and verbal notes. Data is file-backed on integration (`data/order-intents.json`) for MVP.
+Stored fields include `pack_id`, preset snapshot, reference-photo flag, and verbal notes. Persisted in Postgres `order_intents` (integration-service requires `DATABASE_URL`).
 
 **Verify (local or Render):** after the first copy, the app shows **Order intent registered** with a reference id. A second tap on the same pack updates that intent (SnackBar **Donation intent updated**, same reference id). On API failure, clipboard copy still succeeds and an error SnackBar is shown.
 

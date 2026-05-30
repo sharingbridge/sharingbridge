@@ -21,7 +21,7 @@ Deliver the MVP **donor-setup → donor-seeker interaction → vendor redirect �
 | If you need… | Read |
 |--------------|------|
 | Run locally / Render deploy **order** | `configuration/e2e-deployment-sequence.md` |
-| Google OAuth + coordinator allowlist | `configuration/google-auth-setup.md` |
+| Google OAuth + coordinator `user_roles` seed | `configuration/google-auth-setup.md` |
 | Auth, JWT, roles | `configuration/authentication.md` |
 | **Supabase** tables + `DATABASE_URL` on Render APIs | `configuration/database.md` |
 | Render backends + CORS | `configuration/backend-render.md` |

@@ -1,7 +1,6 @@
--- Canonical local bootstrap (Option A Step A5 in database.md).
--- Run as superuser (postgres) in pgAdmin or psql. NOT for Supabase or Docker.
--- Next: run schema.sql on database "sharingbridge".
--- If role or database already exists, ignore the error and continue to schema.sql.
+-- Step 1 of 2 — local bootstrap (database.md Option A Step A5).
+-- pgAdmin: Query Tool on database "postgres" → open this file → Execute.
+-- Then run local-postgres-create-database.sql (Step 2; see that file for pgAdmin note).
 
 DO $$
 BEGIN
@@ -10,5 +9,3 @@ BEGIN
   END IF;
 END
 $$;
-
-CREATE DATABASE sharingbridge OWNER sharingbridge;

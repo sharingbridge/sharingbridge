@@ -17,7 +17,7 @@ There is **no** runtime fallback to JSON files after cutover — import once, th
 | Donor presets | same JSON store | `donor_presets` |
 | Order intents | `integration-service/data/order-intents.json` | `order_intents` |
 
-**Code note:** Node services use **`DATABASE_URL`** only after the DB migration is deployed. Until then, keep file-backed stores. This doc is the reference for **creating Supabase tables now** so you are ready when that code ships.
+**Code note:** Both Node services **require** **`DATABASE_URL`** at startup and read/write Postgres only (no JSON file fallback). Run [schema.sql](./schema.sql) before starting services.
 
 ---
 
@@ -111,8 +111,9 @@ SQL files (canonical — do not duplicate SQL in this doc):
 
 | File | When to use |
 |------|-------------|
-| [local-postgres-init.sql](./local-postgres-init.sql) | **Local Postgres only** (Option A Step A5): creates role + database |
-| [schema.sql](./schema.sql) | **Everywhere** (Supabase, local, Docker): creates tables |
+| [local-postgres-init.sql](./local-postgres-init.sql) | **Local only** Step A5a: app role |
+| [local-postgres-create-database.sql](./local-postgres-create-database.sql) | **Local only** Step A5b: database (run separately in pgAdmin) |
+| [schema.sql](./schema.sql) | **Everywhere** (Supabase, local, Docker): tables |
 
 Replace `PORT` below with the port you chose in the installer (often **5432** or **5433** if 5432 is already in use).
 
@@ -159,11 +160,27 @@ netstat -ano | findstr :5432
 
 #### Step A5 — Create app user and database
 
-Open **pgAdmin** (or **SQL Shell / psql** as user `postgres`).
+Connect as **`postgres`** (pgAdmin or psql). Run **two** SQL files in order — not one combined script in pgAdmin.
 
-Run [local-postgres-init.sql](./local-postgres-init.sql) (pgAdmin: **Query Tool** → open file → **Execute**, connected as `postgres`). Re-run is safe for the role (`DO` block); if `CREATE DATABASE` errors because the database already exists, continue to Step A6.
+**Step A5a — role**
 
-**Not used for Supabase or Docker** — those paths only need [schema.sql](./schema.sql) (Docker creates the user/database via container env vars).
+1. **Query Tool** on database `postgres` → open [local-postgres-init.sql](./local-postgres-init.sql) → **Execute**.
+
+**Step A5b — database**
+
+PostgreSQL does not allow `CREATE DATABASE` inside a transaction. pgAdmin runs a whole script in one transaction, so you will see `SQL state: 25001` if you run both files together.
+
+Pick **one**:
+
+| Method | Action |
+|--------|--------|
+| **pgAdmin SQL** | New **Query Tool** → enable **Auto-commit** on the toolbar → open [local-postgres-create-database.sql](./local-postgres-create-database.sql) → **Execute** only that file |
+| **pgAdmin GUI** | **Databases** → right-click → **Create** → Database `sharingbridge`, Owner `sharingbridge` |
+| **psql** | `psql -U postgres -f .../local-postgres-create-database.sql` |
+
+If the database already exists, skip to Step A6.
+
+**Not used for Supabase or Docker** — those paths only need [schema.sql](./schema.sql).
 
 #### Step A6 — Create tables
 
@@ -192,7 +209,29 @@ Example for port **5433**:
 DATABASE_URL=postgresql://sharingbridge:sharingbridge@localhost:5433/sharingbridge
 ```
 
-**Code note:** Services use `DATABASE_URL` only after the DB migration ships; until then JSON file storage still applies at runtime.
+Restart both Node services after setting `DATABASE_URL`.
+
+#### Import existing JSON (optional, one-time)
+
+From each service repo with the same `DATABASE_URL`:
+
+```text
+cd sharingbridge-user-service
+npm run import:json
+
+cd sharingbridge-integration-service
+npm run import:order-intents
+```
+
+Seed a coordinator after import (pgAdmin/psql), or sign in once and run:
+
+```sql
+INSERT INTO user_roles (user_id, role)
+SELECT id, 'coordinator' FROM users WHERE email = 'your-coordinator@gmail.com'
+ON CONFLICT DO NOTHING;
+```
+
+`COORDINATOR_EMAILS` / `coordinators.json` are still read on user-service startup to grant `coordinator` in `user_roles` when that email signs in.
 
 ---
 
@@ -305,6 +344,7 @@ user-service reads **`user_roles`** and mints `role` (active) + `roles` (array).
 | Symptom | Likely cause | Fix |
 |---------|----------------|-----|
 | `%5C` or broken file link | Windows `d:\...` paths in chat | Open from repo: **Ctrl+P** → `database.md` or `schema.sql` |
+| `CREATE DATABASE cannot run inside a transaction block` (25001) | Ran init + create DB in one pgAdmin Execute | Run [local-postgres-create-database.sql](./local-postgres-create-database.sql) alone with **Auto-commit**, or create DB via pgAdmin GUI — Step A5b |
 | Local install stuck / messy | Old Postgres on 5432, partial install | Uninstall from Apps; pick a free port (e.g. 5433); one Postgres version; see Option A Step A3 |
 | `connection refused` (local) | Wrong port in `DATABASE_URL` | Match installer port (`5432` vs `5433`) |
 | `connection refused` | Wrong `DATABASE_URL` or password | Re-copy URI from Supabase **Database** settings; redeploy Render |

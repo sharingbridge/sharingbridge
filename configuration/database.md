@@ -113,6 +113,7 @@ SQL files (canonical — do not duplicate SQL in this doc):
 |------|-------------|
 | [local-postgres-init.sql](./local-postgres-init.sql) | **Local only** Step A5a: app role |
 | [local-postgres-create-database.sql](./local-postgres-create-database.sql) | **Local only** Step A5b: database (run separately in pgAdmin) |
+| [local-postgres-grants.sql](./local-postgres-grants.sql) | **Local only** Step A6b: table permissions for `sharingbridge` user |
 | [schema.sql](./schema.sql) | **Everywhere** (Supabase, local, Docker): tables |
 
 Replace `PORT` below with the port you chose in the installer (often **5432** or **5433** if 5432 is already in use).
@@ -195,6 +196,12 @@ psql -U sharingbridge -h localhost -p PORT -d sharingbridge -f path/to/sharingbr
 
 Verify: `\dt` should list `users`, `user_roles`, `donor_presets`, `order_intents`.
 
+#### Step A6b — Grant table access to `sharingbridge` (if you ran schema as `postgres`)
+
+If `DATABASE_URL` uses user **`sharingbridge`** but tables were created in pgAdmin as **`postgres`**, imports and the app fail with `permission denied for table users` (SQL `42501`).
+
+As **`postgres`**, on database **`sharingbridge`**, run [local-postgres-grants.sql](./local-postgres-grants.sql) (Query Tool → Execute).
+
 #### Step A7 — Configure Node services
 
 In **both** `sharingbridge-user-service/.env` and `sharingbridge-integration-service/.env`:
@@ -212,6 +219,8 @@ DATABASE_URL=postgresql://sharingbridge:sharingbridge@localhost:5433/sharingbrid
 Restart both Node services after setting `DATABASE_URL`.
 
 #### Import existing JSON (optional, one-time)
+
+Requires Step A6b if you see `permission denied for table users`.
 
 From each service repo with the same `DATABASE_URL`:
 
@@ -349,7 +358,7 @@ user-service reads **`user_roles`** and mints `role` (active) + `roles` (array).
 | `connection refused` (local) | Wrong port in `DATABASE_URL` | Match installer port (`5432` vs `5433`) |
 | `connection refused` | Wrong `DATABASE_URL` or password | Re-copy URI from Supabase **Database** settings; redeploy Render |
 | `relation does not exist` | Schema not run | Re-run [schema.sql](./schema.sql) in SQL Editor |
-| App still uses JSON | DB migration not deployed yet | Expected until code uses `DATABASE_URL` |
+| `permission denied for table users` (42501) | Tables owned by `postgres`, app uses `sharingbridge` | Run [local-postgres-grants.sql](./local-postgres-grants.sql) as `postgres` — Step A6b |
 | Used anon key as `DATABASE_URL` | Wrong credential type | Use **database URI**, not Project API keys |
 | `403 wrong_client_role` | No `coordinator` in `user_roles` | Run coordinator seed SQL |
 

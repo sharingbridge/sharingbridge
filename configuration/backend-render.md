@@ -12,18 +12,9 @@ Host three **Web Services** for Track A. Credentials: [authentication.md](./auth
 
 **Do not use:** Static Site, Private Service, Worker, Cron, Key Value (for MVP app data).
 
-**PostgreSQL:** use [Render Postgres](https://render.com/docs/databases) for users, roles, and order intents — see [database.md](./database.md). Both Node services share one `DATABASE_URL`.
+**Database:** use **[Supabase](https://supabase.com)** (hosted Postgres) for tables and data. Render hosts **APIs only** — set **`DATABASE_URL`** on both Node services to your Supabase connection URI. Full steps: [database.md](./database.md) (create tables in Supabase **SQL Editor**, then wire Render).
 
----
-
-## PostgreSQL (recommended for production)
-
-1. **New +** → **PostgreSQL** → create `sharingbridge-db` (or similar).
-2. Copy **Internal Database URL** from the database **Connections** tab.
-3. Set **`DATABASE_URL`** on **user-service** and **integration-service** to that URL (same value on both).
-4. Apply schema and one-time JSON import — [database.md](./database.md).
-
-Deploy Postgres **before** or **with** the first DB-enabled deploy of the Node services. Without `DATABASE_URL`, services still use JSON files on disk (not durable on Render).
+Without `DATABASE_URL` (and DB-enabled code), services still use JSON on disk (not durable on Render).
 
 ---
 
@@ -60,7 +51,7 @@ See [authentication.md](./authentication.md) for secret generation.
 | `WEB_CORS_ORIGINS` | On Render: `https://<static-site>.onrender.com` (see § WEB_CORS_ORIGINS). Local `.env`: `http://localhost:5173` |
 | `GOOGLE_CLIENT_ID_WEB` | Web OAuth client ID (same as `VITE_GOOGLE_CLIENT_ID`) |
 | `GOOGLE_CLIENT_ID_ANDROID` | Android OAuth client ID (when mobile uses Google) |
-| `DATABASE_URL` | Render Postgres **internal** URL — [database.md](./database.md) |
+| `DATABASE_URL` | **Supabase** database URI (same on integration-service) — [database.md](./database.md) |
 | `COORDINATOR_EMAILS` | Legacy file/env allowlist; **omit after DB cutover** — seed `user_roles` instead |
 | `ALLOW_DEV_TOKEN_MINT` | `false` on Render |
 | `AUTH_TOKEN_SECRET` | generated |
@@ -205,7 +196,7 @@ See [mobile-client.md](./mobile-client.md) — mint JWT, then `flutter run` from
 | `403` / invalid JWT | Match `AUTH_TOKEN_SECRET` |
 | `401 Invalid internal API key` | Match `AI_ORCHESTRATION_INTERNAL_API_KEY` |
 | AI not used | `AI_ORCHESTRATION_BASE_URL`, `AI_*_ENABLED=true` |
-| Presets / intents lost on redeploy | Set `DATABASE_URL` on both Node services; use Render Postgres — [database.md](./database.md) |
+| Presets / intents lost on redeploy | Use **Supabase** + `DATABASE_URL` on both Node services — [database.md](./database.md) |
 | `DATABASE_URL` / connection errors | Use **internal** URL; run schema SQL; redeploy both services |
 | Browser **Failed to fetch** on web | `WEB_CORS_ORIGINS` on **both** backends includes the web origin; web `.env` `VITE_*` must point at the same API hosts you use for mobile |
 | Local env ignored | Copy `.env.example` → `.env` in each Node repo; restart `npm start` |

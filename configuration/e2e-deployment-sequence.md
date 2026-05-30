@@ -233,16 +233,17 @@ Optional: `VITE_ALLOW_DEV_SIGN_IN=true` only with `ALLOW_DEV_TOKEN_MINT=true` on
 
 **Depends on:** Render account + GitHub repos. **Does not** require static site URL yet.
 
-### Phase 2b — PostgreSQL (when DB migration is enabled)
+### Phase 2b — Supabase database (when DB migration is enabled)
 
-**Detail:** [database.md](./database.md)
+**Detail:** [database.md](./database.md) — **start here for table setup.**
 
-1. Create **Render Postgres** → copy **Internal Database URL**.
-2. Apply schema (primary/unique indexes automatic; secondary indexes on `updated_at` per [database.md](./database.md)).
-3. Run one-time import from existing JSON (if migrating).
-4. Set **`DATABASE_URL`** on **user-service** and **integration-service** (same URL).
+1. Create a **[Supabase](https://supabase.com)** project (not Render Postgres).
+2. **SQL Editor** → paste and run `configuration/schema.sql` (creates `users`, `user_roles`, `donor_presets`, `order_intents`).
+3. **Project Settings → Database** → copy **connection URI** (use pooler/transaction mode for Render if offered).
+4. Set **`DATABASE_URL`** to that URI on **both** Render services (`user-service` + `integration-service`), redeploy both.
+5. One-time JSON import when migration script exists.
 
-Skip 2b until service releases require `DATABASE_URL`; until then coordinators and order intents stay in JSON files (not durable on Render without a disk).
+Skip 2b until service code requires `DATABASE_URL`; until then JSON files still apply. You can still create Supabase tables now (steps 1–2).
 
 Deploy in order — [backend-render.md](./backend-render.md):
 
@@ -258,7 +259,7 @@ Deploy in order — [backend-render.md](./backend-render.md):
 | `GOOGLE_CLIENT_ID_WEB` | Web Client ID from Phase 0 |
 | `GOOGLE_CLIENT_ID_ANDROID` | Android Client ID (when mobile uses Google) |
 | `ALLOW_DEV_TOKEN_MINT` | `false` |
-| `DATABASE_URL` | Render Postgres internal URL (DB mode) — [database.md](./database.md) |
+| `DATABASE_URL` | **Supabase** Postgres URI (DB mode) — [database.md](./database.md) |
 | `COORDINATOR_EMAILS` | Legacy only; use `user_roles` after DB cutover |
 | `WEB_CORS_ORIGINS` | Optional until Phase 4: `http://localhost:5173` if you test local Vite against hosted APIs; otherwise set in Phase 4 |
 

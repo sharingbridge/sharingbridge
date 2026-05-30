@@ -23,7 +23,7 @@ Deliver the MVP **donor-setup → donor-seeker interaction → vendor redirect �
 | Run locally / Render deploy **order** | `configuration/e2e-deployment-sequence.md` |
 | Google OAuth + coordinator allowlist | `configuration/google-auth-setup.md` |
 | Auth, JWT, roles | `configuration/authentication.md` |
-| Postgres / Supabase (`DATABASE_URL`) | `configuration/database.md` |
+| **Supabase** tables + `DATABASE_URL` on Render APIs | `configuration/database.md` |
 | Render backends + CORS | `configuration/backend-render.md` |
 | Web coordinator dashboard | `configuration/web-client.md` |
 | Mobile `dart-define` / URLs | `configuration/mobile-client.md` |

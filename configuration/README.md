@@ -7,7 +7,7 @@ Operational and deployment configuration by application area. **Full doc map:** 
 | [e2e-deployment-sequence.md](./e2e-deployment-sequence.md) | **Start here:** phased order (Google → local → Render backends → static site → CORS) |
 | [backend-render.md](./backend-render.md) | Host user-service, ai-orchestration, and integration-service on Render |
 | [authentication.md](./authentication.md) | Google Sign-In, JWT roles, internal API key |
-| [database.md](./database.md) | **PostgreSQL** setup (local + Render), schema, indexes, migration from JSON |
+| [database.md](./database.md) | **Supabase** + local Postgres (manual steps), [schema.sql](./schema.sql) |
 | [Future Extensions](../design/Future_Extensions.md) | Roadmap: donor payment status, delivery proof, demand/vendor bidding |
 | [google-auth-setup.md](./google-auth-setup.md) | **Step-by-step** Google OAuth + coordinator allowlist + local `.env` |
 | [mobile-client.md](./mobile-client.md) | Flutter `dart-define` values and hosted vs local URLs |
@@ -35,7 +35,7 @@ Follow [e2e-deployment-sequence.md](./e2e-deployment-sequence.md) Phases 2–5 i
 
 | Step | Doc |
 |------|-----|
-| Create Render Postgres + `DATABASE_URL` on both Node services (when using DB) | [database.md](./database.md) |
+| Create **Supabase** project + tables, then `DATABASE_URL` on both Render Node services | [database.md](./database.md) |
 | Deploy user-service → ai-orchestration → integration | [backend-render.md](./backend-render.md) |
 | Set `WEB_CORS_ORIGINS` on **both** Node services **in Render** to static site URL (`https://…onrender.com`); keep `http://localhost:5173` in **local** `.env` only | [backend-render.md](./backend-render.md) § WEB_CORS_ORIGINS · [e2e-deployment-sequence.md](./e2e-deployment-sequence.md) Phase 4 |
 | Static site build env `VITE_*` → hosted API URLs | [e2e-deployment-sequence.md](./e2e-deployment-sequence.md) Phase 3 |

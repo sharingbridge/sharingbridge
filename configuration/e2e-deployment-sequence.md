@@ -233,17 +233,17 @@ Optional: `VITE_ALLOW_DEV_SIGN_IN=true` only with `ALLOW_DEV_TOKEN_MINT=true` on
 
 **Depends on:** Render account + GitHub repos. **Does not** require static site URL yet.
 
-### Phase 2b — Supabase database (when DB migration is enabled)
+### Phase 2b — Database (required)
 
-**Detail:** [database.md](./database.md) — **start here for table setup.**
+**Local:** [database.md](./database.md) Option A (Postgres on your machine).  
+**Production:** Supabase — same `schema.sql` in SQL Editor.
 
-1. Create a **[Supabase](https://supabase.com)** project (not Render Postgres).
-2. **SQL Editor** → paste and run `configuration/schema.sql` (creates `users`, `user_roles`, `donor_presets`, `order_intents`).
-3. **Project Settings → Database** → copy **connection URI** (use pooler/transaction mode for Render if offered).
-4. Set **`DATABASE_URL`** to that URI on **both** Render services (`user-service` + `integration-service`), redeploy both.
-5. One-time JSON import when migration script exists.
+1. Create database and run `configuration/schema.sql`.
+2. **Local only:** run `configuration/local-postgres-grants.sql` as `postgres` if the app user is `sharingbridge`.
+3. Set **`DATABASE_URL`** in both services’ `.env` (local) or Render env (hosted).
+4. Optional one-time: `npm run import:json` / `npm run import:order-intents` per [database.md](./database.md).
 
-Skip 2b until service code requires `DATABASE_URL`; until then JSON files still apply. You can still create Supabase tables now (steps 1–2).
+**Supabase (Render):** create project → SQL Editor → `schema.sql` → copy database URI → `DATABASE_URL` on both Node services → redeploy.
 
 Deploy in order — [backend-render.md](./backend-render.md):
 

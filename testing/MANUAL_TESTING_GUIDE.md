@@ -44,6 +44,28 @@ needed.
 - Port `8081` free locally (user-service).
 - Port `8091` free locally (ai-orchestration).
 
+### Local PostgreSQL (required for Node backends)
+
+Both **`sharingbridge-user-service`** and **`sharingbridge-integration-service`** require **`DATABASE_URL`** at startup (no JSON file store). Full setup: [configuration/database.md](../configuration/database.md) **Option A**.
+
+| Step | Action |
+|------|--------|
+| 1 | Postgres running; database **`sharingbridge`** created |
+| 2 | Run [schema.sql](../configuration/schema.sql) as `postgres` |
+| 3 | Run [local-postgres-grants.sql](../configuration/local-postgres-grants.sql) as `postgres` (fixes `permission denied for table users`) |
+| 4 | Copy `.env.example` → `.env` in **both** Node repos; set the same `DATABASE_URL` (match your port, e.g. `5433`) |
+| 5 | Optional one-time: `npm run import:json` (user-service), `npm run import:order-intents` (integration-service) |
+| 6 | Coordinator: `data/coordinators.json` and/or `COORDINATOR_EMAILS` in user-service `.env`, or a row in `user_roles` after sign-in |
+
+**Verify DB before starting apps (psql or pgAdmin on `sharingbridge`):**
+
+```sql
+\dt
+-- expect: users, user_roles, donor_presets, order_intents
+```
+
+**After sign-in / tests:** inspect data in pgAdmin under **Databases → sharingbridge → Schemas → public → Tables**.
+
 ### Auth signing secret (`AUTH_TOKEN_SECRET`)
 
 This guide describes the **donor-setup MVP** path: symmetric HS256 tokens and a shared `AUTH_TOKEN_SECRET` between user-service and integration-service. Production is expected to use **managed secrets**, **rotation**, and later **stronger patterns** (e.g. asymmetric signing)—see `development/AGENT_HANDOFF.md` follow-ups.
@@ -206,14 +228,16 @@ Expected: **6 passed** (Vitest). End-to-end browser checks are in **§4**.
 | 2 | `sharingbridge-user-service` (`npm start`) | 8081 |
 | 3 | `sharingbridge-integration-service` with AI env (see §2a.1) | 8080 |
 
-Start user-service in one PowerShell window:
+Start user-service in one PowerShell window (`.env` must include **`DATABASE_URL`**):
 
 ```powershell
 cd D:\kannan\sharingbridge\sharingbridge-user-service
 npm install   # first time only
 npm start
-# User service listening on 8081
+# User service listening on 8081 (PostgreSQL)
 ```
+
+If startup exits with `DATABASE_URL is required`, add it to `.env` per [database.md](../configuration/database.md).
 
 Start ai-orchestration in a second PowerShell window (for deterministic AI):
 
@@ -226,7 +250,7 @@ $env:PORT = "8091"
 uvicorn app.main:app --host 0.0.0.0 --port 8091
 ```
 
-Start integration-service in a third PowerShell window:
+Start integration-service in a third PowerShell window (same **`DATABASE_URL`** in `.env` as user-service):
 
 ```powershell
 cd D:\kannan\sharingbridge\sharingbridge-integration-service
@@ -234,7 +258,7 @@ $env:AI_ORCHESTRATION_BASE_URL = "http://localhost:8091"
 $env:AI_SUGGEST_VENDORS_ENABLED = "true"
 $env:AI_INSTRUCTION_PACK_ENABLED = "true"
 npm start
-# Integration service listening on 8080
+# Integration service listening on 8080 (PostgreSQL)
 ```
 
 #### 2a.1 Integration AI env (copy from `.env.example`)
@@ -537,7 +561,14 @@ Pick one approach:
 
    To clear **only one user**, edit `data\preferences.json` and remove that user’s array under `byUser` (or set it to `[]`), then restart the server.
 
-2. **User-service backend** (`PREFERENCES_BACKEND=user_service`): presets live in user-service. Either delete that user’s presets in `sharingbridge-user-service\data\user-service-store.json` under `donorPresets` (while the service is stopped), or **replace with an empty list** via API (same bearer token as the app):
+2. **User-service backend** (`PREFERENCES_BACKEND=user_service`): presets live in Postgres table **`donor_presets`**. Either clear via API (same bearer token as the app), or in pgAdmin/psql:
+
+   ```sql
+   UPDATE donor_presets SET presets_json = '[]'::jsonb, updated_at = now()
+   WHERE user_id = 'YOUR_USER_ID';
+   ```
+
+   Or **replace with an empty list** via API:
 
    ```powershell
    $token = "<paste token from POST /v1/auth/token>"

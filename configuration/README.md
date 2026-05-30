@@ -20,12 +20,12 @@ Operational and deployment configuration by application area. **Full doc map:** 
 
 | Repo | Copy template | Keys to verify for web + mobile |
 |------|---------------|----------------------------------|
-| `sharingbridge-user-service` | `.env.example` → `.env` | `AUTH_TOKEN_SECRET`, `GOOGLE_CLIENT_ID_WEB`, `WEB_CORS_ORIGINS=http://localhost:5173` (local only), coordinator allowlist — [google-auth-setup.md](./google-auth-setup.md); **`DATABASE_URL`** when DB migration is enabled — [database.md](./database.md) |
-| `sharingbridge-integration-service` | `.env.example` → `.env` | Same `AUTH_TOKEN_SECRET`, `USER_SERVICE_BASE_URL=http://localhost:8081`, **same** `WEB_CORS_ORIGINS` as user-service, `PREFERENCES_BACKEND`, **`DATABASE_URL`** (same DB) — [database.md](./database.md) |
+| `sharingbridge-user-service` | `.env.example` → `.env` | **`DATABASE_URL`** (required), `AUTH_TOKEN_SECRET`, `GOOGLE_CLIENT_ID_WEB`, `WEB_CORS_ORIGINS`, coordinator allowlist — [database.md](./database.md), [google-auth-setup.md](./google-auth-setup.md) |
+| `sharingbridge-integration-service` | `.env.example` → `.env` | **Same `DATABASE_URL`**, same `AUTH_TOKEN_SECRET`, `USER_SERVICE_BASE_URL=http://localhost:8081`, **same** `WEB_CORS_ORIGINS`, `PREFERENCES_BACKEND` — [database.md](./database.md) |
 | `sharingbridge-web-app` | `.env.example` → `.env` | `VITE_GOOGLE_CLIENT_ID`, `VITE_API_BASE_URL=http://localhost:8080`, `VITE_USER_SERVICE_BASE_URL=http://localhost:8081` |
 | `sharingbridge-mobile-app` | — | Google: `GOOGLE_CLIENT_ID` + `USER_SERVICE_BASE_URL` + `API_BASE_URL`; or dev mint — [mobile-client.md](./mobile-client.md) |
 
-**Order of setup:** [e2e-deployment-sequence.md](./e2e-deployment-sequence.md) Phase 0 → Phase 1 before manual tests.
+**Order of setup:** [e2e-deployment-sequence.md](./e2e-deployment-sequence.md) Phase 0 → Phase 1 (Postgres + `.env`) → [MANUAL_TESTING_GUIDE.md](../testing/MANUAL_TESTING_GUIDE.md).
 
 Restart Node services after editing `.env`. Restart `npm run dev` after changing web `VITE_*`.
 

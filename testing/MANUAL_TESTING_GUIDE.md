@@ -43,7 +43,7 @@ needed.
 - For **§3-auth** (mobile Google): Android OAuth client + SHA-1 on user-service — [configuration/google-auth-setup.md](../configuration/google-auth-setup.md) §2.2.
 - Port `8080` free locally (integration-service).
 - Port `8081` free locally (user-service).
-- Port `8091` free locally (ai-orchestration).
+- Port `8091` — **only if** you run optional Python AI ([configuration/ai-orchestration-local.md](../configuration/ai-orchestration-local.md)); not required for web/mobile/Postgres smoke tests.
 
 ### Local PostgreSQL (required for Node backends)
 
@@ -124,12 +124,12 @@ Expected output footer:
 
 ### 1d. AI orchestration service (Python, currently 3 tests)
 
-Use a **project venv** (avoids Anaconda `WinError 5` when pip tries to upgrade global `pytest`):
+Use a **project venv inside `sharingbridge-ai-orchestration` only** (not under the parent `sharingbridge` folder). The venv is local tooling — it is **not** part of `configuration/` and is not committed to git.
 
 ```powershell
 cd D:\kannan\sharingbridge\sharingbridge-ai-orchestration
 python -m venv .venv
-.\.venv\Scripts\Activate.ps1
+.\.venv\Scripts\Activate.ps1   # if empty or errors, delete .venv and recreate, or use .\.venv\Scripts\python.exe -m pip ...
 pip install -r requirements.txt
 python -m pytest -q
 ```
@@ -240,7 +240,7 @@ npm start
 
 If startup exits with `DATABASE_URL is required`, add it to `.env` per [database.md](../configuration/database.md).
 
-Start ai-orchestration in a second PowerShell window (for deterministic AI):
+Start ai-orchestration in a second PowerShell window (for deterministic AI). Create the venv in **`sharingbridge-ai-orchestration`**, not the repo parent:
 
 ```powershell
 cd D:\kannan\sharingbridge\sharingbridge-ai-orchestration

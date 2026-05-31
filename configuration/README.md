@@ -13,6 +13,7 @@ Operational and deployment configuration by application area. **Full doc map:** 
 | [mobile-client.md](./mobile-client.md) | Flutter `dart-define` values and hosted vs local URLs |
 | [web-client.md](./web-client.md) | Web dashboard (order initiation history) and CORS |
 | [field-handoff.md](./field-handoff.md) | Offer food help flow, guidance (BRD step 4), what is not automated |
+| [ai-orchestration-local.md](./ai-orchestration-local.md) | **Optional** Python AI: uvicorn, `.venv`, `Activate.ps1` (not in `configuration/`) |
 
 **Per-repo templates:** each service repository has `.env.example` and `render.yaml` (where applicable). Node backends load `.env` on `npm start` via dotenv; the web app uses `sharingbridge-web-app/.env` (`VITE_*` at build/dev time).
 
@@ -24,6 +25,7 @@ Operational and deployment configuration by application area. **Full doc map:** 
 | `sharingbridge-integration-service` | `.env.example` → `.env` | **Same `DATABASE_URL`**, same `AUTH_TOKEN_SECRET`, `USER_SERVICE_BASE_URL=http://localhost:8081`, **same** `WEB_CORS_ORIGINS`, `PREFERENCES_BACKEND` — [database.md](./database.md) |
 | `sharingbridge-web-app` | `.env.example` → `.env` | `VITE_GOOGLE_CLIENT_ID`, `VITE_API_BASE_URL=http://localhost:8080`, `VITE_USER_SERVICE_BASE_URL=http://localhost:8081` |
 | `sharingbridge-mobile-app` | — | Google: `GOOGLE_CLIENT_ID` + `USER_SERVICE_BASE_URL` + `API_BASE_URL`; or dev mint — [mobile-client.md](./mobile-client.md) |
+| `sharingbridge-ai-orchestration` | — | **Optional** for live LLM paths — [ai-orchestration-local.md](./ai-orchestration-local.md) (venv stays inside that repo only) |
 
 **Order of setup:** [e2e-deployment-sequence.md](./e2e-deployment-sequence.md) Phase 0 → Phase 1 (Postgres + `.env`) → [MANUAL_TESTING_GUIDE.md](../testing/MANUAL_TESTING_GUIDE.md).
 

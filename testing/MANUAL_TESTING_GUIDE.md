@@ -127,14 +127,14 @@ Expected output footer:
 # fail 0
 ```
 
-### 1d. AI orchestration service (Python, currently 3 tests)
+### 1d. AI orchestration service (Python, currently 6 tests)
 
-Use a **project venv inside `sharingbridge-ai-orchestration` only** (not under the parent `sharingbridge` folder). The venv is local tooling — it is **not** part of `configuration/` and is not committed to git.
+Use a **project venv inside `sharingbridge-ai-orchestration` only** (not under the parent `sharingbridge` folder). Requires **Python 3.10+** (`python3.13` on PATH — not Anaconda’s default `python`). Full setup: [ai-orchestration-local.md](../configuration/ai-orchestration-local.md).
 
 ```powershell
 cd D:\kannan\sharingbridge\sharingbridge-ai-orchestration
-python -m venv .venv
-.\.venv\Scripts\Activate.ps1   # if empty or errors, delete .venv and recreate, or use .\.venv\Scripts\python.exe -m pip ...
+python3.13 -m venv .venv
+.\.venv\Scripts\Activate.ps1   # if empty or errors, delete .venv and recreate
 pip install -r requirements.txt
 python -m pytest -q
 ```
@@ -143,7 +143,7 @@ python -m pytest -q
 |-----------|-----------------|
 | `tests/test_orchestration.py` | `/health`, query-ranked `suggest-vendors`, `instruction-pack` includes verbal notes and presets |
 
-Expected last line: `3 passed`. CI uses Python 3.10+; local dev works on Python 3.7+ with pinned deps in `requirements.txt`.
+Expected last line: `6 passed`. If `uvicorn` fails with `ForwardRef._evaluate() … recursive_guard`, delete `.venv`, recreate with `python3.13`, and `pip install -r requirements.txt` again (old Pydantic v1 + Python 3.13).
 
 Run the API (venv activated):
 
@@ -272,14 +272,14 @@ Start ai-orchestration in a second PowerShell window (for deterministic AI). Cre
 
 ```powershell
 cd D:\kannan\sharingbridge\sharingbridge-ai-orchestration
-python -m venv .venv
+python3.13 -m venv .venv
 .\.venv\Scripts\Activate.ps1
 pip install -r requirements.txt   # first time only
 $env:PORT = "8091"
 uvicorn app.main:app --host 0.0.0.0 --port 8091
 ```
 
-Start integration-service in a third PowerShell window (same **`DATABASE_URL`** in `.env` as user-service):
+Use **Python 3.10+** (`python3.13`); see [ai-orchestration-local.md](../configuration/ai-orchestration-local.md). Start integration-service in a third PowerShell window (same **`DATABASE_URL`** in `.env` as user-service):
 
 ```powershell
 cd D:\kannan\sharingbridge\sharingbridge-integration-service
@@ -837,7 +837,7 @@ If suggest-vendors or instruction-pack fail, verify `AI_ORCHESTRATION_BASE_URL`,
 
 ## 7. What "good" looks like (acceptance summary)
 
-- `python -m pytest -q` in `sharingbridge-ai-orchestration` reports `3 passed`.
+- `python -m pytest -q` in `sharingbridge-ai-orchestration` reports `6 passed`.
 - `npm test` in `sharingbridge-integration-service` reports `# pass 46 / # fail 0`.
 - `npm test` in `sharingbridge-user-service` reports `# pass 40 / # fail 0`.
 - `npm test` in `sharingbridge-web-app` (Vitest) reports **6 passed**.

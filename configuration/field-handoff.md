@@ -54,10 +54,22 @@ Stored fields include `pack_id`, preset snapshot, reference-photo flag, and verb
 
 `SHARINGBRIDGE_WEBSITE_URL=pending` on ai-orchestration → courier copy states the public program website is not published yet.
 
+## Reference photos (shipped)
+
+| Piece | Service |
+|-------|---------|
+| Upload `POST /v1/photos/upload` | `sharingbridge-photo-service` (Python, Cloudinary) |
+| Mobile `PHOTO_SERVICE_BASE_URL` | `--dart-define` (default `http://localhost:8092`) |
+| Coordinator thumbnail + link | Web dashboard reads `reference_photo_view_url` / `reference_photo_thumbnail_url` on order intents |
+
+Flow: donor picks camera or gallery → upload on **Get AI delivery instructions** → `reference_photo_artifact_id` + Cloudinary URLs stored on order intent.
+
+Local: set `PHOTO_UPLOAD_MOCK=true` without Cloudinary credentials, or configure `CLOUDINARY_*` in photo-service `.env`. Run `photo_artifacts` DDL from [schema.sql](./schema.sql) (or let photo-service create the table on startup).
+
 ## Planned (Track B+)
 
-- Reference photo upload (`sharingbridge-photo-service`)
-- Delivery acknowledgement and photo match
+- Delivery acknowledgement upload and donor↔delivery photo match
+- Local image processing hooks in photo-service
 - Live LLM (`AI_LLM_MODE=openai`)
 
 See [IMPLEMENTATION_APPROACH.md](../development/IMPLEMENTATION_APPROACH.md).

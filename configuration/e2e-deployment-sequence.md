@@ -177,7 +177,7 @@ Skip until Phase 1 mobile testing: **Credentials** → **+ Create credentials** 
 
 ```powershell
 cd sharingbridge-user-service
-copy .env.example .env
+copy env.example .env
 ```
 
 | Variable | Example (local) |
@@ -193,7 +193,7 @@ Coordinator role: Postgres `user_roles` — [coordinator-seed.sql](./coordinator
 
 ```powershell
 cd sharingbridge-integration-service
-copy .env.example .env
+copy env.example .env
 ```
 
 | Variable | Example (local) |
@@ -206,7 +206,7 @@ copy .env.example .env
 
 ```powershell
 cd sharingbridge-web-app
-copy .env.example .env
+copy env.example .env
 ```
 
 | Variable | Example (local) |

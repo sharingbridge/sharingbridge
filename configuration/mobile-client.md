@@ -58,8 +58,11 @@ cd D:\kannan\sharingbridge\sharingbridge-mobile-app
 flutter run -d emulator-5554 `
   --dart-define=GOOGLE_CLIENT_ID=<Android OAuth client ID from Google Cloud> `
   --dart-define=USER_SERVICE_BASE_URL=http://10.0.2.2:8081 `
-  --dart-define=API_BASE_URL=http://10.0.2.2:8080
+  --dart-define=API_BASE_URL=http://10.0.2.2:8080 `
+  --dart-define=PHOTO_SERVICE_BASE_URL=http://10.0.2.2:8092
 ```
+
+Reference photos (optional on **Help a seeker**) upload to **photo-service** when the donor taps **Get AI delivery instructions**. See [photo-service-local.md](./photo-service-local.md).
 
 **Windows desktop** (Google Sign-In not supported; use dev token or emulator):
 

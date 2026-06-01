@@ -154,11 +154,11 @@ Coordinators are **not** configured in Google Console or in user-service `.env`.
 
 ### 4.1 `sharingbridge-user-service/.env`
 
-Copy from `.env.example`:
+Copy from `env.example`:
 
 ```powershell
 cd D:\kannan\sharingbridge\sharingbridge-user-service
-copy .env.example .env
+copy env.example .env
 ```
 
 Set at minimum:
@@ -201,7 +201,7 @@ Must match user-service. On **Render**, use `https://<static-site>.onrender.com`
 
 ```powershell
 cd D:\kannan\sharingbridge\sharingbridge-web-app
-copy .env.example .env
+copy env.example .env
 ```
 
 ```env

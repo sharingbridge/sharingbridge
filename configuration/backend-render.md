@@ -116,16 +116,16 @@ Both Node services load a repo-root `.env` on `npm start` via `dotenv` (`import 
 
 ```powershell
 cd sharingbridge-user-service
-copy .env.example .env
+copy env.example .env
 # edit AUTH_TOKEN_SECRET, WEB_CORS_ORIGINS, …
 
 cd ..\sharingbridge-integration-service
-copy .env.example .env
+copy env.example .env
 # match AUTH_TOKEN_SECRET; set USER_SERVICE_BASE_URL=http://localhost:8081
 # set WEB_CORS_ORIGINS=http://localhost:5173 when using sharingbridge-web-app locally
 ```
 
-Web app: `sharingbridge-web-app/.env` from `.env.example` (`VITE_*` URLs). Rebuild or restart `npm run dev` after changing `VITE_*`.
+Web app: `sharingbridge-web-app/.env` from `env.example` (`VITE_*` URLs). Rebuild or restart `npm run dev` after changing `VITE_*`.
 
 ---
 
@@ -198,4 +198,4 @@ See [mobile-client.md](./mobile-client.md) — mint JWT, then `flutter run` from
 | Presets / intents lost on redeploy | Use **Supabase** + `DATABASE_URL` on both Node services — [database.md](./database.md) |
 | `DATABASE_URL` / connection errors | Use **internal** URL; run schema SQL; redeploy both services |
 | Browser **Failed to fetch** on web | `WEB_CORS_ORIGINS` on **both** backends includes the web origin; web `.env` `VITE_*` must point at the same API hosts you use for mobile |
-| Local env ignored | Copy `.env.example` → `.env` in each Node repo; restart `npm start` |
+| Local env ignored | Copy `env.example` → `.env` in each Node repo; restart `npm start` |

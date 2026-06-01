@@ -40,3 +40,17 @@ CREATE INDEX idx_order_intents_user_updated
 
 CREATE INDEX idx_order_intents_updated
   ON order_intents (updated_at DESC);
+
+CREATE TABLE photo_artifacts (
+  artifact_id           TEXT PRIMARY KEY,
+  user_id               TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  photo_type            TEXT NOT NULL CHECK (photo_type IN ('seeker_reference', 'delivery_acknowledgement')),
+  cloudinary_public_id  TEXT NOT NULL,
+  view_url              TEXT NOT NULL,
+  thumbnail_url         TEXT NOT NULL,
+  mime_type             TEXT,
+  file_size             INTEGER,
+  created_at            TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE INDEX idx_photo_artifacts_user ON photo_artifacts (user_id);

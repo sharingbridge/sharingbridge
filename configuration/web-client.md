@@ -38,7 +38,7 @@ Chrome may show **Continue as …** on the Google button; that is normal for the
 
 ## Build-time configuration
 
-Copy `.env.example` to `.env`:
+Copy `env.example` to `.env`:
 
 | Variable | Purpose |
 |----------|---------|
@@ -72,7 +72,7 @@ Full matrix: [backend-render.md](./backend-render.md) § `WEB_CORS_ORIGINS`. Aft
 
 ```powershell
 cd sharingbridge-web-app
-copy .env.example .env
+copy env.example .env
 npm install
 npm run dev
 ```

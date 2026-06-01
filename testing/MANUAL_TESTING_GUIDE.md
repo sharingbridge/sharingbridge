@@ -163,14 +163,12 @@ cd D:\kannan\sharingbridge\sharingbridge-photo-service
 python3.13 -m venv .venv
 .\.venv\Scripts\Activate.ps1
 pip install -r requirements-dev.txt
+copy env.example .env
+# Edit .env: same DATABASE_URL and AUTH_TOKEN_SECRET as user-service; PHOTO_UPLOAD_MOCK=true OR Cloudinary keys
 python -m pytest -q
 ```
 
-Expected last line: `5 passed`.
-
-Copy `env.example` → `.env` (gitignored). Same `DATABASE_URL` and `AUTH_TOKEN_SECRET` as user-service. For local tests without Cloudinary: `PHOTO_UPLOAD_MOCK=true`. For real uploads: set `CLOUDINARY_*` from [Cloudinary](https://cloudinary.com/console).
-
-Run the API (venv activated):
+Expected last line: `5 passed`. Then run the API (venv still activated):
 
 ```powershell
 uvicorn app.main:app --host 0.0.0.0 --port 8092
@@ -314,12 +312,13 @@ python3.13 -m venv .venv
 .\.venv\Scripts\Activate.ps1
 pip install -r requirements-dev.txt
 copy env.example .env
-# Edit .env: same DATABASE_URL and AUTH_TOKEN_SECRET as user-service; PHOTO_UPLOAD_MOCK=true OR Cloudinary keys
+# Edit .env now (required): same DATABASE_URL and AUTH_TOKEN_SECRET as user-service; PHOTO_UPLOAD_MOCK=true OR Cloudinary keys
+# Optional: python -m pytest -q
 ```
 
-You only copy once; **edit `.env` before the first `uvicorn`** (and before `pytest` if you run tests). The service reads `.env` at startup — not after it is already running.
+One-time setup ends above — **finish editing `.env` before `uvicorn` in the next block** (the service reads `.env` only at startup).
 
-**Every run** (with user-service and integration-service already up):
+**Every run** (`.env` already exists; with user-service and integration-service already up):
 
 ```powershell
 cd D:\kannan\sharingbridge\sharingbridge-photo-service

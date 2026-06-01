@@ -26,9 +26,11 @@ Mobile and web **never** call uvicorn directly.
 
 Create the venv **only inside the AI repo**, not under a parent folder like `D:\kannan\sharingbridge\.venv`:
 
+Requires **Python 3.10+** (3.13 works). Use `python3.13` — not Anaconda’s old `python` (often 3.7), which breaks FastAPI/Pydantic.
+
 ```powershell
 cd D:\kannan\sharingbridge\sharingbridge-ai-orchestration
-python -m venv .venv
+python3.13 -m venv .venv
 .\.venv\Scripts\Activate.ps1
 pip install -r requirements.txt
 $env:PORT = "8091"

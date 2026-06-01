@@ -304,12 +304,32 @@ Without these flags, `suggest-vendors` uses the fixed mock list and `instruction
 
 #### 2b. Photo service (reference photo upload)
 
-Start in another PowerShell window when testing **§3f** with a photo (see **§1e** for venv and `.env`):
+Start in **another PowerShell window** when testing **§3f** with a reference photo. Use **Python 3.10+** (`python3.13` on PATH — not Anaconda’s default `python`). Unit tests: **§1e**; more detail: [photo-service-local.md](../configuration/photo-service-local.md).
+
+**First time on this machine** (venv, deps, `.env`):
+
+```powershell
+cd D:\kannan\sharingbridge\sharingbridge-photo-service
+python3.13 -m venv .venv
+.\.venv\Scripts\Activate.ps1
+pip install -r requirements-dev.txt
+copy env.example .env
+# Edit .env: same DATABASE_URL and AUTH_TOKEN_SECRET as user-service; PHOTO_UPLOAD_MOCK=true OR Cloudinary keys
+```
+
+**Every run** (with user-service and integration-service already up):
 
 ```powershell
 cd D:\kannan\sharingbridge\sharingbridge-photo-service
 .\.venv\Scripts\Activate.ps1
 uvicorn app.main:app --host 0.0.0.0 --port 8092
+# Photo service listening on 8092
+```
+
+Confirm:
+
+```powershell
+Invoke-RestMethod http://127.0.0.1:8092/health
 ```
 
 Mobile must pass `--dart-define=PHOTO_SERVICE_BASE_URL=…` (**§3-host**). Upload is `POST /v1/photos/upload` (Bearer donor JWT). Without photo-service running, instruction-pack still works but photo upload fails when a reference image is attached.

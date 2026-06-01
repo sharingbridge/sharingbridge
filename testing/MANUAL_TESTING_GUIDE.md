@@ -26,6 +26,7 @@ needed.
 | 8 | Mobile cache fallback (`shared_preferences`) | `sharingbridge-mobile-app/lib/features/donor_setup/presentation/pages/donor_setup_page.dart` |
 | 9 | Mobile home hub + **Offer food help** (3 steps: guidance → optional reference photo + **Get AI delivery instructions** (API with local fallback) → copy + vendor deep links) | `sharingbridge-mobile-app/lib/presentation/app_home_page.dart`, `lib/features/donor_seeker_interaction/**` |
 | 10 | Web **Order initiation history** (coordinator dashboard) | `sharingbridge-web-app` — see **§4** |
+| 11 | Reference photo upload (Cloudinary) | `sharingbridge-photo-service` — see **§1e**, **§2b**, **§3f**; [photo-service-local.md](../configuration/photo-service-local.md) |
 
 ## Prerequisites
 
@@ -39,6 +40,10 @@ needed.
   - `D:\kannan\sharingbridge\sharingbridge-web-app` (for **§4** only)
 - User service cloned and runnable (Google sign-in + optional dev token mint):
   - `D:\kannan\sharingbridge\sharingbridge-user-service`
+- Photo service (reference images on **Help a seeker**):
+  - `D:\kannan\sharingbridge\sharingbridge-photo-service`
+  - **Python 3.10+** (3.13 works) — project venv inside that repo only; see **§1e**
+  - Port **8092** free locally
 - For **§4** (web): Google Web client + [coordinator-seed.sql](../configuration/coordinator-seed.sql) — [configuration/e2e-deployment-sequence.md](../configuration/e2e-deployment-sequence.md) **Phase 0–1**.
 - For **§3-auth** (mobile Google): Android OAuth client + SHA-1 on user-service — [configuration/google-auth-setup.md](../configuration/google-auth-setup.md) §2.2.
 - Port `8080` free locally (integration-service).
@@ -54,7 +59,7 @@ Both **`sharingbridge-user-service`** and **`sharingbridge-integration-service`*
 | 1 | Postgres running; database **`sharingbridge`** created |
 | 2 | Run [schema.sql](../configuration/schema.sql) as `postgres` |
 | 3 | Run [local-postgres-grants.sql](../configuration/local-postgres-grants.sql) as `postgres` (fixes `permission denied for table users`) |
-| 4 | Copy `.env.example` → `.env` in **both** Node repos; set the same `DATABASE_URL` (match your port, e.g. `5433`) |
+| 4 | Copy `env.example` → `.env` in **both** Node repos; set the same `DATABASE_URL` (match your port, e.g. `5433`) |
 | 5 | Optional one-time: `npm run import:json` (user-service), `npm run import:order-intents` (integration-service) |
 | 6 | Coordinator: `coordinator` row in `user_roles` ([coordinator-seed.sql](../configuration/coordinator-seed.sql)) after the user exists in `users` |
 
@@ -62,7 +67,7 @@ Both **`sharingbridge-user-service`** and **`sharingbridge-integration-service`*
 
 ```sql
 \dt
--- expect: users, user_roles, donor_presets, order_intents
+-- expect: users, user_roles, donor_presets, order_intents, photo_artifacts
 ```
 
 **After sign-in / tests:** inspect data in pgAdmin under **Databases → sharingbridge → Schemas → public → Tables**.
@@ -149,6 +154,30 @@ uvicorn app.main:app --host 0.0.0.0 --port 8091
 
 If pip prints red errors but you still see `Uvicorn running on http://0.0.0.0:8091`, the server is up — confirm with `Invoke-RestMethod http://127.0.0.1:8091/health`.
 
+### 1e. Photo service (Python, currently 5 tests)
+
+Use a **project venv inside `sharingbridge-photo-service` only** (not Anaconda global, not the parent `sharingbridge` folder). Full setup: [configuration/photo-service-local.md](../configuration/photo-service-local.md).
+
+```powershell
+cd D:\kannan\sharingbridge\sharingbridge-photo-service
+python3.13 -m venv .venv
+.\.venv\Scripts\Activate.ps1
+pip install -r requirements-dev.txt
+python -m pytest -q
+```
+
+Expected last line: `5 passed`.
+
+Copy `env.example` → `.env` (gitignored). Same `DATABASE_URL` and `AUTH_TOKEN_SECRET` as user-service. For local tests without Cloudinary: `PHOTO_UPLOAD_MOCK=true`. For real uploads: set `CLOUDINARY_*` from [Cloudinary](https://cloudinary.com/console).
+
+Run the API (venv activated):
+
+```powershell
+uvicorn app.main:app --host 0.0.0.0 --port 8092
+```
+
+Confirm: `Invoke-RestMethod http://127.0.0.1:8092/health`
+
 ### 1b. Mobile app (Flutter, currently 53 tests)
 
 ```powershell
@@ -221,13 +250,14 @@ Expected: **6 passed** (Vitest). End-to-end browser checks are in **§4**.
 
 ## 2. Manual API smoke tests
 
-### Three-service stack (recommended for AI paths)
+### Multi-service stack (AI + reference photos)
 
-| Terminal | Service | Port |
-|----------|---------|------|
-| 1 | `sharingbridge-ai-orchestration` (`uvicorn … --port 8091`) | 8091 |
-| 2 | `sharingbridge-user-service` (`npm start`) | 8081 |
-| 3 | `sharingbridge-integration-service` with AI env (see §2a.1) | 8080 |
+| Terminal | Service | Port | When needed |
+|----------|---------|------|-------------|
+| 1 | `sharingbridge-ai-orchestration` (`uvicorn … --port 8091`) | 8091 | Live LLM instruction-pack / suggest-vendors |
+| 2 | `sharingbridge-user-service` (`npm start`) | 8081 | Always |
+| 3 | `sharingbridge-integration-service` with AI env (see §2a.1) | 8080 | Always |
+| 4 | `sharingbridge-photo-service` (`uvicorn … --port 8092`) | 8092 | **Help a seeker** with a reference photo (**§3f**) |
 
 Start user-service in one PowerShell window (`.env` must include **`DATABASE_URL`**):
 
@@ -262,7 +292,7 @@ npm start
 # Integration service listening on 8080 (PostgreSQL)
 ```
 
-#### 2a.1 Integration AI env (copy from `.env.example`)
+#### 2a.1 Integration AI env (copy from `env.example`)
 
 | Variable | Example |
 |----------|---------|
@@ -272,7 +302,19 @@ npm start
 
 Without these flags, `suggest-vendors` uses the fixed mock list and `instruction-pack` uses integration’s server-side fallback template.
 
-In a fourth window, drive the API.
+#### 2b. Photo service (reference photo upload)
+
+Start in another PowerShell window when testing **§3f** with a photo (see **§1e** for venv and `.env`):
+
+```powershell
+cd D:\kannan\sharingbridge\sharingbridge-photo-service
+.\.venv\Scripts\Activate.ps1
+uvicorn app.main:app --host 0.0.0.0 --port 8092
+```
+
+Mobile must pass `--dart-define=PHOTO_SERVICE_BASE_URL=…` (**§3-host**). Upload is `POST /v1/photos/upload` (Bearer donor JWT). Without photo-service running, instruction-pack still works but photo upload fails when a reference image is attached.
+
+In another window, drive the API.
 
 First, mint a signed token from user-service (required for all preferences endpoints):
 
@@ -477,21 +519,21 @@ Invoke-RestMethod http://localhost:8091/health
 
 Flutter only. For the **web coordinator dashboard**, use **§4** (same backends, browser + Vite).
 
-Keep **ai-orchestration** on `8091`, **integration-service** on `8080`, and **user-service** on `8081` (with AI env vars from §2a.1). Start all three before `flutter run`.
+Keep **user-service** on `8081` and **integration-service** on `8080` running before `flutter run`. Add **ai-orchestration** (`8091`) for live LLM paths and **photo-service** (`8092`) when testing reference photo upload (**§3f**).
 
 ### 3-host. API URLs by device (read this first)
 
 The app runs **inside** the emulator or on your PC. **`localhost` inside an Android emulator is the emulator itself**, not your Windows machine — so local backends must use the host alias **`10.0.2.2`** (Android’s special route to the PC).
 
-| Where you run the app | `USER_SERVICE_BASE_URL` | `API_BASE_URL` |
-|----------------------|-------------------------|----------------|
-| **Android emulator** (recommended for Google Sign-In) | `http://10.0.2.2:8081` | `http://10.0.2.2:8080` |
-| Windows desktop (`-d windows`) | `http://localhost:8081` | `http://localhost:8080` |
-| Physical Android phone (USB) | `http://<your-PC-LAN-IP>:8081` | `http://<your-PC-LAN-IP>:8080` |
+| Where you run the app | `USER_SERVICE_BASE_URL` | `API_BASE_URL` | `PHOTO_SERVICE_BASE_URL` (if using a photo) |
+|----------------------|-------------------------|----------------|---------------------------------------------|
+| **Android emulator** (recommended for Google Sign-In) | `http://10.0.2.2:8081` | `http://10.0.2.2:8080` | `http://10.0.2.2:8092` |
+| Windows desktop (`-d windows`) | `http://localhost:8081` | `http://localhost:8080` | `http://localhost:8092` (Google Sign-In not on Windows) |
+| Physical Android phone (USB / Wi‑Fi) | `http://<your-PC-LAN-IP>:8081` | `http://<your-PC-LAN-IP>:8080` | `http://<your-PC-LAN-IP>:8092` |
 
 Use the **same row** for every `--dart-define` on one `flutter run`. Mixing `localhost` with the emulator causes **connection refused** on sign-in or API calls.
 
-Backends stay on your PC at `localhost:8080` / `8081`; only the **dart-defines** change per target.
+Backends stay on your PC at `localhost:8080` / `8081` / `8092` (photo); only the **dart-defines** change per target.
 
 ### 3-run. Start an Android emulator
 
@@ -514,7 +556,8 @@ cd D:\kannan\sharingbridge\sharingbridge-mobile-app
 flutter run -d emulator-5554 `
   --dart-define=GOOGLE_CLIENT_ID=<Android OAuth client ID> `
   --dart-define=USER_SERVICE_BASE_URL=http://10.0.2.2:8081 `
-  --dart-define=API_BASE_URL=http://10.0.2.2:8080
+  --dart-define=API_BASE_URL=http://10.0.2.2:8080 `
+  --dart-define=PHOTO_SERVICE_BASE_URL=http://10.0.2.2:8092
 ```
 
 Replace `emulator-5554` with your `flutter devices` id.
@@ -537,6 +580,7 @@ cd D:\kannan\sharingbridge\sharingbridge-mobile-app
 flutter run -d emulator-5554 `
   --dart-define=USER_SERVICE_BASE_URL=http://10.0.2.2:8081 `
   --dart-define=API_BASE_URL=http://10.0.2.2:8080 `
+  --dart-define=PHOTO_SERVICE_BASE_URL=http://10.0.2.2:8092 `
   --dart-define=USER_ID=alice `
   --dart-define=AUTH_TOKEN=$mobileToken
 ```
@@ -619,9 +663,11 @@ Uses the same authed **`GET …/preferences`** load as Donor Setup (saved preset
 
 1. From the home hub, tap **Help a seeker**.
 2. **Step 1 — Guidance:** read dignity and **photo consent** text, then tap **Continue to photo and instructions**.
-3. **Step 2 — Photo and AI:** optionally tap **Add reference photo** (camera or gallery; requires OS permission the first time). Optionally fill **Handover notes**. Tap **Get AI delivery instructions** — the app calls `POST /v1/donor-seeker/instruction-pack` on integration-service (orchestration when enabled). If integration is unreachable, the app falls back to a **local stub**. Use the app bar **Back** arrow to return to guidance and clear the photo/notes for this session.
-4. **Step 3 — Copy instructions and place order:** review the text in the filled card, tap **Copy instructions to clipboard and register donation intent**. The app copies to the clipboard and calls `POST /v1/donor-seeker/order-intents` on integration-service. On first success you should see **Order intent registered** with a reference id and a SnackBar saying **Donation intent registered**; **Open …** rows unlock for saved presets with valid **http/https** links. Paste into the vendor app’s delivery-notes field and complete payment there.
+3. **Step 2 — Photo and AI:** optionally tap **Add reference photo** (**Take photo** or **Choose from gallery**; OS permission the first time). Optionally fill **Handover notes**. Tap **Get AI delivery instructions** — if a photo is attached, the app first uploads to **photo-service** (`POST /v1/photos/upload`, **§2b**), then calls `POST /v1/donor-seeker/instruction-pack` on integration-service with `reference_photo_artifact_id`. If integration is unreachable, the app falls back to a **local stub** (upload may still fail if photo-service is down). Use the app bar **Back** arrow to return to guidance and clear the photo/notes for this session.
+4. **Step 3 — Copy instructions and place order:** review the text in the filled card, tap **Copy instructions to clipboard and register donation intent**. The app copies to the clipboard and calls `POST /v1/donor-seeker/order-intents` with reference photo URLs when upload succeeded. On first success you should see **Order intent registered** with a reference id and a SnackBar saying **Donation intent registered**; **Open …** rows unlock for saved presets with valid **http/https** links. Paste into the vendor app’s delivery-notes field and complete payment there.
 5. **Repeat tap (same session):** tap the same button again without regenerating instructions. The server **updates** the existing intent for that `pack_id` (same reference id, HTTP `200`, `created: false` in the API body) — it does **not** create a second row. The SnackBar should say **Donation intent updated**; the reference id on screen stays the same.
+
+**Photo-service troubleshooting:** SnackBar “Could not upload photo…” → start **§2b**, check `PHOTO_SERVICE_BASE_URL` (**§3-host**), and `.env` (`PHOTO_UPLOAD_MOCK=true` or Cloudinary keys). Physical device: use your PC’s Wi‑Fi IP, not `localhost` or `10.0.2.2`.
 
 If presets fail to load (offline/server), you can still generate instructions; **Open …** stays disabled until registration succeeds. If order-intent registration fails, the SnackBar still confirms clipboard copy and you can open vendor apps manually.
 
@@ -653,7 +699,7 @@ Walk through **§3f**; step 4 must show **Donation intent registered** (or **upd
 1. From the home hub, tap **Order initiation history** (listed after **Help a seeker**).
 2. The app calls `GET /v1/donor-seeker/order-intents` with your Bearer token (newest first).
 3. After at least one successful **Help a seeker** copy (§3f), you should see a row with the same reference id. Pull to refresh after registering another intent.
-4. Tap a row → detail shows pack id, status, notes, and preset snapshot.
+4. Tap a row → detail shows pack id, status, notes, preset snapshot, and whether a reference photo was attached.
 
 Empty state is normal before any intent is registered. Requires the same `AUTH_TOKEN` / `API_BASE_URL` as other flows. Coordinator view of the same data: **§4**.
 
@@ -661,13 +707,13 @@ Empty state is normal before any intent is registered. Requires the same `AUTH_T
 
 Repository: `sharingbridge-web-app`. Configuration: [configuration/web-client.md](../configuration/web-client.md). Deploy order (Google → local → Render): [configuration/e2e-deployment-sequence.md](../configuration/e2e-deployment-sequence.md).
 
-Keep **user-service** (`8081`), **integration-service** (`8080`), and (for AI paths) **ai-orchestration** (`8091`) running as in **§2**. The web app does not replace those services — it calls them from the browser.
+Keep **user-service** (`8081`), **integration-service** (`8080`), and (for AI paths) **ai-orchestration** (`8091`) running as in **§2**. For coordinator **reference photo** thumbnails, the donor must have uploaded via **photo-service** (`8092`, **§2b**) during **§3f**. The web app does not call photo-service directly — it shows URLs stored on the order intent.
 
 ### 4a. Prerequisites (Google, CORS, `.env`)
 
 Complete [configuration/e2e-deployment-sequence.md](../configuration/e2e-deployment-sequence.md) **Phase 0–1** (Google Console Web client, test users, coordinator SQL seed).
 
-1. **user-service** — copy `.env.example` → `.env`:
+1. **user-service** — copy `env.example` → `.env`:
    - `GOOGLE_CLIENT_ID_WEB` = same Web Client ID as web app
    - `WEB_CORS_ORIGINS=http://localhost:5173`
    - `user_roles` includes `coordinator` for your dashboard Gmail ([coordinator-seed.sql](../configuration/coordinator-seed.sql))
@@ -685,8 +731,8 @@ No **client secret** in any `.env` for this flow.
 
 ```powershell
 cd D:\kannan\sharingbridge\sharingbridge-web-app
-copy .env.example .env
-# Edit .env: VITE_GOOGLE_CLIENT_ID, API URLs
+copy env.example .env
+# Edit .env: VITE_GOOGLE_CLIENT_ID, API URLs (or copy env.localtest / env.render)
 npm install
 npm run dev
 ```
@@ -705,7 +751,8 @@ npm run dev
 1. After at least one successful mobile **Help a seeker** copy (**§3f**) on the **same** integration host (`localhost:8080` or hosted URL), click **Refresh** on the web dashboard.
 2. List shows **all** donors’ intents; each row includes the donor **`user_id`** assigned by user-service at Google sign-in.
 3. Detail should match mobile **Order initiation history** (**§3g**) for that donor — same reference id, pack id, status, notes, preset snapshot.
-4. Select a row to open the detail pane.
+4. If the donor attached a reference photo, detail shows a **thumbnail** and **Open full image (Cloudinary)** link (`reference_photo_view_url`).
+5. Select a row to open the detail pane.
 
 ### 4d. Empty list / mismatch
 
@@ -786,5 +833,5 @@ If suggest-vendors or instruction-pack fail, verify `AI_ORCHESTRATION_BASE_URL`,
   saving new picks (full mock list remains after save; **Saved presets** shows server truth),
   and falling back to the local cache when the backend is offline.
 - Step **2i** returns a non-empty `delivery_instructions` string when orchestration is enabled.
-- Step **3f** walks **Help a seeker** (guidance → photo/notes + instruction-pack API or fallback → copy + vendor links; repeat copy updates the same order initiation).
-- Step **4c** shows the coordinator web dashboard listing donor order intents (including donor `user_id`) after mobile **§3f** on the same integration host.
+- Step **3f** walks **Help a seeker** (guidance → optional photo upload to photo-service + instruction-pack → copy + vendor links; repeat copy updates the same order initiation).
+- Step **4c** shows the coordinator web dashboard listing donor order intents (including donor `user_id` and reference photo thumbnail when uploaded) after mobile **§3f** on the same integration host.

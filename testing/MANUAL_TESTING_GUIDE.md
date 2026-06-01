@@ -317,6 +317,8 @@ copy env.example .env
 # Edit .env: same DATABASE_URL and AUTH_TOKEN_SECRET as user-service; PHOTO_UPLOAD_MOCK=true OR Cloudinary keys
 ```
 
+You only copy once; **edit `.env` before the first `uvicorn`** (and before `pytest` if you run tests). The service reads `.env` at startup — not after it is already running.
+
 **Every run** (with user-service and integration-service already up):
 
 ```powershell

@@ -47,7 +47,7 @@ Copy `env.example` to `.env`:
 | `VITE_GOOGLE_CLIENT_ID` | Web OAuth client ID (same as `GOOGLE_CLIENT_ID_WEB`) |
 | `VITE_DEFAULT_USER_ID` | Optional pre-fill for dev sign-in form only |
 
-Optional dev/MVP flags: [environment-variables.md](./environment-variables.md).
+Full variable list: [environment-variables.md](./environment-variables.md) § web-app. Optional dev/MVP flags: same doc § Optional flags.
 
 Secrets are **not** in `.env` for production builds.
 

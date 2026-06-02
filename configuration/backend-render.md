@@ -59,78 +59,20 @@ Without `DATABASE_URL` (and DB-enabled code), services still use JSON on disk (n
 
 ## Environment variables
 
-See [authentication.md](./authentication.md) for secret generation.
+**Full per-service tables:** [environment-variables.md](./environment-variables.md) (local + Render columns, mobile `--dart-define`, optional dev/MVP flags).
 
-### `sharingbridge-user-service`
+Secret generation: [authentication.md](./authentication.md). Postgres: [database.md](./database.md).
 
-| Key | Value |
-|-----|--------|
-| `WEB_CORS_ORIGINS` | On Render: `https://<static-site>.onrender.com` (see § WEB_CORS_ORIGINS). Local `.env`: `http://localhost:5173` |
-| `GOOGLE_CLIENT_ID_WEB` | Web OAuth client ID (same as `VITE_GOOGLE_CLIENT_ID`) |
-| `GOOGLE_CLIENT_ID_ANDROID` | Android OAuth client ID (when mobile uses Google) |
-| `DATABASE_URL` | **Supabase** database URI (same on integration-service) — [database.md](./database.md) |
-| `BYPASS_GOOGLE_SIGN_IN` | `false` on Render |
-| `AUTH_TOKEN_SECRET` | generated |
-| `AUTH_TOKEN_ISSUER` | `sharingbridge-user-service` |
-| `AUTH_TOKEN_AUDIENCE` | `sharingbridge-clients` |
-| `AUTH_TOKEN_TTL_SECONDS` | `3600` |
+**Render reminders:**
 
-Optional (legacy JSON mode only): persistent disk at `/app/data`. Not needed when using Postgres.
+- Do **not** set `PORT` on Node services (Render injects it).
+- `DATABASE_URL` + `AUTH_TOKEN_SECRET` must match on user-service, integration-service, and photo-service.
+- `WEB_CORS_ORIGINS` must be the **same string** on user-service and integration-service.
+- Web static site: set `VITE_*` at **build** time; redeploy after changing them.
+- Do **not** set `BYPASS_GOOGLE_SIGN_IN`, `ALLOW_WEB_DASHBOARD_ANY_USER`, or web `VITE_*` bypass/MVP flags on production Render.
+- photo-service: **Docker** — keep Render **Start Command** blank (`Dockerfile` + `start.sh`).
 
-### `sharingbridge-ai-orchestration`
-
-| Key | Value |
-|-----|--------|
-| `AI_ORCHESTRATION_INTERNAL_API_KEY` | same as integration |
-| `AI_LLM_MODE` | `deterministic` |
-| `SHARINGBRIDGE_WEBSITE_URL` | `pending` |
-| `OPENAI_API_KEY` | omit for MVP |
-
-### `sharingbridge-integration-service`
-
-| Key | Value |
-|-----|--------|
-| `AUTH_TOKEN_SECRET` | same as user-service |
-| `AUTH_TOKEN_ISSUER` | `sharingbridge-user-service` |
-| `AUTH_TOKEN_AUDIENCE` | `sharingbridge-clients` |
-| `PREFERENCES_BACKEND` | `user_service` |
-| `USER_SERVICE_BASE_URL` | `https://<user-host>` (no trailing `/`) |
-| `AI_ORCHESTRATION_BASE_URL` | `https://<ai-host>` (no trailing `/`) |
-| `AI_ORCHESTRATION_INTERNAL_API_KEY` | same as ai-orchestration |
-| `AI_ORCHESTRATION_TIMEOUT_MS` | `15000` |
-| `WEB_CORS_ORIGINS` | web app origin(s), e.g. `http://localhost:5173` or your static site URL (comma-separated) |
-| `DATABASE_URL` | Same Postgres **internal** URL as user-service — [database.md](./database.md) |
-| `AI_SUGGEST_VENDORS_ENABLED` | `true` |
-| `AI_INSTRUCTION_PACK_ENABLED` | `true` |
-
-Do not set `PORT` (Render injects it).
-
-### `sharingbridge-photo-service`
-
-| Key | Value |
-|-----|--------|
-| `DATABASE_URL` | **Same** Supabase URI as user-service / integration — [database.md](./database.md) (`photo_artifacts` in `schema.sql`) |
-| `AUTH_TOKEN_SECRET` | **Same** as user-service |
-| `AUTH_TOKEN_ISSUER` | `sharingbridge-user-service` |
-| `AUTH_TOKEN_AUDIENCE` | `sharingbridge-clients` |
-| `PHOTO_UPLOAD_MOCK` | `true` until Cloudinary is configured (fake URLs for smoke tests) |
-| `CLOUDINARY_CLOUD_NAME` / `CLOUDINARY_API_KEY` / `CLOUDINARY_API_SECRET` | When using real uploads; then set `PHOTO_UPLOAD_MOCK=false` |
-
-**Docker:** `Dockerfile` + `start.sh`. **Start Command** in Render UI must stay **blank**.
-
-**Mobile (hosted):** `--dart-define=PHOTO_SERVICE_BASE_URL=https://<photo-host>.onrender.com` (no trailing `/`).
-
-### `sharingbridge-web-app` (static site)
-
-Not a Web Service — use **Static Site** (or `runtime: static` in `render.yaml`).
-
-| Key | Value |
-|-----|--------|
-| `VITE_API_BASE_URL` | `https://<integration-host>.onrender.com` |
-| `VITE_USER_SERVICE_BASE_URL` | `https://<user-host>.onrender.com` |
-| `VITE_GOOGLE_CLIENT_ID` | Same Web OAuth client ID as `GOOGLE_CLIENT_ID_WEB` |
-
-Do **not** set dev/MVP unlock flags on Render production — [environment-variables.md](./environment-variables.md). After deploy, complete [e2e-deployment-sequence.md](./e2e-deployment-sequence.md) Phase 4 (Google origins + `WEB_CORS_ORIGINS`).
+After deploy, complete [e2e-deployment-sequence.md](./e2e-deployment-sequence.md) Phase 4 (Google origins + `WEB_CORS_ORIGINS`).
 
 ### `WEB_CORS_ORIGINS` — local laptop vs Render (both backends)
 

@@ -8,10 +8,10 @@
 | **Local only (laptop)** | Phase 0–1 in [e2e-deployment-sequence.md](./e2e-deployment-sequence.md) → [MANUAL_TESTING_GUIDE.md](../testing/MANUAL_TESTING_GUIDE.md) §3 (mobile) / §4 (web) |
 | **Deploy to Render** | [e2e-deployment-sequence.md](./e2e-deployment-sequence.md) Phases **2–5** → [backend-render.md](./backend-render.md) for env keys per service |
 | **Google OAuth / coordinator seed** | [google-auth-setup.md](./google-auth-setup.md) |
-| **Dev or MVP unlock flags** | [environment-variables.md](./environment-variables.md) only |
+| **All env vars (every service)** | [environment-variables.md](./environment-variables.md) |
 | **Troubleshoot sign-in / CORS / roles** | [authentication.md](./authentication.md) + [google-auth-setup.md](./google-auth-setup.md) |
 
-**Per-repo env:** copy each repo’s `env.example` → `.env` (gitignored). Details: [environment-variables.md](./environment-variables.md) for optional flags; service-specific keys in the docs below.
+**Per-repo env:** copy each repo’s `env.example` → `.env` (gitignored). Full index: [environment-variables.md](./environment-variables.md).
 
 ---
 
@@ -46,10 +46,11 @@ Optional branches (any time after Phase 1):
 | When you need… | Document |
 |----------------|----------|
 | **Step-by-step deploy order** | [e2e-deployment-sequence.md](./e2e-deployment-sequence.md) |
-| **Render env per service** | [backend-render.md](./backend-render.md) |
+| **All env vars by service** | [environment-variables.md](./environment-variables.md) |
+| **Render deploy (blueprint, CORS)** | [backend-render.md](./backend-render.md) |
 | **Supabase / Postgres / schema** | [database.md](./database.md) · [schema.sql](./schema.sql) · [coordinator-seed.sql](./coordinator-seed.sql) |
 | **Auth, JWT, roles, 403 errors** | [authentication.md](./authentication.md) |
-| **Dev/MVP env flags & production guard** | [environment-variables.md](./environment-variables.md) |
+| **All environment variables** | [environment-variables.md](./environment-variables.md) |
 | **Google Console clicks** | [google-auth-setup.md](./google-auth-setup.md) |
 | **Web dashboard (Vite, CORS)** | [web-client.md](./web-client.md) |
 | **Mobile URLs (emulator, phone, Wi‑Fi)** | [mobile-client.md](./mobile-client.md) |

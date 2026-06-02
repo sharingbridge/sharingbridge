@@ -248,7 +248,7 @@ Invoke-RestMethod http://localhost:8080/health
 5. Next visit on the same browser: sign-in page shows **Last signed in as** *email* and **Use a different Google account** (disconnects that Google profile from this app, then reloads).
 6. **Refresh** on the dashboard shows order initiations (after a donor registers one on mobile).
 
-**Without Google yet:** set `VITE_BYPASS_GOOGLE_SIGN_IN=true`, ensure `BYPASS_GOOGLE_SIGN_IN=true`, use **Dev sign in** on the web page.
+**Without Google yet:** set `VITE_BYPASS_GOOGLE_SIGN_IN=true`, ensure `BYPASS_GOOGLE_SIGN_IN=true`, use **Sign in without Google** on the web page.
 
 ### 6.2 Donor (mobile)
 
@@ -270,7 +270,7 @@ flutter run -d emulator-5554 `
 3. Complete **Help a seeker** → copy instructions to register an order intent.
 4. On web (coordinator), **Refresh** — you should see that intent (with donor `user_id` in the list).
 
-**Without Google yet:** keep using dev mint:
+**Without Google yet:** use bypass sign-in (`BYPASS_GOOGLE_SIGN_IN`) or dev token mint:
 
 ```powershell
 $token = (Invoke-RestMethod -Method POST -Uri http://localhost:8081/v1/auth/token `

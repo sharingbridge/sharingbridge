@@ -24,15 +24,13 @@ Restart Node after `.env` changes. Restart `npm run dev` (or redeploy static sit
 | `VITE_ALLOW_ANY_USER_WEB_DASHBOARD` | web (build-time) | MVP sign-in copy; pairs with `ALLOW_WEB_DASHBOARD_ANY_USER`. |
 | `DEPLOYMENT_ENV` | user-service | `production` \| `staging` \| `development` — production guard (below). |
 
-**Legacy aliases (still work):** `ALLOW_DEV_TOKEN_MINT`, `ALLOW_DEV_SIGN_IN`, `ALLOW_GOOGLE_SIGN_IN_BYPASS`, `VITE_ALLOW_DEV_SIGN_IN`, `VITE_ALLOW_GOOGLE_SIGN_IN_BYPASS`.
-
 ---
 
 ## Production guard (code)
 
 Enforced in **user-service only**. Bypass and MVP flags are **forced off** in production:
 
-- `BYPASS_GOOGLE_SIGN_IN` (+ legacy aliases)
+- `BYPASS_GOOGLE_SIGN_IN`
 - `ALLOW_WEB_DASHBOARD_ANY_USER`
 
 Production when `DEPLOYMENT_ENV=production`, or `NODE_ENV=production` on Render (`RENDER=true`).

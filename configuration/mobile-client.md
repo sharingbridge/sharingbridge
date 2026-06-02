@@ -56,7 +56,7 @@ Full walkthrough: [MANUAL_TESTING_GUIDE.md](../testing/MANUAL_TESTING_GUIDE.md) 
 
 ## `dart-define` (hosted Render, dev token)
 
-For production-style donor sign-in on device, use **Google Sign-In** with hosted `USER_SERVICE_BASE_URL` and `GOOGLE_CLIENT_ID` (see [e2e-deployment-sequence.md](./e2e-deployment-sequence.md)). The flow below uses **dev mint** (requires `BYPASS_GOOGLE_SIGN_IN=true` on hosted user-service — off in production).
+For production-style donor sign-in on device, use **Google Sign-In** with hosted `USER_SERVICE_BASE_URL` and `GOOGLE_CLIENT_ID` (see [e2e-deployment-sequence.md](./e2e-deployment-sequence.md)). The flow below uses **bypass sign-in** / token mint (requires `BYPASS_GOOGLE_SIGN_IN=true` on hosted user-service — off in production).
 
 Run in **this order** in the same PowerShell window:
 

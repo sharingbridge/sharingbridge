@@ -23,6 +23,20 @@ Repository: `sharingbridge-web-app` (Vite + React).
 
 **Dev / MVP unlock flags** (optional): [environment-variables.md](./environment-variables.md).
 
+Sign-in errors from user-service include a `reason` when web access is denied (e.g. `mvp_disabled_production` on Render with `DEPLOYMENT_ENV=production`, or `coordinator_required` when the account is donor-only). The UI shows that message instead of a generic “set ALLOW_WEB_DASHBOARD…” hint.
+
+### Order list grouping (coordinator dashboard)
+
+After sign-in, the initiation list can be grouped:
+
+| Mode | Behavior |
+|------|----------|
+| **By donor** | Sections per `user_id` (default for coordinators) |
+| **By day** | Sections per calendar day (newest first) |
+| **By city (soon)** | Disabled until city is stored on order intents in the API |
+
+**Home** in the header clears the selected row and scrolls to the top. **Refresh** reloads from integration-service.
+
 ### Sign-in screen (first visit vs returning)
 
 | Situation | What you see |

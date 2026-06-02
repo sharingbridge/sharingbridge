@@ -781,9 +781,10 @@ Walk through **§3f**; step 4 must show **Donation intent registered** (or **upd
 ### 3g. Order initiation history (mobile dashboard)
 
 1. From the home hub, tap **Order initiation history** (listed after **Help a seeker**).
-2. The app calls `GET /v1/donor-seeker/order-intents` with your Bearer token (newest first).
+2. The app calls `GET /v1/donor-seeker/order-intents` with your Bearer token (newest first). Rows are grouped **by day**.
 3. After at least one successful **Help a seeker** copy (§3f), you should see a row with the same reference id. Pull to refresh after registering another intent.
 4. Tap a row → detail shows pack id, status, notes, preset snapshot, and whether a reference photo was attached.
+5. Tap **Home** in the app bar → returns to the hub (Vendor presets / Help a seeker / Order initiation history). **Back** only pops one screen.
 
 Empty state is normal before any intent is registered. Requires the same `AUTH_TOKEN` / `API_BASE_URL` as other flows. Coordinator view of the same data: **§4**.
 
@@ -833,16 +834,17 @@ npm run dev
 ### 4c. Order initiation history (coordinator view)
 
 1. After at least one successful mobile **Help a seeker** copy (**§3f**) on the **same** integration host (`localhost:8080` or hosted URL), click **Refresh** on the web dashboard.
-2. List shows **all** donors’ intents; each row includes the donor **`user_id`** assigned by user-service at Google sign-in.
-3. Detail should match mobile **Order initiation history** (**§3g**) for that donor — same reference id, pack id, status, notes, preset snapshot.
-4. If the donor attached a reference photo, detail shows a **thumbnail** and **Open full image (Cloudinary)** link (`reference_photo_view_url`).
-5. Select a row to open the detail pane.
+2. List shows **all** donors’ intents. Use **By donor** or **By day** above the list (**By city** is reserved for a future API field).
+3. Each row includes the donor **`user_id`**; detail pane shows **Donor** explicitly.
+4. Detail should match mobile **Order initiation history** (**§3g**) for that donor — same reference id, pack id, status, notes, preset snapshot.
+5. If the donor attached a reference photo, detail shows a **thumbnail** and **Open full image (Cloudinary)** link (`reference_photo_view_url`).
+6. **Home** in the header clears the selected row and scrolls to the top.
 
 ### 4d. Empty list / mismatch
 
 - Coordinators see intents for **every** donor on **that** integration API host. An empty list usually means no donor has registered an intent on **this** host yet (localhost vs Render are separate stores).
 - `VITE_API_BASE_URL` must match mobile `API_BASE_URL` (both localhost or both Render URLs).
-- `403 wrong_client_role` on web: no `coordinator` in `user_roles` for that Gmail, or donor-only account used on web.
+- `403 wrong_client_role` on web: no `coordinator` in `user_roles` for that Gmail, donor-only account, or MVP blocked on production Render (`DEPLOYMENT_ENV=production` ignores `ALLOW_WEB_DASHBOARD_ANY_USER`). Read the full error text — it should name the cause (`coordinator_required`, `mvp_disabled_production`, etc.).
 - `403 wrong_client_role` on mobile: account missing `donor` in `user_roles` (rare after sign-in; every user gets `donor` ensured).
 - **Connection refused** on emulator sign-in or API: you used `localhost` in dart-defines — switch both URLs to `http://10.0.2.2:8081` and `http://10.0.2.2:8080` (**§3-host**).
 - **“Network unavailable”** on a **physical phone** with correct `192.168.x.x` dart-defines: phone and PC are on **different networks** (mobile data, other broadband, guest Wi‑Fi) — join the **same Wi‑Fi as the PC**, verify `http://<PC-LAN-IP>:8080/health` in the phone browser, or use **USB + `adb reverse`** (**§3-host**).

@@ -147,13 +147,24 @@ flutter run -d emulator-5554 `
 
 **Web dashboard (coordinator):** [web-client.md](./web-client.md) lists all donors’ order intents when `VITE_API_BASE_URL` matches mobile `API_BASE_URL` (same integration host).
 
+## Navigation (Home)
+
+After sign-in, the app uses an inner navigator with **SharingBridge** (hub) as the root route.
+
+| Screen | App bar |
+|--------|---------|
+| Hub (`AppHomePage`) | Title only — no Back or Home |
+| Vendor presets, Help a seeker, Order initiation history, detail | **Back** + labeled **Home** → returns to the hub |
+
+Rebuild or `flutter run` after pulling; an older APK will not show Home.
+
 ## Main flows
 
 | Screen | Backend |
 |--------|---------|
 | Vendor presets | integration — suggest-vendors, save/load presets |
 | Help a seeker | instruction-pack + `POST …/order-intents` on copy — see [field-handoff.md](./field-handoff.md) |
-| Order initiation history | `GET …/order-intents` — list and detail on home hub (after Help a seeker) |
+| Order initiation history | `GET …/order-intents` — list grouped **by day**, detail on tap |
 
 Offline: presets may cache in `shared_preferences` when integration is unreachable.
 

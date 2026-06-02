@@ -34,7 +34,7 @@ Every Google user gets **`donor`** ensured at sign-in. **`coordinator`** is gran
 
 JWT also includes `roles` (full array). Integration-service enforces the minted `role` per endpoint.
 
-Wrong combination → HTTP **403** `wrong_client_role` (e.g. web sign-in without `coordinator`, or mobile without `donor`).
+Wrong combination → HTTP **403** `wrong_client_role` with a `reason` and message (e.g. `coordinator_required`, `mvp_disabled_production`, `no_donor_role`). Web sign-in without `coordinator` (and without MVP flags on user-service), or mobile without `donor`.
 
 ---
 

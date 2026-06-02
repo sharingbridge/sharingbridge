@@ -23,6 +23,15 @@ Repository: `sharingbridge-web-app` (Vite + React).
 
 **Local dev fallback:** `VITE_ALLOW_DEV_SIGN_IN=true` + user-service `ALLOW_DEV_TOKEN_MINT=true` → **Dev sign in** (coordinator role). See [google-auth-setup.md](./google-auth-setup.md).
 
+**MVP — any logged-in donor on web:** set **both** flags (omit or `false` in production):
+
+| Where | Variable | Value |
+|-------|----------|--------|
+| Web (build-time) | `VITE_ALLOW_ANY_USER_WEB_DASHBOARD` | `true` |
+| user-service | `ALLOW_WEB_DASHBOARD_ANY_USER` | `true` |
+
+Donor Google accounts then receive a coordinator JWT for the dashboard API (same as seeding `coordinator` in `user_roles`). Production: leave both unset.
+
 ### Sign-in screen (first visit vs returning)
 
 | Situation | What you see |

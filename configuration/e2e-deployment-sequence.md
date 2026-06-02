@@ -245,11 +245,12 @@ Optional: `VITE_ALLOW_DEV_SIGN_IN=true` only with `ALLOW_DEV_TOKEN_MINT=true` on
 
 **Supabase (Render):** create project → SQL Editor → `schema.sql` → copy database URI → `DATABASE_URL` on both Node services → redeploy.
 
-Deploy in order — [backend-render.md](./backend-render.md):
+Deploy in order — [backend-render.md](./backend-render.md). Each repo’s **`render.yaml`** enables **auto-deploy on push to `main`** when connected via Render Blueprint (or enable **On Commit** in the dashboard).
 
 1. **user-service** (Web Service, Node 20).
 2. **ai-orchestration** (Docker) — if integration uses AI paths.
 3. **integration-service** (Web Service, Node 20).
+4. **photo-service** (Docker) — reference photo upload from mobile.
 
 ### user-service (Render environment)
 
@@ -276,7 +277,18 @@ Note the two public URLs:
 - `https://<your-user-service>.onrender.com`
 - `https://<your-integration-service>.onrender.com`
 
-**Checkpoint:** `GET …/health` succeeds on both hosted services.
+**Checkpoint:** `GET …/health` succeeds on user-service, integration-service, and photo-service.
+
+### photo-service (Render environment)
+
+| Variable | Production value |
+|----------|------------------|
+| `DATABASE_URL` | **Same** as user-service — [database.md](./database.md) |
+| `AUTH_TOKEN_SECRET` | **Same** as user-service |
+| `PHOTO_UPLOAD_MOCK` | `true` until Cloudinary credentials are set |
+| `CLOUDINARY_*` | Optional; set when using real uploads (`PHOTO_UPLOAD_MOCK=false`) |
+
+**Mobile:** `PHOTO_SERVICE_BASE_URL=https://<your-photo-service>.onrender.com`
 
 ---
 
@@ -284,10 +296,14 @@ Note the two public URLs:
 
 **Depends on:** Phase 2 URLs if the dashboard should call **hosted** APIs (recommended).
 
-1. [Render Dashboard](https://dashboard.render.com/) → **New +** → **Static Site**.
-2. Repo: `sharingbridge-web-app`, branch `main`.
-3. **Build command:** `npm install && npm run build`
-4. **Publish directory:** `dist` (Vite output folder — not source `src/`)
+**Option A — Blueprint (recommended):** [Render Dashboard](https://dashboard.render.com/) → **New +** → **Blueprint** → repo `sharingbridge-web-app` → apply root `render.yaml` → set `VITE_GOOGLE_CLIENT_ID` when prompted.
+
+**Option B — Manual static site:**
+
+1. **New +** → **Static Site** → repo `sharingbridge-web-app`, branch `main`.
+2. **Build command:** `npm install && npm run build`
+3. **Publish directory:** `dist`
+4. **Settings → Build & Deploy → Auto-Deploy:** **On Commit** (if deploys only happen when you click Manual Deploy, turn this on).
 5. **Environment** (build-time — set before first deploy):
 
 | Key | Value |
@@ -299,6 +315,8 @@ Note the two public URLs:
 Do **not** set `VITE_ALLOW_DEV_SIGN_IN` on Render.
 
 6. Deploy → copy static site URL, e.g. `https://sharingbridge-web.onrender.com`.
+
+**Auto-deploy:** every push to `main` rebuilds the site when Auto-Deploy is on. Changing `VITE_*` in the dashboard requires waiting for that deploy (not hot reload).
 
 **Checkpoint:** site loads in browser; Google button may appear but sign-in may fail until Phase 4.
 

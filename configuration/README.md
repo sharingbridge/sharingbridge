@@ -5,7 +5,7 @@ Operational and deployment configuration by application area. **Full doc map:** 
 | Document | Scope |
 |----------|--------|
 | [e2e-deployment-sequence.md](./e2e-deployment-sequence.md) | **Start here:** phased order (Google → local → Render backends → static site → CORS) |
-| [backend-render.md](./backend-render.md) | Host user-service, ai-orchestration, and integration-service on Render |
+| [backend-render.md](./backend-render.md) | Host backends + photo-service + web static site on Render (`render.yaml`, auto-deploy) |
 | [authentication.md](./authentication.md) | Google Sign-In, JWT roles, internal API key |
 | [database.md](./database.md) | **Supabase** + local Postgres (manual steps), [schema.sql](./schema.sql) |
 | [Future Extensions](../design/Future_Extensions.md) | Roadmap: donor payment status, delivery proof, demand/vendor bidding |

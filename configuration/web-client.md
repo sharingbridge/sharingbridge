@@ -86,10 +86,15 @@ Coordinators see **all** donors’ order intents on the integration host pointed
 
 ## Deploy (Render static site)
 
+**Blueprint (auto-deploy on `main`):** repo root `render.yaml` — **New +** → **Blueprint** → `sharingbridge-web-app` → set `VITE_GOOGLE_CLIENT_ID` when prompted. Defaults for API URLs match `env.render`.
+
+**Manual static site:**
+
 1. **New +** → **Static Site** → repo `sharingbridge-web-app`, branch `main`.
 2. **Build command:** `npm install && npm run build`
 3. **Publish directory:** `dist`
-4. **Environment** (build-time — set before first deploy):
+4. **Settings → Build & Deploy → Auto-Deploy:** **On Commit** (fixes “only deploys when I click Manual Deploy”).
+5. **Environment** (build-time — set before first deploy):
 
 | Key | Example |
 |-----|---------|

@@ -22,7 +22,7 @@ The integration and user-service processes listen on **your PC**. The Flutter ap
 | Android emulator | `http://10.0.2.2:8081` | `http://10.0.2.2:8080` | `http://10.0.2.2:8092` |
 | Windows desktop | `http://localhost:8081` | `http://localhost:8080` | `http://localhost:8092` |
 | Physical Android phone | `http://<PC-LAN-IP>:8081` | `http://<PC-LAN-IP>:8080` | `http://<PC-LAN-IP>:8092` |
-| Hosted (Render) | `https://…user-service…` | `https://…integration…` | `https://…` when deployed |
+| Hosted (Render) | `https://…user-service…onrender.com` | `https://…integration…onrender.com` | `https://…photo-service…onrender.com` |
 
 **`<PC-LAN-IP>`** = IPv4 from `ipconfig` (Wi‑Fi adapter), e.g. `192.168.1.3`. Do **not** use `localhost` or `10.0.2.2` on a physical phone.
 

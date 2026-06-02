@@ -7,8 +7,12 @@ Host three **Web Services** for Track A. Credentials: [authentication.md](./auth
 | 1 | `sharingbridge-user-service` | Node 20 | JWT mint; integration |
 | 2 | `sharingbridge-ai-orchestration` | Docker | integration (`/internal/...`) |
 | 3 | `sharingbridge-integration-service` | Node 20 | mobile (`API_BASE_URL`) |
+| 4 | `sharingbridge-photo-service` | Docker | mobile (`PHOTO_SERVICE_BASE_URL`) |
+| 5 | `sharingbridge-web-app` | **Static Site** | coordinator browser |
 
-**Not on Render for MVP:** `sharingbridge-location-safety` (archived), api-gateway, order-service, photo-service.
+**Not on Render for MVP:** `sharingbridge-location-safety` (archived), api-gateway, order-service.
+
+Each repo has a root **`render.yaml`** blueprint. Connect via **New + → Blueprint** (first time) or **Sync** on an existing blueprint so **Auto-Deploy on commit** to `main` stays enabled.
 
 **Do not use:** Static Site, Private Service, Worker, Cron, Key Value (for MVP app data).
 
@@ -28,13 +32,24 @@ Without `DATABASE_URL` (and DB-enabled code), services still use JSON on disk (n
 
 ## Build and deploy settings
 
-| Field | User-service | AI orchestration | Integration |
-|-------|--------------|------------------|-------------|
-| Build Command | `npm install` | *(empty)* | `npm install` |
-| Start Command | `npm start` | **blank** | `npm start` |
-| Pre-Deploy Command | blank | blank | blank |
-| Health Check Path | `/health` | `/health` | `/health` |
-| Auto-Deploy | After CI checks pass | same | same |
+| Field | User-service | AI orchestration | Integration | Photo service |
+|-------|--------------|------------------|-------------|---------------|
+| Build Command | `npm install` | *(empty)* | `npm install` | *(empty — Docker)* |
+| Start Command | `npm start` | **blank** | `npm start` | **blank** |
+| Pre-Deploy Command | blank | blank | blank | blank |
+| Health Check Path | `/health` | `/health` | `/health` | `/health` |
+| Auto-Deploy | **On commit** to `main` | same | same | same |
+
+**Static site (`sharingbridge-web-app`):** Build `npm install && npm run build` · Publish **`dist`** · Auto-Deploy **On commit** · see [web-client.md](./web-client.md).
+
+### Auto-deploy not firing?
+
+1. **Dashboard** → service → **Settings** → **Build & Deploy** → **Auto-Deploy** = **On Commit** (not Off).
+2. **Branch** = `main` (matches `render.yaml`).
+3. **GitHub** repo linked to the correct service (one repo per service).
+4. Pushed to `main` on GitHub (local-only commits do not deploy).
+5. **Existing service created manually?** Either enable auto-deploy above, or **Blueprint → Sync** so `render.yaml` owns settings.
+6. **Static site:** changing `VITE_*` requires a **new deploy** (values are compile-time).
 
 **AI (Docker):** `Dockerfile` + `start.sh`. Non-empty **Start Command** in the UI → **Exited status 1**. Healthy logs: `Starting uvicorn on 0.0.0.0:…`, `GET /health … 200`. `GET /` → 404 is expected.
 
@@ -88,6 +103,33 @@ Optional (legacy JSON mode only): persistent disk at `/app/data`. Not needed whe
 
 Do not set `PORT` (Render injects it).
 
+### `sharingbridge-photo-service`
+
+| Key | Value |
+|-----|--------|
+| `DATABASE_URL` | **Same** Supabase URI as user-service / integration — [database.md](./database.md) (`photo_artifacts` in `schema.sql`) |
+| `AUTH_TOKEN_SECRET` | **Same** as user-service |
+| `AUTH_TOKEN_ISSUER` | `sharingbridge-user-service` |
+| `AUTH_TOKEN_AUDIENCE` | `sharingbridge-clients` |
+| `PHOTO_UPLOAD_MOCK` | `true` until Cloudinary is configured (fake URLs for smoke tests) |
+| `CLOUDINARY_CLOUD_NAME` / `CLOUDINARY_API_KEY` / `CLOUDINARY_API_SECRET` | When using real uploads; then set `PHOTO_UPLOAD_MOCK=false` |
+
+**Docker:** `Dockerfile` + `start.sh`. **Start Command** in Render UI must stay **blank**.
+
+**Mobile (hosted):** `--dart-define=PHOTO_SERVICE_BASE_URL=https://<photo-host>.onrender.com` (no trailing `/`).
+
+### `sharingbridge-web-app` (static site)
+
+Not a Web Service — use **Static Site** (or `runtime: static` in `render.yaml`).
+
+| Key | Value |
+|-----|--------|
+| `VITE_API_BASE_URL` | `https://<integration-host>.onrender.com` |
+| `VITE_USER_SERVICE_BASE_URL` | `https://<user-host>.onrender.com` |
+| `VITE_GOOGLE_CLIENT_ID` | Same Web OAuth client ID as `GOOGLE_CLIENT_ID_WEB` |
+
+Do **not** set `VITE_ALLOW_DEV_SIGN_IN` on Render. After deploy, complete [e2e-deployment-sequence.md](./e2e-deployment-sequence.md) Phase 4 (Google origins + `WEB_CORS_ORIGINS`).
+
 ### `WEB_CORS_ORIGINS` — local laptop vs Render (both backends)
 
 CORS is enforced on **user-service** and **integration-service** (not on the static web repo). The value must list the **browser origin** where the dashboard runs (scheme + host + port), not the API URL.
@@ -135,6 +177,8 @@ Web app: `sharingbridge-web-app/.env` from `env.example` (`VITE_*` URLs). Rebuil
 2. user-service → URL + `AUTH_TOKEN_SECRET` + `DATABASE_URL`
 3. ai-orchestration → URL + API key + `SHARINGBRIDGE_WEBSITE_URL=pending`
 4. integration-service → both URLs + both secrets + `DATABASE_URL`
+5. photo-service → same `DATABASE_URL` + `AUTH_TOKEN_SECRET` (+ Cloudinary or `PHOTO_UPLOAD_MOCK=true`)
+6. web-app static site → `VITE_*` → then Phase 4 CORS + Google origins
 
 Blueprints: each repo’s `render.yaml`. Integration still needs pasted URLs and `AUTH_TOKEN_SECRET` after 1–2 exist.
 
@@ -146,10 +190,12 @@ Blueprints: each repo’s `render.yaml`. Integration still needs pasted URLs and
 $USER_URL = "https://sharingbridge-user-service.onrender.com"
 $INT_URL  = "https://sharingbridge-integration-service.onrender.com"
 $AI_URL   = "https://sharingbridge-ai-orchestration.onrender.com"
+$PHO_URL  = "https://sharingbridge-photo-service.onrender.com"
 
 Invoke-RestMethod "$USER_URL/health"
 Invoke-RestMethod "$AI_URL/health"
 Invoke-RestMethod "$INT_URL/health"
+Invoke-RestMethod "$PHO_URL/health"
 
 $token = (Invoke-RestMethod -Method POST -Uri "$USER_URL/v1/auth/token" `
   -ContentType "application/json" -Body '{"user_id":"demo-user"}').token

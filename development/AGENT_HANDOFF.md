@@ -86,7 +86,7 @@ The **donor-setup slice** that is live in code is intentionally a **minimal MVP*
 
 ### `sharingbridge-user-service`
 - **`PostgresUserStore`** + **`POST /v1/auth/google`** (roles from `user_roles`; coordinator via [coordinator-seed.sql](../configuration/coordinator-seed.sql)).
-- `POST /v1/auth/token` (dev mint when `ALLOW_DEV_TOKEN_MINT=true`).
+- `POST /v1/auth/token` (dev mint when `BYPASS_GOOGLE_SIGN_IN=true`).
 - `GET/PUT /v1/users/{user_id}/donor-presets`, **`POST …/delete-item`**; JWT HS256 mint/verify.
 - **37+** Node tests; CI on push/PR.
 

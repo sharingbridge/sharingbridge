@@ -175,7 +175,7 @@ WEB_CORS_ORIGINS=http://localhost:5173
 GOOGLE_CLIENT_ID_WEB=123456789-xxxx.apps.googleusercontent.com
 GOOGLE_CLIENT_ID_ANDROID=123456789-yyyy.apps.googleusercontent.com
 
-ALLOW_DEV_TOKEN_MINT=true
+BYPASS_GOOGLE_SIGN_IN=true
 ```
 
 `AUTH_TOKEN_SECRET` must **match** integration-service (see below).
@@ -210,7 +210,7 @@ VITE_USER_SERVICE_BASE_URL=http://localhost:8081
 VITE_GOOGLE_CLIENT_ID=<same as GOOGLE_CLIENT_ID_WEB>
 
 # Optional: skip Google until clients are ready
-# VITE_ALLOW_DEV_SIGN_IN=true
+# VITE_BYPASS_GOOGLE_SIGN_IN=true
 # VITE_DEFAULT_USER_ID=demo-coordinator
 ```
 
@@ -248,7 +248,7 @@ Invoke-RestMethod http://localhost:8080/health
 5. Next visit on the same browser: sign-in page shows **Last signed in as** *email* and **Use a different Google account** (disconnects that Google profile from this app, then reloads).
 6. **Refresh** on the dashboard shows order initiations (after a donor registers one on mobile).
 
-**Without Google yet:** set `VITE_ALLOW_DEV_SIGN_IN=true`, ensure `ALLOW_DEV_TOKEN_MINT=true`, use **Dev sign in** on the web page.
+**Without Google yet:** set `VITE_BYPASS_GOOGLE_SIGN_IN=true`, ensure `BYPASS_GOOGLE_SIGN_IN=true`, use **Dev sign in** on the web page.
 
 ### 6.2 Donor (mobile)
 
@@ -308,7 +308,7 @@ Yes — deploy the web app on [Render Static Sites](https://render.com/docs/stat
    | `VITE_USER_SERVICE_BASE_URL` | `https://sharingbridge-user-service.onrender.com` |
    | `VITE_GOOGLE_CLIENT_ID` | Same **Web** OAuth client ID as local (`….apps.googleusercontent.com`) |
 
-   Do **not** set `VITE_ALLOW_DEV_SIGN_IN` on Render (production).
+   Do **not** set `VITE_BYPASS_GOOGLE_SIGN_IN` on Render (production).
 
 5. Deploy → copy the site URL, e.g. `https://sharingbridge-web.onrender.com`  
    (Render shows it on the static site **Settings** page.)
@@ -354,7 +354,7 @@ Also on **user-service** (Render):
 ```env
 GOOGLE_CLIENT_ID_WEB=<web client id>
 GOOGLE_CLIENT_ID_ANDROID=<android client id>
-ALLOW_DEV_TOKEN_MINT=false
+BYPASS_GOOGLE_SIGN_IN=false
 ```
 
 ### 7.4 Coordinator role on Render / Supabase
@@ -389,7 +389,7 @@ Details: [backend-render.md](./backend-render.md), [web-client.md](./web-client.
 | Google popup “access blocked” | App in Testing, user not a test user | Add Gmail under OAuth consent → **Test users** |
 | `Failed to fetch` on sign-in | CORS | `WEB_CORS_ORIGINS=http://localhost:5173` on **both** user-service and integration-service; restart |
 | Android sign-in fails | Wrong SHA-1 or package name | Re-create Android OAuth client with debug SHA-1 + correct `applicationId` |
-| `dev_auth_disabled` | Dev mint off | Set `ALLOW_DEV_TOKEN_MINT=true` for local dev only |
+| `dev_auth_disabled` | Dev mint off | Set `BYPASS_GOOGLE_SIGN_IN=true` for local dev only |
 | Wrong Google account on sign-in button | Chrome / GIS remembers last account | **Use a different Google account** (after at least one prior sign-in on this browser), or **Sign in with Google** → **Use another account** in Google’s dialog; or **Sign out** then sign in again |
 
 Verify Google token manually (optional):

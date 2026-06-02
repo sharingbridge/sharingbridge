@@ -653,7 +653,7 @@ Replace `emulator-5554` with your `flutter devices` id.
 
 ### 3-dev. Dev token path (fallback, no Google)
 
-Requires `ALLOW_DEV_TOKEN_MINT=true` on user-service. Mint the token on the **PC** (`localhost:8081`); the app still uses **`10.0.2.2`** to reach the same servers from the emulator.
+Requires `BYPASS_GOOGLE_SIGN_IN=true` on user-service. Mint the token on the **PC** (`localhost:8081`); the app still uses **`10.0.2.2`** to reach the same servers from the emulator.
 
 ```powershell
 $mobileToken = (Invoke-RestMethod -Method Post -Uri http://localhost:8081/v1/auth/token `
@@ -762,7 +762,7 @@ Use [configuration/mobile-client.md](../configuration/mobile-client.md). Public 
 In one PowerShell session:
 
 1. `cd` to `sharingbridge-mobile-app` (`Test-Path .\pubspec.yaml` is `True`).
-2. Mint JWT: `POST https://sharingbridge-user-service.onrender.com/v1/auth/token` with `{"user_id":"demo-user"}` (only if `ALLOW_DEV_TOKEN_MINT=true` on Render; production uses Google Sign-In with hosted `USER_SERVICE_BASE_URL`).
+2. Mint JWT: `POST https://sharingbridge-user-service.onrender.com/v1/auth/token` with `{"user_id":"demo-user"}` (only if `BYPASS_GOOGLE_SIGN_IN=true` on Render; production uses Google Sign-In with hosted `USER_SERVICE_BASE_URL`).
 3. Emulator example:
 
 ```powershell
@@ -801,7 +801,7 @@ Complete [configuration/e2e-deployment-sequence.md](../configuration/e2e-deploym
    - `GOOGLE_CLIENT_ID_WEB` = same Web Client ID as web app
    - `WEB_CORS_ORIGINS=http://localhost:5173`
    - `user_roles` includes `coordinator` for your dashboard Gmail ([coordinator-seed.sql](../configuration/coordinator-seed.sql))
-   - `ALLOW_DEV_TOKEN_MINT=true` only if using **Dev sign in** (optional)
+   - `BYPASS_GOOGLE_SIGN_IN=true` only if using **Dev sign in** (optional)
 2. **integration-service** — `WEB_CORS_ORIGINS=http://localhost:5173`, same `AUTH_TOKEN_SECRET` as user-service. Restart after edits.
 3. **sharingbridge-web-app** — `.env`:
    - `VITE_GOOGLE_CLIENT_ID` = Web Client ID
@@ -828,7 +828,7 @@ npm run dev
 5. **Sign out** clears sessionStorage and GIS auto-select for this app.
 6. **Returning visit:** sign-in page shows **Last signed in as** *email* and **Use a different Google account** (another Gmail with `coordinator` in `user_roles`). After revoke, reload and sign in with the other account.
 
-**Dev fallback:** `VITE_ALLOW_DEV_SIGN_IN=true` on web + `ALLOW_DEV_TOKEN_MINT=true` on user-service → **Dev sign in** with a coordinator user id.
+**Dev fallback:** `VITE_BYPASS_GOOGLE_SIGN_IN=true` on web + `BYPASS_GOOGLE_SIGN_IN=true` on user-service → **Dev sign in** with a coordinator user id.
 
 ### 4c. Order initiation history (coordinator view)
 

@@ -186,7 +186,7 @@ copy env.example .env
 |----------|-------------------|
 | `GOOGLE_CLIENT_ID_WEB` | Same Web Client ID from Phase 0 |
 | `WEB_CORS_ORIGINS` | `http://localhost:5173` only (local laptop `.env`; not the Render URL) |
-| `ALLOW_DEV_TOKEN_MINT` | `true` (local only) |
+| `BYPASS_GOOGLE_SIGN_IN` | `true` (local only) |
 | `AUTH_TOKEN_SECRET` | Shared secret (match integration-service) |
 
 Coordinator role: Postgres `user_roles` — [coordinator-seed.sql](./coordinator-seed.sql) · [google-auth-setup.md](./google-auth-setup.md) Part 3.
@@ -217,7 +217,7 @@ copy env.example .env
 | `VITE_API_BASE_URL` | `http://localhost:8080` |
 | `VITE_USER_SERVICE_BASE_URL` | `http://localhost:8081` |
 
-Optional: `VITE_ALLOW_DEV_SIGN_IN=true` only with `ALLOW_DEV_TOKEN_MINT=true` on user-service.
+Optional: `VITE_BYPASS_GOOGLE_SIGN_IN=true` only with `BYPASS_GOOGLE_SIGN_IN=true` on user-service.
 
 ### 1.4 Run and verify
 
@@ -261,7 +261,7 @@ Deploy in order — [backend-render.md](./backend-render.md). Each repo’s **`r
 | `AUTH_TOKEN_SECRET` | Strong secret; **same** on integration-service |
 | `GOOGLE_CLIENT_ID_WEB` | Web Client ID from Phase 0 |
 | `GOOGLE_CLIENT_ID_ANDROID` | Android Client ID (when mobile uses Google) |
-| `ALLOW_DEV_TOKEN_MINT` | `false` |
+| `BYPASS_GOOGLE_SIGN_IN` | `false` |
 | `DATABASE_URL` | **Supabase** Postgres URI (DB mode) — [database.md](./database.md) |
 | `WEB_CORS_ORIGINS` | Optional until Phase 4: `http://localhost:5173` if you test local Vite against hosted APIs; otherwise set in Phase 4 |
 
@@ -383,7 +383,7 @@ Manual test steps: [MANUAL_TESTING_GUIDE.md](../testing/MANUAL_TESTING_GUIDE.md)
 
 - [ ] **0** Google Web OAuth client; `http://localhost:5173` in JS origins; Client ID saved
 - [ ] **1** Local `.env` on user-service, integration-service, web-app; local Google sign-in works
-- [ ] **2** Render user-service + integration-service; shared `AUTH_TOKEN_SECRET`; `ALLOW_DEV_TOKEN_MINT=false`; coordinators on Render
+- [ ] **2** Render user-service + integration-service; shared `AUTH_TOKEN_SECRET`; `BYPASS_GOOGLE_SIGN_IN=false`; coordinators on Render
 - [ ] **3** Render static site; `VITE_*` point at hosted APIs + `VITE_GOOGLE_CLIENT_ID`; copy static URL
 - [ ] **4** Add static URL to Google JS origins; `WEB_CORS_ORIGINS` on both backends; redeploy backends
 - [ ] **5** Live coordinator sign-in; dashboard refresh shows intents from hosted integration API

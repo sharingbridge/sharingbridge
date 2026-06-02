@@ -1,16 +1,16 @@
 # Environment variables (dev unlocks & MVP web access)
 
-**Single reference** for optional dev/MVP flags. Per-repo templates: `env.example` → `.env` (gitignored).
+**Single reference** for optional flags. Per-repo: `env.example` → `.env` (gitignored).
 
-| | Local dev | Render production | Render staging (optional MVP) |
-|--|-----------|-------------------|-------------------------------|
-| **user-service** `ALLOW_DEV_TOKEN_MINT` | `true` | omit / `false` | `true` if needed |
-| **user-service** `ALLOW_WEB_DASHBOARD_ANY_USER` | `true` if testing donor-on-web | omit / `false` | `true` |
-| **user-service** `DEPLOYMENT_ENV` | omit or `development` | `production` (blueprint default) | `staging` |
-| **web** `VITE_ALLOW_DEV_SIGN_IN` | `true` if skipping Google | omit | `true` if needed |
-| **web** `VITE_ALLOW_ANY_USER_WEB_DASHBOARD` | `true` if testing donor-on-web | omit | `true` |
+| | Local dev | Render production | Render staging |
+|--|-----------|-------------------|----------------|
+| **user-service** `BYPASS_GOOGLE_SIGN_IN` | `true` to skip Google | omit / `false` | `true` if needed |
+| **user-service** `ALLOW_WEB_DASHBOARD_ANY_USER` | `true` for donor-on-web MVP | omit / `false` | `true` |
+| **user-service** `DEPLOYMENT_ENV` | omit or `development` | `production` | `staging` |
+| **web** `VITE_BYPASS_GOOGLE_SIGN_IN` | `true` to show bypass form | omit | `true` if needed |
+| **web** `VITE_ALLOW_ANY_USER_WEB_DASHBOARD` | `true` for donor-on-web MVP copy | omit | `true` |
 
-Restart Node services after `.env` changes. Restart `npm run dev` (or redeploy static site) after `VITE_*` changes.
+Restart Node after `.env` changes. Restart `npm run dev` (or redeploy static site) after `VITE_*` changes.
 
 ---
 
@@ -18,60 +18,58 @@ Restart Node services after `.env` changes. Restart `npm run dev` (or redeploy s
 
 | Variable | Service | Effect |
 |----------|---------|--------|
-| `ALLOW_DEV_TOKEN_MINT` | user-service | Enables `POST /v1/auth/token` (dev coordinator/donor JWT mint). |
-| `VITE_ALLOW_DEV_SIGN_IN` | web (build-time) | Shows **Dev sign in** form. Requires `ALLOW_DEV_TOKEN_MINT` on user-service. |
-| `ALLOW_WEB_DASHBOARD_ANY_USER` | user-service | Web `client_type: web` may sign in **donor** Google accounts and mint **coordinator** JWT (dashboard lists all intents). |
-| `VITE_ALLOW_ANY_USER_WEB_DASHBOARD` | web (build-time) | MVP sign-in copy only; **must** pair with `ALLOW_WEB_DASHBOARD_ANY_USER` on user-service. |
-| `DEPLOYMENT_ENV` | user-service | `production` \| `staging` \| `development` — controls production guard (below). |
+| `BYPASS_GOOGLE_SIGN_IN` | user-service | **Sign in without Google** — `POST /v1/auth/token` with a user id → JWT. |
+| `VITE_BYPASS_GOOGLE_SIGN_IN` | web (build-time) | Shows the bypass form. Requires `BYPASS_GOOGLE_SIGN_IN` on user-service. |
+| `ALLOW_WEB_DASHBOARD_ANY_USER` | user-service | **Google** web sign-in: donors get coordinator JWT. Independent of bypass. |
+| `VITE_ALLOW_ANY_USER_WEB_DASHBOARD` | web (build-time) | MVP sign-in copy; pairs with `ALLOW_WEB_DASHBOARD_ANY_USER`. |
+| `DEPLOYMENT_ENV` | user-service | `production` \| `staging` \| `development` — production guard (below). |
 
-Normal production web: coordinators only (`coordinator` in `user_roles`). See [coordinator-seed.sql](./coordinator-seed.sql), [web-client.md](./web-client.md).
+**Legacy aliases (still work):** `ALLOW_DEV_TOKEN_MINT`, `ALLOW_DEV_SIGN_IN`, `ALLOW_GOOGLE_SIGN_IN_BYPASS`, `VITE_ALLOW_DEV_SIGN_IN`, `VITE_ALLOW_GOOGLE_SIGN_IN_BYPASS`.
 
 ---
 
 ## Production guard (code)
 
-Enforced in **user-service only**. If production, these are **forced off** even when env says `true`:
+Enforced in **user-service only**. Bypass and MVP flags are **forced off** in production:
 
-- `ALLOW_DEV_TOKEN_MINT`
+- `BYPASS_GOOGLE_SIGN_IN` (+ legacy aliases)
 - `ALLOW_WEB_DASHBOARD_ANY_USER`
 
-**Treated as production when:**
+Production when `DEPLOYMENT_ENV=production`, or `NODE_ENV=production` on Render (`RENDER=true`).
 
-- `DEPLOYMENT_ENV=production`, or
-- `NODE_ENV=production` and `RENDER=true` (default on Render)
-
-**Staging MVP:** set `DEPLOYMENT_ENV=staging` on user-service and set unlock flags as needed. Web flags are UI-only; security is always on user-service.
+**Staging:** `DEPLOYMENT_ENV=staging` on user-service.
 
 ---
 
-## Local quick setup (donor-on-web MVP)
+## Local quick setup
+
+### Skip Google (typed user id)
 
 **user-service** `.env`:
 
 ```env
-ALLOW_DEV_TOKEN_MINT=true
-ALLOW_WEB_DASHBOARD_ANY_USER=true
+BYPASS_GOOGLE_SIGN_IN=true
 ```
 
 **web** `.env`:
 
 ```env
-VITE_ALLOW_ANY_USER_WEB_DASHBOARD=true
-# optional:
-# VITE_ALLOW_DEV_SIGN_IN=true
+VITE_BYPASS_GOOGLE_SIGN_IN=true
 ```
 
-Copy from `sharingbridge-web-app/env.localtest` for a full local profile.
+### Donor-on-web MVP (Google only)
+
+**user-service:** `ALLOW_WEB_DASHBOARD_ANY_USER=true`  
+**web:** `VITE_ALLOW_ANY_USER_WEB_DASHBOARD=true`  
+Does **not** require bypass flags.
 
 ---
 
-## Render production checklist
-
-Do **not** set unlock flags on production Render services. Blueprint sets `DEPLOYMENT_ENV=production` on user-service.
+## Render production
 
 | Service | Set |
 |---------|-----|
-| user-service | `ALLOW_DEV_TOKEN_MINT=false` (or omit), no `ALLOW_WEB_DASHBOARD_ANY_USER`, `DEPLOYMENT_ENV=production` |
-| web static site | No `VITE_ALLOW_DEV_SIGN_IN`, no `VITE_ALLOW_ANY_USER_WEB_DASHBOARD` |
+| user-service | No `BYPASS_GOOGLE_SIGN_IN`, no `ALLOW_WEB_DASHBOARD_ANY_USER`, `DEPLOYMENT_ENV=production` |
+| web | No `VITE_BYPASS_GOOGLE_SIGN_IN`, no `VITE_ALLOW_ANY_USER_WEB_DASHBOARD` |
 
-Standard deploy env for all services: [backend-render.md](./backend-render.md), [e2e-deployment-sequence.md](./e2e-deployment-sequence.md).
+See [backend-render.md](./backend-render.md), [e2e-deployment-sequence.md](./e2e-deployment-sequence.md).

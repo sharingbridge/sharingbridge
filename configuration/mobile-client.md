@@ -56,7 +56,7 @@ Full walkthrough: [MANUAL_TESTING_GUIDE.md](../testing/MANUAL_TESTING_GUIDE.md) 
 
 ## `dart-define` (hosted Render, dev token)
 
-For production-style donor sign-in on device, use **Google Sign-In** with hosted `USER_SERVICE_BASE_URL` and `GOOGLE_CLIENT_ID` (see [e2e-deployment-sequence.md](./e2e-deployment-sequence.md)). The flow below uses **dev mint** (requires `ALLOW_DEV_TOKEN_MINT=true` on hosted user-service — off in production).
+For production-style donor sign-in on device, use **Google Sign-In** with hosted `USER_SERVICE_BASE_URL` and `GOOGLE_CLIENT_ID` (see [e2e-deployment-sequence.md](./e2e-deployment-sequence.md)). The flow below uses **dev mint** (requires `BYPASS_GOOGLE_SIGN_IN=true` on hosted user-service — off in production).
 
 Run in **this order** in the same PowerShell window:
 
@@ -90,7 +90,7 @@ Use public `https://` on devices and emulators. Re-mint the JWT after ~1 hour.
 
 ## Google Sign-In (local, recommended)
 
-**Windows / Linux desktop:** `google_sign_in` is **not supported** — the app shows an explanation instead of `MissingPluginException`. Use an **Android emulator**, a physical Android device, or **macOS** for Google auth. Desktop dev fallback: `--dart-define=AUTH_TOKEN=…` (requires `ALLOW_DEV_TOKEN_MINT` on user-service).
+**Windows / Linux desktop:** `google_sign_in` is **not supported** — the app shows an explanation instead of `MissingPluginException`. Use an **Android emulator**, a physical Android device, or **macOS** for Google auth. Desktop dev fallback: `--dart-define=AUTH_TOKEN=…` (requires `BYPASS_GOOGLE_SIGN_IN` on user-service).
 
 Full checklist: [google-auth-setup.md](./google-auth-setup.md).
 
@@ -130,7 +130,7 @@ Tap **Continue with Google** on launch. Mobile mints JWT `role: donor`; users wi
 
 ## Dev token fallback (no Google)
 
-Requires `ALLOW_DEV_TOKEN_MINT=true` on user-service.
+Requires `BYPASS_GOOGLE_SIGN_IN=true` on user-service.
 
 Mint on the PC (`localhost:8081`). From an **emulator**, point the app at `10.0.2.2`:
 

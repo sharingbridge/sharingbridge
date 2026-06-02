@@ -62,7 +62,7 @@ Wrong combination → HTTP **403** `wrong_client_role` (e.g. web sign-in without
 
 **Dev-only mint (tests / manual smoke)**
 
-`POST /v1/auth/token` with `{ "user_id": "…", "role": "donor" \| "coordinator" }` is enabled only when `ALLOW_DEV_TOKEN_MINT=true` on user-service. **Disabled in production** — see [environment-variables.md](./environment-variables.md).
+`POST /v1/auth/token` with `{ "user_id": "…", "role": "donor" \| "coordinator" }` is enabled only when `BYPASS_GOOGLE_SIGN_IN=true` on user-service. **Disabled in production** — see [environment-variables.md](./environment-variables.md).
 
 ---
 

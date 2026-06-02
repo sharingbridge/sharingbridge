@@ -37,7 +37,7 @@ flutter run -d <device> `
   --dart-define=GOOGLE_CLIENT_ID=...
 ```
 
-Physical device on LAN: use your PC IP instead of `10.0.2.2` for photo-service.
+**Physical device:** use your PC’s Wi‑Fi IPv4 for **all** services (`USER_SERVICE`, `API`, `PHOTO`) — same Wi‑Fi as the PC. See [mobile-client.md](./mobile-client.md) § Local networking and [MANUAL_TESTING_GUIDE.md](../testing/MANUAL_TESTING_GUIDE.md) §3-host.
 
 ## API
 

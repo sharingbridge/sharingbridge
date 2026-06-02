@@ -10,7 +10,7 @@ Operational and deployment configuration by application area. **Full doc map:** 
 | [database.md](./database.md) | **Supabase** + local Postgres (manual steps), [schema.sql](./schema.sql) |
 | [Future Extensions](../design/Future_Extensions.md) | Roadmap: donor payment status, delivery proof, demand/vendor bidding |
 | [google-auth-setup.md](./google-auth-setup.md) | **Step-by-step** Google OAuth + coordinator SQL seed + local `.env` |
-| [mobile-client.md](./mobile-client.md) | Flutter `dart-define` values and hosted vs local URLs |
+| [mobile-client.md](./mobile-client.md) | Flutter `dart-define` URLs (emulator / physical phone / hosted), same-Wi‑Fi rules, HTTP vs HTTPS |
 | [web-client.md](./web-client.md) | Web dashboard (order initiation history) and CORS |
 | [field-handoff.md](./field-handoff.md) | Offer food help flow, guidance (BRD step 4), what is not automated |
 | [photo-service-local.md](./photo-service-local.md) | Reference photo upload (Cloudinary), port 8092, `PHOTO_SERVICE_BASE_URL` |

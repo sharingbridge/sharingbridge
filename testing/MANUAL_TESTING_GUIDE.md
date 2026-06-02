@@ -544,17 +544,80 @@ Keep **user-service** on `8081` and **integration-service** on `8080` running be
 
 ### 3-host. API URLs by device (read this first)
 
-The app runs **inside** the emulator or on your PC. **`localhost` inside an Android emulator is the emulator itself**, not your Windows machine — so local backends must use the host alias **`10.0.2.2`** (Android’s special route to the PC).
+Backends always run on **your PC** (`user-service` **8081**, `integration-service` **8080**, optional `photo-service` **8092**). The Flutter app runs on a **phone or emulator**, so the `--dart-define` URLs must be whatever **that device** uses to reach the PC — not what works in PowerShell on the PC.
 
-| Where you run the app | `USER_SERVICE_BASE_URL` | `API_BASE_URL` | `PHOTO_SERVICE_BASE_URL` (if using a photo) |
-|----------------------|-------------------------|----------------|---------------------------------------------|
-| **Android emulator** (recommended for Google Sign-In) | `http://10.0.2.2:8081` | `http://10.0.2.2:8080` | `http://10.0.2.2:8092` |
-| Windows desktop (`-d windows`) | `http://localhost:8081` | `http://localhost:8080` | `http://localhost:8092` (Google Sign-In not on Windows) |
-| Physical Android phone (USB / Wi‑Fi) | `http://<your-PC-LAN-IP>:8081` | `http://<your-PC-LAN-IP>:8080` | `http://<your-PC-LAN-IP>:8092` |
+#### Pick one row — use it for every `--dart-define`
 
-Use the **same row** for every `--dart-define` on one `flutter run`. Mixing `localhost` with the emulator causes **connection refused** on sign-in or API calls.
+| Where you run the app | `USER_SERVICE_BASE_URL` | `API_BASE_URL` | `PHOTO_SERVICE_BASE_URL` |
+|----------------------|-------------------------|----------------|--------------------------|
+| **Android emulator** (Google Sign-In) | `http://10.0.2.2:8081` | `http://10.0.2.2:8080` | `http://10.0.2.2:8092` |
+| **Windows desktop** (`flutter run -d windows`) | `http://localhost:8081` | `http://localhost:8080` | `http://localhost:8092` |
+| **Physical Android phone** (USB or Wi‑Fi) | `http://<PC-LAN-IP>:8081` | `http://<PC-LAN-IP>:8080` | `http://<PC-LAN-IP>:8092` |
+| **Hosted / friends testing** | `https://…user-service…onrender.com` | `https://…integration…onrender.com` | `https://…photo…` (when deployed) |
 
-Backends stay on your PC at `localhost:8080` / `8081` / `8092` (photo); only the **dart-defines** change per target.
+Do **not** mix rows (e.g. `localhost` on an emulator, or `10.0.2.2` on a physical phone).
+
+#### What `localhost` means
+
+| Device running the app | `localhost` points to |
+|------------------------|------------------------|
+| Android emulator | The emulator — **not** your PC → use **`10.0.2.2`** |
+| Physical phone | The phone — **not** your PC → use **`<PC-LAN-IP>`** |
+| Windows desktop (`-d windows`) | Your PC → **`localhost`** is correct |
+
+#### Physical phone: same network as the PC
+
+The PC’s LAN address (e.g. `192.168.1.3` from `ipconfig` → **Wi‑Fi** → **IPv4 Address**) only works when the phone can route to that subnet.
+
+| Phone connection | Works with `http://192.168.x.x:8080`? |
+|------------------|--------------------------------------|
+| Same Wi‑Fi / router as the PC | **Yes** |
+| Mobile data only | **No** |
+| Different broadband / guest Wi‑Fi / another home network | **No** |
+
+**Sanity check on the phone** (Chrome): open `http://<PC-LAN-IP>:8080/health` — you should see JSON with `"ok": true`. If the browser cannot load it, the app will not either (fix Wi‑Fi or firewall before changing Flutter code).
+
+#### Find `<PC-LAN-IP>` (Windows)
+
+```powershell
+ipconfig
+```
+
+Use the **IPv4 Address** under **Wireless LAN adapter Wi‑Fi** (example: `192.168.1.3`). Ethernet counts only if that adapter is connected.
+
+Example `flutter run` on a physical device:
+
+```powershell
+flutter run -d <device_id> `
+  --dart-define=GOOGLE_CLIENT_ID=<Android OAuth client ID> `
+  --dart-define=USER_SERVICE_BASE_URL=http://192.168.1.3:8081 `
+  --dart-define=API_BASE_URL=http://192.168.1.3:8080 `
+  --dart-define=PHOTO_SERVICE_BASE_URL=http://192.168.1.3:8092
+```
+
+Replace `192.168.1.3` with your IPv4. After changing `--dart-define`, stop the app and run **`flutter run` again** (hot reload does not update compile-time URLs).
+
+#### USB workaround (phone and PC on different networks)
+
+With the phone on USB debugging, forward ports to the PC:
+
+```powershell
+$adb = "$env:LOCALAPPDATA\Android\Sdk\platform-tools\adb.exe"
+& $adb reverse tcp:8080 tcp:8080
+& $adb reverse tcp:8081 tcp:8081
+& $adb reverse tcp:8092 tcp:8092
+```
+
+Then use **`http://127.0.0.1:8080`** (and `:8081`, `:8092`) in all three `--dart-define`s — on the phone, `127.0.0.1` is tunneled to the PC.
+
+#### HTTP (local) vs HTTPS (hosted)
+
+| Build | Plain `http://` to LAN IP |
+|-------|---------------------------|
+| `flutter run` (debug) | Allowed (cleartext only in debug/profile manifests) |
+| Release APK for testers / Play Store | Use **`https://`** Render URLs only — release builds block cleartext |
+
+See also [configuration/mobile-client.md](../configuration/mobile-client.md) § Local networking.
 
 ### 3-run. Start an Android emulator
 
@@ -782,6 +845,7 @@ npm run dev
 - `403 wrong_client_role` on web: no `coordinator` in `user_roles` for that Gmail, or donor-only account used on web.
 - `403 wrong_client_role` on mobile: account missing `donor` in `user_roles` (rare after sign-in; every user gets `donor` ensured).
 - **Connection refused** on emulator sign-in or API: you used `localhost` in dart-defines — switch both URLs to `http://10.0.2.2:8081` and `http://10.0.2.2:8080` (**§3-host**).
+- **“Network unavailable”** on a **physical phone** with correct `192.168.x.x` dart-defines: phone and PC are on **different networks** (mobile data, other broadband, guest Wi‑Fi) — join the **same Wi‑Fi as the PC**, verify `http://<PC-LAN-IP>:8080/health` in the phone browser, or use **USB + `adb reverse`** (**§3-host**).
 - `401 invalid_google_token`: `VITE_GOOGLE_CLIENT_ID` must match `GOOGLE_CLIENT_ID_WEB`; add `http://localhost:5173` under Google **Authorized JavaScript origins**.
 - CORS errors (local): `WEB_CORS_ORIGINS=http://localhost:5173` on **both** Node services in **local** `.env`.
 - CORS errors (hosted dashboard): set `WEB_CORS_ORIGINS=https://<static-site>.onrender.com` on **both** services in the **Render** dashboard — [backend-render.md](../configuration/backend-render.md).

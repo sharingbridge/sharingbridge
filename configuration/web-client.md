@@ -38,16 +38,7 @@ Chrome may show **Continue as …** on the Google button; that is normal for the
 
 ## Build-time configuration
 
-Copy `env.example` to `.env`:
-
-| Variable | Purpose |
-|----------|---------|
-| `VITE_API_BASE_URL` | integration-service (no trailing `/`) |
-| `VITE_USER_SERVICE_BASE_URL` | user-service for Google sign-in |
-| `VITE_GOOGLE_CLIENT_ID` | Web OAuth client ID (same as `GOOGLE_CLIENT_ID_WEB`) |
-| `VITE_DEFAULT_USER_ID` | Optional pre-fill for dev sign-in form only |
-
-Full variable list: [environment-variables.md](./environment-variables.md) § web-app. Optional dev/MVP flags: same doc § Optional flags.
+Copy `env.example` → `.env`. All `VITE_*` keys: [environment-variables.md](./environment-variables.md) § `sharingbridge-web-app`.
 
 Secrets are **not** in `.env` for production builds.
 
@@ -95,19 +86,13 @@ Coordinators see **all** donors’ order intents on the integration host pointed
 2. **Build command:** `npm install && npm run build`
 3. **Publish directory:** `dist`
 4. **Settings → Build & Deploy → Auto-Deploy:** **On Commit**, **or** **After CI Checks Pass** only if `.github/workflows/ci.yml` exists and passes on `main` (this repo includes a `CI` workflow for `npm test`).
-5. **Environment** (build-time — set before first deploy):
+5. **Environment** (build-time): set `VITE_*` per [environment-variables.md](./environment-variables.md) § web-app (**Render production** column). Set `VITE_GOOGLE_CLIENT_ID` when using Blueprint.
 
-| Key | Example |
-|-----|---------|
-| `VITE_API_BASE_URL` | `https://sharingbridge-integration-service.onrender.com` |
-| `VITE_USER_SERVICE_BASE_URL` | `https://sharingbridge-user-service.onrender.com` |
-| `VITE_GOOGLE_CLIENT_ID` | Web OAuth client ID (same as `GOOGLE_CLIENT_ID_WEB` on user-service) |
-
-5. After deploy, copy the static site URL (e.g. `https://sharingbridge-web.onrender.com`).
-6. **Google Console** → Web OAuth client → **Authorized JavaScript origins**: add `https://<your-static-site>.onrender.com` **and** keep `http://localhost:5173` for local dev.
-7. On **user-service** and **integration-service**, set `WEB_CORS_ORIGINS` to both origins if needed:  
+6. After deploy, copy the static site URL (e.g. `https://sharingbridge-web.onrender.com`).
+7. **Google Console** → Web OAuth client → **Authorized JavaScript origins**: add `https://<your-static-site>.onrender.com` **and** keep `http://localhost:5173` for local dev.
+8. On **user-service** and **integration-service**, set `WEB_CORS_ORIGINS` to both origins if needed:  
    `http://localhost:5173,https://sharingbridge-web.onrender.com` → redeploy both.
-8. Sign in on the live site with a **coordinator** Google account (`coordinator` in `user_roles`). See [google-auth-setup.md](./google-auth-setup.md) §7.
+9. Sign in on the live site with a **coordinator** Google account (`coordinator` in `user_roles`). See [google-auth-setup.md](./google-auth-setup.md) §7.
 
 See [e2e-deployment-sequence.md](./e2e-deployment-sequence.md), [MANUAL_TESTING_GUIDE.md](../testing/MANUAL_TESTING_GUIDE.md) **§4**, and [backend-render.md](./backend-render.md).
 

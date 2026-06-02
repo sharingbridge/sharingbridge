@@ -278,14 +278,7 @@ Only if you **do not** want Supabase: Render → **New +** → **PostgreSQL**, c
 
 ## Environment variables (DB mode)
 
-### `sharingbridge-user-service` and `sharingbridge-integration-service`
-
-| Key | Required | Purpose |
-|-----|----------|---------|
-| `DATABASE_URL` | Yes | Supabase (or local) Postgres URI — **same on both services** |
-| `AUTH_TOKEN_*` | Yes | Unchanged |
-| `GOOGLE_CLIENT_ID_WEB` | Yes (user-service) | Unchanged |
-| `WEB_CORS_ORIGINS` | Yes | Unchanged — browser origin, not Supabase |
+Set **`DATABASE_URL`** on user-service, integration-service, and photo-service (same URI). All other keys: [environment-variables.md](./environment-variables.md).
 
 ---
 

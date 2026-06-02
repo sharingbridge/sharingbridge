@@ -47,20 +47,9 @@ Wrong combination → HTTP **403** `wrong_client_role` (e.g. web sign-in without
 | **Same value on both** | Yes |
 | **Claims** | `sub`, `role` (active session role), `roles` (array, DB mode), `iss`, `aud`, `exp` — see [database.md](./database.md) § JWT |
 
-**Render env (user-service and integration)**
+**Service env keys:** [environment-variables.md](./environment-variables.md) (JWT, Google client IDs, `WEB_CORS_ORIGINS`, `DATABASE_URL`). Postgres setup: [database.md](./database.md).
 
-| Key | Typical value |
-|-----|----------------|
-| `AUTH_TOKEN_SECRET` | long random string (generate once, copy to both) |
-| `AUTH_TOKEN_ISSUER` | `sharingbridge-user-service` |
-| `AUTH_TOKEN_AUDIENCE` | `sharingbridge-clients` |
-| `AUTH_TOKEN_TTL_SECONDS` | `3600` |
-| `GOOGLE_CLIENT_ID_WEB` | Web OAuth client ID (not the client secret) |
-| `GOOGLE_CLIENT_ID_ANDROID` | Android OAuth client ID (mobile) |
-| `WEB_CORS_ORIGINS` | Browser origin of the dashboard: local `http://localhost:5173`; on Render add `https://<static-site>.onrender.com` on **user-service and integration-service** — [backend-render.md](./backend-render.md) |
-| `DATABASE_URL` | Postgres (user-service + integration-service, same DB) — [database.md](./database.md) |
-
-**Dev-only mint (tests / manual smoke)**
+**Sign in without Google (local only)**
 
 `POST /v1/auth/token` with `{ "user_id": "…", "role": "donor" \| "coordinator" }` is enabled only when `BYPASS_GOOGLE_SIGN_IN=true` on user-service. **Disabled in production** — see [environment-variables.md](./environment-variables.md).
 

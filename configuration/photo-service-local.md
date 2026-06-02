@@ -14,12 +14,7 @@ copy env.example .env
 python -m pytest -q
 ```
 
-| Variable | Purpose |
-|----------|---------|
-| `DATABASE_URL` | Same Postgres as integration-service |
-| `AUTH_TOKEN_SECRET` | **Same** as user-service / integration-service |
-| `CLOUDINARY_CLOUD_NAME` + key/secret | Or `CLOUDINARY_URL` |
-| `PHOTO_UPLOAD_MOCK` | `true` = fake Cloudinary URLs (no account needed) |
+Variables: [environment-variables.md](./environment-variables.md) § `sharingbridge-photo-service`. Use same `DATABASE_URL` and `AUTH_TOKEN_SECRET` as user-service.
 
 ```powershell
 uvicorn app.main:app --reload --port 8092

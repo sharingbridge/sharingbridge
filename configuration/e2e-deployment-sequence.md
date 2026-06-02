@@ -182,12 +182,7 @@ cd sharingbridge-user-service
 copy env.example .env
 ```
 
-| Variable | Example (local) |
-|----------|-------------------|
-| `GOOGLE_CLIENT_ID_WEB` | Same Web Client ID from Phase 0 |
-| `WEB_CORS_ORIGINS` | `http://localhost:5173` only (local laptop `.env`; not the Render URL) |
-| `BYPASS_GOOGLE_SIGN_IN` | `true` (local only) |
-| `AUTH_TOKEN_SECRET` | Shared secret (match integration-service) |
+Set keys from [environment-variables.md](./environment-variables.md) (**Local example** column). Use Phase 0 Web Client ID for `GOOGLE_CLIENT_ID_WEB` and `VITE_GOOGLE_CLIENT_ID`.
 
 Coordinator role: Postgres `user_roles` — [coordinator-seed.sql](./coordinator-seed.sql) · [google-auth-setup.md](./google-auth-setup.md) Part 3.
 
@@ -198,11 +193,7 @@ cd sharingbridge-integration-service
 copy env.example .env
 ```
 
-| Variable | Example (local) |
-|----------|-------------------|
-| `AUTH_TOKEN_SECRET` | **Same** as user-service |
-| `USER_SERVICE_BASE_URL` | `http://localhost:8081` |
-| `WEB_CORS_ORIGINS` | `http://localhost:5173` (same value as user-service) |
+Same env index — **same** `AUTH_TOKEN_SECRET` and `WEB_CORS_ORIGINS` as user-service.
 
 ### 1.3 web-app
 
@@ -211,13 +202,7 @@ cd sharingbridge-web-app
 copy env.example .env
 ```
 
-| Variable | Example (local) |
-|----------|-------------------|
-| `VITE_GOOGLE_CLIENT_ID` | Web Client ID from Phase 0 |
-| `VITE_API_BASE_URL` | `http://localhost:8080` |
-| `VITE_USER_SERVICE_BASE_URL` | `http://localhost:8081` |
-
-Optional: `VITE_BYPASS_GOOGLE_SIGN_IN=true` only with `BYPASS_GOOGLE_SIGN_IN=true` on user-service.
+Same env index § web-app. Optional bypass flags: [environment-variables.md](./environment-variables.md) § Optional flags.
 
 ### 1.4 Run and verify
 
@@ -254,25 +239,11 @@ Deploy in order — [backend-render.md](./backend-render.md). Each repo’s **`r
 3. **integration-service** (Web Service, Node 20).
 4. **photo-service** (Docker) — reference photo upload from mobile.
 
-### user-service (Render environment)
+### Render backend env
 
-| Variable | Production value |
-|----------|------------------|
-| `AUTH_TOKEN_SECRET` | Strong secret; **same** on integration-service |
-| `GOOGLE_CLIENT_ID_WEB` | Web Client ID from Phase 0 |
-| `GOOGLE_CLIENT_ID_ANDROID` | Android Client ID (when mobile uses Google) |
-| `BYPASS_GOOGLE_SIGN_IN` | `false` |
-| `DATABASE_URL` | **Supabase** Postgres URI (DB mode) — [database.md](./database.md) |
-| `WEB_CORS_ORIGINS` | Optional until Phase 4: `http://localhost:5173` if you test local Vite against hosted APIs; otherwise set in Phase 4 |
+Set **Render production** column in [environment-variables.md](./environment-variables.md) on user-service, integration-service, and photo-service. `DATABASE_URL`: [database.md](./database.md).
 
-### integration-service (Render environment)
-
-| Variable | Production value |
-|----------|------------------|
-| `AUTH_TOKEN_SECRET` | Match user-service |
-| `DATABASE_URL` | **Same** as user-service — [database.md](./database.md) |
-| `USER_SERVICE_BASE_URL` | `https://<your-user-service>.onrender.com` |
-| `WEB_CORS_ORIGINS` | **Identical** to user-service on Render (see Phase 4) |
+**This phase only:** `WEB_CORS_ORIGINS` may stay `http://localhost:5173` until Phase 4 if you test local Vite against hosted APIs; otherwise set the static site origin in Phase 4. Do **not** enable bypass/MVP flags on Render production.
 
 Note the two public URLs:
 
@@ -281,16 +252,7 @@ Note the two public URLs:
 
 **Checkpoint:** `GET …/health` succeeds on user-service, integration-service, and photo-service.
 
-### photo-service (Render environment)
-
-| Variable | Production value |
-|----------|------------------|
-| `DATABASE_URL` | **Same** as user-service — [database.md](./database.md) |
-| `AUTH_TOKEN_SECRET` | **Same** as user-service |
-| `PHOTO_UPLOAD_MOCK` | `true` until Cloudinary credentials are set |
-| `CLOUDINARY_*` | Optional; set when using real uploads (`PHOTO_UPLOAD_MOCK=false`) |
-
-**Mobile:** `PHOTO_SERVICE_BASE_URL=https://<your-photo-service>.onrender.com`
+**Mobile (hosted):** `PHOTO_SERVICE_BASE_URL=https://<your-photo-service>.onrender.com` — see [environment-variables.md](./environment-variables.md) § mobile.
 
 ---
 
@@ -306,15 +268,7 @@ Note the two public URLs:
 2. **Build command:** `npm install && npm run build`
 3. **Publish directory:** `dist`
 4. **Settings → Build & Deploy → Auto-Deploy:** **On Commit** (if deploys only happen when you click Manual Deploy, turn this on).
-5. **Environment** (build-time — set before first deploy):
-
-| Key | Value |
-|-----|--------|
-| `VITE_API_BASE_URL` | `https://<your-integration-service>.onrender.com` |
-| `VITE_USER_SERVICE_BASE_URL` | `https://<your-user-service>.onrender.com` |
-| `VITE_GOOGLE_CLIENT_ID` | Web Client ID from Phase 0 |
-
-Do **not** set dev/MVP unlock flags on Render production — [environment-variables.md](./environment-variables.md).
+5. **Environment** (build-time): [environment-variables.md](./environment-variables.md) § web-app (**Render production**). Use Phase 0 Client ID for `VITE_GOOGLE_CLIENT_ID`. No bypass/MVP flags on production.
 
 6. Deploy → copy static site URL, e.g. `https://sharingbridge-web.onrender.com`.
 

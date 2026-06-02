@@ -62,14 +62,7 @@ Optional branches (any time after Phase 1):
 
 ## Local stack (quick checklist)
 
-| Repo | Template | Must-have keys (see linked doc for full list) |
-|------|----------|-----------------------------------------------|
-| `sharingbridge-user-service` | `env.example` → `.env` | `DATABASE_URL`, `AUTH_TOKEN_SECRET`, `GOOGLE_CLIENT_ID_WEB`, `WEB_CORS_ORIGINS` |
-| `sharingbridge-integration-service` | `env.example` → `.env` | Same `DATABASE_URL` + `AUTH_TOKEN_SECRET`, `USER_SERVICE_BASE_URL`, same `WEB_CORS_ORIGINS` |
-| `sharingbridge-web-app` | `env.example` → `.env` | `VITE_GOOGLE_CLIENT_ID`, `VITE_API_BASE_URL`, `VITE_USER_SERVICE_BASE_URL` |
-| `sharingbridge-mobile-app` | — | `GOOGLE_CLIENT_ID`, `USER_SERVICE_BASE_URL`, `API_BASE_URL` — [mobile-client.md](./mobile-client.md) |
-| `sharingbridge-photo-service` | `env.example` → `.env` | Same DB + JWT; Cloudinary or mock — [photo-service-local.md](./photo-service-local.md) |
-| `sharingbridge-ai-orchestration` | — | Optional — [ai-orchestration-local.md](./ai-orchestration-local.md) |
+Copy each repo’s `env.example` → `.env`. **All keys and local defaults:** [environment-variables.md](./environment-variables.md) (§ per service + § Local stack defaults). Mobile uses `--dart-define` — [mobile-client.md](./mobile-client.md).
 
 Restart Node after `.env` changes. Restart `npm run dev` after web `VITE_*` changes.
 

@@ -1,6 +1,6 @@
 # Environment variables (all services)
 
-**Master index** for SharingBridge configuration. Each repo also has `env.example` → copy to `.env` (gitignored).
+**Master index** — the only place with full per-service tables. Other configuration docs link here instead of repeating keys. Each repo also has `env.example` → copy to `.env` (gitignored).
 
 | Service | Config file | Load when |
 |---------|-------------|-----------|

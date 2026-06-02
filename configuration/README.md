@@ -1,48 +1,87 @@
-# SharingBridge configuration
+# SharingBridge configuration — start here
 
-Operational and deployment configuration by application area. **Full doc map:** [AGENT_HANDOFF.md](../development/AGENT_HANDOFF.md) § Documentation map. Design specs remain in `design/` and `requirements/`; this folder is for **how to run and wire** the MVP.
+**One place to orient yourself.** This folder is **how to run and wire** the MVP (not product design — see `design/` and `requirements/`).
 
-| Document | Scope |
-|----------|--------|
-| [e2e-deployment-sequence.md](./e2e-deployment-sequence.md) | **Start here:** phased order (Google → local → Render backends → static site → CORS) |
-| [backend-render.md](./backend-render.md) | Host backends + photo-service + web static site on Render (`render.yaml`, auto-deploy) |
-| [authentication.md](./authentication.md) | Google Sign-In, JWT roles, internal API key |
-| [database.md](./database.md) | **Supabase** + local Postgres (manual steps), [schema.sql](./schema.sql) |
-| [Future Extensions](../design/Future_Extensions.md) | Roadmap: donor payment status, delivery proof, demand/vendor bidding |
-| [google-auth-setup.md](./google-auth-setup.md) | **Step-by-step** Google OAuth + coordinator SQL seed + local `.env` |
-| [mobile-client.md](./mobile-client.md) | Flutter `dart-define` URLs (emulator / physical phone / hosted), same-Wi‑Fi rules, HTTP vs HTTPS |
-| [web-client.md](./web-client.md) | Web dashboard (order initiation history) and CORS |
-| [field-handoff.md](./field-handoff.md) | Offer food help flow, guidance (BRD step 4), what is not automated |
-| [photo-service-local.md](./photo-service-local.md) | Reference photo upload (Cloudinary), port 8092, `PHOTO_SERVICE_BASE_URL` |
-| [ai-orchestration-local.md](./ai-orchestration-local.md) | **Optional** Python AI: uvicorn, `.venv`, `Activate.ps1` (not in `configuration/`) |
+| Your goal | Follow this path |
+|-----------|------------------|
+| **First-time setup (recommended)** | [e2e-deployment-sequence.md](./e2e-deployment-sequence.md) — Phases **0 → 5** in order |
+| **Local only (laptop)** | Phase 0–1 in [e2e-deployment-sequence.md](./e2e-deployment-sequence.md) → [MANUAL_TESTING_GUIDE.md](../testing/MANUAL_TESTING_GUIDE.md) §3 (mobile) / §4 (web) |
+| **Deploy to Render** | [e2e-deployment-sequence.md](./e2e-deployment-sequence.md) Phases **2–5** → [backend-render.md](./backend-render.md) for env keys per service |
+| **Google OAuth / coordinator seed** | [google-auth-setup.md](./google-auth-setup.md) |
+| **Dev or MVP unlock flags** | [environment-variables.md](./environment-variables.md) only |
+| **Troubleshoot sign-in / CORS / roles** | [authentication.md](./authentication.md) + [google-auth-setup.md](./google-auth-setup.md) |
 
-**Per-repo templates:** each service repository has `env.example` (copy to `.env` locally; all `.env*` files are gitignored) and `render.yaml` (where applicable). Node backends load `.env` on `npm start` via dotenv; the web app uses `sharingbridge-web-app/.env` (`VITE_*` at build/dev time).
+**Per-repo env:** copy each repo’s `env.example` → `.env` (gitignored). Details: [environment-variables.md](./environment-variables.md) for optional flags; service-specific keys in the docs below.
 
-## Local stack checklist
+---
 
-| Repo | Copy template | Keys to verify for web + mobile |
-|------|---------------|----------------------------------|
-| `sharingbridge-user-service` | `env.example` → `.env` | **`DATABASE_URL`** (required), `AUTH_TOKEN_SECRET`, `GOOGLE_CLIENT_ID_WEB`, `WEB_CORS_ORIGINS` — [database.md](./database.md), [google-auth-setup.md](./google-auth-setup.md) |
-| `sharingbridge-integration-service` | `env.example` → `.env` | **Same `DATABASE_URL`**, same `AUTH_TOKEN_SECRET`, `USER_SERVICE_BASE_URL=http://localhost:8081`, **same** `WEB_CORS_ORIGINS`, `PREFERENCES_BACKEND` — [database.md](./database.md) |
-| `sharingbridge-web-app` | `env.example` → `.env` | `VITE_GOOGLE_CLIENT_ID`, `VITE_API_BASE_URL=http://localhost:8080`, `VITE_USER_SERVICE_BASE_URL=http://localhost:8081` |
-| `sharingbridge-mobile-app` | — | `GOOGLE_CLIENT_ID`, `USER_SERVICE_BASE_URL`, `API_BASE_URL`, `PHOTO_SERVICE_BASE_URL`; or dev mint — [mobile-client.md](./mobile-client.md) |
-| `sharingbridge-photo-service` | `env.example` → `.env` | Same `DATABASE_URL` + `AUTH_TOKEN_SECRET` as user-service; Cloudinary or `PHOTO_UPLOAD_MOCK=true` — [photo-service-local.md](./photo-service-local.md) |
-| `sharingbridge-ai-orchestration` | — | **Optional** for live LLM paths — [ai-orchestration-local.md](./ai-orchestration-local.md) (venv stays inside that repo only) |
+## Roadmap (order of operations)
 
-**Order of setup:** [e2e-deployment-sequence.md](./e2e-deployment-sequence.md) Phase 0 → Phase 1 (Postgres + `.env`) → [MANUAL_TESTING_GUIDE.md](../testing/MANUAL_TESTING_GUIDE.md).
+Use **[e2e-deployment-sequence.md](./e2e-deployment-sequence.md)** for full commands and checkpoints. Summary:
 
-Restart Node services after editing `.env`. Restart `npm run dev` after changing web `VITE_*`.
+```text
+Phase 0   Google Cloud (OAuth client + test users)
+    ↓
+Phase 1   Local Postgres + .env on user-service & integration-service
+    ↓     Google sign-in on http://localhost:5173 (web) + mobile
+Phase 2   Render: user-service → integration-service (+ photo-service if needed)
+    ↓
+Phase 3   Render: static web app (VITE_* build env)
+    ↓
+Phase 4   Add live site URL to Google origins + WEB_CORS_ORIGINS on both backends
+    ↓
+Phase 5   Verify hosted coordinator dashboard + donor flow on same API host
+```
 
-## Render checklist
+Optional branches (any time after Phase 1):
 
-Follow [e2e-deployment-sequence.md](./e2e-deployment-sequence.md) Phases 2–5 in order.
+- **Photos:** [photo-service-local.md](./photo-service-local.md)
+- **AI suggestions:** [ai-orchestration-local.md](./ai-orchestration-local.md)
+- **Field flow (BRD):** [field-handoff.md](./field-handoff.md)
 
-| Step | Doc |
-|------|-----|
-| Create **Supabase** project + tables, then `DATABASE_URL` on both Render Node services | [database.md](./database.md) |
-| Deploy user-service → ai-orchestration → integration | [backend-render.md](./backend-render.md) |
-| Set `WEB_CORS_ORIGINS` on **both** Node services **in Render** to static site URL (`https://…onrender.com`); keep `http://localhost:5173` in **local** `.env` only | [backend-render.md](./backend-render.md) § WEB_CORS_ORIGINS · [e2e-deployment-sequence.md](./e2e-deployment-sequence.md) Phase 4 |
-| Static site build env `VITE_*` → hosted API URLs | [e2e-deployment-sequence.md](./e2e-deployment-sequence.md) Phase 3 |
-| Mobile `API_BASE_URL` + Google / JWT | [mobile-client.md](./mobile-client.md) |
+---
 
-**Testing:** [MANUAL_TESTING_GUIDE.md](../testing/MANUAL_TESTING_GUIDE.md) — mobile **§3**, web dashboard **§4**
+## Doc sitemap (what to open when)
+
+| When you need… | Document |
+|----------------|----------|
+| **Step-by-step deploy order** | [e2e-deployment-sequence.md](./e2e-deployment-sequence.md) |
+| **Render env per service** | [backend-render.md](./backend-render.md) |
+| **Supabase / Postgres / schema** | [database.md](./database.md) · [schema.sql](./schema.sql) · [coordinator-seed.sql](./coordinator-seed.sql) |
+| **Auth, JWT, roles, 403 errors** | [authentication.md](./authentication.md) |
+| **Dev/MVP env flags & production guard** | [environment-variables.md](./environment-variables.md) |
+| **Google Console clicks** | [google-auth-setup.md](./google-auth-setup.md) |
+| **Web dashboard (Vite, CORS)** | [web-client.md](./web-client.md) |
+| **Mobile URLs (emulator, phone, Wi‑Fi)** | [mobile-client.md](./mobile-client.md) |
+| **Manual test scripts** | [MANUAL_TESTING_GUIDE.md](../testing/MANUAL_TESTING_GUIDE.md) |
+| **Product extensions (not built yet)** | [Future Extensions](../design/Future_Extensions.md) |
+| **Agent / repo-wide doc map** | [AGENT_HANDOFF.md](../development/AGENT_HANDOFF.md) |
+
+---
+
+## Local stack (quick checklist)
+
+| Repo | Template | Must-have keys (see linked doc for full list) |
+|------|----------|-----------------------------------------------|
+| `sharingbridge-user-service` | `env.example` → `.env` | `DATABASE_URL`, `AUTH_TOKEN_SECRET`, `GOOGLE_CLIENT_ID_WEB`, `WEB_CORS_ORIGINS` |
+| `sharingbridge-integration-service` | `env.example` → `.env` | Same `DATABASE_URL` + `AUTH_TOKEN_SECRET`, `USER_SERVICE_BASE_URL`, same `WEB_CORS_ORIGINS` |
+| `sharingbridge-web-app` | `env.example` → `.env` | `VITE_GOOGLE_CLIENT_ID`, `VITE_API_BASE_URL`, `VITE_USER_SERVICE_BASE_URL` |
+| `sharingbridge-mobile-app` | — | `GOOGLE_CLIENT_ID`, `USER_SERVICE_BASE_URL`, `API_BASE_URL` — [mobile-client.md](./mobile-client.md) |
+| `sharingbridge-photo-service` | `env.example` → `.env` | Same DB + JWT; Cloudinary or mock — [photo-service-local.md](./photo-service-local.md) |
+| `sharingbridge-ai-orchestration` | — | Optional — [ai-orchestration-local.md](./ai-orchestration-local.md) |
+
+Restart Node after `.env` changes. Restart `npm run dev` after web `VITE_*` changes.
+
+---
+
+## Render (quick checklist)
+
+Follow [e2e-deployment-sequence.md](./e2e-deployment-sequence.md) Phases 2–5.
+
+1. Supabase + `DATABASE_URL` on Node services — [database.md](./database.md)
+2. Deploy user-service → integration-service (shared `AUTH_TOKEN_SECRET`) — [backend-render.md](./backend-render.md)
+3. Static site `VITE_*` — [web-client.md](./web-client.md)
+4. `WEB_CORS_ORIGINS` on **both** backends = static site `https://…onrender.com`
+5. Mobile uses **same** integration host as `VITE_API_BASE_URL` — [mobile-client.md](./mobile-client.md)
+
+**Testing:** [MANUAL_TESTING_GUIDE.md](../testing/MANUAL_TESTING_GUIDE.md) — mobile **§3**, web **§4**.

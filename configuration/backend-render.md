@@ -130,7 +130,7 @@ Not a Web Service — use **Static Site** (or `runtime: static` in `render.yaml`
 | `VITE_USER_SERVICE_BASE_URL` | `https://<user-host>.onrender.com` |
 | `VITE_GOOGLE_CLIENT_ID` | Same Web OAuth client ID as `GOOGLE_CLIENT_ID_WEB` |
 
-Do **not** set `VITE_ALLOW_DEV_SIGN_IN` on Render. After deploy, complete [e2e-deployment-sequence.md](./e2e-deployment-sequence.md) Phase 4 (Google origins + `WEB_CORS_ORIGINS`).
+Do **not** set dev/MVP unlock flags on Render production — [environment-variables.md](./environment-variables.md). After deploy, complete [e2e-deployment-sequence.md](./e2e-deployment-sequence.md) Phase 4 (Google origins + `WEB_CORS_ORIGINS`).
 
 ### `WEB_CORS_ORIGINS` — local laptop vs Render (both backends)
 

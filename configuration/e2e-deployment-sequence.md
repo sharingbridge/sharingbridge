@@ -1,5 +1,7 @@
 # End-to-end deployment sequence
 
+**Config hub / doc sitemap:** [README.md](./README.md) · **Env flags only:** [environment-variables.md](./environment-variables.md)
+
 Sequential checklist for configuring SharingBridge from **Google OAuth** through **local dev** to **Render** (backends + static web). Use this doc for **order of operations**; use linked docs for command-level detail.
 
 | Phase | Goal | Detail doc |
@@ -312,7 +314,7 @@ Note the two public URLs:
 | `VITE_USER_SERVICE_BASE_URL` | `https://<your-user-service>.onrender.com` |
 | `VITE_GOOGLE_CLIENT_ID` | Web Client ID from Phase 0 |
 
-Do **not** set `VITE_ALLOW_DEV_SIGN_IN` on Render.
+Do **not** set dev/MVP unlock flags on Render production — [environment-variables.md](./environment-variables.md).
 
 6. Deploy → copy static site URL, e.g. `https://sharingbridge-web.onrender.com`.
 

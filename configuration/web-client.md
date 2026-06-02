@@ -21,24 +21,7 @@ Repository: `sharingbridge-web-app` (Vite + React).
 
 **No client secret** in `.env` — only the Web **Client ID** (`VITE_GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_ID_WEB`).
 
-**Local dev fallback:** `VITE_ALLOW_DEV_SIGN_IN=true` + user-service `ALLOW_DEV_TOKEN_MINT=true` → **Dev sign in** (coordinator role). See [google-auth-setup.md](./google-auth-setup.md).
-
-**MVP — any logged-in donor on web:** set **both** flags on **non-production** deploys only:
-
-| Where | Variable | Value |
-|-------|----------|--------|
-| Web (build-time) | `VITE_ALLOW_ANY_USER_WEB_DASHBOARD` | `true` |
-| user-service | `ALLOW_WEB_DASHBOARD_ANY_USER` | `true` |
-
-Donor Google accounts then receive a coordinator JWT for the dashboard API (same as seeding `coordinator` in `user_roles`).
-
-**Production guard (code):** enforcement is in **user-service** only. Even if flags are `true`, unlocks are forced off when:
-
-| Service | Detected as production when |
-|---------|------------------------------|
-| user-service | `DEPLOYMENT_ENV=production`, or `NODE_ENV=production` on Render (`RENDER=true`) |
-
-For a **staging** Render site that should allow MVP, set `DEPLOYMENT_ENV=staging` on user-service. Render blueprint sets `production` by default.
+**Dev / MVP unlock flags** (optional): [environment-variables.md](./environment-variables.md).
 
 ### Sign-in screen (first visit vs returning)
 
@@ -62,8 +45,9 @@ Copy `env.example` to `.env`:
 | `VITE_API_BASE_URL` | integration-service (no trailing `/`) |
 | `VITE_USER_SERVICE_BASE_URL` | user-service for Google sign-in |
 | `VITE_GOOGLE_CLIENT_ID` | Web OAuth client ID (same as `GOOGLE_CLIENT_ID_WEB`) |
-| `VITE_ALLOW_DEV_SIGN_IN` | Optional local **Dev sign in** only |
 | `VITE_DEFAULT_USER_ID` | Optional pre-fill for dev sign-in form only |
+
+Optional dev/MVP flags: [environment-variables.md](./environment-variables.md).
 
 Secrets are **not** in `.env` for production builds.
 

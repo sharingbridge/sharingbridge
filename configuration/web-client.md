@@ -93,7 +93,7 @@ Coordinators see **all** donors’ order intents on the integration host pointed
 1. **New +** → **Static Site** → repo `sharingbridge-web-app`, branch `main`.
 2. **Build command:** `npm install && npm run build`
 3. **Publish directory:** `dist`
-4. **Settings → Build & Deploy → Auto-Deploy:** **On Commit** (fixes “only deploys when I click Manual Deploy”).
+4. **Settings → Build & Deploy → Auto-Deploy:** **On Commit**, **or** **After CI Checks Pass** only if `.github/workflows/ci.yml` exists and passes on `main` (this repo includes a `CI` workflow for `npm test`).
 5. **Environment** (build-time — set before first deploy):
 
 | Key | Example |

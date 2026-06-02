@@ -44,11 +44,13 @@ Without `DATABASE_URL` (and DB-enabled code), services still use JSON on disk (n
 
 ### Auto-deploy not firing?
 
-1. **Dashboard** → service → **Settings** → **Build & Deploy** → **Auto-Deploy** = **On Commit** (not Off).
+1. **Dashboard** → service → **Settings** → **Build & Deploy** → check **Auto-Deploy** mode:
+   - **On Commit** — deploys after every push to the linked branch (simplest).
+   - **After CI Checks Pass** — deploys only when GitHub reports a **successful** check on the commit. If the repo has **no** `.github/workflows/ci.yml` (or checks fail), Render **never** auto-deploys. Either add a `CI` workflow (see `sharingbridge-web-app` / `sharingbridge-photo-service`) or switch to **On Commit**.
 2. **Branch** = `main` (matches `render.yaml`).
 3. **GitHub** repo linked to the correct service (one repo per service).
 4. Pushed to `main` on GitHub (local-only commits do not deploy).
-5. **Existing service created manually?** Either enable auto-deploy above, or **Blueprint → Sync** so `render.yaml` owns settings.
+5. **GitHub → repo → Actions:** confirm the latest `CI` workflow is green before expecting a Render deploy (when using After CI Checks Pass).
 6. **Static site:** changing `VITE_*` requires a **new deploy** (values are compile-time).
 
 **AI (Docker):** `Dockerfile` + `start.sh`. Non-empty **Start Command** in the UI → **Exited status 1**. Healthy logs: `Starting uvicorn on 0.0.0.0:…`, `GET /health … 200`. `GET /` → 404 is expected.

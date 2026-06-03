@@ -48,20 +48,20 @@ After the donor places and pays in the **vendor app**, they open **order history
 
 ### A.2 Coordinator / donor dashboards (next slice)
 
-**Goal:** Donors see **neighbourhood activity** (default **last 1 hour**) on mobile and **staging** web before/after helping a seeker; coordinators retain full ops view. AI descriptions and embeddings stay in [IMPLEMENTATION_APPROACH.md](../development/IMPLEMENTATION_APPROACH.md) (donor–seeker field slice, phases A–D).
+**Goal:** Donors see **neighbourhood activity** (default **last 2 hours**) on mobile and **staging** web before/after helping a seeker; coordinators retain full ops view. AI descriptions and embeddings stay in [IMPLEMENTATION_APPROACH.md](../development/IMPLEMENTATION_APPROACH.md) (donor–seeker field slice, phases A–D).
 
 | Viewer | List | PII / photos |
 |--------|------|----------------|
-| **Donor** (mobile + staging web) | Own intents + **neighbourhood** feed (`since=1h`, `near_lat/lng` or `locality_key`); group by day / locality (web: **By neighbourhood** when geo exists) | **No email**; opaque donor id only; reference **thumbnails only if** intent ≤ **1 hour** old |
+| **Donor** (mobile + staging web) | Own intents + **neighbourhood** feed (`since=2h`, `near_lat/lng` or `locality_key`); group by day / locality (web: **By neighbourhood** when geo exists) | **No email**; opaque donor id only; reference **thumbnails only if** intent ≤ **2 hours** old |
 | **Coordinator** | All intents; filter by day, `user_id`, last N hours, locality/map | Full ops fields; photos per policy |
 | **Admin** | Same as coordinator + user lookup | May include email for support |
 
-Donor web is available in all environments with the **limited** dashboard ([environment-variables.md](../configuration/environment-variables.md) § Web dashboard roles). Neighbourhood geo filters (`since`, `near_lat/lng`) are still future work.
+Donor web is available in all environments with the **limited** dashboard ([environment-variables.md](../configuration/environment-variables.md) § Web dashboard roles). **`since=Nh`** and **`near_lat` / `near_lng`** (radius from `DONOR_NEIGHBOURHOOD_RADIUS_KM`) filter donor lists; without viewer location, donors see only their own rows in the time window. Location is stored on `POST` when `location_lat` / `location_lng` are sent (mobile Help a seeker — wire GPS next). Named locality labels (`chennai-adyar`) remain future work.
 
 **Neighbourhood API (illustrative):**
 
-- `GET /v1/donor-seeker/order-intents?since=1h&near_lat=…&near_lng=…&radius_m=…`
-- `GET /v1/donor-seeker/order-intents?locality_key=…&since=1h`
+- `GET /v1/donor-seeker/order-intents?since=2h&near_lat=…&near_lng=…&radius_m=…`
+- `GET /v1/donor-seeker/order-intents?locality_key=…&since=2h`
 
 Requires `location_lat`, `location_lng`, `location_label`, `locality_key` on `POST` register (mobile **Help a seeker** captures GPS with consent).
 
@@ -78,8 +78,8 @@ JWT: keep active `role` per session; add `roles[]` and optional **`admin`** in `
 ### A.4 API sketch (illustrative)
 
 - `PATCH /v1/donor-seeker/order-intents/:id` — donor updates `payment_status` on own row.
-- `GET /v1/donor-seeker/order-intents?since=1h&locality_key=…` — neighbourhood + coordinator filters (§ A.2).
-- Integration-service: strip **email** from donor-role responses; omit or redact `reference_photo_*` URLs when intent age > 1h for donor JWT.
+- `GET /v1/donor-seeker/order-intents?since=2h&locality_key=…` — neighbourhood + coordinator filters (§ A.2).
+- Integration-service: strip **email** from donor-role responses; omit or redact `reference_photo_*` URLs when intent age > 2h for donor JWT.
 - Response grouping by day + `user_id` / locality: client-side today; server-side optional.
 
 **Feasibility:** High. Builds on existing routes and auth; needs Postgres + UI work.

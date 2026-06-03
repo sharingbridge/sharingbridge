@@ -13,6 +13,8 @@
 
 **Must match across services:** `DATABASE_URL` (Postgres), `AUTH_TOKEN_SECRET` (+ issuer/audience), `WEB_CORS_ORIGINS` (user-service **and** integration-service, same string), integration `API_BASE_URL` = web `VITE_API_BASE_URL` = mobile `API_BASE_URL`.
 
+**Donor feed window and radius:** set only on **integration-service** (`DONOR_NEIGHBOURHOOD_WINDOW_HOURS`, `DONOR_NEIGHBOURHOOD_RADIUS_KM`). Web and mobile read applied values from the list API response (`feed`, `since`, `neighbourhood`).
+
 Render deploy details: [backend-render.md](./backend-render.md). Auth secrets: [authentication.md](./authentication.md). DB: [database.md](./database.md).
 
 ---
@@ -62,6 +64,9 @@ Render deploy details: [backend-render.md](./backend-render.md). Auth secrets: [
 | `AI_ORCHESTRATION_TIMEOUT_MS` | `15000` | `15000` |
 | `AI_SUGGEST_VENDORS_ENABLED` | `true` | `true` |
 | `AI_INSTRUCTION_PACK_ENABLED` | `true` | `true` |
+| `DONOR_NEIGHBOURHOOD_WINDOW_HOURS` | `2` | `2` (donor list `since`, photo redaction; 1–72) |
+| `DONOR_NEIGHBOURHOOD_RADIUS_KM` | `5` | `5` (`near_lat` / `near_lng` radius; 0.5–50) |
+| `DONOR_LOCALITY_GRID_DECIMALS` | `2` | `2` (locality_key grid; 1–4) |
 
 ---
 
@@ -130,7 +135,7 @@ Emulator: use `10.0.2.2` instead of `localhost`. Physical phone: PC Wi‑Fi IPv4
 | JWT `role` | Web UI | integration `GET /v1/donor-seeker/order-intents` |
 |------------|--------|--------------------------------------------------|
 | `coordinator` | Full dashboard — donor **email + id** per intent (from Postgres `users`), all reference photos | `dashboard: "coordinator"` — includes `donor_email` when known |
-| `donor` | Limited dashboard — no other donors’ ids or emails; photos only if intent ≤ 1 hour old | `dashboard: "limited"` — no `donor_email`; photo URLs redacted after 1 hour |
+| `donor` | Limited dashboard — list capped to **`since=Nh`** (`DONOR_NEIGHBOURHOOD_WINDOW_HOURS`, default 2); no other donors’ ids or emails; photos only within that window | `dashboard: "limited"` — response includes `since` (e.g. `"2h"`); no `donor_email`; photo URLs redacted outside window |
 
 Google sign-in on web works for any account with `donor` and/or `coordinator` in `user_roles`. Users with both roles get `coordinator` on web and `donor` on mobile.
 

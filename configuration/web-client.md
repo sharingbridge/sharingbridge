@@ -11,7 +11,7 @@ Repository: `sharingbridge-web-app` (Vite + React).
 | `role` | UI |
 |--------|-----|
 | `coordinator` | Full dashboard — **donor email + user id** on each intent (list, detail, group-by-donor), all reference photos |
-| `donor` | Limited dashboard — no other donors’ emails or ids; list grouped by day; photos only when intent ≤ 1 hour old |
+| `donor` | Limited dashboard — window and radius from **integration-service env** (returned in API `feed`); browser sends `near_lat` / `near_lng` when allowed; no other donors’ emails or ids; photos only within the server window |
 
 ## How sign-in works
 
@@ -21,7 +21,7 @@ Repository: `sharingbridge-web-app` (Vite + React).
 4. user-service verifies the token, loads **`user_roles`**, mints JWT `role: coordinator` when that role exists, otherwise `donor`.
 5. JWT is stored in **sessionStorage** until **Sign out** or expiry (~1 hour).
 6. Coordinators: **email** stored in **localStorage** for **Use a different Google account** on later visits.
-7. Dashboard calls `GET /v1/donor-seeker/order-intents` with `Authorization: Bearer <jwt>` (all roles receive the full list; integration redacts fields for `donor`).
+7. Dashboard calls `GET /v1/donor-seeker/order-intents` with `Authorization: Bearer <jwt>` (donors may add `near_lat` / `near_lng`; server applies `DONOR_NEIGHBOURHOOD_*` and returns `feed` + `since` for UI copy; integration redacts fields for `donor`).
 8. On **401** or expiry → sign in again.
 
 **No client secret** in `.env` — only the Web **Client ID** (`VITE_GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_ID_WEB`).

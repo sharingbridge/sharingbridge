@@ -129,8 +129,8 @@ Emulator: use `10.0.2.2` instead of `localhost`. Physical phone: PC Wi‑Fi IPv4
 
 | JWT `role` | Web UI | integration `GET /v1/donor-seeker/order-intents` |
 |------------|--------|--------------------------------------------------|
-| `coordinator` | Full dashboard — email in header, donor ids, all reference photos | `dashboard: "coordinator"` — full records |
-| `donor` | Limited dashboard — user id in header, photos only if intent ≤ 1 hour old | `dashboard: "limited"` — photo URLs redacted after 1 hour |
+| `coordinator` | Full dashboard — donor **email + id** per intent (from Postgres `users`), all reference photos | `dashboard: "coordinator"` — includes `donor_email` when known |
+| `donor` | Limited dashboard — no other donors’ ids or emails; photos only if intent ≤ 1 hour old | `dashboard: "limited"` — no `donor_email`; photo URLs redacted after 1 hour |
 
 Google sign-in on web works for any account with `donor` and/or `coordinator` in `user_roles`. Users with both roles get `coordinator` on web and `donor` on mobile.
 

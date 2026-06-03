@@ -10,8 +10,8 @@ Repository: `sharingbridge-web-app` (Vite + React).
 
 | `role` | UI |
 |--------|-----|
-| `coordinator` | Full dashboard — email in header, donor ids in list/detail, all reference photos |
-| `donor` | Limited dashboard — user id only in header, list grouped by day, photos only when API returns URLs (intents ≤ 1 hour old) |
+| `coordinator` | Full dashboard — **donor email + user id** on each intent (list, detail, group-by-donor), all reference photos |
+| `donor` | Limited dashboard — no other donors’ emails or ids; list grouped by day; photos only when intent ≤ 1 hour old |
 
 ## How sign-in works
 

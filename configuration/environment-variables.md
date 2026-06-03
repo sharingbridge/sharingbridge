@@ -13,7 +13,7 @@
 
 **Must match across services:** `DATABASE_URL` (Postgres), `AUTH_TOKEN_SECRET` (+ issuer/audience), `WEB_CORS_ORIGINS` (user-service **and** integration-service, same string), integration `API_BASE_URL` = web `VITE_API_BASE_URL` = mobile `API_BASE_URL`.
 
-**Donor feed window and radius:** set only on **integration-service** (`DONOR_NEIGHBOURHOOD_WINDOW_HOURS`, `DONOR_NEIGHBOURHOOD_RADIUS_KM`). Web and mobile read applied values from the list API response (`feed`, `since`, `neighbourhood`).
+**Donor feed window and radius:** set only on **integration-service** (`DONOR_NEIGHBOURHOOD_WINDOW_HOURS`, `DONOR_NEIGHBOURHOOD_RADIUS_KM`). Web and mobile read applied values from the list API response (`feed`, `since`, `neighbourhood`). List geo filters use **PostGIS** (`ST_DWithin` on `order_intents.location`) when the DB has the MVP geo columns — [database.md](./database.md).
 
 Render deploy details: [backend-render.md](./backend-render.md). Auth secrets: [authentication.md](./authentication.md). DB: [database.md](./database.md).
 
@@ -134,8 +134,8 @@ Emulator: use `10.0.2.2` instead of `localhost`. Physical phone: PC Wi‑Fi IPv4
 
 | JWT `role` | Web UI | integration `GET /v1/donor-seeker/order-intents` |
 |------------|--------|--------------------------------------------------|
-| `coordinator` | Full dashboard — donor **email + id** per intent (from Postgres `users`), all reference photos | `dashboard: "coordinator"` — includes `donor_email` when known |
-| `donor` | Limited dashboard — list capped to **`since=Nh`** (`DONOR_NEIGHBOURHOOD_WINDOW_HOURS`, default 2); no other donors’ ids or emails; photos only within that window | `dashboard: "limited"` — response includes `since` (e.g. `"2h"`); no `donor_email`; photo URLs redacted outside window |
+| `coordinator` | Full dashboard — donor **email + id** per intent (from Postgres `users`), all reference photos; optional list filters `since`, `near_lat`/`near_lng`, `locality_key` (no default time cap) | `dashboard: "coordinator"` — includes `donor_email` when known |
+| `donor` | Limited dashboard — list capped to **`since=Nh`** (`DONOR_NEIGHBOURHOOD_WINDOW_HOURS`, default 2); optional `near_lat`/`near_lng`; no other donors’ ids or emails; photos only within that window | `dashboard: "limited"` — response includes `since`, `feed`; no `donor_email`; photo URLs redacted outside window |
 
 Google sign-in on web works for any account with `donor` and/or `coordinator` in `user_roles`. Users with both roles get `coordinator` on web and `donor` on mobile.
 

@@ -45,7 +45,7 @@ There is **no** runtime fallback to JSON files after cutover — import once, th
 3. Set a strong **database password** and save it (password manager). You need it for `DATABASE_URL`.
 4. Wait until the project dashboard shows the project as **ready**.
 
-PostGIS is **not** required for the MVP schema below (add later for geo features per [IMPLEMENTATION_APPROACH.md](../development/IMPLEMENTATION_APPROACH.md) if needed).
+**PostGIS is part of the MVP schema** ([schema.sql](./schema.sql)): `order_intents.location` (`geography`) + `locality_key`, GiST index, and **`ST_DWithin`** list queries in integration-service. No extra Supabase SKU — same Free/Pro Postgres. Existing projects created before this change: run [schema-postgis-migration.sql](./schema-postgis-migration.sql) once, then `npm run db:backfill-order-intent-geo` in integration-service.
 
 ---
 
@@ -293,9 +293,9 @@ Set **`DATABASE_URL`** on user-service, integration-service, and photo-service (
 | `donor_presets` | donor presets in user-service store |
 | `order_intents` | `order-intents.json` |
 
-`order_intents.payload` (JSONB) holds `verbal_handover_notes`, `presets_snapshot`, `has_reference_photo`, etc.
+`order_intents.payload` (JSONB) holds `verbal_handover_notes`, `presets_snapshot`, `has_reference_photo`, and optional **`location_lat`**, **`location_lng`**, **`location_label`**, **`locality_key`** (set on `POST` when the client sends coordinates).
 
-Primary keys and `UNIQUE` constraints create indexes automatically; [schema.sql](./schema.sql) adds two indexes on `order_intents` for list queries.
+Primary keys and `UNIQUE` constraints create indexes automatically; [schema.sql](./schema.sql) adds two indexes on `order_intents` for list queries (time-ordered lists, not geo).
 
 ---
 
@@ -305,7 +305,9 @@ Primary keys and `UNIQUE` constraints create indexes automatically; [schema.sql]
 |-------|------|-----|
 | `PRIMARY KEY` / `UNIQUE` | Automatic | Upsert by `order_intent_id`; one row per `(user_id, pack_id)` |
 | `idx_order_intents_user_updated` | Manual | Donor list: `WHERE user_id` + `ORDER BY updated_at DESC` |
-| `idx_order_intents_updated` | Manual | Coordinator list: `ORDER BY updated_at DESC` |
+| `idx_order_intents_updated` | Manual | Time-ordered lists |
+| `idx_order_intents_location` | GiST | `ST_DWithin` neighbourhood / map queries |
+| `idx_order_intents_locality_key` | Partial btree | `locality_key = $key` filters |
 
 ---
 
@@ -326,7 +328,7 @@ user-service reads **`user_roles`** and mints `role` (active) + `roles` (array).
 ## Cutover checklist
 
 - [ ] Supabase project created
-- [ ] [schema.sql](./schema.sql) run in **SQL Editor** (four tables visible in Table Editor)
+- [ ] [schema.sql](./schema.sql) run in **SQL Editor** (tables + PostGIS on `order_intents`)
 - [ ] `DATABASE_URL` set on **both** Render Node services (Supabase URI, not anon key)
 - [ ] Both services redeployed
 - [ ] One-time JSON import (when migration script exists)
@@ -348,6 +350,28 @@ user-service reads **`user_roles`** and mints `role` (active) + `roles` (array).
 | `permission denied for table users` (42501) | Tables owned by `postgres`, app uses `sharingbridge` | Run [local-postgres-grants.sql](./local-postgres-grants.sql) as `postgres` — Step A6b |
 | Used anon key as `DATABASE_URL` | Wrong credential type | Use **database URI**, not Project API keys |
 | `403 wrong_client_role` | No `coordinator` in `user_roles` | Run coordinator seed SQL |
+
+---
+
+## Geospatial data and PostGIS
+
+### What runs today (PostGIS on Postgres)
+
+| Layer | Behaviour |
+|-------|-----------|
+| **Storage** | JSONB `payload` (client fields) **plus** denormalized `locality_key` and `location geography(POINT, 4326)` on upsert. |
+| **List query** | `PostgresOrderIntentStore.listForDashboard()` — SQL `WHERE` with `updated_at`, `ST_DWithin`, or `locality_key`. Service **fails at startup** if PostGIS / `location` column is missing. |
+| **Tests** | File `OrderIntentStore` mirrors list rules in memory (no Postgres); not used in production. |
+| **Donor** | Default time window from `DONOR_NEIGHBOURHOOD_WINDOW_HOURS`; without browser location → own rows only in that window. |
+| **Coordinator** | Full history by default; optional `?since=…`, `?near_lat=&near_lng=`, `?locality_key=` hit the same SQL predicates. |
+
+### Existing databases (created before PostGIS in schema.sql)
+
+Run [schema-postgis-migration.sql](./schema-postgis-migration.sql) in Supabase SQL Editor, or `npm run db:backfill-order-intent-geo` from `sharingbridge-integration-service` with `DATABASE_URL` set. Integration-service will not start until `order_intents.location` exists and PostGIS answers `ST_DWithin`.
+
+### Coordinator map UI (later)
+
+List filtering is already in SQL. A coordinator **map** (pins, bbox) is a web-client slice on the same query params — see [Future_Extensions.md](../design/Future_Extensions.md) § A.5.
 
 ---
 

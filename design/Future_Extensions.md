@@ -13,7 +13,8 @@
 | Donor registers **order initiation** after copying delivery instructions | Shipped |
 | Fields: pack id, notes, preset snapshot, `instructions_copied` status | Shipped |
 | Donor lists **own** initiations (mobile); coordinator lists **all** (web) | Shipped |
-| Payment / delivery lifecycle, geo on record, map view | **Not shipped** |
+| Geo on order intent (`location_lat/lng`, `locality_key`); donor neighbourhood feed; PostGIS `ST_DWithin` list queries | Shipped — [database.md](../configuration/database.md) |
+| Payment / delivery lifecycle, coordinator **map** UI (bbox / clustering) | **Not shipped** |
 | Delivery photo proof, delivery-partner role | **Planned** |
 | Locality demand + vendor bidding marketplace | **Future extension** (this doc §4) |
 
@@ -53,7 +54,7 @@ After the donor places and pays in the **vendor app**, they open **order history
 | Viewer | List | PII / photos |
 |--------|------|----------------|
 | **Donor** (mobile + staging web) | Own intents + **neighbourhood** feed (`since=2h`, `near_lat/lng` or `locality_key`); group by day / locality (web: **By neighbourhood** when geo exists) | **No email**; opaque donor id only; reference **thumbnails only if** intent ≤ **2 hours** old |
-| **Coordinator** | All intents; filter by day, `user_id`, last N hours, locality/map | Full ops fields; photos per policy |
+| **Coordinator** | All intents; filter by day, `user_id`, optional `since`, `near_lat/lng`, `locality_key` (PostGIS SQL; map UI later) | Full ops fields; photos per policy |
 | **Admin** | Same as coordinator + user lookup | May include email for support |
 
 Donor web is available in all environments with the **limited** dashboard ([environment-variables.md](../configuration/environment-variables.md) § Web dashboard roles). **`since=Nh`** and **`near_lat` / `near_lng`** (radius from `DONOR_NEIGHBOURHOOD_RADIUS_KM`) filter donor lists; without viewer location, donors see only their own rows in the time window. Location is stored on `POST` when `location_lat` / `location_lng` are sent (mobile Help a seeker — wire GPS next). Named locality labels (`chennai-adyar`) remain future work.
@@ -83,6 +84,12 @@ JWT: keep active `role` per session; add `roles[]` and optional **`admin`** in `
 - Response grouping by day + `user_id` / locality: client-side today; server-side optional.
 
 **Feasibility:** High. Builds on existing routes and auth; needs Postgres + UI work.
+
+### A.5 Coordinator map UI (PostGIS list queries shipped)
+
+**Shipped:** `order_intents.location` + `listForDashboard` SQL (`ST_DWithin`, `locality_key`). Run [schema-postgis-migration.sql](../configuration/schema-postgis-migration.sql) on older DBs; `npm run db:backfill-order-intent-geo` in integration-service.
+
+**Next:** Coordinator web map (pins, bbox pan) using the same `near_lat` / `near_lng` / `since` params; optional `ST_MakeEnvelope` for viewport queries.
 
 ---
 

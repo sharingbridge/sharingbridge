@@ -21,7 +21,7 @@ Repository: `sharingbridge-web-app` (Vite + React).
 4. user-service verifies the token, loads **`user_roles`**, mints JWT `role: coordinator` when that role exists, otherwise `donor`.
 5. JWT is stored in **sessionStorage** until **Sign out** or expiry (~1 hour).
 6. Coordinators: **email** stored in **localStorage** for **Use a different Google account** on later visits.
-7. Dashboard calls `GET /v1/donor-seeker/order-intents` with `Authorization: Bearer <jwt>` (donors may add `near_lat` / `near_lng`; server applies `DONOR_NEIGHBOURHOOD_*` and returns `feed` + `since` for UI copy; integration redacts fields for `donor`).
+7. Dashboard calls `GET /v1/donor-seeker/order-intents` with `Authorization: Bearer <jwt>`. **Donors** may add `near_lat` / `near_lng`; server applies `DONOR_NEIGHBOURHOOD_*` and returns `feed` + `since` for UI copy. **Coordinators** get the full list by default; the same optional query params (`since`, `near_lat`/`near_lng`, `locality_key`) filter via PostGIS in integration-service ([database.md](./database.md)). Integration redacts fields for `donor` JWTs.
 8. On **401** or expiry → sign in again.
 
 **No client secret** in `.env` — only the Web **Client ID** (`VITE_GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_ID_WEB`).
@@ -34,7 +34,7 @@ After sign-in, the initiation list can be grouped:
 |------|----------|
 | **By donor** | Sections per `user_id` (default for coordinators) |
 | **By day** | Sections per calendar day (newest first) |
-| **By city (soon)** | Disabled until city is stored on order intents in the API |
+| **By area** (donor only, when geo exists) | Sections per `locality_key` from API grouping |
 
 **Home** in the header clears the selected row and scrolls to the top. **Refresh** reloads from integration-service.
 

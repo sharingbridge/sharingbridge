@@ -41,6 +41,21 @@ CREATE INDEX idx_order_intents_user_updated
 CREATE INDEX idx_order_intents_updated
   ON order_intents (updated_at DESC);
 
+-- Geospatial list filters (donor neighbourhood + coordinator map queries).
+-- Included in MVP schema; no extra Supabase charge beyond normal Postgres usage.
+CREATE EXTENSION IF NOT EXISTS postgis;
+
+ALTER TABLE order_intents
+  ADD COLUMN IF NOT EXISTS locality_key TEXT,
+  ADD COLUMN IF NOT EXISTS location geography(POINT, 4326);
+
+CREATE INDEX IF NOT EXISTS idx_order_intents_location
+  ON order_intents USING GIST (location);
+
+CREATE INDEX IF NOT EXISTS idx_order_intents_locality_key
+  ON order_intents (locality_key)
+  WHERE locality_key IS NOT NULL AND locality_key <> '';
+
 CREATE TABLE photo_artifacts (
   artifact_id           TEXT PRIMARY KEY,
   user_id               TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,

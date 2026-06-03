@@ -164,7 +164,7 @@ python3.13 -m venv .venv
 .\.venv\Scripts\Activate.ps1
 pip install -r requirements-dev.txt
 copy env.example .env
-# Edit .env: same DATABASE_URL and AUTH_TOKEN_SECRET as user-service; PHOTO_UPLOAD_MOCK=true OR Cloudinary keys
+# Edit .env: same DATABASE_URL and AUTH_TOKEN_SECRET as user-service; set CLOUDINARY_* (required)
 python -m pytest -q
 ```
 
@@ -312,7 +312,7 @@ python3.13 -m venv .venv
 .\.venv\Scripts\Activate.ps1
 pip install -r requirements-dev.txt
 copy env.example .env
-# Edit .env now (required): same DATABASE_URL and AUTH_TOKEN_SECRET as user-service; PHOTO_UPLOAD_MOCK=true OR Cloudinary keys
+# Edit .env now (required): same DATABASE_URL and AUTH_TOKEN_SECRET as user-service; set CLOUDINARY_* (required)
 # Optional: python -m pytest -q
 ```
 
@@ -713,7 +713,7 @@ Uses the same authed **`GET …/preferences`** load as Donor Setup (saved preset
 4. **Step 3 — Copy instructions and place order:** review the text in the filled card, tap **Copy instructions to clipboard and register donation intent**. The app copies to the clipboard and calls `POST /v1/donor-seeker/order-intents` with reference photo URLs when upload succeeded. On first success you should see **Order intent registered** with a reference id and a SnackBar saying **Donation intent registered**; **Open …** rows unlock for saved presets with valid **http/https** links. Paste into the vendor app’s delivery-notes field and complete payment there.
 5. **Repeat tap (same session):** tap the same button again without regenerating instructions. The server **updates** the existing intent for that `pack_id` (same reference id, HTTP `200`, `created: false` in the API body) — it does **not** create a second row. The SnackBar should say **Donation intent updated**; the reference id on screen stays the same.
 
-**Photo-service troubleshooting:** SnackBar “Could not upload photo…” → start **§2b**, check `PHOTO_SERVICE_BASE_URL` (**§3-host**), and `.env` (`PHOTO_UPLOAD_MOCK=true` or Cloudinary keys). Physical device: use your PC’s Wi‑Fi IP, not `localhost` or `10.0.2.2`.
+**Photo-service troubleshooting:** SnackBar “Could not upload photo…” → start **§2b**, check `PHOTO_SERVICE_BASE_URL` (**§3-host**), and `.env` (`CLOUDINARY_*` required). Physical device: use your PC’s Wi‑Fi IP, not `localhost` or `10.0.2.2`.
 
 If presets fail to load (offline/server), you can still generate instructions; **Open …** stays disabled until registration succeeds. If order-intent registration fails, the SnackBar still confirms clipboard copy and you can open vendor apps manually.
 

@@ -10,7 +10,7 @@ python3.13 -m venv .venv
 .\.venv\Scripts\Activate.ps1
 pip install -r requirements-dev.txt
 copy env.example .env
-# Edit .env before pytest or uvicorn (same DATABASE_URL + AUTH_TOKEN_SECRET as user-service)
+# Edit .env before pytest or uvicorn (DATABASE_URL, AUTH_TOKEN_SECRET, CLOUDINARY_* required)
 python -m pytest -q
 ```
 

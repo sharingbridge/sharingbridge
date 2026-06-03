@@ -64,7 +64,7 @@ Stored fields include `pack_id`, preset snapshot, reference-photo flag, and verb
 
 Flow: donor picks camera or gallery → upload on **Get AI delivery instructions** → `reference_photo_artifact_id` + Cloudinary URLs stored on order intent.
 
-Local: set `PHOTO_UPLOAD_MOCK=true` without Cloudinary credentials, or configure `CLOUDINARY_*` in photo-service `.env`. Run `photo_artifacts` DDL from [schema.sql](./schema.sql) (or let photo-service create the table on startup).
+Local: configure `CLOUDINARY_*` (or `CLOUDINARY_URL`) in photo-service `.env`. Run `photo_artifacts` DDL from [schema.sql](./schema.sql) (or let photo-service create the table on startup).
 
 ## Planned (Track B+)
 

@@ -121,7 +121,7 @@ Web app: `sharingbridge-web-app/.env` from `env.example` (`VITE_*` URLs). Rebuil
 2. user-service → URL + `AUTH_TOKEN_SECRET` + `DATABASE_URL`
 3. ai-orchestration → URL + API key + `SHARINGBRIDGE_WEBSITE_URL=pending`
 4. integration-service → both URLs + both secrets + `DATABASE_URL`
-5. photo-service → same `DATABASE_URL` + `AUTH_TOKEN_SECRET` (+ Cloudinary or `PHOTO_UPLOAD_MOCK=true`)
+5. photo-service → same `DATABASE_URL` + `AUTH_TOKEN_SECRET` + **Cloudinary** (`CLOUDINARY_*` or `CLOUDINARY_URL`)
 6. web-app static site → `VITE_*` → then Phase 4 CORS + Google origins
 
 Blueprints: each repo’s `render.yaml`. Integration still needs pasted URLs and `AUTH_TOKEN_SECRET` after 1–2 exist.

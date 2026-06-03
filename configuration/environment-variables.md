@@ -78,11 +78,11 @@ Render deploy details: [backend-render.md](./backend-render.md). Auth secrets: [
 | `AUTH_TOKEN_AUDIENCE` | `sharingbridge-clients` | same |
 | `AUTH_TOKEN_ISSUER` | `sharingbridge-user-service` | same |
 | `AUTH_TOKEN_SECRET` | same JWT secret | same |
-| `CLOUDINARY_API_KEY` | | set when `PHOTO_UPLOAD_MOCK=false` |
-| `CLOUDINARY_API_SECRET` | | |
-| `CLOUDINARY_CLOUD_NAME` | when real uploads | set when `PHOTO_UPLOAD_MOCK=false` |
+| `CLOUDINARY_API_KEY` | from [Cloudinary console](https://cloudinary.com/console) | required |
+| `CLOUDINARY_API_SECRET` | | required |
+| `CLOUDINARY_CLOUD_NAME` | | required |
+| `CLOUDINARY_URL` | optional alternative to the three keys above | `cloudinary://…` |
 | `DATABASE_URL` | same Postgres | same |
-| `PHOTO_UPLOAD_MOCK` | `true` (no Cloudinary) | `true` until Cloudinary configured |
 
 See [photo-service-local.md](./photo-service-local.md).
 
@@ -146,7 +146,7 @@ Google sign-in on web works for any account with `donor` and/or `coordinator` in
 | Repo | Key vars |
 |------|----------|
 | integration-service | `AUTH_TOKEN_SECRET`, `DATABASE_URL`, `USER_SERVICE_BASE_URL=http://localhost:8081`, `WEB_CORS_ORIGINS=http://localhost:5173` |
-| photo-service | `AUTH_TOKEN_SECRET`, `DATABASE_URL`, `PHOTO_UPLOAD_MOCK=true` |
+| photo-service | `AUTH_TOKEN_SECRET`, `CLOUDINARY_*`, `DATABASE_URL` |
 | user-service | `AUTH_TOKEN_SECRET`, `DATABASE_URL`, `GOOGLE_CLIENT_ID_WEB`, `WEB_CORS_ORIGINS=http://localhost:5173` |
 | web-app | `VITE_API_BASE_URL`, `VITE_GOOGLE_CLIENT_ID`, `VITE_USER_SERVICE_BASE_URL` → localhost ports above |
 

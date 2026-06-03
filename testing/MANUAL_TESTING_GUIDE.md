@@ -478,23 +478,7 @@ Invoke-RestMethod -Method Post -Uri http://localhost:8080/v1/donor-setup/prefere
 
 Expect each user to only see their own presets.
 
-### 2h. (Optional) Verify user-service backend switch
-
-```powershell
-$env:PREFERENCES_BACKEND = "user_service"
-$env:USER_SERVICE_BASE_URL = "http://localhost:8081"
-npm start
-```
-
-Then unset and restart (to return to local backend):
-
-```powershell
-Remove-Item Env:PREFERENCES_BACKEND
-Remove-Item Env:USER_SERVICE_BASE_URL
-npm start
-```
-
-### 2i. Instruction pack (integration → orchestration)
+### 2h. Instruction pack (integration → orchestration)
 
 No bearer required for MVP (optional `user_id` in body). Orchestration flags should be on (§2a.1).
 
@@ -696,19 +680,9 @@ Use after **§3-auth** (Google) or **§3-dev** (token as `alice`). On the **emul
 
 Pick one approach:
 
-0. **In the app (Saved presets screen):** tap **Clear all** → confirm. No shell commands; uses integration-service `DELETE` (or user-service `PUT` with `[]` when that backend is enabled).
+0. **In the app (Saved presets screen):** tap **Clear all** → confirm. No shell commands; integration delegates to user-service `PUT { presets: [] }`.
 
-1. **Wipe the local integration file store** (typical dev: `PREFERENCES_BACKEND=local`): stop `npm start` on integration-service, delete the data file or folder, restart.
-
-   ```powershell
-   cd D:\kannan\sharingbridge\sharingbridge-integration-service
-   Remove-Item -Recurse -Force data -ErrorAction SilentlyContinue
-   npm start
-   ```
-
-   To clear **only one user**, edit `data\preferences.json` and remove that user’s array under `byUser` (or set it to `[]`), then restart the server.
-
-2. **User-service backend** (`PREFERENCES_BACKEND=user_service`): presets live in Postgres table **`donor_presets`**. Either clear via API (same bearer token as the app), or in pgAdmin/psql:
+1. **Postgres** (requires user-service + integration running with `USER_SERVICE_BASE_URL`): presets live in **`donor_presets`**. Clear via API (same bearer token as the app), or in pgAdmin/psql:
 
    ```sql
    UPDATE donor_presets SET presets_json = '[]'::jsonb, updated_at = now()
@@ -847,7 +821,7 @@ Windows).
 
 ### 5b. (Optional) Copy file-backed presets into user-service
 
-Use this **before or right after** you point integration-service at user-service presets (`PREFERENCES_BACKEND=user_service`). Requires user-service running and the **same `AUTH_TOKEN_SECRET`** as integration-service:
+One-time import from legacy `data/preferences.json` into Postgres. Requires user-service running and the **same `AUTH_TOKEN_SECRET`** as integration-service:
 
 ```powershell
 cd D:\kannan\sharingbridge\sharingbridge-integration-service

@@ -62,7 +62,7 @@ The **donor-setup slice** that is live in code is intentionally a **minimal MVP*
 - File-backed preferences store (`src/preferencesStore.js`) accessed via a `PreferencesRepository` abstraction (`src/preferencesRepository.js`).
   - `LocalPreferencesRepository` is wired today.
   - `UserServicePreferencesRepository` is wired to `sharingbridge-user-service` (`GET/PUT /v1/users/{user_id}/donor-presets`, **`POST …/donor-presets/delete-item`** for single-row delete) and forwards donor auth headers.
-  - Backend selected by `PREFERENCES_BACKEND` env (`local` default, `user_service` requires `USER_SERVICE_BASE_URL`).
+  - Presets via `USER_SERVICE_BASE_URL` → user-service Postgres (`donor_presets`); file store tests-only.
 - Auth context (`src/authContext.js`): verifies signed bearer tokens (HS256) issued by user-service. `X-User-Id` fallback is removed. Missing/invalid token → `401 missing_auth_context`; URL/payload mismatch vs token subject → `403 user_id_mismatch`.
 - HTTP server is exposed as a factory (`createIntegrationServer`) so tests can boot it against a temp DB.
 - `DELETE /v1/donor-setup/preferences?user_id=…` clears all presets for the authed user (local store `clearForUser`; user-service mode uses `PUT` with `[]`). Mobile **Saved presets → Clear all** calls this and clears offline cache.
@@ -155,8 +155,7 @@ Tasks #1-#5 are complete. Remaining priority order:
    - Add explicit token-expiry refresh flow in mobile UX.
 
 3. **Cutover validation then code removal (optional final cleanup).**
-   - Run backfill + `PREFERENCES_BACKEND=user_service` in a staging environment; confirm donor-setup flows.
-   - Remove `PreferencesStore` / `LocalPreferencesRepository` when no deployment needs local file mode.
+   - Run `npm run backfill:user-service-presets` if legacy `data/preferences.json` exists; confirm donor-setup flows against user-service.
 
 4. **Track A — hosted MVP backend.** [configuration/backend-render.md](../configuration/backend-render.md). Smoke: MANUAL_TESTING_GUIDE **§6** (hosted); web dashboard **§4**. Then **Track B:** `sharingbridge-photo-service` + mobile upload.
 5. **AI descriptions + embeddings** — [IMPLEMENTATION_APPROACH.md](./IMPLEMENTATION_APPROACH.md) § donor–seeker field slice; optional `AI_LLM_MODE=openai`; Cloudinary TTL (1–2h) aligned with secure-link policy.

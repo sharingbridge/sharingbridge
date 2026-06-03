@@ -2,6 +2,8 @@
 
 **Master index** — the only place with full per-service tables. Other configuration docs link here instead of repeating keys. Each repo also has `env.example` → copy to `.env` (gitignored).
 
+Tables are sorted **A–Z by variable name** to match Render’s environment UI.
+
 | Service | Config file | Load when |
 |---------|-------------|-----------|
 | user-service | `sharingbridge-user-service/.env` | `npm start` (dotenv) |
@@ -23,10 +25,10 @@ Render deploy details: [backend-render.md](./backend-render.md). Auth secrets: [
 
 | Variable | Used on | Purpose |
 |----------|---------|---------|
-| `DATABASE_URL` | user-service, integration-service, photo-service | Postgres (Supabase in prod) |
-| `AUTH_TOKEN_SECRET` | user-service, integration-service, photo-service | HS256 JWT signing — **same value** on all three |
+| `AUTH_TOKEN_AUDIENCE` | user-service, integration-service, photo-service | `sharingbridge-clients` |
 | `AUTH_TOKEN_ISSUER` | same | `sharingbridge-user-service` |
-| `AUTH_TOKEN_AUDIENCE` | same | `sharingbridge-clients` |
+| `AUTH_TOKEN_SECRET` | same | HS256 JWT signing — **same value** on all three |
+| `DATABASE_URL` | same | Postgres (Supabase in prod) |
 | `WEB_CORS_ORIGINS` | user-service, integration-service | Browser origin(s) of the dashboard, e.g. `http://localhost:5173` — **not** the API URL |
 
 ---
@@ -35,15 +37,15 @@ Render deploy details: [backend-render.md](./backend-render.md). Auth secrets: [
 
 | Variable | Local example | Render production |
 |----------|---------------|-------------------|
-| `PORT` | `8081` | injected by Render — do not set |
-| `DATABASE_URL` | `postgresql://…@localhost:5432/sharingbridge` | Supabase URI |
-| `AUTH_TOKEN_SECRET` | shared secret | generated, same on integration + photo |
-| `AUTH_TOKEN_ISSUER` | `sharingbridge-user-service` | same |
 | `AUTH_TOKEN_AUDIENCE` | `sharingbridge-clients` | same |
+| `AUTH_TOKEN_ISSUER` | `sharingbridge-user-service` | same |
+| `AUTH_TOKEN_SECRET` | shared secret | generated, same on integration + photo |
 | `AUTH_TOKEN_TTL_SECONDS` | `3600` | `3600` |
-| `WEB_CORS_ORIGINS` | `http://localhost:5173` | `https://<static-site>.onrender.com` |
-| `GOOGLE_CLIENT_ID_WEB` | Web OAuth client ID | same as `VITE_GOOGLE_CLIENT_ID` |
+| `DATABASE_URL` | `postgresql://…@localhost:5432/sharingbridge` | Supabase URI |
 | `GOOGLE_CLIENT_ID_ANDROID` | Android OAuth client ID | when mobile uses Google |
+| `GOOGLE_CLIENT_ID_WEB` | Web OAuth client ID | same as `VITE_GOOGLE_CLIENT_ID` |
+| `PORT` | `8081` | injected by Render — do not set |
+| `WEB_CORS_ORIGINS` | `http://localhost:5173` | `https://<static-site>.onrender.com` |
 
 ---
 
@@ -51,22 +53,21 @@ Render deploy details: [backend-render.md](./backend-render.md). Auth secrets: [
 
 | Variable | Local example | Render production |
 |----------|---------------|-------------------|
-| `PORT` | `8080` | injected by Render |
-| `DATABASE_URL` | **same** as user-service | same |
-| `AUTH_TOKEN_SECRET` | **same** as user-service | same |
-| `AUTH_TOKEN_ISSUER` | `sharingbridge-user-service` | same |
-| `AUTH_TOKEN_AUDIENCE` | `sharingbridge-clients` | same |
-| `WEB_CORS_ORIGINS` | **same string** as user-service | same |
-| `PREFERENCES_BACKEND` | `user_service` | `user_service` |
-| `USER_SERVICE_BASE_URL` | `http://localhost:8081` | `https://<user-host>.onrender.com` |
+| `AI_INSTRUCTION_PACK_ENABLED` | `true` | `true` |
 | `AI_ORCHESTRATION_BASE_URL` | `http://localhost:8091` | `https://<ai-host>.onrender.com` |
 | `AI_ORCHESTRATION_INTERNAL_API_KEY` | shared with ai-orchestration | same |
 | `AI_ORCHESTRATION_TIMEOUT_MS` | `15000` | `15000` |
 | `AI_SUGGEST_VENDORS_ENABLED` | `true` | `true` |
-| `AI_INSTRUCTION_PACK_ENABLED` | `true` | `true` |
-| `DONOR_NEIGHBOURHOOD_WINDOW_HOURS` | `2` | `2` (donor list `since`, photo redaction; 1–72) |
-| `DONOR_NEIGHBOURHOOD_RADIUS_KM` | `5` | `5` (`near_lat` / `near_lng` radius; 0.5–50) |
+| `AUTH_TOKEN_AUDIENCE` | `sharingbridge-clients` | same |
+| `AUTH_TOKEN_ISSUER` | `sharingbridge-user-service` | same |
+| `AUTH_TOKEN_SECRET` | **same** as user-service | same |
+| `DATABASE_URL` | **same** as user-service | same |
 | `DONOR_LOCALITY_GRID_DECIMALS` | `2` | `2` (locality_key grid; 1–4) |
+| `DONOR_NEIGHBOURHOOD_RADIUS_KM` | `5` | `5` (`near_lat` / `near_lng` radius; 0.5–50) |
+| `DONOR_NEIGHBOURHOOD_WINDOW_HOURS` | `2` | `2` (donor list `since`, photo redaction; 1–72) |
+| `PORT` | `8080` | injected by Render — do not set |
+| `USER_SERVICE_BASE_URL` | `http://localhost:8081` (required) | `https://<user-host>.onrender.com` — donor presets in Postgres |
+| `WEB_CORS_ORIGINS` | **same string** as user-service | same |
 
 ---
 
@@ -74,14 +75,14 @@ Render deploy details: [backend-render.md](./backend-render.md). Auth secrets: [
 
 | Variable | Local example | Render production |
 |----------|---------------|-------------------|
-| `DATABASE_URL` | same Postgres | same |
-| `AUTH_TOKEN_SECRET` | same JWT secret | same |
-| `AUTH_TOKEN_ISSUER` | `sharingbridge-user-service` | same |
 | `AUTH_TOKEN_AUDIENCE` | `sharingbridge-clients` | same |
-| `PHOTO_UPLOAD_MOCK` | `true` (no Cloudinary) | `true` until Cloudinary configured |
-| `CLOUDINARY_CLOUD_NAME` | when real uploads | set when `PHOTO_UPLOAD_MOCK=false` |
-| `CLOUDINARY_API_KEY` | | |
+| `AUTH_TOKEN_ISSUER` | `sharingbridge-user-service` | same |
+| `AUTH_TOKEN_SECRET` | same JWT secret | same |
+| `CLOUDINARY_API_KEY` | | set when `PHOTO_UPLOAD_MOCK=false` |
 | `CLOUDINARY_API_SECRET` | | |
+| `CLOUDINARY_CLOUD_NAME` | when real uploads | set when `PHOTO_UPLOAD_MOCK=false` |
+| `DATABASE_URL` | same Postgres | same |
+| `PHOTO_UPLOAD_MOCK` | `true` (no Cloudinary) | `true` until Cloudinary configured |
 
 See [photo-service-local.md](./photo-service-local.md).
 
@@ -91,10 +92,10 @@ See [photo-service-local.md](./photo-service-local.md).
 
 | Variable | Typical value |
 |----------|----------------|
-| `AI_ORCHESTRATION_INTERNAL_API_KEY` | same as integration-service |
 | `AI_LLM_MODE` | `deterministic` (MVP) |
-| `SHARINGBRIDGE_WEBSITE_URL` | `pending` |
+| `AI_ORCHESTRATION_INTERNAL_API_KEY` | same as integration-service |
 | `OPENAI_API_KEY` | omit for MVP |
+| `SHARINGBRIDGE_WEBSITE_URL` | `pending` |
 
 See [ai-orchestration-local.md](./ai-orchestration-local.md).
 
@@ -107,8 +108,8 @@ Build-time only (`VITE_*` in `.env` before `npm run build` or `npm run dev`).
 | Variable | Local example | Render production |
 |----------|---------------|-------------------|
 | `VITE_API_BASE_URL` | `http://localhost:8080` | `https://<integration-host>.onrender.com` |
-| `VITE_USER_SERVICE_BASE_URL` | `http://localhost:8081` | `https://<user-host>.onrender.com` |
 | `VITE_GOOGLE_CLIENT_ID` | Web OAuth client ID | same as `GOOGLE_CLIENT_ID_WEB` |
+| `VITE_USER_SERVICE_BASE_URL` | `http://localhost:8081` | `https://<user-host>.onrender.com` |
 
 CORS is **not** set here — set `WEB_CORS_ORIGINS` on both Node backends. See [web-client.md](./web-client.md).
 
@@ -120,11 +121,12 @@ No `.env` file — pass at `flutter run`:
 
 | Define | Purpose |
 |--------|---------|
-| `GOOGLE_CLIENT_ID` | Android OAuth client ID |
-| `USER_SERVICE_BASE_URL` | user-service base URL (no trailing `/`) |
 | `API_BASE_URL` | integration-service — **must match** web `VITE_API_BASE_URL` for same data |
+| `AUTH_TOKEN` | dev only — pre-minted JWT (`node scripts/mint-dev-jwt.mjs` in user-service with same `AUTH_TOKEN_SECRET`) |
+| `GOOGLE_CLIENT_ID` | Android OAuth client ID |
 | `PHOTO_SERVICE_BASE_URL` | photo-service (optional, for reference photos) |
-| `USER_ID` + `AUTH_TOKEN` | dev only — pre-minted JWT (`node scripts/mint-dev-jwt.mjs` in user-service with same `AUTH_TOKEN_SECRET`) |
+| `USER_ID` | dev only — pairs with `AUTH_TOKEN` |
+| `USER_SERVICE_BASE_URL` | user-service base URL (no trailing `/`) |
 
 Emulator: use `10.0.2.2` instead of `localhost`. Physical phone: PC Wi‑Fi IPv4. See [mobile-client.md](./mobile-client.md).
 
@@ -143,9 +145,9 @@ Google sign-in on web works for any account with `donor` and/or `coordinator` in
 
 | Repo | Key vars |
 |------|----------|
-| user-service | `DATABASE_URL`, `AUTH_TOKEN_SECRET`, `GOOGLE_CLIENT_ID_WEB`, `WEB_CORS_ORIGINS=http://localhost:5173` |
-| integration-service | same `DATABASE_URL` + `AUTH_TOKEN_SECRET`, `USER_SERVICE_BASE_URL=http://localhost:8081`, same `WEB_CORS_ORIGINS` |
-| web-app | `VITE_*_BASE_URL` → localhost ports above, `VITE_GOOGLE_CLIENT_ID` |
-| photo-service | same DB + JWT; `PHOTO_UPLOAD_MOCK=true` |
+| integration-service | `AUTH_TOKEN_SECRET`, `DATABASE_URL`, `USER_SERVICE_BASE_URL=http://localhost:8081`, `WEB_CORS_ORIGINS=http://localhost:5173` |
+| photo-service | `AUTH_TOKEN_SECRET`, `DATABASE_URL`, `PHOTO_UPLOAD_MOCK=true` |
+| user-service | `AUTH_TOKEN_SECRET`, `DATABASE_URL`, `GOOGLE_CLIENT_ID_WEB`, `WEB_CORS_ORIGINS=http://localhost:5173` |
+| web-app | `VITE_API_BASE_URL`, `VITE_GOOGLE_CLIENT_ID`, `VITE_USER_SERVICE_BASE_URL` → localhost ports above |
 
 Restart Node after `.env` changes. Restart `npm run dev` after web `VITE_*` changes.

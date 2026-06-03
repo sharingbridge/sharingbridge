@@ -48,7 +48,7 @@ Stored fields include `pack_id`, preset snapshot, reference-photo flag, and verb
 |------------|---------|
 | Instruction pack | integration → ai-orchestration |
 | Donation intent register | integration (`POST …/order-intents`) |
-| Presets | integration → user-service when `PREFERENCES_BACKEND=user_service` |
+| Presets | integration → user-service (`USER_SERVICE_BASE_URL`) → Postgres `donor_presets` |
 
 ## AI instruction text
 

@@ -4,8 +4,8 @@ info:
   version: 0.2.0
   description: |
     HTTP API exposed by **sharingbridge-integration-service** for donor preset
-    persistence. The mobile app targets this service; when `PREFERENCES_BACKEND=user_service`,
-    integration forwards to **sharingbridge-user-service** donor-presets routes.
+    persistence. The mobile app calls integration-service; integration forwards to
+    **sharingbridge-user-service** (`USER_SERVICE_BASE_URL`) and Postgres `donor_presets`.
 
     **Auth:** `Authorization: Bearer <JWT>` (HS256 minted by user-service). `user_id` in
     query/body must match the token subject or the server returns `403 user_id_mismatch`.

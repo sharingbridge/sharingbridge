@@ -56,7 +56,7 @@ Optional branches (any time after Phase 1):
 | **Mobile URLs (emulator, phone, Wi‑Fi)** | [mobile-client.md](./mobile-client.md) |
 | **Manual test scripts** | [MANUAL_TESTING_GUIDE.md](../testing/MANUAL_TESTING_GUIDE.md) |
 | **Product extensions (not built yet)** | [Future Extensions](../design/Future_Extensions.md) |
-| **Agent / repo-wide doc map** | [AGENT_HANDOFF.md](../development/AGENT_HANDOFF.md) |
+| **Agent / development docs** | [development/README.md](../development/README.md) · [AGENT_HANDOFF.md](../development/AGENT_HANDOFF.md) |
 
 ---
 

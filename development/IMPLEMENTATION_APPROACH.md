@@ -154,7 +154,7 @@ Maps BRD steps **3–11** to AI-related capabilities. **Shipped today (mobile):*
 
 - **Pre-field (shipped):** Donor Setup saves preset `order_url` values (http/https) per vendor/restaurant.
 - **Field use:** Offer food help loads presets via `GET …/preferences`; after copy, `launchUrl` opens the chosen preset.
-- **Growth:** Integration-service builds vendor-specific deep links with embedded secure instruction reference (`ExternalVendorService` / architecture §3.5); OAuth/deep-link skeleton tracked in `MVP_BOOTSTRAP_ISSUES.md` §4.
+- **Growth:** Integration-service builds vendor-specific deep links with embedded secure instruction reference (`ExternalVendorService` / architecture §3.5); vendor OAuth/deep-link skeleton not shipped — see [Future_Extensions.md](../design/Future_Extensions.md).
 - **Acceptance:** Donor completes vendor payment outside SharingBridge; no in-app checkout.
 
 **3) Delivery instruction pack (AI-generated)**
@@ -208,10 +208,10 @@ Delivery instruction: Please proceed to <geo_coordinates>. Identify the seeker u
 
 - Consent required before reference photo; offer verbal-only path.
 - Minimize biometric data in paste text; prefer secure link for photo access.
-- TTL: secure links active until delivery completion + 30 minutes (architecture default).
-- Align “faceprint” language with counsel; store embeddings server-side only.
+- TTL: secure links active until delivery completion + 30 minutes (architecture default); **Cloudinary / donor reference photos:** target **1–2 hour** distribution window for neighbourhood dashboards (see [Future_Extensions.md](../design/Future_Extensions.md) Phase A.2 donor photo rule).
+- Align “faceprint” language with counsel; store embeddings server-side only (not raw photos in Postgres when regulatory mode applies).
 
-See `development/MVP_BOOTSTRAP_ISSUES.md` §§3–4, 6, 8–10 for repo-level checklists.
+Repo-level checklists: [AI_PLATFORM_INTEGRATION.md](./AI_PLATFORM_INTEGRATION.md); product backlog [Future_Extensions.md](../design/Future_Extensions.md).
 
 **LLM hosting and bridges (LangChain, model APIs, mobile ↔ backend):** Not implemented in code today. Planning, env vars, sequences, and bootstrap checklist live in **`development/AI_PLATFORM_INTEGRATION.md`**. Rule: clients call integration-service (or gateway) only; orchestration service holds API keys and LangChain chains.
 
@@ -225,7 +225,7 @@ See `development/MVP_BOOTSTRAP_ISSUES.md` §§3–4, 6, 8–10 for repo-level ch
 - Admin/coordinator dashboard: active orders, statuses, and exception views
 - Vendor/coordinator support views for order follow-up and issue handling
 - Search/filter panels for order timeline and beneficiary-assistance context
-- **Roadmap detail (sanitized):** [design/Future_Extensions.md](../design/Future_Extensions.md) — Phase A: donor marks payment done; Phase B: delivery photo; Phase C: locality demand + vendor bidding (direct donor→vendor payment, no platform escrow)
+- **Roadmap detail (sanitized):** [design/Future_Extensions.md](../design/Future_Extensions.md) — Phase A: neighbourhood donor/coordinator dashboards (no donor email; photos ≤1h), payment-done, geo on intent; Phase B: delivery photo; Phase C: locality demand + vendor bidding (direct donor→vendor payment, no platform escrow)
 
 **Weeks 7-10 (Monitoring + Governance):**
 - Operational analytics views (trend, success/failure reasons, regional status)

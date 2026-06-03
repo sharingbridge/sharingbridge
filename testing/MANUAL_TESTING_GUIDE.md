@@ -9,7 +9,7 @@ This guide walks through how to verify the donor-setup modules and the
 All commands assume **PowerShell on Windows**. Translate to bash as
 needed.
 
-**Path note:** GitHub repository slugs use the `sharingbridge-*` prefix. Examples assume sibling service clones live under one parent folder, e.g. `D:\kannan\sharingbridge\sharingbridge-mobile-app` (coordination docs often live in `D:\kannan\sharingbridge\sharingbridge`). Adjust drive and parent path for your machine; use the same substitution in every `cd` if your layout differs (see `development/GITHUB_ORG_AND_REPO_RENAMES.md`).
+**Path note:** GitHub repository slugs use the `sharingbridge-*` prefix. Examples assume sibling service clones live under one parent folder, e.g. `D:\kannan\sharingbridge\sharingbridge-mobile-app` (coordination docs often live in `D:\kannan\sharingbridge\sharingbridge`). Adjust drive and parent path for your machine; slug table in `development/AGENT_HANDOFF.md` § GitHub.
 
 ## Modules in scope
 

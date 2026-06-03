@@ -170,7 +170,7 @@ Exact state names may evolve in `sharingbridge-order-service`; treat this as the
 
 - **Donor setup only:** [Donor_Setup_AI_Search_Sequence.md](Donor_Setup_AI_Search_Sequence.md)
 - **Deep link + secure beneficiary data:** Technical Architecture §3.5 and Strategy 2 (external vendors)
-- **Per-repo build checklists:** [MVP_BOOTSTRAP_ISSUES.md](../development/MVP_BOOTSTRAP_ISSUES.md)
+- **Build status and backlog:** [AGENT_HANDOFF.md](../development/AGENT_HANDOFF.md), [Future_Extensions.md](./Future_Extensions.md), [IMPLEMENTATION_APPROACH.md](../development/IMPLEMENTATION_APPROACH.md)
 
 ---
 

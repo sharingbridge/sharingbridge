@@ -288,8 +288,6 @@ Feature flag example: `AI_SUGGEST_VENDORS_ENABLED=true` in integration-service e
 - [ ] Add LangSmith project for dev tracing (optional)
 - [ ] Document smoke steps in `testing/MANUAL_TESTING_GUIDE.md` when phase 1 ships
 
-See [MVP_BOOTSTRAP_ISSUES.md](./MVP_BOOTSTRAP_ISSUES.md) §10 for copy-ready issue text.
-
 ---
 
 ## Document map (AI-related)
@@ -300,4 +298,4 @@ See [MVP_BOOTSTRAP_ISSUES.md](./MVP_BOOTSTRAP_ISSUES.md) §10 for copy-ready iss
 | [IMPLEMENTATION_APPROACH.md](./IMPLEMENTATION_APPROACH.md) | Product-facing AI interactions (4 capabilities) |
 | [Donor_Setup_AI_Search_Sequence.md](../design/Donor_Setup_AI_Search_Sequence.md) | Donor setup sequence (update when orchestration ships) |
 | [SharingBridge_End_to_End_Workflow.md](../design/SharingBridge_End_to_End_Workflow.md) | Full journey diagrams |
-| [MVP_BOOTSTRAP_ISSUES.md](./MVP_BOOTSTRAP_ISSUES.md) | Per-repo checklists |
+| [AGENT_HANDOFF.md](./AGENT_HANDOFF.md) | Shipped vs planned status |

@@ -57,7 +57,7 @@ After the donor places and pays in the **vendor app**, they open **order history
 | **Coordinator** | All intents; filter by day, `user_id`, optional `since`, `near_lat/lng`, `locality_key` (PostGIS SQL; map UI later) | Full ops fields; photos per policy |
 | **Admin** | Same as coordinator + user lookup | May include email for support |
 
-Donor web is available in all environments with the **limited** dashboard ([environment-variables.md](../configuration/environment-variables.md) § Web dashboard roles). **`since=Nh`** and **`near_lat` / `near_lng`** (radius from `DONOR_NEIGHBOURHOOD_RADIUS_KM`) filter donor lists; without viewer location, donors see only their own rows in the time window. Location is stored on `POST` when `location_lat` / `location_lng` are sent (mobile Help a seeker — wire GPS next). Named locality labels (`chennai-adyar`) remain future work.
+Donor web is available in all environments with the **limited** dashboard ([environment-variables.md](../configuration/environment-variables.md) § Web dashboard roles). **`since=Nh`** and **`near_lat` / `near_lng`** (radius from `DONOR_NEIGHBOURHOOD_RADIUS_KM`) filter donor lists; without viewer location, donors see only their own rows in the time window. Location is stored on `POST` when `location_lat` / `location_lng` are sent (mobile **Help a seeker** captures GPS on copy/register). Named locality labels (`chennai-adyar`) remain future work.
 
 **Neighbourhood API (illustrative):**
 

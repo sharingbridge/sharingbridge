@@ -34,7 +34,7 @@ After sign-in, the initiation list can be grouped:
 |------|----------|
 | **By donor** | Sections per `user_id` (default for coordinators) |
 | **By day** | Sections per calendar day (newest first) |
-| **By area** (donor only, when geo exists) | Sections per `locality_key` from API grouping |
+| **By area** | Sections per `locality_key` / `location_label`; rows without location appear under **No location on record** |
 
 **Home** in the header clears the selected row and scrolls to the top. **Refresh** reloads from integration-service.
 

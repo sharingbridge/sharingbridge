@@ -56,7 +56,7 @@ After the donor places and pays in the **vendor app**, they open **order history
 | **Coordinator** | All intents; filter by day, `user_id`, last N hours, locality/map | Full ops fields; photos per policy |
 | **Admin** | Same as coordinator + user lookup | May include email for support |
 
-Donor web on hosted env: `DEPLOYMENT_ENV=staging` + `ALLOW_WEB_DASHBOARD_ANY_USER` — not production ([environment-variables.md](../configuration/environment-variables.md)).
+Donor web is available in all environments with the **limited** dashboard ([environment-variables.md](../configuration/environment-variables.md) § Web dashboard roles). Neighbourhood geo filters (`since`, `near_lat/lng`) are still future work.
 
 **Neighbourhood API (illustrative):**
 

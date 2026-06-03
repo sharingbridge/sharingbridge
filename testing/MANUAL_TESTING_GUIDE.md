@@ -337,20 +337,11 @@ Mobile must pass `--dart-define=PHOTO_SERVICE_BASE_URL=…` (**§3-host**). Uplo
 
 In another window, drive the API.
 
-First, mint a signed token from user-service (required for all preferences endpoints):
+Mint a signed token (same `AUTH_TOKEN_SECRET` as user-service `.env`):
 
 ```powershell
-Invoke-RestMethod -Method Post -Uri http://localhost:8081/v1/auth/token `
-  -ContentType application/json `
-  -Body (@{ user_id = "alice" } | ConvertTo-Json)
-```
-
-Save the returned `token`:
-
-```powershell
-$token = (Invoke-RestMethod -Method Post -Uri http://localhost:8081/v1/auth/token `
-  -ContentType application/json `
-  -Body (@{ user_id = "alice" } | ConvertTo-Json)).token
+cd D:\kannan\sharingbridge\sharingbridge-user-service
+$token = node scripts/mint-dev-jwt.mjs alice donor
 $headers = @{ Authorization = "Bearer $token" }
 ```
 
@@ -465,9 +456,7 @@ try {
 ### 2g. Verify per-user isolation
 
 ```powershell
-$bobToken = (Invoke-RestMethod -Method Post -Uri http://localhost:8081/v1/auth/token `
-  -ContentType application/json `
-  -Body (@{ user_id = "bob" } | ConvertTo-Json)).token
+$bobToken = node scripts/mint-dev-jwt.mjs bob donor
 $bobHeaders = @{ Authorization = "Bearer $bobToken" }
 $bobBody = @{
   presets = @(
@@ -653,12 +642,11 @@ Replace `emulator-5554` with your `flutter devices` id.
 
 ### 3-dev. Dev token path (fallback, no Google)
 
-Requires `BYPASS_GOOGLE_SIGN_IN=true` on user-service. Mint the token on the **PC** (`localhost:8081`); the app still uses **`10.0.2.2`** to reach the same servers from the emulator.
+Mint on the **PC** with user-service `scripts/mint-dev-jwt.mjs` (same `AUTH_TOKEN_SECRET` as `.env`). The app still uses **`10.0.2.2`** to reach backends from the emulator.
 
 ```powershell
-$mobileToken = (Invoke-RestMethod -Method Post -Uri http://localhost:8081/v1/auth/token `
-  -ContentType application/json `
-  -Body (@{ user_id = "alice"; role = "donor" } | ConvertTo-Json)).token
+cd D:\kannan\sharingbridge\sharingbridge-user-service
+$mobileToken = node scripts/mint-dev-jwt.mjs alice donor
 
 cd D:\kannan\sharingbridge\sharingbridge-mobile-app
 flutter run -d emulator-5554 `
@@ -730,7 +718,7 @@ Pick one approach:
    Or **replace with an empty list** via API:
 
    ```powershell
-   $token = "<paste token from POST /v1/auth/token>"
+   $token = node scripts/mint-dev-jwt.mjs alice donor
    $uid = "alice"
    Invoke-RestMethod -Method Put -Uri "http://localhost:8081/v1/users/$uid/donor-presets" `
      -Headers @{ Authorization = "Bearer $token" } -ContentType "application/json" `
@@ -757,23 +745,14 @@ If presets fail to load (offline/server), you can still generate instructions; *
 
 ### 3f-b. Hosted backend + Android emulator (Render)
 
-Use [configuration/mobile-client.md](../configuration/mobile-client.md). Public `https://` URLs work from emulators (no `10.0.2.2`).
-
-In one PowerShell session:
-
-1. `cd` to `sharingbridge-mobile-app` (`Test-Path .\pubspec.yaml` is `True`).
-2. Mint JWT: `POST https://sharingbridge-user-service.onrender.com/v1/auth/token` with `{"user_id":"demo-user"}` (only if `BYPASS_GOOGLE_SIGN_IN=true` on Render; production uses Google Sign-In with hosted `USER_SERVICE_BASE_URL`).
-3. Emulator example:
+Use [configuration/mobile-client.md](../configuration/mobile-client.md). Public `https://` URLs work from emulators (no `10.0.2.2`). **Sign in with Google** on device — there is no HTTP JWT mint on hosted user-service.
 
 ```powershell
-$token = (Invoke-RestMethod -Method POST -Uri "https://sharingbridge-user-service.onrender.com/v1/auth/token" `
-  -ContentType "application/json" -Body '{"user_id":"demo-user"}').token
-
+cd D:\kannan\sharingbridge\sharingbridge-mobile-app
 flutter run -d emulator-5554 `
+  --dart-define=GOOGLE_CLIENT_ID=<Android OAuth client ID> `
   --dart-define=API_BASE_URL=https://sharingbridge-integration-service.onrender.com `
-  --dart-define=USER_SERVICE_BASE_URL=https://sharingbridge-user-service.onrender.com `
-  --dart-define=USER_ID=demo-user `
-  --dart-define=AUTH_TOKEN=$token
+  --dart-define=USER_SERVICE_BASE_URL=https://sharingbridge-user-service.onrender.com
 ```
 
 Walk through **§3f**; step 4 must show **Donation intent registered** (or **updated** on repeat).
@@ -802,7 +781,6 @@ Complete [configuration/e2e-deployment-sequence.md](../configuration/e2e-deploym
    - `GOOGLE_CLIENT_ID_WEB` = same Web Client ID as web app
    - `WEB_CORS_ORIGINS=http://localhost:5173`
    - `user_roles` includes `coordinator` for your dashboard Gmail ([coordinator-seed.sql](../configuration/coordinator-seed.sql))
-   - `BYPASS_GOOGLE_SIGN_IN=true` only if using **Dev sign in** (optional)
 2. **integration-service** — `WEB_CORS_ORIGINS=http://localhost:5173`, same `AUTH_TOKEN_SECRET` as user-service. Restart after edits.
 3. **sharingbridge-web-app** — `.env`:
    - `VITE_GOOGLE_CLIENT_ID` = Web Client ID
@@ -829,8 +807,6 @@ npm run dev
 5. **Sign out** clears sessionStorage and GIS auto-select for this app.
 6. **Returning visit:** sign-in page shows **Last signed in as** *email* and **Use a different Google account** (another Gmail with `coordinator` in `user_roles`). After revoke, reload and sign in with the other account.
 
-**Dev fallback:** `VITE_BYPASS_GOOGLE_SIGN_IN=true` on web + `BYPASS_GOOGLE_SIGN_IN=true` on user-service → **Dev sign in** with a coordinator user id.
-
 ### 4c. Order initiation history (coordinator view)
 
 1. After at least one successful mobile **Help a seeker** copy (**§3f**) on the **same** integration host (`localhost:8080` or hosted URL), click **Refresh** on the web dashboard.
@@ -844,7 +820,7 @@ npm run dev
 
 - Coordinators see intents for **every** donor on **that** integration API host. An empty list usually means no donor has registered an intent on **this** host yet (localhost vs Render are separate stores).
 - `VITE_API_BASE_URL` must match mobile `API_BASE_URL` (both localhost or both Render URLs).
-- `403 wrong_client_role` on web: no `coordinator` in `user_roles` for that Gmail, donor-only account, or MVP blocked on production Render (`DEPLOYMENT_ENV=production` ignores `ALLOW_WEB_DASHBOARD_ANY_USER`). Read the full error text — it should name the cause (`coordinator_required`, `mvp_disabled_production`, etc.).
+- `403 wrong_client_role` on web: account has no `donor` or `coordinator` in `user_roles` (`no_app_role`). Donor-only accounts should sign in successfully and see the **limited** dashboard.
 - `403 wrong_client_role` on mobile: account missing `donor` in `user_roles` (rare after sign-in; every user gets `donor` ensured).
 - **Connection refused** on emulator sign-in or API: you used `localhost` in dart-defines — switch both URLs to `http://10.0.2.2:8081` and `http://10.0.2.2:8080` (**§3-host**).
 - **“Network unavailable”** on a **physical phone** with correct `192.168.x.x` dart-defines: phone and PC are on **different networks** (mobile data, other broadband, guest Wi‑Fi) — join the **same Wi‑Fi as the PC**, verify `http://<PC-LAN-IP>:8080/health` in the phone browser, or use **USB + `adb reverse`** (**§3-host**).
@@ -871,7 +847,7 @@ Windows).
 
 ### 5b. (Optional) Copy file-backed presets into user-service
 
-Use this **before or right after** you point integration-service at user-service presets (`PREFERENCES_BACKEND=user_service`). Requires user-service running and the **same `AUTH_TOKEN_SECRET`** as used for `/v1/auth/token`:
+Use this **before or right after** you point integration-service at user-service presets (`PREFERENCES_BACKEND=user_service`). Requires user-service running and the **same `AUTH_TOKEN_SECRET`** as integration-service:
 
 ```powershell
 cd D:\kannan\sharingbridge\sharingbridge-integration-service
@@ -891,7 +867,7 @@ Earlier MVP builds stored a field draft under `sharingbridge_field_interaction_d
 Use this after deploying per **[configuration/backend-render.md](../configuration/backend-render.md)** (Track A).
 
 1. Confirm all three `/health` endpoints return `ok: true` (allow 30–60s on cold start).
-2. Mint a token from **hosted** user-service: `POST …/v1/auth/token` with `{"user_id":"demo-user"}`.
+2. Mint a token locally: `node scripts/mint-dev-jwt.mjs demo-user donor` in user-service (with hosted `AUTH_TOKEN_SECRET` in env if backfilling Render data).
 3. Call **hosted** integration `POST …/v1/donor-setup/suggest-vendors` and `POST …/v1/donor-seeker/instruction-pack` with `Authorization: Bearer <token>`.
 4. `POST …/v1/donor-seeker/order-intents` with the same Bearer token (see [configuration/backend-render.md](../configuration/backend-render.md) smoke script). First call returns HTTP **201** and `created: true`. Repeat the **same** `pack_id` — expect HTTP **200**, `created: false`, and the **same** `order_intent_id`.
 5. Run the mobile app (see [configuration/mobile-client.md](../configuration/mobile-client.md) — `cd` first, then mint token, then `flutter run`). In **§3f** step 4, repeat the copy button and confirm **Donation intent updated** with an unchanged reference id.

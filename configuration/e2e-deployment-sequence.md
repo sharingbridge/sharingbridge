@@ -202,7 +202,7 @@ cd sharingbridge-web-app
 copy env.example .env
 ```
 
-Same env index § web-app. Optional bypass flags: [environment-variables.md](./environment-variables.md) § Optional flags.
+Same env index § web-app: [environment-variables.md](./environment-variables.md).
 
 ### 1.4 Run and verify
 
@@ -243,7 +243,7 @@ Deploy in order — [backend-render.md](./backend-render.md). Each repo’s **`r
 
 Set **Render production** column in [environment-variables.md](./environment-variables.md) on user-service, integration-service, and photo-service. `DATABASE_URL`: [database.md](./database.md).
 
-**This phase only:** `WEB_CORS_ORIGINS` may stay `http://localhost:5173` until Phase 4 if you test local Vite against hosted APIs; otherwise set the static site origin in Phase 4. Do **not** enable bypass/MVP flags on Render production.
+**This phase only:** `WEB_CORS_ORIGINS` may stay `http://localhost:5173` until Phase 4 if you test local Vite against hosted APIs; otherwise set the static site origin in Phase 4. Use Google Sign-In only on Render production (no dev JWT mint over HTTP).
 
 Note the two public URLs:
 
@@ -268,7 +268,7 @@ Note the two public URLs:
 2. **Build command:** `npm install && npm run build`
 3. **Publish directory:** `dist`
 4. **Settings → Build & Deploy → Auto-Deploy:** **On Commit** (if deploys only happen when you click Manual Deploy, turn this on).
-5. **Environment** (build-time): [environment-variables.md](./environment-variables.md) § web-app (**Render production**). Use Phase 0 Client ID for `VITE_GOOGLE_CLIENT_ID`. No bypass/MVP flags on production.
+5. **Environment** (build-time): [environment-variables.md](./environment-variables.md) § web-app (**Render production**). Use Phase 0 Client ID for `VITE_GOOGLE_CLIENT_ID`. Google Sign-In only on production.
 
 6. Deploy → copy static site URL, e.g. `https://sharingbridge-web.onrender.com`.
 
@@ -337,7 +337,7 @@ Manual test steps: [MANUAL_TESTING_GUIDE.md](../testing/MANUAL_TESTING_GUIDE.md)
 
 - [ ] **0** Google Web OAuth client; `http://localhost:5173` in JS origins; Client ID saved
 - [ ] **1** Local `.env` on user-service, integration-service, web-app; local Google sign-in works
-- [ ] **2** Render user-service + integration-service; shared `AUTH_TOKEN_SECRET`; `BYPASS_GOOGLE_SIGN_IN=false`; coordinators on Render
+- [ ] **2** Render user-service + integration-service; shared `AUTH_TOKEN_SECRET`; coordinators seeded in Postgres
 - [ ] **3** Render static site; `VITE_*` point at hosted APIs + `VITE_GOOGLE_CLIENT_ID`; copy static URL
 - [ ] **4** Add static URL to Google JS origins; `WEB_CORS_ORIGINS` on both backends; redeploy backends
 - [ ] **5** Live coordinator sign-in; dashboard refresh shows intents from hosted integration API

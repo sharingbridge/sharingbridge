@@ -69,7 +69,7 @@ Secret generation: [authentication.md](./authentication.md). Postgres: [database
 - `DATABASE_URL` + `AUTH_TOKEN_SECRET` must match on user-service, integration-service, and photo-service.
 - `WEB_CORS_ORIGINS` must be the **same string** on user-service and integration-service.
 - Web static site: set `VITE_*` at **build** time; redeploy after changing them.
-- Do **not** set `BYPASS_GOOGLE_SIGN_IN`, `ALLOW_WEB_DASHBOARD_ANY_USER`, or web `VITE_*` bypass/MVP flags on production Render.
+- Web and mobile use **Google Sign-In** only on production (no dev token mint over HTTP).
 - photo-service: **Docker** — keep Render **Start Command** blank (`Dockerfile` + `start.sh`).
 
 After deploy, complete [e2e-deployment-sequence.md](./e2e-deployment-sequence.md) Phase 4 (Google origins + `WEB_CORS_ORIGINS`).
@@ -141,8 +141,10 @@ Invoke-RestMethod "$AI_URL/health"
 Invoke-RestMethod "$INT_URL/health"
 Invoke-RestMethod "$PHO_URL/health"
 
-$token = (Invoke-RestMethod -Method POST -Uri "$USER_URL/v1/auth/token" `
-  -ContentType "application/json" -Body '{"user_id":"demo-user"}').token
+# Authenticated smoke: mint JWT locally with the same AUTH_TOKEN_SECRET as Render user-service
+cd path\to\sharingbridge-user-service
+$env:AUTH_TOKEN_SECRET = "<same secret as Render user-service>"
+$token = node scripts/mint-dev-jwt.mjs demo-user donor
 $h = @{ Authorization = "Bearer $token" }
 
 Invoke-RestMethod -Method POST -Uri "$INT_URL/v1/donor-setup/suggest-vendors" `

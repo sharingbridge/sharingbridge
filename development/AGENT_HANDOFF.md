@@ -85,7 +85,7 @@ The **donor-setup slice** that is live in code is intentionally a **minimal MVP*
 
 ### `sharingbridge-user-service`
 - **`PostgresUserStore`** + **`POST /v1/auth/google`** (roles from `user_roles`; coordinator via [coordinator-seed.sql](../configuration/coordinator-seed.sql)).
-- `POST /v1/auth/token` (dev mint when `BYPASS_GOOGLE_SIGN_IN=true`).
+- Dev JWT: `node scripts/mint-dev-jwt.mjs` in user-service (no HTTP mint endpoint).
 - `GET/PUT /v1/users/{user_id}/donor-presets`, **`POST …/delete-item`**; JWT HS256 mint/verify.
 - **37+** Node tests; CI on push/PR.
 
@@ -113,7 +113,7 @@ Mobile app:
 - `flutter pub get`
 - `flutter test`
 - **Google (recommended):** see [configuration/mobile-client.md](../configuration/mobile-client.md) and **MANUAL_TESTING_GUIDE §3-auth**.
-- **Dev mint fallback:** `POST http://localhost:8081/v1/auth/token` with `{"user_id":"demo-user","role":"donor"}` → `--dart-define=AUTH_TOKEN=<token>`.
+- **Dev mint fallback:** `node scripts/mint-dev-jwt.mjs demo-user donor` → `--dart-define=AUTH_TOKEN=<token>`.
 - Android emulator: `--dart-define=API_BASE_URL=http://10.0.2.2:8080` (plus Google or AUTH_TOKEN as above).
 
 Product workflow (BRD steps 1–12, Mermaid diagrams, shipped vs planned): `design/SharingBridge_End_to_End_Workflow.md`.

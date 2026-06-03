@@ -29,12 +29,12 @@ Every Google user gets **`donor`** ensured at sign-in. **`coordinator`** is gran
 
 | `client_type` | Requires in `user_roles` | JWT `role` minted |
 |---------------|--------------------------|-------------------|
-| `web` | `coordinator` | `coordinator` |
+| `web` | `donor` and/or `coordinator` | `coordinator` if present, else `donor` |
 | `android` / `ios` / `mobile` | `donor` | `donor` (even if they also have `coordinator`) |
 
-JWT also includes `roles` (full array). Integration-service enforces the minted `role` per endpoint.
+JWT also includes `roles` (full array). Integration-service formats list responses by minted `role` (coordinator = full dashboard; donor = limited photos).
 
-Wrong combination → HTTP **403** `wrong_client_role` with a `reason` and message (e.g. `coordinator_required`, `mvp_disabled_production`, `no_donor_role`). Web sign-in without `coordinator` (and without MVP flags on user-service), or mobile without `donor`.
+Wrong combination → HTTP **403** `wrong_client_role` (e.g. `no_app_role` on web with no roles, or mobile without `donor`).
 
 ---
 
@@ -51,7 +51,7 @@ Wrong combination → HTTP **403** `wrong_client_role` with a `reason` and messa
 
 **Sign in without Google (local only)**
 
-`POST /v1/auth/token` with `{ "user_id": "…", "role": "donor" \| "coordinator" }` is enabled only when `BYPASS_GOOGLE_SIGN_IN=true` on user-service. **Disabled in production** — see [environment-variables.md](./environment-variables.md).
+**Dev-only JWT** (scripts, mobile `--dart-define=AUTH_TOKEN`): sign locally with the same `AUTH_TOKEN_SECRET` — `node scripts/mint-dev-jwt.mjs <user_id> [role]` in user-service. There is no HTTP “mint token without Google” endpoint.
 
 ---
 

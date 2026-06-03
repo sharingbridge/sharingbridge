@@ -174,8 +174,6 @@ WEB_CORS_ORIGINS=http://localhost:5173
 
 GOOGLE_CLIENT_ID_WEB=123456789-xxxx.apps.googleusercontent.com
 GOOGLE_CLIENT_ID_ANDROID=123456789-yyyy.apps.googleusercontent.com
-
-BYPASS_GOOGLE_SIGN_IN=true
 ```
 
 `AUTH_TOKEN_SECRET` must **match** integration-service (see below).
@@ -208,10 +206,6 @@ copy env.example .env
 VITE_API_BASE_URL=http://localhost:8080
 VITE_USER_SERVICE_BASE_URL=http://localhost:8081
 VITE_GOOGLE_CLIENT_ID=<same as GOOGLE_CLIENT_ID_WEB>
-
-# Optional: skip Google until clients are ready
-# VITE_BYPASS_GOOGLE_SIGN_IN=true
-# VITE_DEFAULT_USER_ID=demo-coordinator
 ```
 
 Restart `npm run dev` after any `VITE_*` change.
@@ -248,8 +242,6 @@ Invoke-RestMethod http://localhost:8080/health
 5. Next visit on the same browser: sign-in page shows **Last signed in as** *email* and **Use a different Google account** (disconnects that Google profile from this app, then reloads).
 6. **Refresh** on the dashboard shows order initiations (after a donor registers one on mobile).
 
-**Without Google yet:** set `VITE_BYPASS_GOOGLE_SIGN_IN=true`, ensure `BYPASS_GOOGLE_SIGN_IN=true`, use **Sign in without Google** on the web page.
-
 ### 6.2 Donor (mobile)
 
 **Android emulator** — use `10.0.2.2` for **both** backends (see [MANUAL_TESTING_GUIDE.md](../testing/MANUAL_TESTING_GUIDE.md) §3-host):
@@ -270,16 +262,7 @@ flutter run -d emulator-5554 `
 3. Complete **Help a seeker** → copy instructions to register an order intent.
 4. On web (coordinator), **Refresh** — you should see that intent (with donor `user_id` in the list).
 
-**Without Google yet:** use bypass sign-in (`BYPASS_GOOGLE_SIGN_IN`) or dev token mint:
-
-```powershell
-$token = (Invoke-RestMethod -Method POST -Uri http://localhost:8081/v1/auth/token `
-  -ContentType application/json -Body '{"user_id":"demo-user","role":"donor"}').token
-flutter run -d emulator-5554 `
-  --dart-define=USER_SERVICE_BASE_URL=http://10.0.2.2:8081 `
-  --dart-define=API_BASE_URL=http://10.0.2.2:8080 `
-  --dart-define=AUTH_TOKEN=$token --dart-define=USER_ID=demo-user
-```
+**Without Google yet (emulator only):** mint a dev JWT — see [mobile-client.md](./mobile-client.md) § Dev token fallback.
 
 ---
 
@@ -307,8 +290,6 @@ Yes — deploy the web app on [Render Static Sites](https://render.com/docs/stat
    | `VITE_API_BASE_URL` | `https://sharingbridge-integration-service.onrender.com` |
    | `VITE_USER_SERVICE_BASE_URL` | `https://sharingbridge-user-service.onrender.com` |
    | `VITE_GOOGLE_CLIENT_ID` | Same **Web** OAuth client ID as local (`….apps.googleusercontent.com`) |
-
-   Do **not** set `VITE_BYPASS_GOOGLE_SIGN_IN` on Render (production).
 
 5. Deploy → copy the site URL, e.g. `https://sharingbridge-web.onrender.com`  
    (Render shows it on the static site **Settings** page.)
@@ -354,7 +335,6 @@ Also on **user-service** (Render):
 ```env
 GOOGLE_CLIENT_ID_WEB=<web client id>
 GOOGLE_CLIENT_ID_ANDROID=<android client id>
-BYPASS_GOOGLE_SIGN_IN=false
 ```
 
 ### 7.4 Coordinator role on Render / Supabase
@@ -389,7 +369,6 @@ Details: [backend-render.md](./backend-render.md), [web-client.md](./web-client.
 | Google popup “access blocked” | App in Testing, user not a test user | Add Gmail under OAuth consent → **Test users** |
 | `Failed to fetch` on sign-in | CORS | `WEB_CORS_ORIGINS=http://localhost:5173` on **both** user-service and integration-service; restart |
 | Android sign-in fails | Wrong SHA-1 or package name | Re-create Android OAuth client with debug SHA-1 + correct `applicationId` |
-| `dev_auth_disabled` | Dev mint off | Set `BYPASS_GOOGLE_SIGN_IN=true` for local dev only |
 | Wrong Google account on sign-in button | Chrome / GIS remembers last account | **Use a different Google account** (after at least one prior sign-in on this browser), or **Sign in with Google** → **Use another account** in Google’s dialog; or **Sign out** then sign in again |
 
 Verify Google token manually (optional):

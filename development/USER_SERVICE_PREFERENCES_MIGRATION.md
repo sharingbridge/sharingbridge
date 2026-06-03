@@ -61,7 +61,7 @@ Endpoints (under `sharingbridge-user-service`):
 }
 ```
 
-Auth: `Authorization: Bearer <signed token>` from user-service (`POST /v1/auth/token`).
+Auth: `Authorization: Bearer <signed token>` (integration backfill script signs JWTs locally with `AUTH_TOKEN_SECRET`).
 `X-User-Id` is not used.
 
 Errors:
@@ -87,7 +87,7 @@ Errors:
    npm run backfill:user-service-presets
    ```
 
-   The script mints a token per `user_id` via `POST /v1/auth/token`, normalizes rows to user-service validation rules (default `source=migrated_from_integration_store`, `confidence=0` when missing), then `PUT`s the full preset list per user.
+   The script signs a JWT per `user_id` locally, normalizes rows to user-service validation rules (default `source=migrated_from_integration_store`, `confidence=0` when missing), then `PUT`s the full preset list per user.
 
 4. **Flip integration deployment config:** `PREFERENCES_BACKEND=user_service` and `USER_SERVICE_BASE_URL=...`.
 5. After traffic is healthy on user-service for presets, **retire** integration’s file store for that environment: stop writing `data/preferences.json`, delete `data/` from that deployment, and eventually remove `PreferencesStore` / `LocalPreferencesRepository` from code when no env needs local mode (optional final cleanup).

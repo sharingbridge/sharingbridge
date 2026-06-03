@@ -42,9 +42,6 @@ Render deploy details: [backend-render.md](./backend-render.md). Auth secrets: [
 | `WEB_CORS_ORIGINS` | `http://localhost:5173` | `https://<static-site>.onrender.com` |
 | `GOOGLE_CLIENT_ID_WEB` | Web OAuth client ID | same as `VITE_GOOGLE_CLIENT_ID` |
 | `GOOGLE_CLIENT_ID_ANDROID` | Android OAuth client ID | when mobile uses Google |
-| `DEPLOYMENT_ENV` | omit or `development` | `production` |
-| `BYPASS_GOOGLE_SIGN_IN` | `true` optional — see § Optional flags | omit / `false` |
-| `ALLOW_WEB_DASHBOARD_ANY_USER` | `true` optional — see § Optional flags | omit / `false` |
 
 ---
 
@@ -107,9 +104,6 @@ Build-time only (`VITE_*` in `.env` before `npm run build` or `npm run dev`).
 | `VITE_API_BASE_URL` | `http://localhost:8080` | `https://<integration-host>.onrender.com` |
 | `VITE_USER_SERVICE_BASE_URL` | `http://localhost:8081` | `https://<user-host>.onrender.com` |
 | `VITE_GOOGLE_CLIENT_ID` | Web OAuth client ID | same as `GOOGLE_CLIENT_ID_WEB` |
-| `VITE_DEFAULT_USER_ID` | optional pre-fill for bypass form | omit |
-| `VITE_BYPASS_GOOGLE_SIGN_IN` | `true` optional — see § Optional flags | omit |
-| `VITE_ALLOW_ANY_USER_WEB_DASHBOARD` | `true` optional — see § Optional flags | omit |
 
 CORS is **not** set here — set `WEB_CORS_ORIGINS` on both Node backends. See [web-client.md](./web-client.md).
 
@@ -125,46 +119,20 @@ No `.env` file — pass at `flutter run`:
 | `USER_SERVICE_BASE_URL` | user-service base URL (no trailing `/`) |
 | `API_BASE_URL` | integration-service — **must match** web `VITE_API_BASE_URL` for same data |
 | `PHOTO_SERVICE_BASE_URL` | photo-service (optional, for reference photos) |
-| `USER_ID` + `AUTH_TOKEN` | dev only — bypass Google when user-service has `BYPASS_GOOGLE_SIGN_IN` |
+| `USER_ID` + `AUTH_TOKEN` | dev only — pre-minted JWT (`node scripts/mint-dev-jwt.mjs` in user-service with same `AUTH_TOKEN_SECRET`) |
 
 Emulator: use `10.0.2.2` instead of `localhost`. Physical phone: PC Wi‑Fi IPv4. See [mobile-client.md](./mobile-client.md).
 
 ---
 
-## Optional flags (dev / MVP only)
+## Web dashboard roles (no extra env flags)
 
-Not required for normal coordinator + donor Google sign-in.
+| JWT `role` | Web UI | integration `GET /v1/donor-seeker/order-intents` |
+|------------|--------|--------------------------------------------------|
+| `coordinator` | Full dashboard — email in header, donor ids, all reference photos | `dashboard: "coordinator"` — full records |
+| `donor` | Limited dashboard — user id in header, photos only if intent ≤ 1 hour old | `dashboard: "limited"` — photo URLs redacted after 1 hour |
 
-| Variable | Service | Effect |
-|----------|---------|--------|
-| `BYPASS_GOOGLE_SIGN_IN` | user-service | **Sign in without Google** — `POST /v1/auth/token` with user id → JWT |
-| `VITE_BYPASS_GOOGLE_SIGN_IN` | web | Shows bypass form; requires `BYPASS_GOOGLE_SIGN_IN` on user-service |
-| `ALLOW_WEB_DASHBOARD_ANY_USER` | user-service | Donors may use web dashboard via Google (coordinator JWT) |
-| `VITE_ALLOW_ANY_USER_WEB_DASHBOARD` | web | MVP sign-in copy; pairs with `ALLOW_WEB_DASHBOARD_ANY_USER` |
-
-### Production guard (code)
-
-On **user-service**, bypass and MVP flags are **forced off** in production even if env says `true`:
-
-- `BYPASS_GOOGLE_SIGN_IN`
-- `ALLOW_WEB_DASHBOARD_ANY_USER`
-
-Production when `DEPLOYMENT_ENV=production`, or `NODE_ENV=production` on Render (`RENDER=true`). For staging MVP: `DEPLOYMENT_ENV=staging`.
-
-### Local quick setup
-
-**Skip Google:**
-
-```env
-# user-service .env
-BYPASS_GOOGLE_SIGN_IN=true
-# web .env
-VITE_BYPASS_GOOGLE_SIGN_IN=true
-```
-
-**Donor-on-web MVP (Google only):** `ALLOW_WEB_DASHBOARD_ANY_USER` + `VITE_ALLOW_ANY_USER_WEB_DASHBOARD` — no bypass flags needed.
-
----
+Google sign-in on web works for any account with `donor` and/or `coordinator` in `user_roles`. Users with both roles get `coordinator` on web and `donor` on mobile.
 
 ## Local stack defaults (copy-paste)
 

@@ -4,28 +4,29 @@ Repository: `sharingbridge-web-app` (Vite + React).
 
 **Deployment order:** [e2e-deployment-sequence.md](./e2e-deployment-sequence.md) (Phases 0–5).
 
-## MVP scope
+## Scope
 
-**Order initiation history** — coordinator dashboard; same API as mobile **Order initiation history**.
+**Order initiation history** on web — same integration API as mobile. View depends on JWT `role`:
 
-## How sign-in works (coordinator web)
+| `role` | UI |
+|--------|-----|
+| `coordinator` | Full dashboard — email in header, donor ids in list/detail, all reference photos |
+| `donor` | Limited dashboard — user id only in header, list grouped by day, photos only when API returns URLs (intents ≤ 1 hour old) |
 
-1. User opens the site → **Coordinator sign in** screen (minimal copy).
+## How sign-in works
+
+1. User opens the site → **Sign in** screen.
 2. **Sign in with Google** (GIS) → browser obtains a Google `id_token`.
 3. App calls user-service `POST /v1/auth/google` with `{ "id_token", "client_type": "web" }`.
-4. user-service verifies the token, loads **`user_roles`** from Postgres, mints a JWT with `role: coordinator` when that role is present.
-5. JWT is stored in **sessionStorage** (`sharingbridge_web_session_v1`) for this site in the browser until **Sign out** or token expiry (~1 hour). Closing **all** tabs for this origin clears it.
-6. On successful sign-in, the coordinator **email** is also stored in **localStorage** (same browser only) so the app can offer **Use a different Google account** on later visits.
-7. Dashboard calls integration-service with `Authorization: Bearer <jwt>` (coordinators list **all** order intents).
+4. user-service verifies the token, loads **`user_roles`**, mints JWT `role: coordinator` when that role exists, otherwise `donor`.
+5. JWT is stored in **sessionStorage** until **Sign out** or expiry (~1 hour).
+6. Coordinators: **email** stored in **localStorage** for **Use a different Google account** on later visits.
+7. Dashboard calls `GET /v1/donor-seeker/order-intents` with `Authorization: Bearer <jwt>` (all roles receive the full list; integration redacts fields for `donor`).
 8. On **401** or expiry → sign in again.
 
 **No client secret** in `.env` — only the Web **Client ID** (`VITE_GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_ID_WEB`).
 
-**Dev / MVP unlock flags** (optional): [environment-variables.md](./environment-variables.md).
-
-Sign-in errors from user-service include a `reason` when web access is denied (e.g. `mvp_disabled_production` on Render with `DEPLOYMENT_ENV=production`, or `coordinator_required` when the account is donor-only). The UI shows that message instead of a generic “set ALLOW_WEB_DASHBOARD…” hint.
-
-### Order list grouping (coordinator dashboard)
+### Order list grouping (coordinator only)
 
 After sign-in, the initiation list can be grouped:
 

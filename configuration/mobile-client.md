@@ -7,7 +7,7 @@ Repository: `sharingbridge-mobile-app` (Flutter).
 | Use | URL |
 |-----|-----|
 | **All donor APIs** (setup, suggest-vendors, instruction-pack, presets, order-intents) | **integration-service** only |
-| **Sign in** | **Google** in app → `POST /v1/auth/google` on user-service; optional dev `POST /v1/auth/token` below |
+| **Sign in** | **Google** in app → `POST /v1/auth/google` on user-service; optional dev `--dart-define=AUTH_TOKEN` (locally minted JWT) |
 
 Mobile must **not** call ai-orchestration directly.
 
@@ -54,43 +54,13 @@ Then set all three URLs to `http://127.0.0.1:8080`, `:8081`, `:8092`.
 
 Full walkthrough: [MANUAL_TESTING_GUIDE.md](../testing/MANUAL_TESTING_GUIDE.md) **§3-host**.
 
-## `dart-define` (hosted Render, dev token)
+## `dart-define` (hosted Render)
 
-For production-style donor sign-in on device, use **Google Sign-In** with hosted `USER_SERVICE_BASE_URL` and `GOOGLE_CLIENT_ID` (see [e2e-deployment-sequence.md](./e2e-deployment-sequence.md)). The flow below uses **bypass sign-in** / token mint (requires `BYPASS_GOOGLE_SIGN_IN=true` on hosted user-service — off in production).
-
-Run in **this order** in the same PowerShell window:
-
-```powershell
-cd D:\kannan\sharingbridge\sharingbridge-mobile-app
-
-$token = (Invoke-RestMethod -Method POST -Uri "https://sharingbridge-user-service.onrender.com/v1/auth/token" `
-  -ContentType "application/json" -Body '{"user_id":"demo-user"}').token
-
-flutter run `
-  --dart-define=API_BASE_URL=https://sharingbridge-integration-service.onrender.com `
-  --dart-define=USER_ID=demo-user `
-  --dart-define=AUTH_TOKEN=$token
-```
-
-| Define | Value |
-|--------|--------|
-| `API_BASE_URL` | integration-service `https://…onrender.com` (no trailing `/`) |
-| `USER_ID` | donor id for local UI labels; should match the id used when minting the token |
-| `AUTH_TOKEN` | JWT string from user-service — **not** the literal text `<token …>` |
-
-When `AUTH_TOKEN` is set, the app **does not** send `user_id` in API bodies or query strings — integration-service uses the JWT subject only. `USER_ID` can differ from the token without `user_id_mismatch` (still align them for clarity).
-
-Use public `https://` on devices and emulators. Re-mint the JWT after ~1 hour.
-
-**Common mistakes**
-
-- Running `flutter run` before `cd` to the mobile repo → `No pubspec.yaml file found`.
-- Pasting placeholder `<token from user-service …>` → PowerShell syntax error (`<` is redirection).
-- Running `flutter` before `$token = …` → empty `AUTH_TOKEN`.
+Use **Google Sign-In** with hosted `USER_SERVICE_BASE_URL` and `GOOGLE_CLIENT_ID` (see [e2e-deployment-sequence.md](./e2e-deployment-sequence.md)). There is no HTTP endpoint to mint a JWT without Google on production.
 
 ## Google Sign-In (local, recommended)
 
-**Windows / Linux desktop:** `google_sign_in` is **not supported** — the app shows an explanation instead of `MissingPluginException`. Use an **Android emulator**, a physical Android device, or **macOS** for Google auth. Desktop dev fallback: `--dart-define=AUTH_TOKEN=…` (requires `BYPASS_GOOGLE_SIGN_IN` on user-service).
+**Windows / Linux desktop:** `google_sign_in` is **not supported** — the app shows an explanation instead of `MissingPluginException`. Use an **Android emulator**, a physical Android device, or **macOS** for Google auth. Desktop dev fallback: `--dart-define=AUTH_TOKEN=…` (JWT from `node scripts/mint-dev-jwt.mjs` in user-service with the same `AUTH_TOKEN_SECRET`).
 
 Full checklist: [google-auth-setup.md](./google-auth-setup.md).
 
@@ -130,14 +100,12 @@ Tap **Continue with Google** on launch. Mobile mints JWT `role: donor`; users wi
 
 ## Dev token fallback (no Google)
 
-Requires `BYPASS_GOOGLE_SIGN_IN=true` on user-service.
-
-Mint on the PC (`localhost:8081`). From an **emulator**, point the app at `10.0.2.2`:
+Mint on the PC with the same `AUTH_TOKEN_SECRET` as your local user-service `.env`. From an **emulator**, point the app at `10.0.2.2`:
 
 ```powershell
-cd D:\kannan\sharingbridge\sharingbridge-mobile-app
-$token = (Invoke-RestMethod -Method POST -Uri http://localhost:8081/v1/auth/token `
-  -ContentType "application/json" -Body '{"user_id":"demo-user","role":"donor"}').token
+cd D:\kannan\sharingbridge\sharingbridge-user-service
+$token = node scripts/mint-dev-jwt.mjs demo-user donor
+cd ..\sharingbridge-mobile-app
 flutter run -d emulator-5554 `
   --dart-define=USER_SERVICE_BASE_URL=http://10.0.2.2:8081 `
   --dart-define=API_BASE_URL=http://10.0.2.2:8080 `

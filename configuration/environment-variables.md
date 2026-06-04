@@ -63,7 +63,7 @@ Render deploy details: [backend-render.md](./backend-render.md). Auth secrets: [
 | `AUTH_TOKEN_SECRET` | **same** as user-service | same |
 | `DATABASE_URL` | **same** as user-service | same |
 | `DONOR_LOCALITY_GRID_DECIMALS` | `2` | `2` (locality_key grid; 1–4) |
-| `DONOR_NEIGHBOURHOOD_RADIUS_M` | `5000` | `5000` (`near_lat` / `near_lng` filter radius in **metres**; 500–50000) |
+| `DONOR_NEIGHBOURHOOD_RADIUS_M` | `5000` | `5000` (`near_lat` / `near_lng` filter radius in **metres**; any positive value, capped at 50000 server-side) |
 | `DONOR_NEIGHBOURHOOD_WINDOW_HOURS` | `2` | `2` (donor list `since`, photo redaction; 1–72) |
 | `ORDER_INTENT_LIST_MAX_ROWS` | `100` | `100` (max rows per dashboard list) |
 | `PORT` | `8080` | injected by Render — do not set |

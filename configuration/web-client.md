@@ -42,7 +42,7 @@ Repository: `sharingbridge-web-app` (Vite + React).
 | **Delivered at** | `delivered_at` | Always shown; **—** when null until delivery-partner flow sets it. |
 | **Distance (m)** | `distance_m` | Metres from browser `near_lat` / `near_lng`; list sorted **nearest first** when distance is present. |
 
-**Home** clears the selected row and scrolls to the top. **Refresh** reloads from integration-service.
+**Use my location** (header) sends `near_lat` / `near_lng` so the API returns **Distance (m)** and sorts nearest first. Allow location for the site when prompted (HTTPS or localhost). **Home** clears the selected row. **Refresh** reloads from integration-service.
 
 ### Sign-in screen (first visit vs returning)
 

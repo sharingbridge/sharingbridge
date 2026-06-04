@@ -17,12 +17,12 @@ The integration and user-service processes listen on **your PC**. The Flutter ap
 
 ### Choose one target (use the same host for all defines)
 
-| Target | `USER_SERVICE_BASE_URL` | `API_BASE_URL` | `PHOTO_SERVICE_BASE_URL` |
-|--------|-------------------------|----------------|--------------------------|
-| Android emulator | `http://10.0.2.2:8081` | `http://10.0.2.2:8080` | `http://10.0.2.2:8092` |
-| Windows desktop | `http://localhost:8081` | `http://localhost:8080` | `http://localhost:8092` |
-| Physical Android phone | `http://<PC-LAN-IP>:8081` | `http://<PC-LAN-IP>:8080` | `http://<PC-LAN-IP>:8092` |
-| Hosted (Render) | `https://…user-service…onrender.com` | `https://…integration…onrender.com` | `https://…photo-service…onrender.com` |
+| Target | `USER_SERVICE_BASE_URL` | `API_BASE_URL` | `PHOTO_SERVICE_BASE_URL` | `WEB_DASHBOARD_URL` |
+|--------|-------------------------|----------------|--------------------------|---------------------|
+| Android emulator | `http://10.0.2.2:8081` | `http://10.0.2.2:8080` | `http://10.0.2.2:8092` | `http://10.0.2.2:5173` |
+| Windows desktop | `http://localhost:8081` | `http://localhost:8080` | `http://localhost:8092` | `http://localhost:5173` |
+| Physical Android phone | `http://<PC-LAN-IP>:8081` | `http://<PC-LAN-IP>:8080` | `http://<PC-LAN-IP>:8092` | `http://<PC-LAN-IP>:5173` |
+| Hosted (Render) | `https://…user-service…onrender.com` | `https://…integration…onrender.com` | `https://…photo-service…onrender.com` | `https://<static-site>.onrender.com` |
 
 **`<PC-LAN-IP>`** = IPv4 from `ipconfig` (Wi‑Fi adapter), e.g. `192.168.1.3`. Do **not** use `localhost` or `10.0.2.2` on a physical phone.
 
@@ -54,13 +54,13 @@ Then set all three URLs to `http://127.0.0.1:8080`, `:8081`, `:8092`.
 
 Full walkthrough: [MANUAL_TESTING_GUIDE.md](../testing/MANUAL_TESTING_GUIDE.md) **§3-host**.
 
-Optional **neighbourhood dashboard (web)** — open the donor web app in the device browser:
+**Neighbourhood dashboard (web)** — home screen tile **Neighbourhood dashboard (web)** opens the donor web app in the browser. **Required** at build time:
 
 ```text
---dart-define=WEB_DASHBOARD_URL=https://<your-static-site>.onrender.com
+--dart-define=WEB_DASHBOARD_URL=<URL from table above>
 ```
 
-Local web dev: `http://localhost:5173` (same Google sign-in as mobile). Omit the define to hide the home-screen tile.
+The tile is always visible; it is tappable only when `WEB_DASHBOARD_URL` is set. On the web dashboard, allow browser location so **Distance (m)** appears (header → **Use my location**).
 
 ## `dart-define` (hosted Render)
 
@@ -80,7 +80,8 @@ flutter run -d emulator-5554 `
   --dart-define=GOOGLE_CLIENT_ID=<Android OAuth client ID from Google Cloud> `
   --dart-define=USER_SERVICE_BASE_URL=http://10.0.2.2:8081 `
   --dart-define=API_BASE_URL=http://10.0.2.2:8080 `
-  --dart-define=PHOTO_SERVICE_BASE_URL=http://10.0.2.2:8092
+  --dart-define=PHOTO_SERVICE_BASE_URL=http://10.0.2.2:8092 `
+  --dart-define=WEB_DASHBOARD_URL=http://10.0.2.2:5173
 ```
 
 Reference photos (optional on **Help a seeker**) upload to **photo-service** when the donor taps **Get AI delivery instructions**. See [photo-service-local.md](./photo-service-local.md).
@@ -92,7 +93,8 @@ flutter run -d <device_id> `
   --dart-define=GOOGLE_CLIENT_ID=<Android OAuth client ID> `
   --dart-define=USER_SERVICE_BASE_URL=http://192.168.1.3:8081 `
   --dart-define=API_BASE_URL=http://192.168.1.3:8080 `
-  --dart-define=PHOTO_SERVICE_BASE_URL=http://192.168.1.3:8092
+  --dart-define=PHOTO_SERVICE_BASE_URL=http://192.168.1.3:8092 `
+  --dart-define=WEB_DASHBOARD_URL=http://192.168.1.3:5173
 ```
 
 **Windows desktop** (Google Sign-In not supported; use dev token or emulator):

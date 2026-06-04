@@ -22,7 +22,7 @@ Re-run: `$env:TEMP\asrvenv\Scripts\python.exe` `..\..\scripts\transcribe_audio.p
 | **Delivered at** | **`delivered_at`** — handover/delivery completion time when set. Often empty until delivery-partner flow (Phase B) populates it. |
 | **Elapsed (freshness)** | `now − created_at`. Shown near **Order intent taken**; **do not** derive elapsed from `delivered_at`. |
 | **Distance (m)** | **`distance_m`** — metres from viewer `near_lat` / `near_lng` to intent location (API-computed). |
-| **Radius** | Server filter: **`DONOR_NEIGHBOURHOOD_RADIUS_M`** (metres; default 5000). Legacy **`DONOR_NEIGHBOURHOOD_RADIUS_KM`** if `_M` unset. |
+| **Radius** | Server filter: **`DONOR_NEIGHBOURHOOD_RADIUS_M`** (metres; default 5000). |
 
 ---
 

@@ -11,7 +11,7 @@ Repository: `sharingbridge-web-app` (Vite + React).
 | `role` | UI |
 |--------|-----|
 | `coordinator` | Full dashboard — **donor email + user id** on each intent (list, detail, group-by-donor), all reference photos |
-| `donor` | Limited dashboard — window and radius from **integration-service env** (returned in API `feed`); browser sends `near_lat` / `near_lng` when allowed; no other donors’ emails or ids; photos only within the server window |
+| `donor` | Limited dashboard — window and radius from **integration-service env** (returned in API `feed`); browser sends `near_lat` / `near_lng` when allowed; no other donors’ emails or ids; **seeker reference thumbnails in neighbourhood feed** within the server window ([PRODUCT_ROADMAP.md](../development/PRODUCT_ROADMAP.md)) |
 
 ## How sign-in works
 
@@ -26,17 +26,23 @@ Repository: `sharingbridge-web-app` (Vite + React).
 
 **No client secret** in `.env` — only the Web **Client ID** (`VITE_GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_ID_WEB`).
 
-### Order list grouping (coordinator only)
+### Order list grouping
 
-After sign-in, the initiation list can be grouped:
+| Mode | Who | Behavior |
+|------|-----|----------|
+| **By donor** | Coordinator | Sections per `user_id` (coordinator default) |
+| **By day** | Coordinator + donor | Sections per calendar day (newest first) |
+| **By area** | Coordinator + donor | Sections per `locality_key` / `location_label`; rows without location under **No location on record** |
 
-| Mode | Behavior |
-|------|----------|
-| **By donor** | Sections per `user_id` (default for coordinators) |
-| **By day** | Sections per calendar day (newest first) |
-| **By area** | Sections per `locality_key` / `location_label`; rows without location appear under **No location on record** |
+### List columns (planned — [PRODUCT_ROADMAP.md](../development/PRODUCT_ROADMAP.md))
 
-**Home** in the header clears the selected row and scrolls to the top. **Refresh** reloads from integration-service.
+| Column | Field | Notes |
+|--------|-------|--------|
+| **Order intent taken** | `created_at` | When the donor registered the intent — not a vendor order. Optional elapsed from `created_at`. |
+| **Delivered at** | `delivered_at` | Always shown; **—** when null until delivery-partner flow sets it. |
+| **Distance (m)** | `distance_m` | Metres from browser `near_lat` / `near_lng`; list sorted **nearest first** when distance is present. |
+
+**Home** clears the selected row and scrolls to the top. **Refresh** reloads from integration-service.
 
 ### Sign-in screen (first visit vs returning)
 

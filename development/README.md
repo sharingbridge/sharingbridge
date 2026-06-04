@@ -3,6 +3,7 @@
 | Read this | When you need |
 |-----------|----------------|
 | [AGENT_HANDOFF.md](./AGENT_HANDOFF.md) | **Start here** — what is shipped, next tasks, full doc map |
+| [PRODUCT_ROADMAP.md](./PRODUCT_ROADMAP.md) | **Authoritative** June 2026 dashboard spec: Order intent taken, Delivered at, Distance (m) |
 | [Future_Extensions.md](../design/Future_Extensions.md) | Product features **not built yet** (order ops, neighbourhood dashboards) |
 | [IMPLEMENTATION_APPROACH.md](./IMPLEMENTATION_APPROACH.md) | Engineering strategy, AI/photo phases, long-term AWS path |
 | [AI_PLATFORM_INTEGRATION.md](./AI_PLATFORM_INTEGRATION.md) | LangChain / ai-orchestration wiring (planned) |

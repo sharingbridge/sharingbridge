@@ -47,7 +47,8 @@ CREATE EXTENSION IF NOT EXISTS postgis;
 
 ALTER TABLE order_intents
   ADD COLUMN IF NOT EXISTS locality_key TEXT,
-  ADD COLUMN IF NOT EXISTS location geography(POINT, 4326);
+  ADD COLUMN IF NOT EXISTS location geography(POINT, 4326),
+  ADD COLUMN IF NOT EXISTS delivered_at TIMESTAMPTZ;
 
 CREATE INDEX IF NOT EXISTS idx_order_intents_location
   ON order_intents USING GIST (location);

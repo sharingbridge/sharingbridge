@@ -295,6 +295,14 @@ Set **`DATABASE_URL`** on user-service, integration-service, and photo-service (
 
 `order_intents.payload` (JSONB) holds `verbal_handover_notes`, `presets_snapshot`, `has_reference_photo`, and optional **`location_lat`**, **`location_lng`**, **`location_label`**, **`locality_key`** (set on `POST` when the client sends coordinates).
 
+| Column | Purpose |
+|--------|---------|
+| `created_at` | **Order intent taken** time (donor registered intent — not a vendor order). |
+| `delivered_at` | Nullable; **Delivered at** on dashboard ([schema-delivered-at-migration.sql](./schema-delivered-at-migration.sql) on older DBs). Populated when delivery-partner flow exists. |
+| `location` / `locality_key` | PostGIS neighbourhood filters; list may return computed **`distance_m`** (metres, not stored). |
+
+Dashboard spec: [PRODUCT_ROADMAP.md](../development/PRODUCT_ROADMAP.md).
+
 Primary keys and `UNIQUE` constraints create indexes automatically; [schema.sql](./schema.sql) adds two indexes on `order_intents` for list queries (time-ordered lists, not geo).
 
 ---

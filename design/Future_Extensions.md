@@ -1,6 +1,8 @@
 # SharingBridge — Future extensions (order operations & locality marketplace)
 
-**Purpose:** Capture **sanitized, feasible** product extensions beyond today’s **order initiation** MVP (donor copies instructions → record registered). These are **not implemented** in code yet; use this doc for roadmap alignment and design reviews.
+**Purpose:** Capture **sanitized, feasible** product extensions beyond today’s **order initiation** MVP (donor copies instructions → record registered). Use this doc for roadmap alignment and design reviews.
+
+**Neighbourhood dashboard columns (June 2026):** authoritative spec in [PRODUCT_ROADMAP.md](../development/PRODUCT_ROADMAP.md) — **Order intent taken**, **Delivered at**, **Distance (m)**; sort by `distance_m` asc; donor neighbourhood photos.
 
 **Related:** [SharingBridge_End_to_End_Workflow.md](./SharingBridge_End_to_End_Workflow.md) (BRD steps 8–12), [SharingBridge_Business_Requirement.md](../requirements/SharingBridge_Business_Requirement.md) (payments stay with vendors), [database.md](../configuration/database.md) (persistence target), [authentication.md](../configuration/authentication.md) (roles).
 
@@ -49,30 +51,29 @@ After the donor places and pays in the **vendor app**, they open **order history
 
 ### A.2 Coordinator / donor dashboards (next slice)
 
-**Goal:** Donors see **neighbourhood activity** (default **last 2 hours**) on mobile and **staging** web before/after helping a seeker; coordinators retain full ops view. AI descriptions and embeddings stay in [IMPLEMENTATION_APPROACH.md](../development/IMPLEMENTATION_APPROACH.md) (donor–seeker field slice, phases A–D).
+**Goal:** Donors see **neighbourhood activity** (default window from `DONOR_NEIGHBOURHOOD_WINDOW_HOURS`) on mobile and web; coordinators retain full ops view. **Dashboard list columns** (planned — [PRODUCT_ROADMAP.md](../development/PRODUCT_ROADMAP.md)): **Order intent taken** (`created_at`), **Delivered at** (`delivered_at`, often empty), **Distance (m)** (`distance_m`); list sorted by **`distance_m` ascending** when viewer sends `near_lat` / `near_lng`; elapsed freshness from **`created_at`** only.
 
 | Viewer | List | PII / photos |
 |--------|------|----------------|
-| **Donor** (mobile + staging web) | Own intents + **neighbourhood** feed (`since=2h`, `near_lat/lng` or `locality_key`); group by day / locality (web: **By neighbourhood** when geo exists) | **No email**; opaque donor id only; reference **thumbnails only if** intent ≤ **2 hours** old |
-| **Coordinator** | All intents; filter by day, `user_id`, optional `since`, `near_lat/lng`, `locality_key` (PostGIS SQL; map UI later) | Full ops fields; photos per policy |
+| **Donor** (mobile + web) | Own intents + **neighbourhood** feed (`since`, `near_lat`/`near_lng`); web groups **By day** / **By area** (area includes **No location on record**) | **No email**; opaque donor id; **reference thumbnails in neighbourhood feed** within the server time window |
+| **Coordinator** | All intents; filter by day, `user_id`, optional `since`, `near_lat/lng`, `locality_key` (PostGIS; map UI later) | Full ops fields; **donor email**; photos per policy |
 | **Admin** | Same as coordinator + user lookup | May include email for support |
 
-Donor web is available in all environments with the **limited** dashboard ([environment-variables.md](../configuration/environment-variables.md) § Web dashboard roles). **`since=Nh`** and **`near_lat` / `near_lng`** (radius from `DONOR_NEIGHBOURHOOD_RADIUS_KM`) filter donor lists; without viewer location, donors see only their own rows in the time window. Location is stored on `POST` when `location_lat` / `location_lng` are sent (mobile **Help a seeker** captures GPS on copy/register). Named locality labels (`chennai-adyar`) remain future work.
+Donor web uses the **limited** dashboard ([environment-variables.md](../configuration/environment-variables.md) § Web dashboard roles). **`since=Nh`** and **`near_lat` / `near_lng`** apply radius **`DONOR_NEIGHBOURHOOD_RADIUS_KM`** server-side; API returns **`distance_m`** (metres), not km. Without viewer location, donors see only their own rows in the time window. Location is stored on `POST` when `location_lat` / `location_lng` are sent (mobile **Help a seeker** captures GPS on copy/register). Named locality labels (`chennai-adyar`) remain future work.
 
-**Neighbourhood API (illustrative):**
+**Neighbourhood API:**
 
-- `GET /v1/donor-seeker/order-intents?since=2h&near_lat=…&near_lng=…&radius_m=…`
+- `GET /v1/donor-seeker/order-intents?since=2h&near_lat=…&near_lng=…` — server applies radius; response rows include `distance_m`, `created_at`, `delivered_at` (when column exists).
 - `GET /v1/donor-seeker/order-intents?locality_key=…&since=2h`
-
-Requires `location_lat`, `location_lng`, `location_label`, `locality_key` on `POST` register (mobile **Help a seeker** captures GPS with consent).
 
 ### A.3 Data fields (additive)
 
 Extend stored order / order_intent records:
 
 - `payment_status`, `delivery_status`
-- `location_lat`, `location_lng`, `location_label`, `locality_key` (optional at registration)
-- `updated_at` for sorting and “last hour” filters
+- `location_lat`, `location_lng`, `location_label`, `locality_key` (optional at registration; PostGIS `location` **shipped**)
+- `delivered_at` (nullable; dashboard column before Phase B routinely fills it — [schema-delivered-at-migration.sql](../configuration/schema-delivered-at-migration.sql))
+- `updated_at` for filters; list sort by **`distance_m`** when neighbourhood coords present (not `updated_at` for donor neighbourhood view)
 
 JWT: keep active `role` per session; add `roles[]` and optional **`admin`** in `user_roles` ([database.md](../configuration/database.md)).
 
@@ -107,7 +108,7 @@ JWT: keep active `role` per session; add `roles[]` and optional **`admin`** in `
 | Field | Notes |
 |-------|--------|
 | `delivery_photo_url` | Time-limited or access-controlled URL |
-| `delivered_at` | Timestamp |
+| `delivered_at` | Timestamp (nullable on intent row until partner marks delivery; shown on dashboard even when empty) |
 | `delivery_status` | `out_for_delivery` → `delivered` |
 
 ### B.2 Donor visibility

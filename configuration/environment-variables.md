@@ -15,7 +15,7 @@ Tables are sorted **A–Z by variable name** to match Render’s environment UI.
 
 **Must match across services:** `DATABASE_URL` (Postgres), `AUTH_TOKEN_SECRET` (+ issuer/audience), `WEB_CORS_ORIGINS` (user-service **and** integration-service, same string), integration `API_BASE_URL` = web `VITE_API_BASE_URL` = mobile `API_BASE_URL`.
 
-**Donor feed window and radius:** set only on **integration-service** (`DONOR_NEIGHBOURHOOD_WINDOW_HOURS`, `DONOR_NEIGHBOURHOOD_RADIUS_KM`). Web and mobile read applied values from the list API response (`feed`, `since`, `neighbourhood`). List geo filters use **PostGIS** (`ST_DWithin` on `order_intents.location`) when the DB has the MVP geo columns — [database.md](./database.md).
+**Donor feed window and radius:** set only on **integration-service** (`DONOR_NEIGHBOURHOOD_WINDOW_HOURS`, `DONOR_NEIGHBOURHOOD_RADIUS_KM`). Web and mobile read applied values from the list API response (`feed`, `since`, `neighbourhood`). List geo filters use **PostGIS** (`ST_DWithin` on `order_intents.location`) when the DB has the MVP geo columns — [database.md](./database.md). Dashboard columns and sort: [PRODUCT_ROADMAP.md](../development/PRODUCT_ROADMAP.md).
 
 Render deploy details: [backend-render.md](./backend-render.md). Auth secrets: [authentication.md](./authentication.md). DB: [database.md](./database.md).
 
@@ -63,8 +63,9 @@ Render deploy details: [backend-render.md](./backend-render.md). Auth secrets: [
 | `AUTH_TOKEN_SECRET` | **same** as user-service | same |
 | `DATABASE_URL` | **same** as user-service | same |
 | `DONOR_LOCALITY_GRID_DECIMALS` | `2` | `2` (locality_key grid; 1–4) |
-| `DONOR_NEIGHBOURHOOD_RADIUS_KM` | `5` | `5` (`near_lat` / `near_lng` radius; 0.5–50) |
+| `DONOR_NEIGHBOURHOOD_RADIUS_KM` | `5` | `5` (`near_lat` / `near_lng` filter radius in **km**; per-row **`distance_m`** in API is **metres**) |
 | `DONOR_NEIGHBOURHOOD_WINDOW_HOURS` | `2` | `2` (donor list `since`, photo redaction; 1–72) |
+| `ORDER_INTENT_LIST_MAX_ROWS` | `100` | `100` (**planned** — not enforced in code yet; max rows per list) |
 | `PORT` | `8080` | injected by Render — do not set |
 | `USER_SERVICE_BASE_URL` | `http://localhost:8081` (required) | `https://<user-host>.onrender.com` — donor presets in Postgres |
 | `WEB_CORS_ORIGINS` | **same string** as user-service | same |

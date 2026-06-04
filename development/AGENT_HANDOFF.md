@@ -32,6 +32,7 @@ Deliver the MVP **donor-setup → donor-seeker interaction → vendor redirect �
 | **Manual test steps** | `testing/MANUAL_TESTING_GUIDE.md` |
 | BRD steps 1–12 + diagrams | `design/SharingBridge_End_to_End_Workflow.md` |
 | Future: payment, delivery proof, vendor bidding | `design/Future_Extensions.md` |
+| Neighbourhood dashboard UX (voice memos, June 2026) | `development/PRODUCT_ROADMAP.md` |
 | Donor setup API sequence | `design/Donor_Setup_AI_Search_Sequence.md` |
 | Long-term / AWS scale plan (not deploy truth) | `development/IMPLEMENTATION_APPROACH.md` |
 | Full system design (many sections **future**) | `design/SharingBridge_Technical_Architecture.md` |
@@ -148,22 +149,24 @@ Local folder names may differ from slugs; **git only cares about `origin`**. Pac
 
 Tasks #1-#5 are complete. Remaining priority order:
 
-1. **Neighbourhood + donor-safe dashboards** — [Future_Extensions.md](../design/Future_Extensions.md) Phase A.2–A.4 (geo on intent, `since=1h` feeds, donor web without email, photos ≤1h); then AI descriptions + embeddings per [IMPLEMENTATION_APPROACH.md](./IMPLEMENTATION_APPROACH.md) donor–seeker slice (phases B–D).
-2. **Operational hardening for token flow (post‑MVP / AWS path).**
+1. **Neighbourhood dashboard UX (June 4 memos)** — [PRODUCT_ROADMAP.md](./PRODUCT_ROADMAP.md): list columns **Order intent taken** (`created_at`), **Delivered at** (`delivered_at`, often empty until Phase B), **Distance (m)**; elapsed from **created_at** only; sort by distance asc; donor neighbourhood photos; mobile→web link.
+2. **Neighbourhood + donor-safe dashboards (broader)** — [Future_Extensions.md](../design/Future_Extensions.md) Phase A.2–A.4; then AI descriptions + embeddings per [IMPLEMENTATION_APPROACH.md](./IMPLEMENTATION_APPROACH.md) donor–seeker slice (phases B–D).
+3. **Operational hardening for token flow (post‑MVP / AWS path).**
    - Render/Railway MVP uses dashboard env vars; centralized secret managers are **deferred** — see `development/IMPLEMENTATION_APPROACH.md` tech-debt note.
    - When ready: managed secret storage per environment, rotate dev default, disallow fallback outside local dev.
    - Add explicit token-expiry refresh flow in mobile UX.
 
-3. **Cutover validation then code removal (optional final cleanup).**
+4. **Cutover validation then code removal (optional final cleanup).**
    - Run `npm run backfill:user-service-presets` if legacy `data/preferences.json` exists; confirm donor-setup flows against user-service.
 
-4. **Track A — hosted MVP backend.** [configuration/backend-render.md](../configuration/backend-render.md). Smoke: MANUAL_TESTING_GUIDE **§6** (hosted); web dashboard **§4**. Then **Track B:** `sharingbridge-photo-service` + mobile upload.
-5. **AI descriptions + embeddings** — [IMPLEMENTATION_APPROACH.md](./IMPLEMENTATION_APPROACH.md) § donor–seeker field slice; optional `AI_LLM_MODE=openai`; Cloudinary TTL (1–2h) aligned with secure-link policy.
+5. **Track A — hosted MVP backend.** [configuration/backend-render.md](../configuration/backend-render.md). Smoke: MANUAL_TESTING_GUIDE **§6** (hosted); web dashboard **§4**. Then **Track B:** `sharingbridge-photo-service` + mobile upload.
+6. **AI descriptions + embeddings** — [IMPLEMENTATION_APPROACH.md](./IMPLEMENTATION_APPROACH.md) § donor–seeker field slice; optional `AI_LLM_MODE=openai`; Cloudinary TTL (1–2h) aligned with secure-link policy.
 
 ## Follow-ups Surfaced in Prior Sessions
 - Backfill tooling: `sharingbridge-integration-service` → `npm run backfill:user-service-presets` (documented in `development/USER_SERVICE_PREFERENCES_MIGRATION.md`).
 - Retire integration-service file-backed store and `LocalPreferencesRepository` after production cutover is verified (not yet removed from code).
-- **Order operations + neighbourhood dashboards:** donor web PII rules, geo feeds — `design/Future_Extensions.md` Phase A; AI/embeddings — `development/IMPLEMENTATION_APPROACH.md`.
+- **Neighbourhood dashboard (June 2026):** columns **Order intent taken**, **Delivered at**, **Distance (m)**; sort `distance_m` asc; `delivered_at` column — `development/PRODUCT_ROADMAP.md`.
+- **Order operations + neighbourhood dashboards:** `design/Future_Extensions.md` Phase A; AI/embeddings — `development/IMPLEMENTATION_APPROACH.md`.
 - **Order operations roadmap:** donor marks payment done on record; later delivery-partner photo + `delivered`; future locality demand + vendor bidding — `design/Future_Extensions.md`.
 
 ## Recently Shipped (chronological, newest last)

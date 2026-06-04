@@ -30,7 +30,7 @@ Repeated taps for the **same instruction pack** (`pack_id`) update the existing 
 
 Stored fields include `pack_id`, preset snapshot, reference-photo flag, and verbal notes. Persisted in Postgres `order_intents` (integration-service requires `DATABASE_URL`).
 
-**Verify (local or Render):** after the first copy, the app shows **Order intent registered** with a reference id. A second tap on the same pack updates that intent (SnackBar **Donation intent updated**, same reference id). On API failure, clipboard copy still succeeds and an error SnackBar is shown.
+**Verify (local or Render):** after the first copy, the app shows **Order intent registered** with a reference id (mobile copy). The web dashboard will label the same timestamp **Order intent taken** (`created_at`) — see [PRODUCT_ROADMAP.md](../development/PRODUCT_ROADMAP.md). A second tap on the same pack updates that intent (SnackBar **Donation intent updated**, same reference id). On API failure, clipboard copy still succeeds and an error SnackBar is shown.
 
 ## Donation intent dashboard
 

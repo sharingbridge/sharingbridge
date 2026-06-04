@@ -61,9 +61,13 @@ Re-run: `$env:TEMP\asrvenv\Scripts\python.exe` `..\..\scripts\transcribe_audio.p
 4. Max rows env for gateway payload size.
 5. Mobile link to web dashboard.
 
-### Not built yet
+### Shipped (code)
 
-- `distance_m` in list SQL + sort; `delivered_at` column; dashboard columns in web-app; `ORDER_INTENT_LIST_MAX_ROWS`; mobile dashboard link.
+- **integration-service:** `distance_m`, `delivered_at` in list SQL; sort by `distance_m` asc when `near_lat` / `near_lng`; `ORDER_INTENT_LIST_MAX_ROWS`.
+- **web-app:** list + detail columns; preserves distance sort when grouping.
+- **mobile-app:** `WEB_DASHBOARD_URL` dart-define opens neighbourhood dashboard in browser.
+
+**DB:** run [schema-delivered-at-migration.sql](../configuration/schema-delivered-at-migration.sql) on existing Supabase/local DB before restarting integration-service.
 
 ---
 

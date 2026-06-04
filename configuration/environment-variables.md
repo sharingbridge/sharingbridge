@@ -65,7 +65,7 @@ Render deploy details: [backend-render.md](./backend-render.md). Auth secrets: [
 | `DONOR_LOCALITY_GRID_DECIMALS` | `2` | `2` (locality_key grid; 1–4) |
 | `DONOR_NEIGHBOURHOOD_RADIUS_KM` | `5` | `5` (`near_lat` / `near_lng` filter radius in **km**; per-row **`distance_m`** in API is **metres**) |
 | `DONOR_NEIGHBOURHOOD_WINDOW_HOURS` | `2` | `2` (donor list `since`, photo redaction; 1–72) |
-| `ORDER_INTENT_LIST_MAX_ROWS` | `100` | `100` (**planned** — not enforced in code yet; max rows per list) |
+| `ORDER_INTENT_LIST_MAX_ROWS` | `100` | `100` (max rows per dashboard list) |
 | `PORT` | `8080` | injected by Render — do not set |
 | `USER_SERVICE_BASE_URL` | `http://localhost:8081` (required) | `https://<user-host>.onrender.com` — donor presets in Postgres |
 | `WEB_CORS_ORIGINS` | **same string** as user-service | same |

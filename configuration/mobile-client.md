@@ -54,6 +54,14 @@ Then set all three URLs to `http://127.0.0.1:8080`, `:8081`, `:8092`.
 
 Full walkthrough: [MANUAL_TESTING_GUIDE.md](../testing/MANUAL_TESTING_GUIDE.md) **§3-host**.
 
+Optional **neighbourhood dashboard (web)** — open the donor web app in the device browser:
+
+```text
+--dart-define=WEB_DASHBOARD_URL=https://<your-static-site>.onrender.com
+```
+
+Local web dev: `http://localhost:5173` (same Google sign-in as mobile). Omit the define to hide the home-screen tile.
+
 ## `dart-define` (hosted Render)
 
 Use **Google Sign-In** with hosted `USER_SERVICE_BASE_URL` and `GOOGLE_CLIENT_ID` (see [e2e-deployment-sequence.md](./e2e-deployment-sequence.md)). There is no HTTP endpoint to mint a JWT without Google on production.

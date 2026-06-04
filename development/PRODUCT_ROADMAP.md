@@ -22,7 +22,7 @@ Re-run: `$env:TEMP\asrvenv\Scripts\python.exe` `..\..\scripts\transcribe_audio.p
 | **Delivered at** | **`delivered_at`** — handover/delivery completion time when set. Often empty until delivery-partner flow (Phase B) populates it. |
 | **Elapsed (freshness)** | `now − created_at`. Shown near **Order intent taken**; **do not** derive elapsed from `delivered_at`. |
 | **Distance (m)** | **`distance_m`** — metres from viewer `near_lat` / `near_lng` to intent location (API-computed). |
-| **Radius** | Server filter only: **`DONOR_NEIGHBOURHOOD_RADIUS_KM`** (km). Not shown per row as km. |
+| **Radius** | Server filter: **`DONOR_NEIGHBOURHOOD_RADIUS_M`** (metres; default 5000). Legacy **`DONOR_NEIGHBOURHOOD_RADIUS_KM`** if `_M` unset. |
 
 ---
 
@@ -41,7 +41,7 @@ Re-run: `$env:TEMP\asrvenv\Scripts\python.exe` `..\..\scripts\transcribe_audio.p
 | Item | Rule |
 |------|------|
 | List order | **`distance_m` ASC** (nearest first) when `near_lat` / `near_lng` sent. No separate sort-by-time mode. |
-| Radius filter | `DONOR_NEIGHBOURHOOD_RADIUS_KM` on server (`ST_DWithin`). |
+| Radius filter | `DONOR_NEIGHBOURHOOD_RADIUS_M` on server (`ST_DWithin`; metres). |
 | Row cap | **`ORDER_INTENT_LIST_MAX_ROWS`** (default **100**) on integration-service. |
 
 ### Donor photos

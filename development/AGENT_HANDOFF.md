@@ -33,6 +33,7 @@ Deliver the MVP **donor-setup → donor-seeker interaction → vendor redirect �
 | BRD steps 1–12 + diagrams | `design/SharingBridge_End_to_End_Workflow.md` |
 | Future: payment, delivery proof, vendor bidding | `design/Future_Extensions.md` |
 | Neighbourhood dashboard UX (voice memos, June 2026) | `development/PRODUCT_ROADMAP.md` |
+| **AI full plan** (presets, descriptions, seeker ID; LangChain vs direct) | `development/AI_IMPLEMENTATION_PLAN.md` |
 | Donor setup API sequence | `design/Donor_Setup_AI_Search_Sequence.md` |
 | Long-term / AWS scale plan (not deploy truth) | `development/IMPLEMENTATION_APPROACH.md` |
 | Full system design (many sections **future**) | `design/SharingBridge_Technical_Architecture.md` |
@@ -72,7 +73,7 @@ The **donor-setup slice** that is live in code is intentionally a **minimal MVP*
 
 ### `sharingbridge-mobile-app` (donor setup MVP shipped; Offer food help handoff)
 - **Home hub** (`lib/presentation/app_home_page.dart`): entry to **Donor setup** vs **Offer food help**.
-- **Donor–seeker interaction (`Offer food help`):** three steps shipped — **Quick guidance** (fixed copy, BRD step 4) → **optional reference photo** + verbal notes → **instruction-pack API** (`POST /v1/donor-seeker/instruction-pack` via integration; local stub fallback if API unreachable) → **Copy** + preset **Open …** deep links. **Planned:** cloud photo upload + geo, live LLM (`AI_LLM_MODE=openai`), delivery acknowledgement, donor↔delivery photo match. **Deferred:** `sharingbridge-location-safety` (geo scoring archived) — see `IMPLEMENTATION_APPROACH.md` **AI interactions** and `AI_PLATFORM_INTEGRATION.md`.
+- **Donor–seeker interaction (`Help a seeker`):** three steps shipped — **Quick guidance** → **optional reference photo** + verbal notes → **instruction-pack API** (GPS requested **before** instruction generation; same coords reused on copy/register) → **Copy** + preset **Open …** deep links. **Planned:** live LLM + image/location descriptions + seeker hints — see `AI_IMPLEMENTATION_PLAN.md`. **Deferred:** `sharingbridge-location-safety` (geo scoring archived).
 - Donor setup screen wired to integration-service: search → suggestions → confirm-and-save.
 - Startup loads presets from server, with local `shared_preferences` fallback cache when the server is unreachable.
 - HTTP API client (`lib/features/donor_setup/data/http_donor_setup_api_client.dart`) supports request timeout, exponential-backoff retry, and typed exceptions (`DonorSetupNetworkException`, `DonorSetupTimeoutException`, `DonorSetupBadRequestException`, `DonorSetupServerException`, `DonorSetupResponseException`). Mutating saves do not retry on 5xx (no double-write).

@@ -1,6 +1,7 @@
 # AI Platform Integration — Technical Plan
 
 **Status:** Deterministic MVP shipped (`sharingbridge-ai-orchestration` + integration bridge); live LLM (`AI_LLM_MODE=openai`) not wired yet  
+**Full phased plan (presets, image/location text, seeker ID, LangChain vs direct LLM):** [AI_IMPLEMENTATION_PLAN.md](./AI_IMPLEMENTATION_PLAN.md)  
 **Related:** [IMPLEMENTATION_APPROACH.md](./IMPLEMENTATION_APPROACH.md) (AI interactions slice), [SharingBridge_End_to_End_Workflow.md](../design/SharingBridge_End_to_End_Workflow.md), [Technical Architecture](../design/SharingBridge_Technical_Architecture.md) (Hybrid AI Strategy)
 
 ---
@@ -221,25 +222,30 @@ sequenceDiagram
 
 ---
 
-## LangChain implementation sketch (orchestration)
+## Orchestration style (LangChain vs direct LLM)
 
-**Dependencies (Python example):**
+**Decision (June 2026):** Use **direct OpenAI SDK calls** and explicit Python pipeline functions for MVP live LLM. Defer LangChain until flows need RAG, multi-tool agents, or heavy branching. Details: [AI_IMPLEMENTATION_PLAN.md](./AI_IMPLEMENTATION_PLAN.md) § *LangChain vs direct LLM*.
 
-- `langchain`, `langchain-openai` (or `langchain-anthropic`)
-- `pydantic` for response models
-- `fastapi`, `uvicorn`
+**MVP implementation sketch (no LangChain):**
+
+- `openai` Python SDK (or `httpx` to provider REST)
+- `pydantic` response models + JSON schema / `response_format`
+- Versioned prompts in `prompts/*.yaml`
+- `AI_LLM_MODE=deterministic` | `openai` switch in `app/services/*.py`
+- Optional **LangSmith** tracing without LangChain abstractions
 
 **Patterns:**
 
-1. **Structured output** — `with_structured_output(SuggestVendorsResponse)` or JSON mode + validator; reject malformed responses → integration returns safe fallback (manual entry message).
-2. **Prompt registry** — `prompts/suggest_vendors_v1.yaml`, `prompts/instruction_pack_v1.yaml` in repo.
-3. **Retries** — transient LLM errors only; no retry on 4xx validation failures.
-4. **PII** — strip or minimize seeker identifiers in logs; use LangSmith only in non-prod or with redaction.
+1. **Structured output** — validate with Pydantic; reject malformed responses → integration mock fallback.
+2. **Prompt registry** — `prompts/suggest_vendors_v1.yaml`, `prompts/instruction_pack_v1.yaml`.
+3. **Retries** — transient LLM errors only; no retry on validation failures.
+4. **PII** — minimize seeker identifiers in logs; redact in tracing tools.
 
-**Not in LangChain:**
+**Not LLM / not LangChain:**
 
-- Handover guidance is mobile-only (no integration call).
-- Face match (photo-service after delivery upload).
+- Handover guidance (mobile fixed copy).
+- Face match (photo-service CV after delivery upload).
+- PostGIS neighbourhood lists (integration-service).
 
 ---
 

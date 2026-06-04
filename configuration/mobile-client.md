@@ -60,7 +60,7 @@ Full walkthrough: [MANUAL_TESTING_GUIDE.md](../testing/MANUAL_TESTING_GUIDE.md) 
 --dart-define=WEB_DASHBOARD_URL=<URL from table above>
 ```
 
-The tile is always visible; it is tappable only when `WEB_DASHBOARD_URL` is set. On the web dashboard, allow browser location so **Distance (m)** appears (header → **Use my location**).
+The tile is always visible; it is tappable only when `WEB_DASHBOARD_URL` is set. On the web dashboard, choose **By area** and allow location when prompted so **Distance (m)** loads from your current position.
 
 ## `dart-define` (hosted Render)
 

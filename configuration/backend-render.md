@@ -77,6 +77,7 @@ Secret generation: [authentication.md](./authentication.md). Postgres: [database
 - Web static site: set `VITE_*` at **build** time; redeploy after changing them.
 - Web and mobile use **Google Sign-In** only on production (no dev token mint over HTTP).
 - photo-service: **Docker** — keep Render **Start Command** blank (`Dockerfile` + `start.sh`).
+- **`LOG_LEVEL`:** set `warn` (default) on all four backend APIs; use `info` temporarily for startup config dumps — see [environment-variables.md](./environment-variables.md#log_level-all-backend-apis).
 
 After deploy, complete [e2e-deployment-sequence.md](./e2e-deployment-sequence.md) Phase 4 (Google origins + `WEB_CORS_ORIGINS`).
 

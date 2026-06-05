@@ -21,6 +21,29 @@ Render deploy details: [backend-render.md](./backend-render.md). Auth secrets: [
 
 ---
 
+## `LOG_LEVEL` (all backend APIs)
+
+Set the **same value** on all four Render Web Services if you want consistent verbosity:
+
+| Service | Supports `LOG_LEVEL` |
+|---------|----------------------|
+| `sharingbridge-user-service` | Yes |
+| `sharingbridge-integration-service` | Yes |
+| `sharingbridge-ai-orchestration` | Yes |
+| `sharingbridge-photo-service` | Yes |
+| web-app, mobile-app | No (no server runtime logs) |
+
+| Value | What you see in Render logs |
+|-------|----------------------------|
+| `warn` (default) | **Warnings/errors only** — startup misconfig, AI mock/fallback, orchestration failures |
+| `error` | Errors only |
+| `info` | Above + `[startup] config {…}` full non-secret snapshot + “listening on port” |
+| `debug` | Same as `info` today (reserved for finer traces later) |
+
+**Secrets are never logged.** Use `GET /health` on any backend for a non-secret `config` / `log_level` snapshot anytime. See [ai-setup-handhold.md](./ai-setup-handhold.md) §6.
+
+---
+
 ## Shared (multiple services)
 
 | Variable | Used on | Purpose |
@@ -44,6 +67,7 @@ Render deploy details: [backend-render.md](./backend-render.md). Auth secrets: [
 | `DATABASE_URL` | `postgresql://…@localhost:5432/sharingbridge` | Supabase URI |
 | `GOOGLE_CLIENT_ID_ANDROID` | Android OAuth client ID | when mobile uses Google |
 | `GOOGLE_CLIENT_ID_WEB` | Web OAuth client ID | same as `VITE_GOOGLE_CLIENT_ID` |
+| `LOG_LEVEL` | `warn` | `error`, `warn`, `info`, or `debug` — see [LOG_LEVEL](#log_level-all-backend-apis) |
 | `PORT` | `8081` | injected by Render — do not set |
 | `WEB_CORS_ORIGINS` | `http://localhost:5173` | `https://<static-site>.onrender.com` |
 
@@ -65,6 +89,7 @@ Render deploy details: [backend-render.md](./backend-render.md). Auth secrets: [
 | `DONOR_LOCALITY_GRID_DECIMALS` | `2` | `2` (locality_key grid; 1–4) |
 | `DONOR_NEIGHBOURHOOD_RADIUS_M` | `5000` | `5000` (`near_lat` / `near_lng` filter radius in **metres**; any positive value, capped at 50000 server-side) |
 | `DONOR_NEIGHBOURHOOD_WINDOW_HOURS` | `2` | `2` (donor list `since`, photo redaction; 1–72) |
+| `LOG_LEVEL` | `warn` | `error`, `warn`, `info`, or `debug` — see [LOG_LEVEL](#log_level-all-backend-apis) |
 | `ORDER_INTENT_LIST_MAX_ROWS` | `100` | `100` (max rows per dashboard list) |
 | `PORT` | `8080` | injected by Render — do not set |
 | `USER_SERVICE_BASE_URL` | `http://localhost:8081` (required) | `https://<user-host>.onrender.com` — donor presets in Postgres |
@@ -84,6 +109,7 @@ Render deploy details: [backend-render.md](./backend-render.md). Auth secrets: [
 | `CLOUDINARY_CLOUD_NAME` | | required |
 | `CLOUDINARY_URL` | optional alternative to the three keys above | `cloudinary://…` |
 | `DATABASE_URL` | same Postgres | same |
+| `LOG_LEVEL` | `warn` | `error`, `warn`, `info`, or `debug` — see [LOG_LEVEL](#log_level-all-backend-apis) |
 
 See [photo-service-local.md](./photo-service-local.md).
 
@@ -91,17 +117,18 @@ See [photo-service-local.md](./photo-service-local.md).
 
 ## `sharingbridge-ai-orchestration` (optional)
 
-| Variable | Typical value |
-|----------|----------------|
-| `AI_LLM_MODE` | `deterministic` (MVP) or `live` (Gemini + Groq) |
-| `AI_ORCHESTRATION_INTERNAL_API_KEY` | same as integration-service |
-| `GROQ_API_KEY` | Groq — **presets** + **instruction compose** (text) |
-| `GROQ_MODEL` | `llama-3.3-70b-versatile` |
-| `GEMINI_API_KEY` | Google AI Studio — **image description** + **seeker appearance** (vision) |
-| `GEMINI_VISION_MODEL` | `gemini-2.0-flash` |
-| `PHOTO_SERVICE_BASE_URL` | e.g. `https://<photo-host>.onrender.com` (signed URLs for Gemini) |
-| `NOMINATIM_USER_AGENT` | Contact string for OSM reverse geocode (no API key) |
-| `SHARINGBRIDGE_WEBSITE_URL` | `pending` |
+| Variable | Example value | Used for |
+|----------|---------------|----------|
+| `AI_LLM_MODE` | `deterministic` or `live` | `deterministic` = template/mock output; `live` = real Groq + Gemini calls |
+| `AI_ORCHESTRATION_INTERNAL_API_KEY` | same as integration-service | Internal service-to-service auth header (`X-Internal-Api-Key`) |
+| `GROQ_API_KEY` | `gsk_...` | Groq text generation for `suggest-vendors` (vendor preset suggestions) and instruction-pack composition |
+| `GROQ_MODEL` | `llama-3.3-70b-versatile` | Groq model for text paths above |
+| `GEMINI_API_KEY` | `AIza...` | Gemini vision for `image_description` + `seeker_appearance_hints` |
+| `GEMINI_VISION_MODEL` | `gemini-2.0-flash` | Gemini model for image analysis |
+| `PHOTO_SERVICE_BASE_URL` | `https://<photo-host>.onrender.com` | Source of signed image URLs that Gemini can fetch |
+| `NOMINATIM_USER_AGENT` | `SharingBridge/1.0 (ops@yourdomain.org)` | OSM reverse geocode identification (no API key needed) |
+| `SHARINGBRIDGE_WEBSITE_URL` | `pending` | Courier instruction text reference only (not an API endpoint) |
+| `LOG_LEVEL` | `warn` | `error`, `warn`, `info`, or `debug` — see [LOG_LEVEL](#log_level-all-backend-apis) |
 
 `deterministic` = template/mock (not live AI). See [ai-setup-handhold.md](./ai-setup-handhold.md).
 

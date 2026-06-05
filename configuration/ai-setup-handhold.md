@@ -213,7 +213,84 @@ No banner when `source` is `groq`, `groq+gemini`, or `gemini`.
 
 ---
 
-## 6. Troubleshooting
+## 6. Diagnose where the break is (Render logs + health)
+
+Today there is **no secret logging**. Use **non-secret config snapshots** and **request-path log lines** to see which hop failed.
+
+### 6a. On deploy — startup config (no API keys)
+
+Default log level is **`warn`** (`LOG_LEVEL=warn`) on **all four backend APIs** (user-service, integration-service, ai-orchestration, photo-service). Set the same value on each Render service for consistent behaviour. Startup prints **only misconfiguration warnings**, not a full config dump. Set `LOG_LEVEL=info` if you want the full `[startup] config {…}` line on every deploy.
+
+After each service deploys, open **Render → service → Logs** and look for:
+
+```text
+[startup] config issues: ["AI_SUGGEST_VENDORS_ENABLED=true but orchestration URL is missing"]
+```
+
+Or, with `LOG_LEVEL=info`:
+
+```text
+[startup] config {"service":"integration-service",...,"ai":{"orchestration_base_url_set":true,...}}
+```
+
+**integration-service** startup should show:
+
+| Field | Must be |
+|-------|---------|
+| `ai.orchestration_base_url_set` | `true` |
+| `ai.orchestration_host` | your ai-orchestration hostname |
+| `ai.suggest_vendors_flag` | `true` |
+| `ai.suggest_vendors_path_active` | `true` |
+| `ai.internal_api_key_set` | `true` if ai-orchestration requires a key |
+
+**ai-orchestration** startup should show:
+
+| Field | Must be |
+|-------|---------|
+| `llm_mode` | `live` |
+| `live_llm_enabled` | `true` |
+| `groq_configured` | `true` |
+| `gemini_configured` | `true` (for photo flows) |
+
+### 6b. Any time — `GET /health` (safe JSON)
+
+```powershell
+curl https://<integration-host>.onrender.com/health
+curl https://<ai-orchestration-host>.onrender.com/health
+```
+
+Integration `/health` includes an `ai` block (same flags as startup). Orchestration `/health` includes `config` (mode + whether keys are set, not the keys themselves).
+
+### 6c. After a mobile “Suggest vendors” — integration logs
+
+Trigger one search, then filter integration logs for `suggest-vendors`:
+
+| Log line | Meaning |
+|----------|---------|
+| `using mock catalog: AI_ORCHESTRATION_BASE_URL is unset` | Integration env not wired (or old deploy) |
+| `using mock catalog: AI_SUGGEST_VENDORS_ENABLED is not true` | Flag off on integration |
+| `orchestration failed status=401` | `AI_ORCHESTRATION_INTERNAL_API_KEY` mismatch |
+| `orchestration failed code=timeout` | Orchestration slow/down; check ai-orchestration logs |
+| `orchestration failed code=network_error` | Bad URL or orchestration unreachable from integration |
+| `orchestration returned non-live source=deterministic` | Reachable but `AI_LLM_MODE` not `live` on orchestration |
+| *(no log line)* | Live path working — success is silent at default `LOG_LEVEL=warn` |
+
+Mobile **“Demo catalog”** banner = integration returned `mock` or `mock_fallback` (integration never got a good orchestration response).
+
+### 6d. API response `source` (quick check)
+
+```powershell
+curl -X POST https://<integration-host>.onrender.com/v1/donor-setup/suggest-vendors `
+  -H "Content-Type: application/json" `
+  -H "Authorization: Bearer <donor-jwt>" `
+  -d '{"query_text":"vegetarian meals","location_precision":"manual_area","manual_area":"Chennai"}'
+```
+
+Inspect `"source"` in the JSON body (same mapping as §6c).
+
+---
+
+## 7. Troubleshooting
 
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
@@ -227,7 +304,7 @@ No banner when `source` is `groq`, `groq+gemini`, or `gemini`.
 
 ---
 
-## 7. Cost and safety notes
+## 8. Cost and safety notes
 
 - Groq and Gemini bill/quote per token; use `deterministic` for automated tests and demos without spend.
 - Never commit `.env` files or paste keys into chat/logs.

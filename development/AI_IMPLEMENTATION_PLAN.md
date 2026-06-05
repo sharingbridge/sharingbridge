@@ -17,7 +17,45 @@ This document is the **full phased plan** for SharingBridge AI: preset collectio
 | Mobile **Vendor presets** | `POST /v1/donor-setup/suggest-vendors` → orchestration or mock fallback |
 | Mobile **Help a seeker** | Photo upload → `POST /v1/donor-seeker/instruction-pack`; **GPS captured before instruction-pack** (not only on copy) |
 | `sharingbridge-photo-service` | Reference photo upload + JWT; **no vision/embeddings yet** |
-| Live OpenAI / LangChain | **Not wired** — `OPENAI_API_KEY` and `AI_LLM_MODE=openai` exist in config only |
+| Live LLM providers | **Not wired** — `AI_LLM_MODE=deterministic` default; provider env vars documented below |
+
+---
+
+## Provider split (locked)
+
+Two **free-tier** providers, one role each. Both called only from `sharingbridge-ai-orchestration` via **direct HTTP/SDK** (no LangChain). Mobile and integration-service see a single orchestration base URL.
+
+| Provider | Role | Endpoints / steps | Models (staging defaults) |
+|----------|------|-------------------|---------------------------|
+| **Google Gemini** | **Vision** — reference photo at order-intent / instruction time | `image_description`, soft **seeker identification** (appearance only, no name claims) | `gemini-2.0-flash` or `gemini-2.5-flash` (multimodal) |
+| **Groq** | **Text** — presets + instruction composition | `suggest-vendors` JSON; `delivery_instructions` + `seeker_handover_hints` using Gemini outputs + geocode + donor notes | `llama-3.3-70b-versatile` |
+
+**Why split**
+
+- Gemini free tier supports **image + text** (required for seeker reference photo).
+- Groq free tier is **fast text-only** — good for structured preset JSON and long instruction merge.
+- Groq never receives raw image bytes; only Gemini’s **text** outputs (`image_description`, `seeker_appearance_hints`).
+
+**Fallback:** `AI_LLM_MODE=deterministic` (CI + offline); integration mock fallback if orchestration fails.
+
+```mermaid
+flowchart LR
+  subgraph mobile [Mobile Help a seeker]
+    P[Reference photo]
+    G[GPS + notes]
+  end
+  subgraph orch [ai-orchestration]
+    GEM[Gemini vision]
+    GEO[Geocode HTTP]
+    GRQ[Groq text]
+  end
+  P --> GEM
+  G --> GEO
+  GEM -->|image_description seeker_appearance_hints| GRQ
+  GEO -->|location_description| GRQ
+  G --> GRQ
+  GRQ -->|delivery_instructions| mobile
+```
 
 ---
 
@@ -56,8 +94,11 @@ This document is the **full phased plan** for SharingBridge AI: preset collectio
 | Field | How produced | Stored |
 |-------|----------------|--------|
 | **`location_description`** | Reverse geocode (Nominatim or Maps API) + optional one-line LLM polish from `lat`/`lng`/`location_label` | Order intent `payload` and/or columns |
-| **`image_description`** | Vision model on reference thumbnail URL (consent-based photo) | Same |
-| **`delivery_instructions`** | Template + LLM merge of presets, notes, descriptions, program copy | Returned to mobile; copied to clipboard |
+| **`image_description`** | **Gemini** vision on reference thumbnail URL (consent-based photo) | Order intent `payload` |
+| **`seeker_appearance_hints`** | **Gemini** — soft identification from photo (clothing, context; no legal ID) | Same |
+| **`location_description`** | Reverse geocode + optional **Groq** one-line polish | Same |
+| **`delivery_instructions`** | **Groq** — merges presets, notes, Gemini text fields, location, program copy | Mobile + clipboard |
+| **`seeker_handover_hints`** | **Groq** — courier-facing block built from Gemini + notes | Same |
 
 **Inputs already available:** `lat`/`lng` from mobile at instruction generation, `reference_photo_artifact_id`, `verbal_handover_notes`, saved presets.
 
@@ -69,8 +110,8 @@ This document is the **full phased plan** for SharingBridge AI: preset collectio
 
 Split into two layers — different technology and privacy review.
 
-**A — Soft identification (LLM, Phase 2–3)**  
-Combine `image_description`, `location_description`, donor notes, and preset context into **`seeker_handover_hints`** for couriers. Non-definitive, consent-based wording.
+**A — Soft identification (Gemini + Groq, Phase 2–4)**  
+**Gemini** extracts `image_description` and `seeker_appearance_hints` from the reference photo. **Groq** composes **`seeker_handover_hints`** and the final `delivery_instructions` from those strings plus `location_description` and donor notes. Non-definitive, consent-based wording only.
 
 **B — Hard identification (CV, Phase 5)**  
 - On `seeker_reference` upload: face embedding in **photo-service** (not LLM).  
@@ -112,18 +153,22 @@ Treat each endpoint as a **plain async pipeline** in `sharingbridge-ai-orchestra
 
 ```text
 instruction_pack(payload):
-  1. sanitize_notes(payload)           # rules, no LLM
-  2. location_description = geocode(payload.lat, payload.lng)  # HTTP API
-  3. image_description = vision(photo_url) if photo           # 1 LLM call
-  4. delivery_instructions = llm_compose(...)               # 1 LLM call OR template
-  5. validate(InstructionPackResponse)                      # Pydantic
-  6. return JSON
+  1. sanitize_notes(payload)                    # rules, no LLM
+  2. location_description = geocode(lat, lng)   # HTTP (Nominatim / Maps)
+  3. if reference_photo:
+       gemini_vision(photo_url) → image_description, seeker_appearance_hints
+  4. groq_compose_instruction_pack(
+       presets, notes, location_description,
+       image_description, seeker_appearance_hints
+     ) → delivery_instructions, seeker_handover_hints
+  5. validate(InstructionPackResponse)
+  6. return JSON (fields persisted on order intent POST)
 ```
 
 ```text
 suggest_vendors(payload):
   1. build_prompt(query, location context)
-  2. llm_structured_json(SuggestVendorsResponse)              # 1 LLM call
+  2. groq_structured_json(SuggestVendorsResponse)
   3. enrich_urls / clamp to 5
   4. return JSON
 ```
@@ -143,28 +188,28 @@ suggest_vendors(payload):
 | Phase | ID | Deliverable | LLM? | Repo(s) |
 |-------|-----|-------------|------|---------|
 | **0** | — | Deterministic orchestration + integration flags + mobile HTTP | No | Done |
-| **1** | AI-1 | Live **suggest-vendors** (`AI_LLM_MODE=openai`) | 1 structured call | ai-orchestration, integration env |
-| **2** | AI-2 | **location_description** in instruction-pack (geocode + optional polish) | 0–1 call | ai-orchestration |
-| **3** | AI-3 | **image_description** (vision on signed photo URL) | 1 vision call | ai-orchestration, photo-service URL |
-| **4** | AI-4 | Persist descriptions on order intent; show on web detail | No | integration, web-app |
-| **5** | AI-5 | **seeker_handover_hints** merged into instruction-pack | 1 compose call | ai-orchestration |
-| **6** | AI-6 | Face embedding + delivery match | CV, not LLM | photo-service |
+| **1** | AI-1 | Live **suggest-vendors** via **Groq** | Groq ×1 | ai-orchestration |
+| **2** | AI-2 | **location_description** (geocode + optional Groq polish) | Groq ×0–1 | ai-orchestration |
+| **3** | AI-3 | **Gemini vision** → `image_description`, `seeker_appearance_hints` | Gemini ×1 | ai-orchestration, photo-service |
+| **4** | AI-4 | **Groq** compose `delivery_instructions` + `seeker_handover_hints` | Groq ×1 | ai-orchestration |
+| **5** | AI-5 | Persist Gemini/Groq fields on order intent; web detail | No | integration, web-app |
+| **6** | AI-6 | Face embedding + delivery match | CV | photo-service |
 
-### Phase AI-1 — Presets (first live LLM)
+### Phase AI-1 — Presets (Groq)
 
 **Code:**
 
-- `app/llm/openai_client.py` — chat completions + JSON schema / `response_format`  
-- `app/services/suggest_vendors.py` — branch on `settings.llm_mode`  
-- `prompts/suggest_vendors_v1.yaml` — versioned prompt  
-- Tests: mock OpenAI; CI keeps `deterministic`  
+- `app/llm/groq_client.py` — OpenAI-compatible client, `base_url=https://api.groq.com/openai/v1`  
+- `app/services/suggest_vendors.py` — branch on `AI_LLM_MODE=live`  
+- `prompts/suggest_vendors_v1.yaml`  
+- Tests: mock Groq; CI keeps `deterministic`  
 
 **Deploy:**
 
-- Render: `OPENAI_API_KEY`, `AI_LLM_MODE=openai` on ai-orchestration  
-- Integration: `AI_ORCHESTRATION_BASE_URL`, `AI_SUGGEST_VENDORS_ENABLED=true`  
+- Render: `GROQ_API_KEY`, `GROQ_MODEL=llama-3.3-70b-versatile`, `AI_LLM_MODE=live`  
+- Integration: `AI_SUGGEST_VENDORS_ENABLED=true`  
 
-**Done when:** Donor setup search returns LLM-ranked vendors in staging; fallback still works if orchestration is down.
+**Done when:** Donor setup search returns Groq-ranked vendors in staging.
 
 ---
 
@@ -173,44 +218,48 @@ suggest_vendors(payload):
 **Code:**
 
 - `app/geo/reverse_geocode.py` — Nominatim (dev) or Google Geocoding (prod)  
+- Optional Groq one-line polish of geocode result  
 - Add `location_description` to `InstructionPackResponse` schema  
-- Integration forwards field; mobile unchanged (already sends `lat`/`lng`)  
 
-**Done when:** Instruction text includes a readable place line, not only `12.94, 80.24`.
-
----
-
-### Phase AI-3 — Image description
-
-**Code:**
-
-- Internal fetch of time-limited photo URL from photo-service (service key)  
-- Vision call (`gpt-4o-mini` or similar) with safety prompt  
-- Add `image_description` to schema and weave into `delivery_instructions`  
-
-**Done when:** Reference photo produces a short appearance line in instructions (staging smoke with real photo).
+**Done when:** Instruction text includes a readable place line, not only raw coordinates.
 
 ---
 
-### Phase AI-4 — Persist and surface
+### Phase AI-3 — Image + seeker appearance (Gemini)
 
 **Code:**
 
-- Store `image_description`, `location_description` on order intent (`POST` payload / Postgres)  
-- Web donor/coordinator detail panel shows fields  
+- `app/llm/gemini_client.py` — multimodal generate (photo URL or bytes)  
+- `prompts/seeker_vision_v1.yaml` — appearance-only; no names/IDs  
+- Internal signed URL from photo-service  
+- Response fields: `image_description`, `seeker_appearance_hints`  
 
-**Done when:** Dashboard detail matches what the donor saw in generated instructions.
+**Deploy:** `GEMINI_API_KEY`, `GEMINI_VISION_MODEL=gemini-2.0-flash`  
+
+**Done when:** Reference photo yields stored text fields on order intent registration.
 
 ---
 
-### Phase AI-5 — Soft seeker hints
+### Phase AI-4 — Instruction compose (Groq)
 
 **Code:**
 
-- `seeker_handover_hints` string from compose step (notes + image + location descriptions)  
-- Privacy review sign-off on prompt template  
+- `groq_compose_instruction_pack()` — **inputs are text only** (includes Gemini outputs)  
+- `prompts/instruction_pack_v1.yaml`  
+- Output: `delivery_instructions`, `seeker_handover_hints`  
 
-**Done when:** Courier text has a single “Handover identification” block without biometric claims.
+**Done when:** Courier clipboard text references Gemini image/seeker hints and geocoded location.
+
+---
+
+### Phase AI-5 — Persist and surface
+
+**Code:**
+
+- Store `image_description`, `seeker_appearance_hints`, `location_description`, `seeker_handover_hints` on order intent  
+- Web donor/coordinator detail panel  
+
+**Done when:** Dashboard detail matches generated instructions.
 
 ---
 
@@ -226,13 +275,18 @@ See [SharingBridge_Technical_Architecture.md](../design/SharingBridge_Technical_
 
 | Variable | Purpose |
 |----------|---------|
-| `AI_LLM_MODE` | `deterministic` (CI/default) or `openai` |
-| `OPENAI_API_KEY` | Provider key (Render secret) |
-| `AI_LLM_MODEL` | e.g. `gpt-4o-mini`; vision step may use `gpt-4o` |
+| `AI_LLM_MODE` | `deterministic` (CI/default) or `live` |
+| `GROQ_API_KEY` | [Groq console](https://console.groq.com/) — presets + instruction compose |
+| `GROQ_MODEL` | e.g. `llama-3.3-70b-versatile` |
+| `GROQ_BASE_URL` | default `https://api.groq.com/openai/v1` |
+| `GEMINI_API_KEY` | [Google AI Studio](https://aistudio.google.com/app/apikey) — vision only |
+| `GEMINI_VISION_MODEL` | e.g. `gemini-2.0-flash` |
 | `AI_ORCHESTRATION_INTERNAL_API_KEY` | Service-to-service auth |
-| `PHOTO_SERVICE_BASE_URL` | Phase AI-3+ |
-| `GEOCODING_*` | Phase AI-2 (provider-specific) |
+| `PHOTO_SERVICE_BASE_URL` | Signed photo URL for Gemini (AI-3+) |
+| `GEOCODING_*` | Phase AI-2 (Nominatim or Maps) |
 | `SHARINGBRIDGE_WEBSITE_URL` | Instruction-pack intro line |
+
+Legacy (optional): `OPENAI_API_KEY` — not used in the Gemini+Groq split; remove from Render when migrating.
 
 ### integration-service
 
@@ -262,6 +316,7 @@ See [SharingBridge_Technical_Architecture.md](../design/SharingBridge_Technical_
 | 2026-06 | **Direct OpenAI SDK pipelines** for MVP live LLM; LangChain deferred until RAG/agents needed |
 | 2026-06 | GPS at **instruction generation** on mobile (committed `sharingbridge-mobile-app` `1f7f646`) |
 | 2026-06 | Face match remains **photo-service** CV, not LLM |
+| 2026-06 | **Gemini** = vision + seeker appearance; **Groq** = presets + instruction compose (free-tier split) |
 
 ---
 

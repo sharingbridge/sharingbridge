@@ -93,10 +93,16 @@ See [photo-service-local.md](./photo-service-local.md).
 
 | Variable | Typical value |
 |----------|----------------|
-| `AI_LLM_MODE` | `deterministic` (MVP) |
+| `AI_LLM_MODE` | `deterministic` (MVP) or `live` (Gemini + Groq) |
 | `AI_ORCHESTRATION_INTERNAL_API_KEY` | same as integration-service |
-| `OPENAI_API_KEY` | omit for MVP |
+| `GROQ_API_KEY` | Groq — **presets** + **instruction compose** (text) |
+| `GROQ_MODEL` | `llama-3.3-70b-versatile` |
+| `GEMINI_API_KEY` | Google AI Studio — **image description** + **seeker appearance** (vision) |
+| `GEMINI_VISION_MODEL` | `gemini-2.0-flash` |
+| `PHOTO_SERVICE_BASE_URL` | e.g. `https://<photo-host>.onrender.com` (signed URLs for Gemini) |
 | `SHARINGBRIDGE_WEBSITE_URL` | `pending` |
+
+Provider split: [AI_IMPLEMENTATION_PLAN.md](../development/AI_IMPLEMENTATION_PLAN.md) § *Provider split*.
 
 See [ai-orchestration-local.md](./ai-orchestration-local.md).
 

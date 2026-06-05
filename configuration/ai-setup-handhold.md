@@ -51,7 +51,7 @@ Default model in this project: `llama-3.3-70b-versatile`.
 2. Create a key in a Google Cloud project (free tier is enough for dev).
 3. Copy the key.
 
-Default model: `gemini-2.0-flash`.
+Default model: `gemini-2.5-flash` (`gemini-2.0-flash` was shut down June 2026).
 
 ### Nominatim (GPS → address) — **no API key**
 
@@ -107,7 +107,7 @@ GROQ_API_KEY=gsk_your_key_here
 GROQ_MODEL=llama-3.3-70b-versatile
 
 GEMINI_API_KEY=your_gemini_key_here
-GEMINI_VISION_MODEL=gemini-2.0-flash
+GEMINI_VISION_MODEL=gemini-2.5-flash
 
 PHOTO_SERVICE_BASE_URL=http://localhost:8092
 
@@ -299,7 +299,7 @@ Inspect `"source"` in the JSON body (same mapping as §6c).
 | `source: mock_fallback` | Orchestration down or 5xx | Start uvicorn; check Render logs |
 | `source: fallback_error` | Groq/Gemini error | Check API keys, quotas, model names |
 | No `location_description` | No GPS on request, or Nominatim blocked | Grant location on mobile; set `NOMINATIM_USER_AGENT` |
-| No `image_description` | No photo URL or Gemini key | Upload photo; set `GEMINI_API_KEY` and `PHOTO_SERVICE_BASE_URL` |
+| No `image_description` | No photo URL, Gemini key, or deprecated model | Upload photo; set `GEMINI_API_KEY`; use `GEMINI_VISION_MODEL=gemini-2.5-flash` (not `gemini-2.0-flash`, shut down June 2026) |
 | Mobile banner always shows | Still on deterministic/mock path | Complete steps in §3–§5 |
 
 ---

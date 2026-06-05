@@ -124,7 +124,7 @@ See [photo-service-local.md](./photo-service-local.md).
 | `GROQ_API_KEY` | `gsk_...` | Groq text generation for `suggest-vendors` (vendor preset suggestions) and instruction-pack composition |
 | `GROQ_MODEL` | `llama-3.3-70b-versatile` | Groq model for text paths above |
 | `GEMINI_API_KEY` | `AIza...` | Gemini vision for `image_description` + `seeker_appearance_hints` |
-| `GEMINI_VISION_MODEL` | `gemini-2.0-flash` | Gemini model for image analysis |
+| `GEMINI_VISION_MODEL` | `gemini-2.5-flash` | Gemini model for image analysis (`gemini-2.0-flash` shut down June 2026) |
 | `PHOTO_SERVICE_BASE_URL` | `https://<photo-host>.onrender.com` | Source of signed image URLs that Gemini can fetch |
 | `NOMINATIM_USER_AGENT` | `SharingBridge/1.0 (ops@yourdomain.org)` | OSM reverse geocode identification (no API key needed) |
 | `SHARINGBRIDGE_WEBSITE_URL` | `pending` | Courier instruction text reference only (not an API endpoint) |

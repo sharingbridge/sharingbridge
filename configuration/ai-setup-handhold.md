@@ -223,7 +223,9 @@ Today there is **no secret logging**. Use **non-secret config snapshots** and **
 
 ### 6a. On deploy — startup config (no API keys)
 
-Default log level is **`warn`** (`LOG_LEVEL=warn`) on **all four backend APIs** (user-service, integration-service, ai-orchestration, photo-service). Set the same value on each Render service for consistent behaviour. Startup prints **only misconfiguration warnings**, not a full config dump. Set `LOG_LEVEL=info` if you want the full `[startup] config {…}` line on every deploy.
+Default log level is **`warn`** (`LOG_LEVEL=warn`) on **all four backend APIs** (user-service, integration-service, ai-orchestration, photo-service). Set the same value on each Render service for consistent behaviour. Startup prints **only misconfiguration warnings**, not a full config dump.
+
+**Do not use `LOG_LEVEL=info` on ai-orchestration in production** unless debugging briefly — at `info`, third-party HTTP loggers may print full outbound URLs. Our code logs only safe lines like `[gemini] vision request model=gemini-2.5-flash` (no API keys). Gemini auth uses the `x-goog-api-key` header, not query strings.
 
 After each service deploys, open **Render → service → Logs** and look for:
 
@@ -275,7 +277,7 @@ Trigger one search, then filter integration logs for `suggest-vendors`:
 | `using mock catalog: AI_SUGGEST_VENDORS_ENABLED is not true` | Flag off on integration |
 | `orchestration failed status=401` | `AI_ORCHESTRATION_INTERNAL_API_KEY` mismatch |
 | `orchestration failed code=timeout` | Instruction-pack exceeded timeout (often after enabling live Gemini vision) | Set `AI_ORCHESTRATION_INSTRUCTION_PACK_TIMEOUT_MS=60000` on **integration-service** and redeploy |
-| No `location_description` / `seeker_handover_hints` at all | Mobile timed out (8s default) while orchestration still running | Rebuild mobile app with `instructionPackRequestTimeout` (90s); check for `source: local_stub` banner |
+| No `location_description` / `seeker_handover_hints` at all | Mobile timed out while orchestration still running | Rebuild mobile app (35s instruction-pack timeout); check for `source: local_stub` banner |
 | No `location_description` / `seeker_handover_hints` at all | Integration timed out or fell back to template | Check integration logs for `fallback_error` |
 | Nominatim `HTTP 429` in ai-orchestration logs | OSM rate limit | Non-fatal — coordinates fallback used; avoid rapid retests |
 | `orchestration failed code=network_error` | Bad URL or orchestration unreachable from integration |
@@ -294,6 +296,22 @@ curl -X POST https://<integration-host>.onrender.com/v1/donor-setup/suggest-vend
 ```
 
 Inspect `"source"` in the JSON body (same mapping as §6c).
+
+### 6e. After “Generate instructions” — ai-orchestration logs (safe)
+
+With `LOG_LEVEL=info` (debugging only), each instruction-pack request prints:
+
+```text
+[instruction-pack] a1b2c3d4 start has_photo=true
+[gemini] vision request model=gemini-2.5-flash
+[groq] chat request model=llama-3.3-70b-versatile json=True
+[instruction-pack-live] done in 18432ms source=groq+gemini vision=True has_photo=True
+[instruction-pack] a1b2c3d4 done in 18432ms source=groq+gemini
+```
+
+**Duplicate calls:** count distinct `[instruction-pack] … start` lines — two starts = two end-to-end runs (e.g. mobile retried after timeout, or user tapped twice). HTTP `200` on each does not mean a single user action.
+
+**Latency target:** under **30s** end-to-end for prod UX. Orchestration uses thumbnail-first vision, 3s Nominatim cap, geocode cache, and parallel Nominatim + Gemini. If `[instruction-pack] … done` is routinely above 30s, check Gemini/Groq latency or Nominatim 429s.
 
 ---
 

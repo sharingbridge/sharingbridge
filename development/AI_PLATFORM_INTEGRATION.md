@@ -154,29 +154,25 @@ Package orchestration as **LangServe** app (FastAPI) deployed like any other bac
 ### Environment variables (orchestration service)
 
 ```bash
-# Model provider (pick one for MVP)
-OPENAI_API_KEY=
-# or ANTHROPIC_API_KEY= / AZURE_OPENAI_ENDPOINT= + AZURE_OPENAI_KEY=
-
-AI_LLM_MODEL=gpt-4o-mini          # cost-conscious default
-AI_LLM_TIMEOUT_MS=30000
-AI_LLM_MAX_RETRIES=2
-
-# Internal service URLs (called by orchestration)
+AI_LLM_MODE=live
+GROQ_API_KEY=
+GROQ_MODEL=llama-3.3-70b-versatile
+GEMINI_API_KEY=
+GEMINI_VISION_MODEL=gemini-2.5-flash
 PHOTO_SERVICE_BASE_URL=http://localhost:8092
-AI_SAFETY_BASE_URL=http://localhost:8093
-
-# Optional
-LANGCHAIN_TRACING_V2=true
-LANGCHAIN_API_KEY=                  # LangSmith
-LANGCHAIN_PROJECT=sharingbridge-dev
+NOMINATIM_USER_AGENT=SharingBridge-Local/1.0 (you@example.com)
+AI_ORCHESTRATION_INTERNAL_API_KEY=
 ```
 
 Integration-service additionally needs:
 
 ```bash
 AI_ORCHESTRATION_BASE_URL=http://localhost:8091
-AI_ORCHESTRATION_INTERNAL_API_KEY=   # static service API key (integration → AI only)
+AI_ORCHESTRATION_INTERNAL_API_KEY=
+AI_ORCHESTRATION_SUGGEST_VENDORS_TIMEOUT_MS=15000
+AI_ORCHESTRATION_INSTRUCTION_PACK_TIMEOUT_MS=60000
+AI_SUGGEST_VENDORS_ENABLED=true
+AI_INSTRUCTION_PACK_ENABLED=true
 ```
 
 ---

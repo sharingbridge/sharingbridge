@@ -27,7 +27,7 @@ Two **free-tier** providers, one role each. Both called only from `sharingbridge
 
 | Provider | Role | Endpoints / steps | Models (staging defaults) |
 |----------|------|-------------------|---------------------------|
-| **Google Gemini** | **Vision** — reference photo at order-intent / instruction time | `image_description`, soft **seeker identification** (appearance only, no name claims) | `gemini-2.0-flash` or `gemini-2.5-flash` (multimodal) |
+| **Google Gemini** | **Vision** — reference photo at order-intent / instruction time | `image_description`, soft **seeker identification** (appearance only, no name claims) | `gemini-2.5-flash` (multimodal) |
 | **Groq** | **Text** — presets + instruction composition | `suggest-vendors` JSON; `delivery_instructions` + `seeker_handover_hints` using Gemini outputs + geocode + donor notes | `llama-3.3-70b-versatile` |
 
 **Why split**
@@ -234,7 +234,7 @@ suggest_vendors(payload):
 - Internal signed URL from photo-service  
 - Response fields: `image_description`, `seeker_appearance_hints`  
 
-**Deploy:** `GEMINI_API_KEY`, `GEMINI_VISION_MODEL=gemini-2.0-flash`  
+**Deploy:** `GEMINI_API_KEY`, `GEMINI_VISION_MODEL=gemini-2.5-flash`  
 
 **Done when:** Reference photo yields stored text fields on order intent registration.
 
@@ -280,21 +280,21 @@ See [SharingBridge_Technical_Architecture.md](../design/SharingBridge_Technical_
 | `GROQ_MODEL` | e.g. `llama-3.3-70b-versatile` |
 | `GROQ_BASE_URL` | default `https://api.groq.com/openai/v1` |
 | `GEMINI_API_KEY` | [Google AI Studio](https://aistudio.google.com/app/apikey) — vision only |
-| `GEMINI_VISION_MODEL` | e.g. `gemini-2.0-flash` |
+| `GEMINI_VISION_MODEL` | `gemini-2.5-flash` |
 | `AI_ORCHESTRATION_INTERNAL_API_KEY` | Service-to-service auth |
-| `PHOTO_SERVICE_BASE_URL` | Signed photo URL for Gemini (AI-3+) |
-| `GEOCODING_*` | Phase AI-2 (Nominatim or Maps) |
+| `PHOTO_SERVICE_BASE_URL` | Photo service base URL |
+| `NOMINATIM_USER_AGENT` | Reverse geocode User-Agent |
 | `SHARINGBRIDGE_WEBSITE_URL` | Instruction-pack intro line |
-
-Legacy (optional): `OPENAI_API_KEY` — not used in the Gemini+Groq split; remove from Render when migrating.
 
 ### integration-service
 
 | Variable | Purpose |
 |----------|---------|
 | `AI_ORCHESTRATION_BASE_URL` | e.g. `https://sharingbridge-ai-orchestration.onrender.com` |
-| `AI_SUGGEST_VENDORS_ENABLED` | `true` after AI-1 |
-| `AI_INSTRUCTION_PACK_ENABLED` | `true` after AI-2+ |
+| `AI_SUGGEST_VENDORS_ENABLED` | `true` |
+| `AI_INSTRUCTION_PACK_ENABLED` | `true` |
+| `AI_ORCHESTRATION_SUGGEST_VENDORS_TIMEOUT_MS` | suggest-vendors HTTP timeout (default `15000`) |
+| `AI_ORCHESTRATION_INSTRUCTION_PACK_TIMEOUT_MS` | instruction-pack HTTP timeout (default `60000`) |
 
 ---
 

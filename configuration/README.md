@@ -37,6 +37,7 @@ Optional branches (any time after Phase 1):
 
 - **Photos:** [photo-service-local.md](./photo-service-local.md)
 - **AI suggestions:** [ai-orchestration-local.md](./ai-orchestration-local.md)
+- **Live AI keys (Groq, Gemini, Nominatim):** [ai-setup-handhold.md](./ai-setup-handhold.md)
 - **Field flow (BRD):** [field-handoff.md](./field-handoff.md)
 
 ---

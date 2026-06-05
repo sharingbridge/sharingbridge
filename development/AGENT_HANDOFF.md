@@ -3,7 +3,7 @@
 > **Live coordination doc for AI-assisted coding sessions.** Read this first when picking up the project. Update the "Recently Shipped" and "Next Recommended Tasks" sections as work lands so the next session has fresh context.
 
 ## Goal
-Deliver the MVP **donor-setup → donor-seeker interaction → vendor redirect → delivery confirmation** flow. The integration service is the platform's facilitator. SharingBridge is never the system of record for money.
+Deliver the MVP **donor-setup → donor-seeker interaction → vendor redirect → delivery confirmation** flow. **`sharingbridge-integration-service` is the Experience API** (shared BFF): mobile and web call it exclusively; it composes user-service, ai-orchestration, and order-intent Postgres. SharingBridge is never the system of record for money.
 
 ## Approach (Locked)
 - Backend payment model: provider/vendor-hosted only.
@@ -12,7 +12,8 @@ Deliver the MVP **donor-setup → donor-seeker interaction → vendor redirect �
 - Queue strategy: Redis for MVP, SQS/SNS for scale.
 - Backend source-of-truth for user preferences; client cache is non-authoritative.
 - Mobile stack: Flutter.
-- Backend API stack (MVP): Node.js + NestJS direction; integration-service today is a lightweight Node http server for fast iteration.
+- Backend API stack (MVP): plain **Node.js 20** HTTP servers (integration + user-service); NestJS is a scale target only.
+- Architecture labels: **Experience API / shared BFF** = integration-service; **Process** = ai-orchestration, photo-service; **System** = user-service + Postgres. See `design/SharingBridge_Technical_Architecture.md` § As-built.
 
 ## Documentation map
 
@@ -36,7 +37,8 @@ Deliver the MVP **donor-setup → donor-seeker interaction → vendor redirect �
 | **AI full plan** (presets, descriptions, seeker ID; LangChain vs direct) | `development/AI_IMPLEMENTATION_PLAN.md` |
 | Donor setup API sequence | `design/Donor_Setup_AI_Search_Sequence.md` |
 | Long-term / AWS scale plan (not deploy truth) | `development/IMPLEMENTATION_APPROACH.md` |
-| Full system design (many sections **future**) | `design/SharingBridge_Technical_Architecture.md` |
+| Full system design + **as-built MVP** (Experience API, stack truth) | `design/SharingBridge_Technical_Architecture.md` § As-built |
+| Live AI setup (Groq, Gemini, Nominatim) | `configuration/ai-setup-handhold.md` |
 | Preferences file → user-service cutover | `development/USER_SERVICE_PREFERENCES_MIGRATION.md` |
 | Development folder index | `development/README.md` |
 | BRD assumptions | `requirements/SharingBridge_Business_Requirement.md` |

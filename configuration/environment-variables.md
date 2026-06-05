@@ -100,11 +100,14 @@ See [photo-service-local.md](./photo-service-local.md).
 | `GEMINI_API_KEY` | Google AI Studio — **image description** + **seeker appearance** (vision) |
 | `GEMINI_VISION_MODEL` | `gemini-2.0-flash` |
 | `PHOTO_SERVICE_BASE_URL` | e.g. `https://<photo-host>.onrender.com` (signed URLs for Gemini) |
+| `NOMINATIM_USER_AGENT` | Contact string for OSM reverse geocode (no API key) |
 | `SHARINGBRIDGE_WEBSITE_URL` | `pending` |
+
+`deterministic` = template/mock (not live AI). See [ai-setup-handhold.md](./ai-setup-handhold.md).
 
 Provider split: [AI_IMPLEMENTATION_PLAN.md](../development/AI_IMPLEMENTATION_PLAN.md) § *Provider split*.
 
-See [ai-orchestration-local.md](./ai-orchestration-local.md).
+See [ai-orchestration-local.md](./ai-orchestration-local.md) and [ai-setup-handhold.md](./ai-setup-handhold.md).
 
 ---
 

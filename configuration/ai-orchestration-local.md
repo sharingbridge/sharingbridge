@@ -79,6 +79,12 @@ PHOTO_SERVICE_BASE_URL=http://localhost:8092
 
 Mobile must send `reference_photo_thumbnail_url` on instruction-pack (after photo upload) so Gemini can fetch the image. CI and offline dev keep `AI_LLM_MODE=deterministic`.
 
+**`deterministic` = template/mock data, not real AI.** The mobile app shows an amber notice when `source` is not live (`groq`, `groq+gemini`, `gemini`).
+
+**Nominatim** needs no API key — only `NOMINATIM_USER_AGENT` with a contact email when using live mode with GPS.
+
+Full step-by-step (accounts, Render, verify `source`): **[ai-setup-handhold.md](./ai-setup-handhold.md)**.
+
 ## See also
 
 - [sharingbridge-ai-orchestration README](https://github.com/sharingbridge/sharingbridge-ai-orchestration/blob/main/README.md)

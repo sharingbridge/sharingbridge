@@ -39,7 +39,9 @@ Mobile and backend **must not** call OpenAI/Anthropic (or similar) directly from
 
 ## Target architecture (bridge pattern)
 
-Clients talk only to **SharingBridge backend APIs**. The **AI orchestration layer** (LangChain recommended for MVP) runs as a deployable service and calls **model providers** and **specialist services** (photo). Handover guidance (BRD step 4) is **in-app copy only** — not a backend service in MVP.
+Clients talk only to **`sharingbridge-integration-service`** (the **Experience API** / shared BFF). Integration HTTP-calls the **AI orchestration** service, which runs **direct Groq/Gemini pipelines** (LangChain was considered; not used in shipped MVP). Handover guidance (BRD step 4) is **in-app copy only** — not a backend service in MVP.
+
+Terminology: [Technical Architecture § As-built](../design/SharingBridge_Technical_Architecture.md#as-built-architecture-june-2026).
 
 ```mermaid
 flowchart TB

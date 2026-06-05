@@ -28,7 +28,8 @@ Product-level assumptions are maintained in one place: [SharingBridge_Business_R
 - [Business Requirements](requirements/SharingBridge_Business_Requirement.md) - Complete business case and benefits
 - [End-to-End Workflow (diagrams)](design/SharingBridge_End_to_End_Workflow.md) - Full journey steps 1–12 with Mermaid flows; shipped vs planned
 - [Future Extensions](design/Future_Extensions.md) - Order payment/delivery tracking, delivery proof, locality demand & vendor bidding (roadmap)
-- [Technical Architecture](design/SharingBridge_Technical_Architecture.md) - Detailed technical design
+- [Technical Architecture](design/SharingBridge_Technical_Architecture.md) - Target design + **as-built MVP** (Experience API, stack truth)
+- [AI setup handhold](configuration/ai-setup-handhold.md) - Groq, Gemini, Nominatim wiring step-by-step
 - [API Contracts](design/contracts/donor_setup_suggest_vendors.openapi.yaml) - Shared request/response contracts and examples
 - [Implementation Approach](development/IMPLEMENTATION_APPROACH.md) - Development strategy and free-tier options
 - [Configuration](./configuration/README.md) - Render deploy, auth, mobile client, field handoff
@@ -87,40 +88,44 @@ A facilitator platform that:
 
 ## Technology Stack
 
+**As-built (Render MVP)** — full detail in [Technical Architecture § As-built](design/SharingBridge_Technical_Architecture.md#as-built-architecture-june-2026).
+
 ### Frontend
-- **Mobile:** React Native / Flutter
-- **Web:** React / Next.js
+- **Mobile:** Flutter (`sharingbridge-mobile-app`)
+- **Web:** Vite + React (`sharingbridge-web-app`)
 
-### Backend
-- **Framework:** Node.js (NestJS) / Python (FastAPI)
-- **Database:** PostgreSQL with PostGIS
-- **Cache:** Redis
-- **Message Queue:** Redis Streams/PubSub (MVP), AWS SQS/SNS (scale)
+### Backend (MVP)
+- **Experience API:** Node.js 20 — `sharingbridge-integration-service` (shared BFF for mobile + web)
+- **System API:** Node.js 20 — `sharingbridge-user-service` (JWT, donor presets)
+- **Process APIs:** FastAPI — `sharingbridge-ai-orchestration`, `sharingbridge-photo-service`
+- **Database:** PostgreSQL (Supabase)
 
-### AI/ML
-- **Framework:** TensorFlow / PyTorch (for face recognition only)
-- **Location Safety:** API-based rule system (Google Maps, Places, OpenWeather); Custom ML optional at scale
-- **Face Recognition:** Pre-trained models (FaceNet/DeepFace)
+### AI/ML (MVP)
+- **LLM:** Groq (text) + Gemini (vision) via ai-orchestration; `deterministic` mode for CI/offline
+- **Geo:** Nominatim reverse geocode (live instruction-pack)
+- **Location safety service:** deferred; handover guidance in-app
 
-### Infrastructure
-- **Cloud:** AWS / Azure / GCP
-- **Container Orchestration:** Kubernetes (EKS)
-- **CI/CD:** GitHub Actions
+### Infrastructure (MVP)
+- **Hosting:** Render.com (APIs + static web)
+- **CI/CD:** GitHub Actions per repo
+
+**Scale target** (not MVP deploy): NestJS, API gateway, Redis/SQS, EKS — see [IMPLEMENTATION_APPROACH.md](development/IMPLEMENTATION_APPROACH.md).
 
 ## Architecture Highlights
 
 ```
-Mobile/Web App → API Gateway → Microservices
-                                    ├── User Service
-                                    ├── Order Service
-                                    ├── Location Safety Service
-                                    ├── Photo Service
-                                    ├── Integration Service
-                                    └── Notification Service
-                                           ↓
-                              External Vendor APIs
-                              (Swiggy, Zomato, Uber Eats)
+Flutter mobile ──┐
+                 ├──► integration-service (Experience API / BFF)
+Vite/React web ──┘           │
+                               ├──► user-service → Postgres (presets, auth)
+                               ├──► ai-orchestration → Groq / Gemini / Nominatim
+                               ├──► Postgres (order intents, coordinator feed)
+                               └──► photo-service (reference photos)
+                                         ↓
+                              Vendor deep links (Swiggy, Zomato, …)
 ```
+
+**Not on Render for MVP:** api-gateway, order-service, notification-service, location-safety.
 
 ## Security & Privacy
 

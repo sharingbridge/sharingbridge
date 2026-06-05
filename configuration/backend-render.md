@@ -1,14 +1,20 @@
 # Backend — Render deployment
 
-Host three **Web Services** for Track A. Credentials: [authentication.md](./authentication.md). Mobile wiring: [mobile-client.md](./mobile-client.md).
+Host **Web Services** for Track A. Credentials: [authentication.md](./authentication.md). Mobile wiring: [mobile-client.md](./mobile-client.md).
 
-| # | Repo | Runtime | Used by |
-|---|------|---------|---------|
-| 1 | `sharingbridge-user-service` | Node 20 | JWT mint; integration |
-| 2 | `sharingbridge-ai-orchestration` | Docker | integration (`/internal/...`) |
-| 3 | `sharingbridge-integration-service` | Node 20 | mobile (`API_BASE_URL`) |
-| 4 | `sharingbridge-photo-service` | Docker | mobile (`PHOTO_SERVICE_BASE_URL`) |
-| 5 | `sharingbridge-web-app` | **Static Site** | coordinator browser |
+## Experience API edge
+
+**Mobile and web call only `sharingbridge-integration-service`** (`API_BASE_URL` / `VITE_API_BASE_URL`). That service is the **Experience API** (shared BFF): it validates JWT, applies CORS, proxies presets to user-service, bridges AI to ai-orchestration, and owns order-intent data in Postgres. Internal services are not browser- or app-facing.
+
+Layering detail: [Technical Architecture § As-built](../design/SharingBridge_Technical_Architecture.md#as-built-architecture-june-2026).
+
+| Layer | Repo | Runtime | Called by |
+|-------|------|---------|-----------|
+| **Experience** | `sharingbridge-integration-service` | Node 20 | mobile, web |
+| **System** | `sharingbridge-user-service` | Node 20 | integration only |
+| **Process** | `sharingbridge-ai-orchestration` | Docker | integration (`/internal/...`) |
+| **Process** | `sharingbridge-photo-service` | Docker | mobile (`PHOTO_SERVICE_BASE_URL`) |
+| **Client** | `sharingbridge-web-app` | **Static Site** | coordinator browser |
 
 **Not on Render for MVP:** `sharingbridge-location-safety` (archived), api-gateway, order-service.
 

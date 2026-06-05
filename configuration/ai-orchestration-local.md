@@ -57,6 +57,8 @@ In `sharingbridge-integration-service/.env`:
 AI_ORCHESTRATION_BASE_URL=http://localhost:8091
 AI_SUGGEST_VENDORS_ENABLED=true
 AI_INSTRUCTION_PACK_ENABLED=true
+AI_ORCHESTRATION_TIMEOUT_MS=15000
+AI_ORCHESTRATION_INSTRUCTION_PACK_TIMEOUT_MS=60000
 ```
 
 Restart integration-service after changing env. See [MANUAL_TESTING_GUIDE.md](../testing/MANUAL_TESTING_GUIDE.md) §1d and §2.
@@ -69,6 +71,7 @@ In `sharingbridge-ai-orchestration/.env` (copy from `env.example`):
 AI_LLM_MODE=live
 GROQ_API_KEY=<from console.groq.com>
 GEMINI_API_KEY=<from aistudio.google.com>
+GEMINI_VISION_MODEL=gemini-2.5-flash
 PHOTO_SERVICE_BASE_URL=http://localhost:8092
 ```
 

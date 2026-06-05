@@ -169,6 +169,10 @@ Set the same variables on each Render service:
 | `AI_ORCHESTRATION_BASE_URL` | `https://<ai-orchestration>.onrender.com` |
 | `AI_SUGGEST_VENDORS_ENABLED` | `true` |
 | `AI_INSTRUCTION_PACK_ENABLED` | `true` |
+| `AI_ORCHESTRATION_TIMEOUT_MS` | `15000` (suggest-vendors) |
+| `AI_ORCHESTRATION_INSTRUCTION_PACK_TIMEOUT_MS` | `60000` (instruction-pack: Nominatim + Gemini + Groq) |
+
+Also set on **ai-orchestration**: `GEMINI_VISION_MODEL=gemini-2.5-flash` (`gemini-2.0-flash` shut down June 2026).
 
 Redeploy both services after saving env.
 
@@ -270,7 +274,8 @@ Trigger one search, then filter integration logs for `suggest-vendors`:
 | `using mock catalog: AI_ORCHESTRATION_BASE_URL is unset` | Integration env not wired (or old deploy) |
 | `using mock catalog: AI_SUGGEST_VENDORS_ENABLED is not true` | Flag off on integration |
 | `orchestration failed status=401` | `AI_ORCHESTRATION_INTERNAL_API_KEY` mismatch |
-| `orchestration failed code=timeout` | Orchestration slow/down; check ai-orchestration logs |
+| `orchestration failed code=timeout` | Instruction-pack exceeded timeout (often after enabling live Gemini vision) | Set `AI_ORCHESTRATION_INSTRUCTION_PACK_TIMEOUT_MS=60000` on **integration-service** and redeploy |
+| No `location_description` / `seeker_handover_hints` at all | Integration timed out or fell back to template | Same timeout fix; check integration logs for `fallback_error` |
 | `orchestration failed code=network_error` | Bad URL or orchestration unreachable from integration |
 | `orchestration returned non-live source=deterministic` | Reachable but `AI_LLM_MODE` not `live` on orchestration |
 | *(no log line)* | Live path working — success is silent at default `LOG_LEVEL=warn` |

@@ -169,8 +169,10 @@ Set the same variables on each Render service:
 | `AI_ORCHESTRATION_BASE_URL` | `https://<ai-orchestration>.onrender.com` |
 | `AI_SUGGEST_VENDORS_ENABLED` | `true` |
 | `AI_INSTRUCTION_PACK_ENABLED` | `true` |
-| `AI_ORCHESTRATION_TIMEOUT_MS` | `15000` (suggest-vendors) |
-| `AI_ORCHESTRATION_INSTRUCTION_PACK_TIMEOUT_MS` | `60000` (instruction-pack: Nominatim + Gemini + Groq) |
+| `AI_ORCHESTRATION_SUGGEST_VENDORS_TIMEOUT_MS` | `15000` |
+| `AI_ORCHESTRATION_INSTRUCTION_PACK_TIMEOUT_MS` | `60000` |
+
+Legacy: `AI_ORCHESTRATION_TIMEOUT_MS` still works as the suggest-vendors timeout if the route-specific name is unset.
 
 Also set on **ai-orchestration**: `GEMINI_VISION_MODEL=gemini-2.5-flash` (`gemini-2.0-flash` shut down June 2026).
 

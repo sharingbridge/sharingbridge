@@ -61,6 +61,24 @@ AI_INSTRUCTION_PACK_ENABLED=true
 
 Restart integration-service after changing env. See [MANUAL_TESTING_GUIDE.md](../testing/MANUAL_TESTING_GUIDE.md) §1d and §2.
 
+## Live LLM (Gemini + Groq)
+
+In `sharingbridge-ai-orchestration/.env` (copy from `env.example`):
+
+```env
+AI_LLM_MODE=live
+GROQ_API_KEY=<from console.groq.com>
+GEMINI_API_KEY=<from aistudio.google.com>
+PHOTO_SERVICE_BASE_URL=http://localhost:8092
+```
+
+| Provider | Role |
+|----------|------|
+| **Groq** | Vendor preset suggestions + instruction-pack compose |
+| **Gemini** | Reference photo → `image_description` + `seeker_appearance_hints` |
+
+Mobile must send `reference_photo_thumbnail_url` on instruction-pack (after photo upload) so Gemini can fetch the image. CI and offline dev keep `AI_LLM_MODE=deterministic`.
+
 ## See also
 
 - [sharingbridge-ai-orchestration README](https://github.com/sharingbridge/sharingbridge-ai-orchestration/blob/main/README.md)

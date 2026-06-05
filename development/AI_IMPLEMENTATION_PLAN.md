@@ -17,7 +17,7 @@ This document is the **full phased plan** for SharingBridge AI: preset collectio
 | Mobile **Vendor presets** | `POST /v1/donor-setup/suggest-vendors` → orchestration or mock fallback |
 | Mobile **Help a seeker** | Photo upload → `POST /v1/donor-seeker/instruction-pack`; **GPS captured before instruction-pack** (not only on copy) |
 | `sharingbridge-photo-service` | Reference photo upload + JWT; **no vision/embeddings yet** |
-| Live LLM providers | **Not wired** — `AI_LLM_MODE=deterministic` default; provider env vars documented below |
+| Live LLM (Gemini + Groq) | **Wired** when `AI_LLM_MODE=live` + API keys; falls back to deterministic on error |
 
 ---
 

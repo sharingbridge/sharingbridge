@@ -155,7 +155,7 @@ SharingBridge **coordinates** visibility, matching, and status—it does **not**
 |---------|-------------|
 | **Standard offer** | Fixed menu + fixed price per meal (defined per locality/campaign). |
 | **Demand window** | Hour (or slot) + `locality_key` — e.g. “2026-05-28 12:00–13:00, chennai-adyar”. |
-| **Demand signal** | Count or list of donor pledges/intent for that window (meal units). |
+| **Seeker demand** | Count or list of recorded meal need for that window (meal units); distinct from **order intent** (handover registration) and future **pledge**. |
 | **Vendor bid** | Vendor states how many portions they can prepare **and** deliver in that window, at what price/terms. |
 | **Allocation** | Platform splits total demand across winning bids (rules TBD: pro-rata, priority, capacity caps). |
 | **Donor payment** | Donor pays **assigned vendor** via vendor’s UPI/link/cash-on-delivery—recorded as `paid_to_vendor` in app. |

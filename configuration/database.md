@@ -16,6 +16,7 @@ There is **no** runtime fallback to JSON files after cutover — import once, th
 | Coordinator role | — (seed in DB) | `user_roles` |
 | Donor presets | same JSON store | `donor_presets` |
 | Order intents | `integration-service/data/order-intents.json` | `order_intents` |
+| Seeker demands | — | `seeker_demands` (Phase C.1 — run [schema-seeker-demands-migration.sql](./schema-seeker-demands-migration.sql) on existing DBs) |
 
 **Code note:** Both Node services **require** **`DATABASE_URL`** at startup and read/write Postgres only (no JSON file fallback). Run [schema.sql](./schema.sql) before starting services.
 
@@ -29,7 +30,7 @@ There is **no** runtime fallback to JSON files after cutover — import once, th
                                     │  DATABASE_URL (Postgres wire protocol)
                                     ▼
                             Supabase (PostgreSQL)
-                            tables: users, user_roles, donor_presets, order_intents
+                            tables: users, user_roles, donor_presets, order_intents, seeker_demands
 ```
 
 - **Supabase** = database + SQL Editor + connection strings. **Do not** put Supabase in the mobile or web app.

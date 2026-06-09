@@ -83,6 +83,7 @@ Set the **same value** on all four Render Web Services if you want consistent ve
 | `AI_ORCHESTRATION_SUGGEST_VENDORS_TIMEOUT_MS` | `15000` | `15000` — suggest-vendors only |
 | `AI_ORCHESTRATION_INSTRUCTION_PACK_TIMEOUT_MS` | `60000` | `60000` — instruction-pack only (Nominatim + Gemini vision + Groq) |
 | `AI_SUGGEST_VENDORS_ENABLED` | `true` | `true` |
+| `AI_MOCK_FALLBACK_ENABLED` | `true` (local dev) | **unset** — production returns HTTP 503 when orchestration fails |
 | `AUTH_TOKEN_AUDIENCE` | `sharingbridge-clients` | same |
 | `AUTH_TOKEN_ISSUER` | `sharingbridge-user-service` | same |
 | `AUTH_TOKEN_SECRET` | **same** as user-service | same |
@@ -148,6 +149,7 @@ Build-time only (`VITE_*` in `.env` before `npm run build` or `npm run dev`).
 | `VITE_API_BASE_URL` | `http://localhost:8080` | `https://<integration-host>.onrender.com` |
 | `VITE_GOOGLE_CLIENT_ID` | Web OAuth client ID | same as `GOOGLE_CLIENT_ID_WEB` |
 | `VITE_USER_SERVICE_BASE_URL` | `http://localhost:8081` | `https://<user-host>.onrender.com` |
+| `VITE_GOOGLE_MAPS_API_KEY` | optional — Maps JavaScript API | same — enables **Map** tab on dashboard |
 
 CORS is **not** set here — set `WEB_CORS_ORIGINS` on both Node backends. See [web-client.md](./web-client.md).
 

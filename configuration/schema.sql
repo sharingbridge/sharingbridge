@@ -70,3 +70,30 @@ CREATE TABLE photo_artifacts (
 );
 
 CREATE INDEX idx_photo_artifacts_user ON photo_artifacts (user_id);
+
+-- Phase C.1 — seeker demand recorded in the field (aggregated on web Demand tab).
+CREATE TABLE seeker_demands (
+  seeker_demand_id     TEXT PRIMARY KEY,
+  reported_by_user_id  TEXT NOT NULL REFERENCES users(id),
+  status               TEXT NOT NULL DEFAULT 'recorded'
+    CHECK (status IN ('recorded', 'aggregated', 'fulfilled', 'cancelled')),
+  meal_units           INTEGER NOT NULL DEFAULT 1 CHECK (meal_units >= 1 AND meal_units <= 50),
+  payload              JSONB NOT NULL,
+  locality_key         TEXT,
+  location             geography(POINT, 4326),
+  created_at           TIMESTAMPTZ NOT NULL,
+  updated_at           TIMESTAMPTZ NOT NULL
+);
+
+CREATE INDEX idx_seeker_demands_reporter_updated
+  ON seeker_demands (reported_by_user_id, updated_at DESC);
+
+CREATE INDEX idx_seeker_demands_updated
+  ON seeker_demands (updated_at DESC);
+
+CREATE INDEX idx_seeker_demands_locality_key
+  ON seeker_demands (locality_key)
+  WHERE locality_key IS NOT NULL AND locality_key <> '';
+
+CREATE INDEX idx_seeker_demands_location
+  ON seeker_demands USING GIST (location);

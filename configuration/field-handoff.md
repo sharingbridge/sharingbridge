@@ -73,3 +73,20 @@ Local: configure `CLOUDINARY_*` (or `CLOUDINARY_URL`) in photo-service `.env`. R
 - Live LLM (`AI_LLM_MODE=openai`)
 
 See [IMPLEMENTATION_APPROACH.md](../development/IMPLEMENTATION_APPROACH.md).
+
+---
+
+## Seeker demand — Record seeker demand (Phase C.1, shipped)
+
+Separate from **Help a seeker** (order intent after copy). **Record seeker demand** logs meal need in the field for neighbourhood aggregation on the web **Demand** tab.
+
+| Piece | Detail |
+|-------|--------|
+| Mobile hub | **Record seeker demand** → `RecordSeekerDemandPage` |
+| API | `POST /v1/seeker-demands` on **integration-service** (Bearer JWT) |
+| Who can record | **Donor** or **coordinator** (`requireReporterRole`) |
+| Stored as | Postgres `seeker_demands` — run [schema-seeker-demands-migration.sql](./schema-seeker-demands-migration.sql) on existing DBs |
+| Response field | `seeker_demand.seeker_demand_id` (`sd-…` prefix); reporter = `reported_by_user_id` |
+| Web | `GET /v1/demand/board` — aggregated `demand_windows` + recent `seeker_demands` |
+
+**Not** a vendor order or pledge — see [Future_Extensions.md](../design/Future_Extensions.md) Phase C for bidding/pledges (not live yet).

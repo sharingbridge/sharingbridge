@@ -6,7 +6,7 @@ Repository: `sharingbridge-web-app` (Vite + React).
 
 ## Scope
 
-**Order initiation history** on web — same integration API as mobile. View depends on JWT `role`:
+**Order initiation history** and **Demand board** (Phase C.1) on web — same integration API as mobile. View depends on JWT `role`:
 
 | `role` | UI |
 |--------|-----|
@@ -22,7 +22,8 @@ Repository: `sharingbridge-web-app` (Vite + React).
 5. JWT is stored in **sessionStorage** until **Sign out** or expiry (~1 hour).
 6. Coordinators: **email** stored in **localStorage** for **Use a different Google account** on later visits.
 7. Dashboard calls `GET /v1/donor-seeker/order-intents` with `Authorization: Bearer <jwt>`. **Donors** may add `near_lat` / `near_lng`; server applies `DONOR_NEIGHBOURHOOD_*` and returns `feed` + `since` for UI copy. **Coordinators** get the full list by default; the same optional query params (`since`, `near_lat`/`near_lng`, `locality_key`) filter via PostGIS in integration-service ([database.md](./database.md)). Integration redacts fields for `donor` JWTs.
-8. On **401** or expiry → sign in again.
+8. Toolbar **List** | **Map** (`VITE_GOOGLE_MAPS_API_KEY`) | **Demand** — Demand tab loads `GET /v1/demand/board` (`seeker_demands`, `demand_windows`). Requires `seeker_demands` table ([schema-seeker-demands-migration.sql](./schema-seeker-demands-migration.sql)).
+9. On **401** or expiry → sign in again.
 
 **No client secret** in `.env` — only the Web **Client ID** (`VITE_GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_ID_WEB`).
 

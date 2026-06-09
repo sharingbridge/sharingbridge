@@ -340,5 +340,6 @@ With `LOG_LEVEL=info` (debugging only), each instruction-pack request prints:
 ## See also
 
 - [ai-orchestration-local.md](./ai-orchestration-local.md) — venv and uvicorn on Windows
+- [service-startup.md](./service-startup.md) — FastAPI and Node boot sequence on Render
 - [AI_IMPLEMENTATION_PLAN.md](../development/AI_IMPLEMENTATION_PLAN.md) — architecture and provider split
 - [environment-variables.md](./environment-variables.md) — full env reference

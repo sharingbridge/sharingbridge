@@ -71,10 +71,12 @@ The **donor-setup slice** that is live in code is intentionally a **minimal MVP*
 - HTTP server is exposed as a factory (`createIntegrationServer`) so tests can boot it against a temp DB.
 - `DELETE /v1/donor-setup/preferences?user_id=…` clears all presets for the authed user (local store `clearForUser`; user-service mode uses `PUT` with `[]`). Mobile **Saved presets → Clear all** calls this and clears offline cache.
 - `POST /v1/donor-setup/preferences/delete-item` removes one preset by `(restaurant_name, order_url)`; user-service mode calls **`POST /v1/users/{id}/donor-presets/delete-item`** (no GET+PUT read-modify-write).
-- 42 tests, all green via `npm test`; `npm run backfill:user-service-presets` migrates `data/preferences.json` → user-service (see migration doc).
+- **Seeker demand (Phase C.1):** `POST /v1/seeker-demands` (donor or coordinator reporter), `GET /v1/seeker-demands`, `GET /v1/demand/board` — Postgres `seeker_demands` via `PostgresSeekerDemandStore`; migration [schema-seeker-demands-migration.sql](../configuration/schema-seeker-demands-migration.sql).
+- Production AI: `AI_MOCK_FALLBACK_ENABLED` defaults **false** — orchestration failures return **503** instead of template/mock text.
+- 94 tests, all green via `npm test`; `npm run backfill:user-service-presets` migrates `data/preferences.json` → user-service (see migration doc).
 
-### `sharingbridge-mobile-app` (donor setup MVP shipped; Offer food help handoff)
-- **Home hub** (`lib/presentation/app_home_page.dart`): entry to **Donor setup** vs **Offer food help**.
+### `sharingbridge-mobile-app` (donor setup MVP shipped; field + seeker demand)
+- **Home hub** (`lib/presentation/app_home_page.dart`): **Vendor presets**, **Help a seeker** (About gate before field flow), **Record seeker demand**, order history, web dashboard link.
 - **Donor–seeker interaction (`Help a seeker`):** three steps shipped — **Quick guidance** → **optional reference photo** + verbal notes → **instruction-pack API** (GPS requested **before** instruction generation; same coords reused on copy/register) → **Copy** + preset **Open …** deep links. **Planned:** live LLM + image/location descriptions + seeker hints — see `AI_IMPLEMENTATION_PLAN.md`. **Deferred:** `sharingbridge-location-safety` (geo scoring archived).
 - Donor setup screen wired to integration-service: search → suggestions → confirm-and-save.
 - Startup loads presets from server, with local `shared_preferences` fallback cache when the server is unreachable.
@@ -83,6 +85,7 @@ The **donor-setup slice** that is live in code is intentionally a **minimal MVP*
 - `AuthContext` (`lib/features/donor_setup/data/auth_context.dart`) sources `user_id` from `--dart-define=USER_ID=...` and signed token from `--dart-define=AUTH_TOKEN=...`, and sends only `Authorization: Bearer <token>`.
 - Donor Setup list shows **full `menu_items`** per suggestion (not only the first item); **suggest-vendors** is query-ranked when orchestration flags are on, else fixed mock.
 - Donor Setup: suggestion rows include **Copy link**, **Open vendor page**, **Suggest again** (re-runs search); after **Confirm and Save** the full suggestion list stays visible (only checkboxes clear) and a **SnackBar** confirms save. App bar **Saved presets**: **Copy link** / **Open link**; per-row **Remove**; **Clear all** (`DELETE` + offline cache).
+- **Record seeker demand** on home hub; `POST /v1/seeker-demands` via `HttpSeekerDemandClient` (`features/seeker_demand/`).
 - **Order initiation history** on home hub; `POST/GET /v1/donor-seeker/order-intents` via `HttpOrderIntentClient`.
 - **Google Sign-In** (donor): `google_sign_in` → user-service `POST /v1/auth/google` (`client_type` mobile); JWT `role: donor` (users may also have `coordinator` in `user_roles` for web).
 - 53+ tests green via `flutter test` (see repo CI).
@@ -93,8 +96,8 @@ The **donor-setup slice** that is live in code is intentionally a **minimal MVP*
 - `GET/PUT /v1/users/{user_id}/donor-presets`, **`POST …/delete-item`**; JWT HS256 mint/verify.
 - **37+** Node tests; CI on push/PR.
 
-### `sharingbridge-web-app` (coordinator dashboard)
-- Vite + React: **Google Sign-In** (GIS), order initiation history, coordinator list-all via integration-service.
+### `sharingbridge-web-app` (coordinator + donor dashboard)
+- Vite + React: **Google Sign-In** (GIS), order initiation history (List / Map / Demand toolbar), AI fields on detail (`location_description`, `seeker_handover_hints`, etc.), Demand board via `GET /v1/demand/board`.
 - Deploy: Render static site; config [configuration/web-client.md](../configuration/web-client.md), test **MANUAL_TESTING_GUIDE §4**.
 
 ### Other repos

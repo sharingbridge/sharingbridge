@@ -281,6 +281,7 @@ Trigger one search, then filter integration logs for `suggest-vendors`:
 | No `location_description` / `seeker_handover_hints` at all | Integration timed out or fell back to template | Check integration logs for `fallback_error` |
 | Nominatim `HTTP 429` in ai-orchestration logs | OSM rate limit | Non-fatal — coordinates fallback used; avoid rapid retests |
 | `orchestration failed code=network_error` | Bad URL or orchestration unreachable from integration |
+| `orchestration failed status=429 code=invalid_json` or `rate_limited` | Groq/Gemini quota, Render edge throttle, or rapid retests | Wait 60s; avoid double-tapping **Get AI instructions**; check Groq/Gemini dashboards; integration retries up to 3× automatically after redeploy |
 | `orchestration returned non-live source=deterministic` | Reachable but `AI_LLM_MODE` not `live` on orchestration |
 | *(no log line)* | Live path working — success is silent at default `LOG_LEVEL=warn` |
 
@@ -323,6 +324,7 @@ With `LOG_LEVEL=info` (debugging only), each instruction-pack request prints:
 | `source: mock` | Integration flags off or wrong `AI_ORCHESTRATION_BASE_URL` | Enable `AI_*_ENABLED`, fix URL |
 | `source: mock_fallback` | Orchestration down or 5xx | Start uvicorn; check Render logs |
 | `source: fallback_error` | Groq/Gemini error | Check API keys, quotas, model names |
+| Mobile: `Instruction pack orchestration failed status=429` | Integration could not get JSON from ai-orchestration (rate limit / throttle) | Same as 429 row in §6c; confirm orchestration `/health` returns `llm_mode: live` |
 | No `location_description` | No GPS on request, or Nominatim blocked | Grant location on mobile; set `NOMINATIM_USER_AGENT` |
 | No `image_description` | No photo URL, Gemini key, or deprecated model | Upload photo; set `GEMINI_API_KEY`; use `GEMINI_VISION_MODEL=gemini-2.5-flash` (not `gemini-2.0-flash`, shut down June 2026) |
 | Mobile banner always shows | Still on deterministic/mock path | Complete steps in §3–§5 |

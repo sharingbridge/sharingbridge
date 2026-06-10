@@ -89,4 +89,4 @@ Separate from **Help a seeker** (order intent after copy). **Record seeker deman
 | Response field | `seeker_demand.seeker_demand_id` (`sd-…` prefix); reporter = `reported_by_user_id` |
 | Web | `GET /v1/demand/board` — aggregated `demand_windows` + recent `seeker_demands` |
 
-**Not** a vendor order or pledge — see [Future_Extensions.md](../design/Future_Extensions.md) Phase C for bidding/pledges (not live yet).
+**Not** a vendor order or pledge. **Pledges** and **vendor bids** persist to `meal_pledges` / `vendor_bids` when [schema-marketplace-migration.sql](./schema-marketplace-migration.sql) is applied; auto-allocation is still future (Phase I).

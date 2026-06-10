@@ -281,7 +281,7 @@ Trigger one search, then filter integration logs for `suggest-vendors`:
 | No `location_description` / `seeker_handover_hints` at all | Integration timed out or fell back to template | Check integration logs for `fallback_error` |
 | Nominatim `HTTP 429` in ai-orchestration logs | OSM rate limit | Non-fatal — coordinates fallback used; avoid rapid retests |
 | `orchestration failed code=network_error` | Bad URL or orchestration unreachable from integration |
-| `orchestration failed status=429 code=rate_limited` + `Body preview: Too Many Requests` | **Render edge** throttling ai-orchestration (plain text, not JSON) | Wait **2 minutes**, try **once**; check integration logs for `[orchestration] ... retry` lines; upgrade Render plan or reduce retests; mobile waits up to 150s while integration retries |
+| `orchestration failed status=429 code=rate_limited` + `Body preview: Too Many Requests` | **Render edge** throttling ai-orchestration (plain text, not JSON) — **suggest-vendors or instruction-pack** | Wait **2 minutes**, try **once**; check integration logs for `[orchestration] ... retry` lines (5×, 8–45s backoff); upgrade Render plan or reduce retests; mobile waits up to 90–150s while integration retries |
 | `orchestration failed status=429 code=invalid_json` or `rate_limited` (other bodies) | Groq/Gemini quota or upstream throttle | Check Groq/Gemini dashboards; integration retries up to 5× with 8–45s backoff |
 | `orchestration returned non-live source=deterministic` | Reachable but `AI_LLM_MODE` not `live` on orchestration |
 | *(no log line)* | Live path working — success is silent at default `LOG_LEVEL=warn` |

@@ -275,14 +275,15 @@ Trigger one search, then filter integration logs for `suggest-vendors`:
 |----------|---------|
 | `using mock catalog: AI_ORCHESTRATION_BASE_URL is unset` | Integration env not wired (or old deploy) |
 | `using mock catalog: AI_SUGGEST_VENDORS_ENABLED is not true` | Flag off on integration |
-| `orchestration failed status=401` | `AI_ORCHESTRATION_INTERNAL_API_KEY` mismatch |
-| `orchestration failed code=timeout` | Instruction-pack exceeded timeout (often after enabling live Gemini vision) | Set `AI_ORCHESTRATION_INSTRUCTION_PACK_TIMEOUT_MS=60000` on **integration-service** and redeploy |
+| `[suggest-vendors] phase=orchestration_api status=401` | `AI_ORCHESTRATION_INTERNAL_API_KEY` mismatch |
+| `[instruction-pack] phase=integration_http_timeout code=timeout` | Instruction-pack exceeded timeout (often after enabling live Gemini vision) | Set `AI_ORCHESTRATION_INSTRUCTION_PACK_TIMEOUT_MS=60000` on **integration-service** and redeploy |
 | No `location_description` / `seeker_handover_hints` at all | Mobile timed out while orchestration still running | Rebuild mobile app (35s instruction-pack timeout); check for `source: local_stub` banner |
 | No `location_description` / `seeker_handover_hints` at all | Integration timed out or fell back to template | Check integration logs for `fallback_error` |
 | Nominatim `HTTP 429` in ai-orchestration logs | OSM rate limit | Non-fatal — coordinates fallback used; avoid rapid retests |
-| `orchestration failed code=network_error` | Bad URL or orchestration unreachable from integration |
-| `orchestration failed status=429 code=rate_limited` + `Body preview: Too Many Requests` | **Render edge** throttling ai-orchestration (plain text, not JSON) — **suggest-vendors or instruction-pack** | Wait **2 minutes**, try **once**; check integration logs for `[orchestration] ... retry` lines (5×, 8–45s backoff); upgrade Render plan or reduce retests; mobile waits up to 90–150s while integration retries |
-| `orchestration failed status=429 code=invalid_json` or `rate_limited` (other bodies) | Groq/Gemini quota or upstream throttle | Check Groq/Gemini dashboards; integration retries up to 5× with 8–45s backoff |
+| `[suggest-vendors] phase=integration_http_network code=network_error` | Bad URL or orchestration unreachable from integration |
+| `phase=orchestration_http_non_json` + `body_kind=plain_rate_limit` + `body="Too Many Requests"` | HTTP/proxy plain-text 429 **before** FastAPI JSON — not a malformed request body | Check **ai-orchestration** logs for matching `[suggest-vendors] start` / `[instruction-pack] start`; if absent, request never reached the app (proxy/CDN). Integration retries 5× (`[orchestration] ... retry` with `phase=` and `body_kind=`); wait 2 minutes between manual retries |
+| `phase=orchestration_api` + `code=rate_limited` + `detail=` | FastAPI returned JSON rate limit (Groq/Gemini quota) | Check Groq/Gemini dashboards and ai-orchestration logs |
+| `phase=orchestration_http_non_json` + `body_kind=json_parse_failed` | Malformed JSON from ai-orchestration HTTP response | Check ai-orchestration logs for crash/partial response |
 | `orchestration returned non-live source=deterministic` | Reachable but `AI_LLM_MODE` not `live` on orchestration |
 | *(no log line)* | Live path working — success is silent at default `LOG_LEVEL=warn` |
 

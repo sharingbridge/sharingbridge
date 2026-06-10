@@ -82,6 +82,9 @@ Set the **same value** on all four Render Web Services if you want consistent ve
 | `AI_ORCHESTRATION_INTERNAL_API_KEY` | shared with ai-orchestration | same |
 | `AI_ORCHESTRATION_SUGGEST_VENDORS_TIMEOUT_MS` | `15000` | `15000` — suggest-vendors only |
 | `AI_ORCHESTRATION_INSTRUCTION_PACK_TIMEOUT_MS` | `60000` | `60000` — instruction-pack only (Nominatim + Gemini vision + Groq) |
+| `AI_ORCHESTRATION_INSTRUCTION_PACK_RETRY_MAX_ATTEMPTS` | `5` | `5` — retries on 429/502/503 to ai-orchestration |
+| `AI_ORCHESTRATION_RETRY_BASE_DELAY_MS` | `8000` | backoff step for instruction-pack retries |
+| `AI_ORCHESTRATION_RETRY_MAX_DELAY_MS` | `45000` | max wait between retries |
 | `AI_SUGGEST_VENDORS_ENABLED` | `true` | `true` |
 | `AI_MOCK_FALLBACK_ENABLED` | `true` (local dev) | **unset** — production returns HTTP 503 when orchestration fails |
 | `AUTH_TOKEN_AUDIENCE` | `sharingbridge-clients` | same |

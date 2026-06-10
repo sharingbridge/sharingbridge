@@ -204,6 +204,16 @@ Delivery instruction: Please proceed to <geo_coordinates>. Identify the seeker u
 | **C — Handoff** | Copy + preset deep links (enhance text from API) | mobile (mostly done) |
 | **D — Verification** | Delivery acknowledgement UX, match job, notifications | photo-service, order-service, notification-service, web-app |
 
+**Marketplace phases** (product spec: [PRODUCT_ROADMAP.md](./PRODUCT_ROADMAP.md) § Marketplace)
+
+| Phase | Scope | Repos |
+|-------|--------|-------|
+| **E — Demand board** | `seeker_demands` + coordinator read ( **shipped** ) | integration-service, web-app, mobile |
+| **F — Beneficiary + initiator** | Beneficiary profile (no login); demand initiator role; recurring plans | user-service, integration-service, mobile, web |
+| **G — Fulfilment bids** | Prep capacity commits; self-pickup vs delivery choice | integration-service, web (fulfiller UI) |
+| **H — Transport bids** | Route/capacity bids; geo match vendor → beneficiaries | integration-service, web |
+| **I — Allocation** | Window aggregation; donor notify; fulfiller → transporter pay instructions | integration-service, notification-service |
+
 **Privacy checkpoints (before production copy in vendor apps)**
 
 - Consent required before reference photo; offer verbal-only path.
@@ -211,7 +221,7 @@ Delivery instruction: Please proceed to <geo_coordinates>. Identify the seeker u
 - TTL: secure links active until delivery completion + 30 minutes (architecture default); **Cloudinary / donor reference photos:** target **1–2 hour** distribution window for neighbourhood dashboards (see [Future_Extensions.md](../design/Future_Extensions.md) Phase A.2 donor photo rule).
 - Align “faceprint” language with counsel; store embeddings server-side only (not raw photos in Postgres when regulatory mode applies).
 
-Repo-level checklists: [AI_PLATFORM_INTEGRATION.md](./AI_PLATFORM_INTEGRATION.md); product backlog [Future_Extensions.md](../design/Future_Extensions.md).
+Repo-level checklists: [AI_PLATFORM_INTEGRATION.md](./AI_PLATFORM_INTEGRATION.md); **product vocabulary and marketplace model:** [PRODUCT_ROADMAP.md](./PRODUCT_ROADMAP.md); order-ops backlog detail: [Future_Extensions.md](../design/Future_Extensions.md).
 
 **LLM hosting and bridges (LangChain, model APIs, mobile ↔ backend):** Not implemented in code today. Planning, env vars, sequences, and bootstrap checklist live in **`development/AI_PLATFORM_INTEGRATION.md`**. Rule: clients call integration-service (or gateway) only; orchestration service holds API keys and LangChain chains.
 
@@ -225,7 +235,7 @@ Repo-level checklists: [AI_PLATFORM_INTEGRATION.md](./AI_PLATFORM_INTEGRATION.md
 - Admin/coordinator dashboard: active orders, statuses, and exception views
 - Vendor/coordinator support views for order follow-up and issue handling
 - Search/filter panels for order timeline and beneficiary-assistance context
-- **Roadmap detail (sanitized):** [design/Future_Extensions.md](../design/Future_Extensions.md) — Phase A: neighbourhood donor/coordinator dashboards (no donor email; photos ≤1h), payment-done, geo on intent; Phase B: delivery photo; Phase C: locality demand + vendor bidding (direct donor→vendor payment, no platform escrow)
+- **Product roadmap:** [PRODUCT_ROADMAP.md](./PRODUCT_ROADMAP.md) — glossary, actors, marketplace fulfillment paths; order-ops detail in [Future_Extensions.md](../design/Future_Extensions.md) Phase A–B
 
 **Weeks 7-10 (Monitoring + Governance):**
 - Operational analytics views (trend, success/failure reasons, regional status)

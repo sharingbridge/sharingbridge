@@ -1,6 +1,6 @@
 # SharingBridge — Product roadmap
 
-**Purpose:** Founder voice memos (June 2026) and the **authoritative** spec for near-term neighbourhood dashboard work. Use with [AGENT_HANDOFF.md](./AGENT_HANDOFF.md) for what is already shipped.
+**Purpose:** Founder voice memos (June 2026), **authoritative product vocabulary**, and near-term neighbourhood dashboard spec. Use with [AGENT_HANDOFF.md](./AGENT_HANDOFF.md) for what is shipped; use [IMPLEMENTATION_APPROACH.md](./IMPLEMENTATION_APPROACH.md) for phased delivery (repos, timelines). **Do not** spin up parallel roadmap docs — extend this file for new product themes.
 
 **Transcripts (local Whisper — not quoted verbatim in docs; summaries below are corrected):**
 
@@ -23,6 +23,66 @@ Re-run: `$env:TEMP\asrvenv\Scripts\python.exe` `..\..\scripts\transcribe_audio.p
 | **Elapsed (freshness)** | `now − created_at`. Shown near **Order intent taken**; **do not** derive elapsed from `delivered_at`. |
 | **Distance (m)** | **`distance_m`** — metres from viewer `near_lat` / `near_lng` to intent location (API-computed). |
 | **Radius** | Server filter: **`DONOR_NEIGHBOURHOOD_RADIUS_M`** (metres; default 5000). |
+| **Seeker demand** | Logged meal need for aggregation (`seeker_demands`). **Not** an order intent and **not** a paid vendor order. Distinct from **pledge** (future funding commitment). |
+| **Beneficiary / seeker** | Person who receives food. **No app login** — linked on records (address, notes, optional photo) with consent captured by an initiator. |
+| **Demand initiator** | Signed-in user who arranges meals **for** a known beneficiary (e.g. adult child for a parent). May be one-off or **recurring** (e.g. one month). Future role; today overlaps donor/coordinator **Record seeker demand**. |
+| **Demand fulfiller** | Signed-in kitchen/vendor who **commits prep capacity** (portions per window). Future role. |
+| **Transport bidder** | Signed-in courier who **commits delivery capacity** between prep points and beneficiary locations. Paid by **meal vendor**, not donor. Future role. |
+
+### App actors (who signs in)
+
+| Actor | Signs in | Notes |
+|-------|----------|--------|
+| **Donor** | Yes (mobile) | Field handover; pays vendor directly for one-off meals. |
+| **Demand initiator** | Yes | Plans meals for a beneficiary; sets pickup vs delivery. |
+| **Coordinator** | Yes (web) | Ops, demand board, reconciliation. |
+| **Demand fulfiller** | Yes | Prep bids; may self-deliver or hire transport. |
+| **Transport bidder** | Yes | Route bids; paid by fulfiller. |
+| **Beneficiary** | **No** | Data only — never a `user_roles` row. |
+
+### Product lanes (keep separate)
+
+| Lane | Status | Initiator | Payment |
+|------|--------|-----------|---------|
+| **A — Field handover** | Shipped | Donor in person | Donor → vendor app (one-time) |
+| **B — Seeker demand log** | Shipped (C.1) | Donor / coordinator | None yet — aggregation only |
+| **C — Meal arrangement** | Future | Demand initiator | Family / self / donor-funded plans; recurring |
+| **D — Marketplace window** | Future | Pledges + aggregated demand | Donor → vendor (food); bulk prep + transport |
+
+---
+
+## Marketplace — fulfillment paths & payments (future, authoritative)
+
+**Bulk default:** Prep and transport are **aggregated per window/locality** to reduce cost. **Donor funding** stays **direct one-time** payment to the meal vendor (no platform wallet — per BRD).
+
+### Fulfillment path (per beneficiary / plan)
+
+Chosen by **demand initiator** (or coordinator on their behalf); beneficiary has no login.
+
+| Path | Who moves food | Proof of handover |
+|------|----------------|-------------------|
+| **Self pickup** | Beneficiary or family collects at prep vendor | **Meal prep vendor** captures proof |
+| **Vendor delivers** | Fulfiller’s own delivery | Fulfiller |
+| **Vendor + transport bidder** | Transporter: vendor location → beneficiaries | Transporter (with vendor handoff event) |
+
+If not self-pickup, the **meal vendor owns delivery** — own fleet **or** selects a **transport bidder** for that area. **Transport is paid by the meal vendor**, not the donor.
+
+### Payment rhythms
+
+| Flow | Who pays whom | When |
+|------|---------------|------|
+| **Donor / pledge → meal vendor** | Donor | Direct, one-time, per funded meals |
+| **Meal vendor → transport bidder** | Fulfiller | Bulk settlement for assigned routes/windows |
+| **Initiator / family → vendor** | Demand initiator or beneficiary (via initiator) | Recurring plans — same direct-payment principle |
+
+### Matching (location-driven)
+
+1. Aggregate meal units + beneficiary drop points for a **demand window**.
+2. Match **fulfilment bids** (prep location, portions, ready time).
+3. For non–self-pickup rows: require fulfiller delivery capacity **or** matched **transport bid** (vendor lat → beneficiary cluster).
+4. Self-pickup rows skip transport; vendor runs pickup proof workflow.
+
+**Implementation phases:** see [IMPLEMENTATION_APPROACH.md](./IMPLEMENTATION_APPROACH.md) § Marketplace phases. Order-ops detail (payment-done, delivery photo): [Future_Extensions.md](../design/Future_Extensions.md) Phase A–B (legacy pointer).
 
 ---
 
@@ -77,11 +137,12 @@ Re-run: `$env:TEMP\asrvenv\Scripts\python.exe` `..\..\scripts\transcribe_audio.p
 |-------|--------|
 | Web roles | Donor dashboard access; **emails** coordinator-only. |
 | Pledges | Order intents → pledge / crowdsourcing extension. |
+| Marketplace | Demand initiator, fulfiller, transport bidder; self-pickup vs delivery; bulk prep/transport — see **Marketplace** section above. |
 | Photos / AI | Embeddings, descriptions, drone narrative; optional store embeddings not raw photos. |
-| GIS | Neighbourhood feeds; PostGIS lists **shipped**; map UI later. |
+| GIS | Neighbourhood feeds; PostGIS lists **shipped**; map UI **shipped** on web. |
 | Cloudinary | Short-lived distribution window (1–2 h). |
 
-Details: [Future_Extensions.md](../design/Future_Extensions.md), [IMPLEMENTATION_APPROACH.md](./IMPLEMENTATION_APPROACH.md).
+Delivery detail: [IMPLEMENTATION_APPROACH.md](./IMPLEMENTATION_APPROACH.md). Order-ops phases A–B: [Future_Extensions.md](../design/Future_Extensions.md).
 
 ---
 
@@ -93,13 +154,18 @@ Details: [Future_Extensions.md](../design/Future_Extensions.md), [IMPLEMENTATION
 4. **mobile-app:** “Open web dashboard” URL from config.
 5. Donor neighbourhood photos (confirm web + mobile within window).
 
-**Later:** Delivery-partner flow **populates** `delivered_at` reliably ([Future_Extensions.md](../design/Future_Extensions.md) § B).
+**Later:**
+
+- Delivery-partner flow **populates** `delivered_at` ([Future_Extensions.md](../design/Future_Extensions.md) § B).
+- Marketplace roles, allocation, pickup proof ([IMPLEMENTATION_APPROACH.md](./IMPLEMENTATION_APPROACH.md) § Marketplace phases).
 
 ---
 
 ## Related docs
 
+- [IMPLEMENTATION_APPROACH.md](./IMPLEMENTATION_APPROACH.md) — phased delivery, repos
+- [AGENT_HANDOFF.md](./AGENT_HANDOFF.md) — shipped snapshot
 - [web-client.md](../configuration/web-client.md)
 - [environment-variables.md](../configuration/environment-variables.md)
 - [database.md](../configuration/database.md)
-- [Future_Extensions.md](../design/Future_Extensions.md)
+- [Future_Extensions.md](../design/Future_Extensions.md) — order-ops phases A–B only (legacy detail)

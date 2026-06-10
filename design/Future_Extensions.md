@@ -1,8 +1,10 @@
 # SharingBridge — Future extensions (order operations & locality marketplace)
 
-**Purpose:** Capture **sanitized, feasible** product extensions beyond today’s **order initiation** MVP (donor copies instructions → record registered). Use this doc for roadmap alignment and design reviews.
+**Purpose:** **Order-operations** extension detail (payment-done, delivery proof) — Phases A–B below. **Product vocabulary, actors, marketplace, fulfillment paths, and payment rhythms** live in [PRODUCT_ROADMAP.md](../development/PRODUCT_ROADMAP.md). **Phased delivery (repos/timeline)** lives in [IMPLEMENTATION_APPROACH.md](../development/IMPLEMENTATION_APPROACH.md). Do not add parallel roadmap docs — extend those two.
 
-**Neighbourhood dashboard columns (June 2026):** authoritative spec in [PRODUCT_ROADMAP.md](../development/PRODUCT_ROADMAP.md) — **Order intent taken**, **Delivered at**, **Distance (m)**; sort by `distance_m` asc; donor neighbourhood photos.
+**Neighbourhood dashboard columns (June 2026):** [PRODUCT_ROADMAP.md](../development/PRODUCT_ROADMAP.md).
+
+**Phase C marketplace in this file is legacy** — superseded by PRODUCT_ROADMAP § Marketplace and IMPLEMENTATION_APPROACH § Marketplace phases (E–I). Kept below for historical reference only.
 
 **Related:** [SharingBridge_End_to_End_Workflow.md](./SharingBridge_End_to_End_Workflow.md) (BRD steps 8–12), [SharingBridge_Business_Requirement.md](../requirements/SharingBridge_Business_Requirement.md) (payments stay with vendors), [database.md](../configuration/database.md) (persistence target), [authentication.md](../configuration/authentication.md) (roles).
 

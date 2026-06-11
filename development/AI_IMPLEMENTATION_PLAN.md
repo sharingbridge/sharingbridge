@@ -28,7 +28,7 @@ Two **free-tier** providers, one role each. Both called only from `sharingbridge
 | Provider | Role | Endpoints / steps | Models (staging defaults) |
 |----------|------|-------------------|---------------------------|
 | **Google Gemini** | **Vision** — reference photo at order-intent / instruction time | `image_description`, soft **seeker identification** (appearance only, no name claims) | `gemini-2.5-flash` (multimodal) |
-| **Groq** | **Text** — presets + instruction composition | `suggest-vendors` JSON; `delivery_instructions` + `seeker_handover_hints` using Gemini outputs + geocode + donor notes | `llama-3.3-70b-versatile` |
+| **Groq** | **Text** — presets + instruction composition | `suggest-vendors` JSON; `delivery_instructions` + `seeker_handover_hints` using Gemini outputs + geocode + payee notes | `llama-3.3-70b-versatile` |
 
 **Why split**
 
@@ -61,11 +61,11 @@ flowchart LR
 
 ## Three product goals
 
-### 1) AI for collecting presets (donor setup)
+### 1) AI for collecting presets (vendor preset setup)
 
-**User story:** Donor types free text (app, restaurant, menu hints); app uses location when available; API returns up to five confirmable presets with deep links.
+**User story:** Payee types free text (app, restaurant, menu hints); app uses location when available; API returns up to five confirmable presets with deep links.
 
-**Flow:** Mobile → `POST /v1/donor-setup/suggest-vendors` → integration → `POST /internal/v1/llm/suggest-vendors` → donor confirms → `POST /v1/donor-setup/preferences`.
+**Flow:** Mobile → `POST /v1/donor-setup/suggest-vendors` → integration → `POST /internal/v1/llm/suggest-vendors` → payee confirms → `POST /v1/donor-setup/preferences`.
 
 **Outputs (strict JSON):**
 
@@ -89,7 +89,7 @@ flowchart LR
 
 ### 2) Image description and location description (Help a seeker)
 
-**User story:** When the donor generates delivery instructions, the courier text includes human-readable **where** and **who to look for** (appearance only), not only raw coordinates.
+**User story:** When the payee generates delivery instructions, the courier text includes human-readable **where** and **who to look for** (appearance only), not only raw coordinates.
 
 | Field | How produced | Stored |
 |-------|----------------|--------|
@@ -111,7 +111,7 @@ flowchart LR
 Split into two layers — different technology and privacy review.
 
 **A — Soft identification (Gemini + Groq, Phase 2–4)**  
-**Gemini** extracts `image_description` and `seeker_appearance_hints` from the reference photo. **Groq** composes **`seeker_handover_hints`** and the final `delivery_instructions` from those strings plus `location_description` and donor notes. Non-definitive, consent-based wording only.
+**Gemini** extracts `image_description` and `seeker_appearance_hints` from the reference photo. **Groq** composes **`seeker_handover_hints`** and the final `delivery_instructions` from those strings plus `location_description` and payee notes. Non-definitive, consent-based wording only.
 
 **B — Hard identification (CV, Phase 5)**  
 - On `seeker_reference` upload: face embedding in **photo-service** (not LLM).  
@@ -140,7 +140,7 @@ Do **not** introduce LangChain for the MVP live model path. Revisit LangChain (o
 
 ### What LangChain is good for (later)
 
-- **RAG** over donor history, vendor catalogs, or policy docs  
+- **RAG** over payee history, vendor catalogs, or policy docs  
 - **Multi-tool agents** (search web, call maps, call DB, then summarize)  
 - **Complex retry / branch graphs** with LangSmith evals in staging  
 - **Many prompt versions** with shared memory/chains across 5+ endpoints  
@@ -177,7 +177,7 @@ suggest_vendors(payload):
 
 ### What not to put in LangChain
 
-- Face embedding and donor↔delivery match (**photo-service**, CV model)  
+- Face embedding and payee↔delivery match (**photo-service**, CV model)  
 - PostGIS neighbourhood queries (**integration-service**)  
 - JWT auth and photo upload (**integration / photo-service**)
 
@@ -209,7 +209,7 @@ suggest_vendors(payload):
 - Render: `GROQ_API_KEY`, `GROQ_MODEL=llama-3.3-70b-versatile`, `AI_LLM_MODE=live`  
 - Integration: `AI_SUGGEST_VENDORS_ENABLED=true`  
 
-**Done when:** Donor setup search returns Groq-ranked vendors in staging.
+**Done when:** Vendor preset setup search returns Groq-ranked vendors in staging.
 
 ---
 
@@ -257,7 +257,7 @@ suggest_vendors(payload):
 **Code:**
 
 - Store `image_description`, `seeker_appearance_hints`, `location_description`, `seeker_handover_hints` on order intent  
-- Web donor/coordinator detail panel  
+- Web payee/coordinator detail panel  
 
 **Done when:** Dashboard detail matches generated instructions.
 

@@ -32,4 +32,4 @@ system without reading code.
 - API contracts: [`../design/contracts/donor_setup_suggest_vendors.openapi.yaml`](../design/contracts/donor_setup_suggest_vendors.openapi.yaml) (suggest-vendors)
 - AI platform: [`../development/AI_PLATFORM_INTEGRATION.md`](../development/AI_PLATFORM_INTEGRATION.md)
 - End-to-end product workflow (diagrams): [`../design/SharingBridge_End_to_End_Workflow.md`](../design/SharingBridge_End_to_End_Workflow.md)
-- Donor setup sequence: [`../design/Donor_Setup_AI_Search_Sequence.md`](../design/Donor_Setup_AI_Search_Sequence.md)
+- Vendor preset setup sequence: [`../design/Donor_Setup_AI_Search_Sequence.md`](../design/Donor_Setup_AI_Search_Sequence.md)

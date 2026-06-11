@@ -1,5 +1,5 @@
 -- Phase F–G marketplace tables (pledges, vendor bids, standard offers, demand windows).
--- Run after schema-seeker-demands-migration.sql on existing Supabase/local DBs.
+-- Run order: configuration/database-setup-sequence.md (step M1, after schema.sql / seeker_demands).
 
 CREATE TABLE IF NOT EXISTS standard_offers (
   standard_offer_id  TEXT PRIMARY KEY,

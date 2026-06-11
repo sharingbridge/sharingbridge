@@ -1,12 +1,14 @@
 # Field handoff configuration (Help a seeker)
 
+**Doc map:** [README.md § Documentation guide](../README.md#documentation-guide) · Planned merge with seeker demand → [Configurator_Role_and_Unified_Initiation.md](../design/Configurator_Role_and_Unified_Initiation.md).
+
 Mobile: **Help a seeker** (`sharingbridge-mobile-app`; home hub label).
 
 ## BRD step 4 — guidance (not a safety score)
 
 Handover suitability is **fixed in-app guidance**, not a backend geo score.
 
-- Implemented in mobile step 1: **Quick guidance** (consent, surroundings, visibility, photos, donor judgment).
+- Implemented in mobile step 1: **Quick guidance** (consent, surroundings, visibility, photos, payee judgment).
 - `sharingbridge-location-safety` is **archived**; do not deploy a scoring service for MVP.
 
 ## Mobile steps (shipped)
@@ -15,11 +17,11 @@ Handover suitability is **fixed in-app guidance**, not a backend geo score.
 |------|----------------|
 | 1 | Quick guidance → Continue |
 | 2 | Optional reference photo + verbal notes → instruction-pack (integration → ai-orchestration) |
-| 3 | Review instructions → **Copy instructions to clipboard and register donation intent** → vendor preset links unlock |
+| 3 | Review instructions → **Copy instructions to clipboard and register order intent** → vendor preset links unlock |
 
-## Donation intent (shipped on integration-service)
+## Order intent (shipped on integration-service)
 
-When the donor taps the step 3 button, the app:
+When the payee taps the step 3 button, the app:
 
 1. Copies `delivery_instructions` to the clipboard.
 2. Calls `POST /v1/donor-seeker/order-intents` on **integration-service** (Bearer JWT).
@@ -30,9 +32,9 @@ Repeated taps for the **same instruction pack** (`pack_id`) update the existing 
 
 Stored fields include `pack_id`, preset snapshot, reference-photo flag, and verbal notes. Persisted in Postgres `order_intents` (integration-service requires `DATABASE_URL`).
 
-**Verify (local or Render):** after the first copy, the app shows **Order intent registered** with a reference id (mobile copy). The web dashboard will label the same timestamp **Order intent taken** (`created_at`) — see [PRODUCT_ROADMAP.md](../development/PRODUCT_ROADMAP.md). A second tap on the same pack updates that intent (SnackBar **Donation intent updated**, same reference id). On API failure, clipboard copy still succeeds and an error SnackBar is shown.
+**Verify (local or Render):** after the first copy, the app shows **Order intent registered** with a reference id (mobile copy). The web dashboard will label the same timestamp **Order intent taken** (`created_at`) — see [PRODUCT_ROADMAP.md](../development/PRODUCT_ROADMAP.md). A second tap on the same pack updates that intent (SnackBar **Order intent updated**, same reference id). On API failure, clipboard copy still succeeds and an error SnackBar is shown.
 
-## Donation intent dashboard
+## Order intent dashboard
 
 | Surface | Status |
 |---------|--------|
@@ -40,14 +42,14 @@ Stored fields include `pack_id`, preset snapshot, reference-photo flag, and verb
 | Mobile **Order initiation history** (home hub, after Help a seeker) | **Shipped** — list + detail |
 | Web **Order initiation history** | **Shipped** (`sharingbridge-web-app`) — [web-client.md](./web-client.md) |
 
-**Coordinator web wiring:** same donor `user_id` on sign-in as on mobile, and the same integration base URL (`VITE_API_BASE_URL` = mobile `API_BASE_URL`). Local vs Render stores are separate.
+**Coordinator web wiring:** same payee `user_id` on sign-in as on mobile, and the same integration base URL (`VITE_API_BASE_URL` = mobile `API_BASE_URL`). Local vs Render stores are separate.
 
 ## Backend services
 
 | Capability | Service |
 |------------|---------|
 | Instruction pack | integration → ai-orchestration |
-| Donation intent register | integration (`POST …/order-intents`) |
+| Order intent register | integration (`POST …/order-intents`) |
 | Presets | integration → user-service (`USER_SERVICE_BASE_URL`) → Postgres `donor_presets` |
 
 ## AI instruction text
@@ -62,13 +64,13 @@ Stored fields include `pack_id`, preset snapshot, reference-photo flag, and verb
 | Mobile `PHOTO_SERVICE_BASE_URL` | `--dart-define` (default `http://localhost:8092`) |
 | Coordinator thumbnail + link | Web dashboard reads `reference_photo_view_url` / `reference_photo_thumbnail_url` on order intents |
 
-Flow: donor picks camera or gallery → upload on **Get AI delivery instructions** → `reference_photo_artifact_id` + Cloudinary URLs stored on order intent.
+Flow: payee picks camera or gallery → upload on **Get AI delivery instructions** → `reference_photo_artifact_id` + Cloudinary URLs stored on order intent.
 
 Local: configure `CLOUDINARY_*` (or `CLOUDINARY_URL`) in photo-service `.env`. Run `photo_artifacts` DDL from [schema.sql](./schema.sql) (or let photo-service create the table on startup).
 
 ## Planned (Track B+)
 
-- Delivery acknowledgement upload and donor↔delivery photo match
+- Delivery acknowledgement upload and payee↔delivery photo match
 - Local image processing hooks in photo-service
 - Live LLM (`AI_LLM_MODE=openai`)
 
@@ -84,9 +86,9 @@ Separate from **Help a seeker** (order intent after copy). **Record seeker deman
 |-------|--------|
 | Mobile hub | **Record seeker demand** → `RecordSeekerDemandPage` |
 | API | `POST /v1/seeker-demands` on **integration-service** (Bearer JWT) |
-| Who can record | **Donor** or **coordinator** (`requireReporterRole`) |
-| Stored as | Postgres `seeker_demands` — run [schema-seeker-demands-migration.sql](./schema-seeker-demands-migration.sql) on existing DBs |
+| Who can record | **Payee** or **coordinator** (`requireReporterRole`) |
+| Stored as | Postgres `seeker_demands` — [database-setup-sequence.md](./database-setup-sequence.md) |
 | Response field | `seeker_demand.seeker_demand_id` (`sd-…` prefix); reporter = `reported_by_user_id` |
 | Web | `GET /v1/demand/board` — aggregated `demand_windows` + recent `seeker_demands` |
 
-**Not** a vendor order or pledge. **Pledges** and **vendor bids** persist to `meal_pledges` / `vendor_bids` when [schema-marketplace-migration.sql](./schema-marketplace-migration.sql) is applied; auto-allocation is still future (Phase I).
+**Not** a vendor order or pledge. **Pledges** and **vendor bids** persist after marketplace SQL (M1–M2 in [database-setup-sequence.md](./database-setup-sequence.md)); auto-allocation is still future (Phase I).

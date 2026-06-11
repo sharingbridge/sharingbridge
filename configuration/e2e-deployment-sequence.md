@@ -14,7 +14,7 @@ Sequential checklist for configuring SharingBridge from **Google OAuth** through
 | 4 | Google origin + CORS for live URL | [google-auth-setup.md](./google-auth-setup.md) Part 7 |
 | 5 | Verify hosted coordinator dashboard | [MANUAL_TESTING_GUIDE.md](../testing/MANUAL_TESTING_GUIDE.md) §4 |
 
-Architecture: [authentication.md](./authentication.md). Persistence: [database.md](./database.md). Mobile (donor): [mobile-client.md](./mobile-client.md).
+Architecture: [authentication.md](./authentication.md). Persistence: [database.md](./database.md). Mobile (payee): [mobile-client.md](./mobile-client.md).
 
 ---
 
@@ -48,7 +48,7 @@ flowchart TD
 | Deploy Render static site | Repo on Render; hosted API URLs recommended |
 | Add Render URL to Google **Authorized JavaScript origins** | **Static site URL** from first deploy |
 | Hosted Google sign-in works | `VITE_GOOGLE_CLIENT_ID` on static site **and** Google origin **and** `WEB_CORS_ORIGINS` on both backends **and** `coordinator` in Postgres `user_roles` |
-| Donor intents visible on hosted dashboard | Mobile (or API) uses the **same** integration host as `VITE_API_BASE_URL` |
+| Payee intents visible on hosted dashboard | Mobile (or API) uses the **same** integration host as `VITE_API_BASE_URL` |
 
 **Common misconception:** you need the Render static URL before creating the Google client — **no**. Create the Web client early with `http://localhost:5173`; add the Render origin after the first static deploy.
 
@@ -102,7 +102,7 @@ From **OAuth overview**, use the **left sidebar** (or section cards on the page)
 | What you need | Where to click | What to do for SharingBridge MVP |
 |---------------|----------------|----------------------------------|
 | **Scopes** | **Data Access** ([direct link](https://console.cloud.google.com/auth/scopes)) | Usually **nothing required**. Sign in with Google requests `openid`, `email`, `profile` at login time. If the scopes table is empty, that is OK — skip to Test users. Only use **ADD OR REMOVE SCOPES** if Google later blocks sign-in for missing scopes. |
-| **Test users** | **Audience** ([direct link](https://console.cloud.google.com/auth/audience)) | Under **Test users** → **+ Add users** → add every Gmail you will sign in with (coordinator + donor). Required while **Publishing status** is **Testing**. |
+| **Test users** | **Audience** ([direct link](https://console.cloud.google.com/auth/audience)) | Under **Test users** → **+ Add users** → add every Gmail you will sign in with (coordinator + payee). Required while **Publishing status** is **Testing**. |
 | App name / emails again | **Branding** ([direct link](https://console.cloud.google.com/auth/branding)) | Edit only if you need to change app info. |
 
 **Do not look for “Save and Continue” on the overview page** — that was the old wizard. Use the sidebar links above.
@@ -154,7 +154,7 @@ Detail: [google-auth-setup.md](./google-auth-setup.md) Part 1.3 · [Manage app d
 
 Detail: [google-auth-setup.md](./google-auth-setup.md) Part 2.1.
 
-### 0.5 Optional now — Android client (mobile donor)
+### 0.5 Optional now — Android client (mobile payee)
 
 Skip until Phase 1 mobile testing: **Credentials** → **+ Create credentials** → **OAuth client ID** → **Android** (package name + SHA-1). See [google-auth-setup.md](./google-auth-setup.md) Part 2.2.
 
@@ -184,7 +184,8 @@ copy env.example .env
 
 Set keys from [environment-variables.md](./environment-variables.md) (**Local example** column). Use Phase 0 Web Client ID for `GOOGLE_CLIENT_ID_WEB` and `VITE_GOOGLE_CLIENT_ID`.
 
-Coordinator role: Postgres `user_roles` — [coordinator-seed.sql](./coordinator-seed.sql) · [google-auth-setup.md](./google-auth-setup.md) Part 3.
+Coordinator role: Postgres `user_roles` — [coordinator-seed.sql](./coordinator-seed.sql) · [google-auth-setup.md](./google-auth-setup.md) Part 3.  
+Database SQL order: [database-setup-sequence.md](./database-setup-sequence.md).
 
 ### 1.2 integration-service
 
@@ -210,7 +211,7 @@ Same env index § web-app: [environment-variables.md](./environment-variables.md
 2. Start integration-service (`npm start`, port 8080).
 3. `npm run dev` in web-app → http://localhost:5173.
 4. **Sign in with Google** using a Gmail with `coordinator` in `user_roles`.
-5. **Refresh** after a donor registers an intent on mobile (local).
+5. **Refresh** after a payee registers an intent on mobile (local).
 
 **Checkpoint:** coordinator dashboard works on localhost with Google sign-in.
 
@@ -327,7 +328,7 @@ If you added or changed `VITE_*` after first deploy, trigger a **manual deploy**
 
 1. Open `https://<your-static-site>.onrender.com`.
 2. **Sign in with Google** with a Gmail that has `coordinator` in `user_roles` (Supabase/Postgres seed).
-3. **Refresh** — order initiations appear when donors used the **same** integration host (`VITE_API_BASE_URL` = mobile `API_BASE_URL`).
+3. **Refresh** — order initiations appear when payees used the **same** integration host (`VITE_API_BASE_URL` = mobile `API_BASE_URL`).
 
 Manual test steps: [MANUAL_TESTING_GUIDE.md](../testing/MANUAL_TESTING_GUIDE.md) **§4**.
 
@@ -344,7 +345,7 @@ Manual test steps: [MANUAL_TESTING_GUIDE.md](../testing/MANUAL_TESTING_GUIDE.md)
 
 ---
 
-## Mobile (donor) — after Phase 2
+## Mobile (payee) — after Phase 2
 
 Hosted mobile uses the same integration URL as the web dashboard:
 
@@ -366,7 +367,7 @@ See [mobile-client.md](./mobile-client.md).
 | CORS error in browser console | 4 | `WEB_CORS_ORIGINS` on **both** backends includes static URL |
 | Sign-in works locally, not on Render | 3–4 | `VITE_GOOGLE_CLIENT_ID` set; rebuild static site; origins + CORS |
 | `403 wrong_client_role` on web | 1 / 2 | Grant `coordinator` in `user_roles` ([coordinator-seed.sql](./coordinator-seed.sql)); web client only for coordinators |
-| Empty dashboard on Render | 5 | Donor mobile must post to **same** `VITE_API_BASE_URL` host |
+| Empty dashboard on Render | 5 | Payee mobile must post to **same** `VITE_API_BASE_URL` host |
 | `401` / invalid token | 2 | `AUTH_TOKEN_SECRET` must match on user-service and integration-service |
 
 More: [google-auth-setup.md](./google-auth-setup.md) troubleshooting section.

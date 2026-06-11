@@ -193,7 +193,7 @@ Check logs on startup: live mode should load Groq/Gemini clients without “miss
 ### 5b. Suggest vendors
 
 ```powershell
-curl -X POST http://localhost:8080/api/donor/suggest-vendors `
+curl -X POST http://localhost:8080/api/payee/suggest-vendors `
   -H "Content-Type: application/json" `
   -d '{"query_text":"vegetarian meals near T Nagar","manual_area":"Chennai"}'
 ```
@@ -294,7 +294,7 @@ Mobile **“Demo catalog”** banner = integration returned `mock` or `mock_fall
 ```powershell
 curl -X POST https://<integration-host>.onrender.com/v1/donor-setup/suggest-vendors `
   -H "Content-Type: application/json" `
-  -H "Authorization: Bearer <donor-jwt>" `
+  -H "Authorization: Bearer <payee-jwt>" `
   -d '{"query_text":"vegetarian meals","location_precision":"manual_area","manual_area":"Chennai"}'
 ```
 

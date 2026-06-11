@@ -1,6 +1,6 @@
 # SharingBridge — End-to-End Workflow (with diagrams)
 
-**Purpose:** One place to see the **full product journey** from donor setup through delivery confirmation. Use this for onboarding, reviews, and alignment with implementation.
+**Purpose:** One place to see the **full product journey** from vendor preset setup through delivery confirmation. Use this for onboarding, reviews, and alignment with implementation.
 
 **Source of truth for step definitions:** [SharingBridge_Business_Requirement.md](../requirements/SharingBridge_Business_Requirement.md) → **Core Workflow** (steps 1–12).
 
@@ -15,7 +15,7 @@
 | **[Technical Architecture](SharingBridge_Technical_Architecture.md)** | Services, APIs, deep-link privacy, order states, safety/photo algorithms | Some ASCII blocks |
 | **[Implementation Approach](../development/IMPLEMENTATION_APPROACH.md)** | Build phases, free tier, **AI interactions** slice (safety, instruction pack, match) | Tables; links here |
 | **[AI Platform Integration](../development/AI_PLATFORM_INTEGRATION.md)** | **LangChain / LLM hosting**, orchestration service, bridges mobile → integration → AI → model APIs | Architecture + sequence diagrams |
-| **[Donor Setup AI Search Sequence](Donor_Setup_AI_Search_Sequence.md)** | Donor setup only (suggest → save presets) | Sequence diagram |
+| **[Vendor preset setup AI Search Sequence](Donor_Setup_AI_Search_Sequence.md)** | Vendor preset setup only (suggest → save presets) | Sequence diagram |
 | **[Manual Testing Guide](../testing/MANUAL_TESTING_GUIDE.md)** | How to **verify** shipped slices on a device | Commands, not product flow |
 | **[Agent Handoff](../development/AGENT_HANDOFF.md)** | What is **live in code today** and next tasks | Status bullets |
 | **[Future Extensions](Future_Extensions.md)** | Order payment/delivery tracking, delivery proof, locality demand + vendor bidding | Roadmap; Mermaid |
@@ -29,7 +29,7 @@
 ```mermaid
 flowchart TB
   subgraph pre["Before field encounter"]
-    S1["1 Donor setup\nAI vendor/menu suggestions\nSave preset deep links"]
+    S1["1 Vendor preset setup\nAI vendor/menu suggestions\nSave preset deep links"]
   end
 
   subgraph field["Field encounter — Offer food help"]
@@ -48,7 +48,7 @@ flowchart TB
 
   subgraph delivery["Delivery & closure"]
     S10["10 Deliver & verify\nHandover + delivery photo"]
-    S11["11 Confirm to donor\nStatus + verification"]
+    S11["11 Confirm to payee\nStatus + verification"]
     S12["12 History\nPast / nearby outcomes"]
   end
 
@@ -65,7 +65,7 @@ Legend: ✅ shipped (partial or full) · 🟡 in progress / stub · ⬜ planned
 
 | Step | Status | Where documented / built |
 |------|--------|---------------------------|
-| 1 Donor setup | ✅ | [Donor_Setup_AI_Search_Sequence](Donor_Setup_AI_Search_Sequence.md); `sharingbridge-mobile-app` donor_setup |
+| 1 Vendor preset setup | ✅ | [Donor_Setup_AI_Search_Sequence](Donor_Setup_AI_Search_Sequence.md); `sharingbridge-mobile-app` donor_setup |
 | 2 Trigger | ✅ (UX) | Home hub → **Offer food help** |
 | 3 Consent | 🟡 | Part of guidance step 1; photo consent in copy |
 | 4 Guidance | ✅ | Mobile **Quick guidance** (fixed copy); geo safety service deferred |
@@ -74,7 +74,7 @@ Legend: ✅ shipped (partial or full) · 🟡 in progress / stub · ⬜ planned
 | 7 Secure store | ⬜ | `sharingbridge-photo-service` planned |
 | 8–9 Vendor order + pay | 🟡 | Copy + open preset URL; OAuth/deep-link builder ⬜ |
 | 10 Deliver + photo | ⬜ | Delivery acknowledgement + match planned — [Future_Extensions](Future_Extensions.md) Phase B |
-| 11 Donor confirm | ⬜ | `sharingbridge-notification-service`; donor **mark payment done** — Phase A |
+| 11 Payee confirm | ⬜ | `sharingbridge-notification-service`; payee **mark payment done** — Phase A |
 | 12 History | 🟡 | Mobile + coordinator web initiation history; full order ops — Phase A in [Future_Extensions](Future_Extensions.md) |
 
 ---
@@ -83,7 +83,7 @@ Legend: ✅ shipped (partial or full) · 🟡 in progress / stub · ⬜ planned
 
 **Today (3 mobile steps):** guidance → optional photo + verbal notes + instruction **stub** → copy + open saved vendor link.
 
-**Target (6 stopovers):** per [IMPLEMENTATION_APPROACH — AI interactions](../development/IMPLEMENTATION_APPROACH.md) (section *AI interactions — donor–seeker field slice*).
+**Target (6 stopovers):** per [IMPLEMENTATION_APPROACH — AI interactions](../development/IMPLEMENTATION_APPROACH.md) (section *AI interactions — payee–seeker field slice*).
 
 ```mermaid
 flowchart LR
@@ -114,7 +114,7 @@ High-level message flow for the **external vendor** path (MVP manual copy-paste)
 ```mermaid
 sequenceDiagram
   autonumber
-  participant D as Donor
+  participant D as Payee
   participant M as Mobile app
   participant I as Integration service
   participant P as Photo / AI services
@@ -122,7 +122,7 @@ sequenceDiagram
   participant C as Courier
 
   Note over D,M: Pre-field (step 1)
-  D->>M: Donor setup — save presets
+  D->>M: Vendor preset setup — save presets
   M->>I: suggest-vendors / save preferences
 
   Note over D,C: Field encounter (steps 2–7, target)
@@ -137,7 +137,7 @@ sequenceDiagram
 
   Note over C,M: Delivery (steps 10–11, planned)
   C->>M: Delivery acknowledgement photo
-  M->>P: Match donor vs delivery photo
+  M->>P: Match payee vs delivery photo
   M-->>D: Completion notification
 ```
 
@@ -168,7 +168,7 @@ Exact state names may evolve in `sharingbridge-order-service`; treat this as the
 
 ## Related diagrams
 
-- **Donor setup only:** [Donor_Setup_AI_Search_Sequence.md](Donor_Setup_AI_Search_Sequence.md)
+- **Vendor preset setup only:** [Donor_Setup_AI_Search_Sequence.md](Donor_Setup_AI_Search_Sequence.md)
 - **Deep link + secure beneficiary data:** Technical Architecture §3.5 and Strategy 2 (external vendors)
 - **Build status and backlog:** [AGENT_HANDOFF.md](../development/AGENT_HANDOFF.md), [Future_Extensions.md](./Future_Extensions.md), [IMPLEMENTATION_APPROACH.md](../development/IMPLEMENTATION_APPROACH.md)
 

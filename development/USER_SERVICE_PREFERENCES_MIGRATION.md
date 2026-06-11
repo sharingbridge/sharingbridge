@@ -1,4 +1,4 @@
-# Donor Preferences → User Service
+# Payee Preferences → User Service
 
 Status: **Runtime cutover complete** — integration-service always uses user-service (`USER_SERVICE_BASE_URL`). Presets live in Postgres table `donor_presets`.
 

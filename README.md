@@ -1,43 +1,98 @@
-# SharingBridge - Digital Alms Platform
+# SharingBridge — Community meal coordination platform
 
-> Transforming traditional alms-giving into a modern, accountable, and dignified process
+> Affordable meals with dignity—for anyone who needs food, and for the people who arrange or pay for it
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 ## Overview
 
-SharingBridge is a mobile/web application that enables donors to provide food and essential items to alms seekers through verified third-party delivery services, eliminating cash transactions while maintaining dignity and convenience for both parties.
+SharingBridge is a mobile/web application that helps people **arrange and pay for meals**—for themselves, family, seniors, neighbours, or anyone they meet who needs food—through standard menus and third-party delivery or local vendors. The platform coordinates intent and handover; **payments stay with vendors** (facilitator, not merchant of record).
 
 ## Contributor notes (read this first)
 
-Product-level assumptions are maintained in one place: [SharingBridge_Business_Requirement.md](requirements/SharingBridge_Business_Requirement.md), section **“Operating Constraints & Assumptions.”** Refer to that section as the source of truth.
+Product-level assumptions: [SharingBridge_Business_Requirement.md](requirements/SharingBridge_Business_Requirement.md) § Operating Constraints. **Inclusive language** (payee, beneficiary, meal arrangement — not alms/donation framing): [PRODUCT_ROADMAP.md](development/PRODUCT_ROADMAP.md) § Documentation verbiage.
 
-**🤖 AI-Assisted Development:** This project is being built primarily through AI-assisted coding sessions. Live coordination, decisions, doc map, and next tasks: [AGENT_HANDOFF.md](development/AGENT_HANDOFF.md). Conversations are not archived in the repo — durable knowledge lives in design/, requirements/, development/, and testing/ docs.
+**AI-assisted development:** Code and docs are produced in AI-assisted sessions. **What is shipped today:** [AGENT_HANDOFF.md](development/AGENT_HANDOFF.md). **How to run the stack:** [configuration/README.md](configuration/README.md).
+
+## Documentation guide
+
+New here or unsure which file to open? Use this section. It defines **reading order**, **authority** (which doc wins when they disagree), and pointers — not duplicate content.
+
+### Quick paths by goal
+
+| I want to… | Read in order |
+|------------|----------------|
+| **Run the stack from scratch** | [configuration/README.md](configuration/README.md) → [e2e-deployment-sequence.md](configuration/e2e-deployment-sequence.md) → [database-setup-sequence.md](configuration/database-setup-sequence.md) |
+| **Understand what is shipped today** | [development/AGENT_HANDOFF.md](development/AGENT_HANDOFF.md) |
+| **Product vocabulary, verbiage & marketplace** | [development/PRODUCT_ROADMAP.md](development/PRODUCT_ROADMAP.md) § Documentation verbiage |
+| **Configurator, unified initiation, payee** | [design/Configurator_Role_and_Unified_Initiation.md](design/Configurator_Role_and_Unified_Initiation.md) |
+| **How we build (phases, repos, AI)** | [development/IMPLEMENTATION_APPROACH.md](development/IMPLEMENTATION_APPROACH.md) |
+| **BRD steps 1–12 with diagrams** | [design/SharingBridge_End_to_End_Workflow.md](design/SharingBridge_End_to_End_Workflow.md) |
+| **Order payment / delivery proof** | [design/Future_Extensions.md](design/Future_Extensions.md) § Phase A–B only |
+| **Manual test on device** | [testing/MANUAL_TESTING_GUIDE.md](testing/MANUAL_TESTING_GUIDE.md) |
+
+### Document hierarchy (authority)
+
+When two docs conflict, **higher row wins** for that topic.
+
+| Layer | Document | Owns |
+|-------|----------|------|
+| **1 — Requirements** | [requirements/SharingBridge_Business_Requirement.md](requirements/SharingBridge_Business_Requirement.md) | BRD, operating constraints |
+| **2 — Product** | [development/PRODUCT_ROADMAP.md](development/PRODUCT_ROADMAP.md) | Glossary, **verbiage**, actors, marketplace |
+| **3 — Ops model** | [design/Configurator_Role_and_Unified_Initiation.md](design/Configurator_Role_and_Unified_Initiation.md) | Configurator vs runtime owners; prepaid order intent |
+| **4 — Engineering** | [development/IMPLEMENTATION_APPROACH.md](development/IMPLEMENTATION_APPROACH.md) | Build phases, marketplace **E–I**, AI/photo timelines |
+| **5 — Architecture** | [design/SharingBridge_Technical_Architecture.md](design/SharingBridge_Technical_Architecture.md) | Services, APIs, as-built MVP |
+| **6 — Live status** | [development/AGENT_HANDOFF.md](development/AGENT_HANDOFF.md) | Shipped snapshot, next tasks |
+| **7 — Run & configure** | [configuration/](configuration/) | Deploy, env, auth, SQL sequence |
+| **8 — Supplement** | [design/Future_Extensions.md](design/Future_Extensions.md) | Order-ops Phase A–B only |
+
+Do not create parallel roadmap files. Extend **PRODUCT_ROADMAP.md** (product) or **IMPLEMENTATION_APPROACH.md** (engineering).
+
+### Natural reading order (onboarding)
+
+```text
+1. requirements/SharingBridge_Business_Requirement.md     — business context
+2. development/PRODUCT_ROADMAP.md                       — terms, actors, lanes
+3. design/Configurator_Role_and_Unified_Initiation.md   — configurator, unified flow
+4. development/AGENT_HANDOFF.md                         — shipped today
+5. design/SharingBridge_End_to_End_Workflow.md          — journey diagrams
+6. configuration/e2e-deployment-sequence.md            — deploy
+7. configuration/database-setup-sequence.md             — SQL order
+8. Deep dives as needed (field-handoff, auth, testing)
+```
+
+### Roadmap docs — how they relate
+
+```text
+PRODUCT_ROADMAP.md              ← WHAT (vocabulary, marketplace)
+        ├── Configurator_Role…  ← WHO owns ops vs config
+        └── IMPLEMENTATION…     ← HOW / WHEN (phases E–I, repos)
+
+Future_Extensions.md            ← Order-ops A–B supplement only
+AGENT_HANDOFF.md                ← Shipped vs planned
+```
+
+**Phase naming:** Future_Extensions **A–B** = order payment/delivery proof. IMPLEMENTATION_APPROACH **A–D** = AI/photo workstreams. IMPLEMENTATION_APPROACH **E–I** = marketplace engineering. (Future_Extensions Phase C is deprecated — use PRODUCT_ROADMAP § Marketplace.)
+
+### Configuration folder
+
+| Doc | Purpose |
+|-----|---------|
+| [configuration/README.md](configuration/README.md) | Deploy phases 0–5 |
+| [database-setup-sequence.md](configuration/database-setup-sequence.md) | **SQL run order** |
+| [database.md](configuration/database.md) | Supabase / local Postgres |
+| [e2e-deployment-sequence.md](configuration/e2e-deployment-sequence.md) | OAuth → Render → verify |
+| [environment-variables.md](configuration/environment-variables.md) | All env keys |
+| [field-handoff.md](configuration/field-handoff.md) | Help a seeker / order intent |
 
 ## Key Features
 
-- 🤝 **Dignity-First Approach** - Respectful process for both donors and seekers
+- 🤝 **Dignity-first** — Respectful process for payees, initiators, and people receiving meals
 - 🔒 **Handover guidance** - Fixed in-app copy for consent and surroundings (BRD step 4); geo safety service deferred
 - 📱 **Multi-Platform** - iOS, Android, and Web applications
 - 🛡️ **Facilitator-only money** - Payments and authoritative financial records stay with vendors/providers; see BRD *Operating Constraints*
 - 📸 **Photo Verification** - Transparent delivery confirmation
 - 🌐 **Multi-Vendor Support** - Integration with Swiggy, Zomato, Uber Eats
-
-## Documentation
-
-- [Business Requirements](requirements/SharingBridge_Business_Requirement.md) - Complete business case and benefits
-- [End-to-End Workflow (diagrams)](design/SharingBridge_End_to_End_Workflow.md) - Full journey steps 1–12 with Mermaid flows; shipped vs planned
-- [Future Extensions](design/Future_Extensions.md) - Order payment/delivery tracking, delivery proof, locality demand & vendor bidding (roadmap)
-- [Technical Architecture](design/SharingBridge_Technical_Architecture.md) - Target design + **as-built MVP** (Experience API, stack truth)
-- [AI setup handhold](configuration/ai-setup-handhold.md) - Groq, Gemini, Nominatim wiring step-by-step
-- [API Contracts](design/contracts/donor_setup_suggest_vendors.openapi.yaml) - Shared request/response contracts and examples
-- [Implementation Approach](development/IMPLEMENTATION_APPROACH.md) - Development strategy and free-tier options
-- [Configuration](./configuration/README.md) - Render deploy, auth, mobile client, field handoff
-- [AI Platform Integration](development/AI_PLATFORM_INTEGRATION.md) - LangChain/orchestration hosting, model APIs, and bridges from mobile/backend to AI modules (planned)
-- [Development docs](development/README.md) - Handoff, extensions, implementation approach
-- [Agent Handoff](development/AGENT_HANDOFF.md) - Live coordination doc and next recommended tasks
-- [Manual Testing Guide](testing/MANUAL_TESTING_GUIDE.md) - How to verify the modules shipped so far
-- [Call for Contributors](development/CALL_FOR_CONTRIBUTORS.md) - How to get involved (technical & non-technical)
 
 ## Repository Structure
 
@@ -75,13 +130,13 @@ Each repository evolves independently. Coordination happens here through GitHub 
 
 ## Problem Statement
 
-When meeting people seeking alms, donors face a moral dilemma: offering cash may support unintended uses rather than basic needs. SharingBridge ensures charitable intent is fulfilled by providing food and essentials through verified delivery services.
+Cash is ambiguous; **meals are concrete**. SharingBridge helps payees and initiators turn “this person needs food” (or “my parent needs lunch”) into a **tracked meal arrangement**—standard items, vendor payment, optional neighbourhood coordination—without the platform holding money.
 
 ## Solution
 
 A facilitator platform that:
-1. Connects donors with alms seekers
-2. Shows handover guidance so the donor can judge consent and surroundings (mobile; no geo safety score in MVP)
+1. Connects **payees and demand initiators** with **people who need meals** (beneficiaries)
+2. Shows handover guidance so the supporter can judge consent and surroundings (mobile; no geo safety score in MVP)
 3. Creates orders through established food delivery platforms (or future direct-vendor flows)
 4. Redirects payment to vendor or licensed provider systems (SharingBridge does not own financial tracking responsibility)
 5. Confirms delivery with photo verification
@@ -96,7 +151,7 @@ A facilitator platform that:
 
 ### Backend (MVP)
 - **Experience API:** Node.js 20 — `sharingbridge-integration-service` (shared BFF for mobile + web)
-- **System API:** Node.js 20 — `sharingbridge-user-service` (JWT, donor presets)
+- **System API:** Node.js 20 — `sharingbridge-user-service` (JWT, vendor presets / `donor_presets` table)
 - **Process APIs:** FastAPI — `sharingbridge-ai-orchestration`, `sharingbridge-photo-service`
 - **Database:** PostgreSQL (Supabase)
 
@@ -137,7 +192,10 @@ Vite/React web ──┘           │
 
 ## Getting Started
 
-> Coming soon - Development setup instructions
+1. Read [Documentation guide](#documentation-guide) above.
+2. Follow [configuration/e2e-deployment-sequence.md](configuration/e2e-deployment-sequence.md) (Phases 0–5).
+3. Run SQL in order: [configuration/database-setup-sequence.md](configuration/database-setup-sequence.md).
+4. Verify: [testing/MANUAL_TESTING_GUIDE.md](testing/MANUAL_TESTING_GUIDE.md).
 
 ## Contributing
 

@@ -151,7 +151,7 @@ Invoke-RestMethod "$PHO_URL/health"
 # Authenticated smoke: mint JWT locally with the same AUTH_TOKEN_SECRET as Render user-service
 cd path\to\sharingbridge-user-service
 $env:AUTH_TOKEN_SECRET = "<same secret as Render user-service>"
-$token = node scripts/mint-dev-jwt.mjs demo-user donor
+$token = node scripts/mint-dev-jwt.mjs demo-user payee
 $h = @{ Authorization = "Bearer $token" }
 
 Invoke-RestMethod -Method POST -Uri "$INT_URL/v1/donor-setup/suggest-vendors" `

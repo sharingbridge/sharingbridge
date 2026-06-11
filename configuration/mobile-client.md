@@ -6,7 +6,7 @@ Repository: `sharingbridge-mobile-app` (Flutter).
 
 | Use | URL |
 |-----|-----|
-| **All donor APIs** (setup, suggest-vendors, instruction-pack, presets, order-intents) | **integration-service** only |
+| **All payee APIs** (setup, suggest-vendors, instruction-pack, presets, order-intents) | **integration-service** only |
 | **Sign in** | **Google** in app → `POST /v1/auth/google` on user-service; optional dev `--dart-define=AUTH_TOKEN` (locally minted JWT) |
 
 Mobile must **not** call ai-orchestration directly.
@@ -54,7 +54,7 @@ Then set all three URLs to `http://127.0.0.1:8080`, `:8081`, `:8092`.
 
 Full walkthrough: [MANUAL_TESTING_GUIDE.md](../testing/MANUAL_TESTING_GUIDE.md) **§3-host**.
 
-**Neighbourhood dashboard (web)** — home screen tile **Neighbourhood dashboard (web)** opens the donor web app in the browser. **Required** at build time:
+**Neighbourhood dashboard (web)** — home screen tile **Neighbourhood dashboard (web)** opens the payee web app in the browser. **Required** at build time:
 
 ```text
 --dart-define=WEB_DASHBOARD_URL=<URL from table above>
@@ -84,7 +84,7 @@ flutter run -d emulator-5554 `
   --dart-define=WEB_DASHBOARD_URL=http://10.0.2.2:5173
 ```
 
-Reference photos (optional on **Help a seeker**) upload to **photo-service** when the donor taps **Get AI delivery instructions**. See [photo-service-local.md](./photo-service-local.md).
+Reference photos (optional on **Help a seeker**) upload to **photo-service** when the payee taps **Get AI delivery instructions**. See [photo-service-local.md](./photo-service-local.md).
 
 **Physical Android phone** (replace `192.168.1.3` with your `ipconfig` IPv4; **same Wi‑Fi as PC**):
 
@@ -106,7 +106,7 @@ flutter run -d windows `
   --dart-define=API_BASE_URL=http://localhost:8080
 ```
 
-Tap **Continue with Google** on launch. Mobile mints JWT `role: donor`; users with both `donor` and `coordinator` in `user_roles` may use web and mobile with the same Gmail.
+Tap **Continue with Google** on launch. Mobile mints JWT `role: payee`; users with both `payee` and `coordinator` in `user_roles` may use web and mobile with the same Gmail.
 
 ## Dev token fallback (no Google)
 
@@ -114,7 +114,7 @@ Mint on the PC with the same `AUTH_TOKEN_SECRET` as your local user-service `.en
 
 ```powershell
 cd D:\kannan\sharingbridge\sharingbridge-user-service
-$token = node scripts/mint-dev-jwt.mjs demo-user donor
+$token = node scripts/mint-dev-jwt.mjs demo-user payee
 cd ..\sharingbridge-mobile-app
 flutter run -d emulator-5554 `
   --dart-define=USER_SERVICE_BASE_URL=http://10.0.2.2:8081 `
@@ -123,7 +123,7 @@ flutter run -d emulator-5554 `
   --dart-define=AUTH_TOKEN=$token
 ```
 
-**Web dashboard (coordinator):** [web-client.md](./web-client.md) lists all donors’ order intents when `VITE_API_BASE_URL` matches mobile `API_BASE_URL` (same integration host).
+**Web dashboard (coordinator):** [web-client.md](./web-client.md) lists all payees’ order intents when `VITE_API_BASE_URL` matches mobile `API_BASE_URL` (same integration host).
 
 ## Navigation (Home)
 

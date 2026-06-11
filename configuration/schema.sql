@@ -1,5 +1,6 @@
 -- SharingBridge MVP schema — canonical DDL (Supabase SQL Editor, local Postgres, Docker).
--- Documented in database.md § Tables.
+-- Run order: configuration/database-setup-sequence.md (greenfield step 1).
+-- Deep dive: database.md § Tables. Marketplace: M1–M3 in setup sequence.
 
 CREATE TABLE users (
   id           TEXT PRIMARY KEY,
@@ -14,7 +15,7 @@ CREATE TABLE users (
 
 CREATE TABLE user_roles (
   user_id      TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-  role         TEXT NOT NULL CHECK (role IN ('donor', 'coordinator')),
+  role         TEXT NOT NULL CHECK (role IN ('donor', 'initiator', 'coordinator')),
   PRIMARY KEY (user_id, role)
 );
 

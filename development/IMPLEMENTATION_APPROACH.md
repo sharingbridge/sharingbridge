@@ -4,6 +4,11 @@
 **Date:** January 7, 2026  
 **Status:** Dual-Track Implementation Roadmap
 
+> **Doc map:** [README.md § Documentation guide](../README.md#documentation-guide) — start here for reading order.  
+> **Product truth:** [PRODUCT_ROADMAP.md](./PRODUCT_ROADMAP.md) (vocabulary, marketplace).  
+> **This file:** engineering strategy, free-tier stack, build phases — **not** duplicate product glossary.  
+> **SQL order:** [database-setup-sequence.md](../configuration/database-setup-sequence.md).
+
 ---
 
 ## Executive Summary
@@ -51,7 +56,7 @@ Develop and test all SharingBridge components using free-tier platforms with nea
 | **Version Control** | GitHub | Unlimited private repos | Keep GitHub |
 | **API Gateway** | Self-hosted Kong (Docker) | Manual setup | Keep or move to AWS |
 
-**How this relates to donor-setup code today:** The table and diagrams below assume backend services eventually use **Supabase Postgres** (or equivalent) for durable data. The **shipped donor-setup path** (`sharingbridge-integration-service` + `sharingbridge-user-service`) currently persists preferences and donor profile/presets in **JSON files** so the team can ship contracts and integration without standing up a database first. Treat that as an intentional **staging step** (mini MVP); migrate user-scoped state to Postgres when you need deploy durability, replicas, or alignment with this doc’s full free-tier stack. See `development/AGENT_HANDOFF.md` section **MVP staging (mini vs matured)**.
+**How this relates to donor-setup code today:** The table and diagrams below assume backend services eventually use **Supabase Postgres** (or equivalent) for durable data. The **shipped donor-setup path** (`sharingbridge-integration-service` + `sharingbridge-user-service`) currently persists preferences and payee profile/presets in **JSON files** so the team can ship contracts and integration without standing up a database first. Treat that as an intentional **staging step** (mini MVP); migrate user-scoped state to Postgres when you need deploy durability, replicas, or alignment with this doc’s full free-tier stack. See `development/AGENT_HANDOFF.md` section **MVP staging (mini vs matured)**.
 
 ---
 
@@ -65,7 +70,7 @@ cd sharingbridge
 # 2. Set up Supabase database
 # - Sign up at supabase.com (no credit card required)
 # - Create project: sharingbridge-dev
-# - Run schema from ../design/SharingBridge_Technical_Architecture.md
+# - Run SQL in order: configuration/database-setup-sequence.md
 
 # 3. Configure environment variables
 cp .env.example .env
@@ -108,8 +113,8 @@ The backend/infrastructure phases below run in parallel with explicit frontend t
 - Permission strategy (camera, location, notifications) with graceful fallback paths
 
 **Weeks 3-6 (Core Flow):**
-- Donor setup screens with AI-assisted local vendor/menu suggestions (fixed prompt + structured JSON, donor confirm/edit before save)
-- Donor-seeker interaction flow per **AI interactions — donor–seeker field slice** (below): locality safety gate, reference photo + geo capture, instruction-pack from API, copy + preset deep links
+- Vendor preset setup screens with AI-assisted local vendor/menu suggestions (fixed prompt + structured JSON, payee confirm/edit before save)
+- Payee-seeker interaction flow per **AI interactions — payee–seeker field slice** (below): locality safety gate, reference photo + geo capture, instruction-pack from API, copy + preset deep links
 - External payment/deep-link redirect flow and return-state recovery
 
 **Weeks 7-10 (Reliability):**
@@ -122,40 +127,40 @@ The backend/infrastructure phases below run in parallel with explicit frontend t
 - Beta distribution (TestFlight / internal Android track)
 - MVP release checklist and rollout playbook
 
-### AI interactions — donor–seeker field slice (planned)
+### AI interactions — payee–seeker field slice (planned)
 
-Maps BRD steps **3–11** to AI-related capabilities. **Shipped today (mobile):** **Quick guidance** (fixed copy, BRD step 4) → optional reference photo + verbal notes → instruction-pack API (integration → ai-orchestration; local stub fallback) → copy + open saved preset **http/https** URLs. **Not yet wired:** cloud photo upload, delivery acknowledgement, donor↔delivery photo match. **Deferred:** rule-based locality safety API (`sharingbridge-location-safety` archived — donor judgment only).
+Maps BRD steps **3–11** to AI-related capabilities. **Shipped today (mobile):** **Quick guidance** (fixed copy, BRD step 4) → optional reference photo + verbal notes → instruction-pack API (integration → ai-orchestration; local stub fallback) → copy + open saved preset **http/https** URLs. **Not yet wired:** cloud photo upload, delivery acknowledgement, payee↔delivery photo match. **Deferred:** rule-based locality safety API (`sharingbridge-location-safety` archived — payee judgment only).
 
 **Service ownership**
 
 | Capability | Primary repo | Notes |
 |------------|--------------|--------|
 | Handover guidance (BRD step 4) | `sharingbridge-mobile-app` | Fixed in-app copy; **no** geo safety score in MVP |
-| Reference + delivery photos, embeddings, match | `sharingbridge-photo-service` | Upload, face detection, donor↔delivery verification |
+| Reference + delivery photos, embeddings, match | `sharingbridge-photo-service` | Upload, face detection, payee↔delivery verification |
 | Instruction-pack assembly + secure links | `sharingbridge-integration-service` | Owns final vendor-facing text and TTL links |
 | Order intent, guidance acknowledged, acknowledgement | `sharingbridge-order-service` | Persists interaction context and timeline |
 | Field UX | `sharingbridge-mobile-app` | Stopovers, permissions, copy/deep-link handoff |
 
 **Target mobile stopover sequence (Offer food help)**
 
-1. **Guidance** — Fixed copy: consent, surroundings, visibility, photo policy, donor judgment (shipped step 1).
+1. **Guidance** — Fixed copy: consent, surroundings, visibility, photo policy, payee judgment (shipped step 1).
 2. **Reference capture** — Camera/gallery → upload (planned) → store `seeker_photo_url`, photo-capture coordinates, and human-readable “photo taken at” label.
 3. **Instruction generation** — Call integration instruction-pack API (shipped; stub fallback when API down).
 4. **Vendor handoff** — Review pack → copy → enable **Open …** on saved preset deep links (shipped step 3).
-5. **Delivery acknowledgement** (delivery role / secure link, post-order) — Delivery photo in-app or gallery → mark completed; triggers match job and donor notification.
+5. **Delivery acknowledgement** (delivery role / secure link, post-order) — Delivery photo in-app or gallery → mark completed; triggers match job and payee notification.
 
 **1) Handover guidance (BRD step 4 — shipped)**
 
 - **Implementation:** `sharingbridge-mobile-app` — **Offer food help** step 1 **Quick guidance** (bullets + Continue).
-- **Product:** Informational only; donor always chooses whether to continue. No `safety_score`, no pass/fail gate.
+- **Product:** Informational only; payee always chooses whether to continue. No `safety_score`, no pass/fail gate.
 - **Deferred:** `sharingbridge-location-safety` rule-based scoring (repo archived; see Technical Architecture §3.3 as reference only).
 
 **2) Capturing deep links**
 
-- **Pre-field (shipped):** Donor Setup saves preset `order_url` values (http/https) per vendor/restaurant.
+- **Pre-field (shipped):** Vendor preset setup saves preset `order_url` values (http/https) per vendor/restaurant.
 - **Field use:** Offer food help loads presets via `GET …/preferences`; after copy, `launchUrl` opens the chosen preset.
 - **Growth:** Integration-service builds vendor-specific deep links with embedded secure instruction reference (`ExternalVendorService` / architecture §3.5); vendor OAuth/deep-link skeleton not shipped — see [Future_Extensions.md](../design/Future_Extensions.md).
-- **Acceptance:** Donor completes vendor payment outside SharingBridge; no in-app checkout.
+- **Acceptance:** Payee completes vendor payment outside SharingBridge; no in-app checkout.
 
 **3) Delivery instruction pack (AI-generated)**
 
@@ -163,37 +168,37 @@ Integration-service assembles a structured payload and a single **copy-paste blo
 
 | Field | Source |
 |-------|--------|
-| `beneficiary_description` | AI from photo + donor verbal notes (dignity-filtered) |
+| `beneficiary_description` | AI from photo + payee verbal notes (dignity-filtered) |
 | `faceprint_detail` | Redacted descriptor or secure reference — **not** raw embedding in vendor-visible text; legal/privacy review before wording |
-| `photo_capture_location_label` | Reverse-geocode or donor-confirmed label at capture time |
+| `photo_capture_location_label` | Reverse-geocode or payee-confirmed label at capture time |
 | `geo_coordinates` | Lat/lng at photo capture |
 | `secure_photo_url` | Time-limited cloud URL (`sharingbridge-photo-service` + TTL per secure-link policy) |
-| `donor_display_name`, `seeker_display_name` | Donor-entered, AI-sensitized where needed |
+| `payee_display_name`, `seeker_display_name` | Payee-entered, AI-sensitized where needed |
 | `delivery_instructions` | Full preformatted narrative (template below) |
 | `order_template` | Lines from saved presets (restaurant, app, menu summary) |
 
 **Preformatted narrative template (policy-owned; integration-service renders):**
 
 ```
-This order is placed by a donor for a food seeker via SharingBridge (<website_url>).
+This order is placed by a payee for a food seeker via SharingBridge (<website_url>).
 
 Reference photo (time-limited): <secure_photo_url>
 Seeker identification detail: <faceprint_detail_or_redacted_descriptor>
 Geolocation: <lat>, <lng> (<photo_capture_location_label>)
 
-Donor notes (AI-sensitized): <manual_instruction>
+Payee notes (AI-sensitized): <manual_instruction>
 
-Delivery instruction: Please proceed to <geo_coordinates>. Identify the seeker using the notes above and, where permitted, the reference photo at the secure link. Tell the seeker that <donor_name> placed this order for <seeker_name> and hand over the package. Request consent before taking a delivery photo. Complete acknowledgement in SharingBridge (in-app or gallery upload) and mark delivery as completed.
+Delivery instruction: Please proceed to <geo_coordinates>. Identify the seeker using the notes above and, where permitted, the reference photo at the secure link. Tell the seeker that <payee_name> placed this order for <seeker_name> and hand over the package. Request consent before taking a delivery photo. Complete acknowledgement in SharingBridge (in-app or gallery upload) and mark delivery as completed.
 ```
 
 **API (proposed):** `POST /v1/donor-seeker/instruction-pack` — inputs: order intent id, photo artifact id, coordinates, verbal notes, preset ids; outputs: fields above + `delivery_instructions` string. Mobile replaces stub when contract is stable.
 
-**4) Match donor reference photo and delivery acknowledgement photo**
+**4) Match payee reference photo and delivery acknowledgement photo**
 
 - **Distinct from** beneficiary **assistance history** matching (informational, non-blocking, ~2h window) in architecture §3.3.
-- **New pipeline:** On delivery acknowledgement upload, `sharingbridge-photo-service` compares embedding from donor reference vs delivery photo; persist `match_score`, `match_passed`, optional `needs_review` on order timeline.
+- **New pipeline:** On delivery acknowledgement upload, `sharingbridge-photo-service` compares embedding from payee reference vs delivery photo; persist `match_score`, `match_passed`, optional `needs_review` on order timeline.
 - **APIs:** `POST /v1/photos/upload` (typed: `seeker_reference` | `delivery_acknowledgement`); `POST /v1/orders/:id/verify-delivery-match` or async job via order events.
-- **Acceptance:** Donor notification (step 11) includes completion status; web ops can see match outcome without exposing raw biometric payloads in notifications.
+- **Acceptance:** Payee notification (step 11) includes completion status; web ops can see match outcome without exposing raw biometric payloads in notifications.
 
 **Phased delivery plan**
 
@@ -212,13 +217,13 @@ Delivery instruction: Please proceed to <geo_coordinates>. Identify the seeker u
 | **F — Beneficiary + initiator** | Beneficiary profile (no login); demand initiator role; recurring plans | user-service, integration-service, mobile, web |
 | **G — Fulfilment bids** | Prep capacity commits; self-pickup vs delivery choice | integration-service, web (fulfiller UI) |
 | **H — Transport bids** | Route/capacity bids; geo match vendor → beneficiaries | integration-service, web |
-| **I — Allocation** | Window aggregation; donor notify; fulfiller → transporter pay instructions | integration-service, notification-service |
+| **I — Allocation** | Window aggregation; payee notify; fulfiller → transporter pay instructions | integration-service, notification-service |
 
 **Privacy checkpoints (before production copy in vendor apps)**
 
 - Consent required before reference photo; offer verbal-only path.
 - Minimize biometric data in paste text; prefer secure link for photo access.
-- TTL: secure links active until delivery completion + 30 minutes (architecture default); **Cloudinary / donor reference photos:** target **1–2 hour** distribution window for neighbourhood dashboards (see [Future_Extensions.md](../design/Future_Extensions.md) Phase A.2 donor photo rule).
+- TTL: secure links active until delivery completion + 30 minutes (architecture default); **Cloudinary / payee reference photos:** target **1–2 hour** distribution window for neighbourhood dashboards (see [Future_Extensions.md](../design/Future_Extensions.md) Phase A.2 payee photo rule).
 - Align “faceprint” language with counsel; store embeddings server-side only (not raw photos in Postgres when regulatory mode applies).
 
 Repo-level checklists: [AI_PLATFORM_INTEGRATION.md](./AI_PLATFORM_INTEGRATION.md); **product vocabulary and marketplace model:** [PRODUCT_ROADMAP.md](./PRODUCT_ROADMAP.md); order-ops backlog detail: [Future_Extensions.md](../design/Future_Extensions.md).
@@ -244,7 +249,7 @@ Repo-level checklists: [AI_PLATFORM_INTEGRATION.md](./AI_PLATFORM_INTEGRATION.md
 
 **Weeks 11-12 (Validation):**
 - Browser compatibility and responsive behavior checks
-- Accessibility pass for critical donor/admin actions
+- Accessibility pass for critical payee/admin actions
 - Production deployment checklist and runbook
 
 ## Phase 1: Foundation (Months 1-2) - Free Tier
@@ -456,7 +461,7 @@ await redis.publish('order-created', JSON.stringify({ orderId: '123' }));
 // Option 2: Redis Streams (replay + consumer groups)
 await redis.xadd('events:order-created', '*', {
   orderId: '123',
-  donorId: 'donor456'
+  payeeId: 'payee456'
 });
 ```
 
@@ -486,9 +491,9 @@ const resend = new Resend('re_your_api_key');
 
 await resend.emails.send({
   from: 'sharingbridge@yourdomain.com',
-  to: 'donor@example.com',
+  to: 'payee@example.com',
   subject: 'Order Confirmation',
-  html: '<p>Your donation was successful!</p>'
+  html: '<p>Your payment was successful!</p>'
 });
 ```
 
@@ -521,7 +526,7 @@ admin.initializeApp({
 await admin.messaging().send({
   notification: {
     title: 'Order Confirmed',
-    body: 'Your food donation is being prepared'
+    body: 'Your meal order is being prepared'
   },
   token: userDeviceToken
 });
@@ -650,7 +655,7 @@ class ExternalVendorService {
       secureLink
     );
     
-    // 3. Return link for donor to complete order with vendor
+    // 3. Return link for payee to complete order with vendor
     return { paymentLink, vendor: 'swiggy', secureLink };
   }
   
@@ -756,7 +761,7 @@ docker-compose up
 **Testing Checklist:**
 ```markdown
 ### Functionality Testing
-- [ ] End-to-end order flow (donor → delivery → seeker)
+- [ ] End-to-end order flow (payee → delivery → seeker)
 - [ ] Beneficiary assistance history working with test images
 - [ ] Safety scoring calculations accurate
 - [ ] Push notifications received on iOS/Android
@@ -1930,8 +1935,8 @@ ORDER BY mean_exec_time DESC
 LIMIT 20;
 
 -- Add missing indexes
-CREATE INDEX idx_orders_donor_created 
-ON orders(donor_id, created_at DESC);
+CREATE INDEX idx_orders_payee_created 
+ON orders(payee_id, created_at DESC);
 
 -- Materialized view for hot data
 CREATE MATERIALIZED VIEW recent_orders AS

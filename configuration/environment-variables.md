@@ -15,7 +15,7 @@ Tables are sorted **A–Z by variable name** to match Render’s environment UI.
 
 **Must match across services:** `DATABASE_URL` (Postgres), `AUTH_TOKEN_SECRET` (+ issuer/audience), `WEB_CORS_ORIGINS` (user-service **and** integration-service, same string), integration `API_BASE_URL` = web `VITE_API_BASE_URL` = mobile `API_BASE_URL`, web static site URL = mobile `WEB_DASHBOARD_URL`.
 
-**Donor feed window and radius:** set only on **integration-service** (`DONOR_NEIGHBOURHOOD_WINDOW_HOURS`, `DONOR_NEIGHBOURHOOD_RADIUS_M` in **metres**). Web and mobile read `feed.radius_m` / `neighbourhood.radius_m` from the list API. Per-row distance on the dashboard is **`distance_m`** (metres). See [PRODUCT_ROADMAP.md](../development/PRODUCT_ROADMAP.md).
+**Payee feed window and radius:** set only on **integration-service** (`DONOR_NEIGHBOURHOOD_WINDOW_HOURS`, `DONOR_NEIGHBOURHOOD_RADIUS_M` in **metres**). Web and mobile read `feed.radius_m` / `neighbourhood.radius_m` from the list API. Per-row distance on the dashboard is **`distance_m`** (metres). See [PRODUCT_ROADMAP.md](../development/PRODUCT_ROADMAP.md).
 
 Render deploy details: [backend-render.md](./backend-render.md). Auth secrets: [authentication.md](./authentication.md). DB: [database.md](./database.md).
 
@@ -96,11 +96,11 @@ Set the **same value** on all four Render Web Services if you want consistent ve
 | `DONOR_LOCALITY_BUCKET_KM` | `5` | `5` — demand-board `locality_key` cell size in **km** (~5 km squares; latitude-adjusted). Takes precedence over grid decimals. |
 | `DONOR_LOCALITY_GRID_DECIMALS` | `2` | `2` — legacy fallback when `DONOR_LOCALITY_BUCKET_KM` is unset (1–4 decimal degrees ≈ 11 km / 1 km / …) |
 | `DONOR_NEIGHBOURHOOD_RADIUS_M` | `5000` | `5000` (`near_lat` / `near_lng` filter radius in **metres**; any positive value, capped at 50000 server-side) |
-| `DONOR_NEIGHBOURHOOD_WINDOW_HOURS` | `2` | `2` (donor list `since`, photo redaction; 1–72) |
+| `DONOR_NEIGHBOURHOOD_WINDOW_HOURS` | `2` | `2` (payee list `since`, photo redaction; 1–72) |
 | `LOG_LEVEL` | `warn` | `error`, `warn`, `info`, or `debug` — see [LOG_LEVEL](#log_level-all-backend-apis) |
 | `ORDER_INTENT_LIST_MAX_ROWS` | `100` | `100` (max rows per dashboard list) |
 | `PORT` | `8080` | injected by Render — do not set |
-| `USER_SERVICE_BASE_URL` | `http://localhost:8081` (required) | `https://<user-host>.onrender.com` — donor presets in Postgres |
+| `USER_SERVICE_BASE_URL` | `http://localhost:8081` (required) | `https://<user-host>.onrender.com` — payee presets in Postgres |
 | `WEB_CORS_ORIGINS` | **same string** as user-service | same |
 
 ---
@@ -175,7 +175,7 @@ No `.env` file — pass at **`flutter run`** / release build (compile time). Re-
 | `USER_SERVICE_BASE_URL` | `http://10.0.2.2:8081` or `http://<PC-LAN-IP>:8081` | `https://<user-host>.onrender.com` |
 | `WEB_DASHBOARD_URL` | `http://10.0.2.2:5173` (emulator) or `http://<PC-LAN-IP>:5173` (phone) | `https://<static-site>.onrender.com` — **required** for home-screen **Neighbourhood dashboard (web)** link |
 
-`WEB_DASHBOARD_URL` is the deployed **sharingbridge-web-app** origin (same URL you open in the browser for the donor/coordinator dashboard). Without it, the home tile is visible but disabled. See [mobile-client.md](./mobile-client.md).
+`WEB_DASHBOARD_URL` is the deployed **sharingbridge-web-app** origin (same URL you open in the browser for the payee/coordinator dashboard). Without it, the home tile is visible but disabled. See [mobile-client.md](./mobile-client.md).
 
 Emulator: use `10.0.2.2` instead of `localhost`. Physical phone: PC Wi‑Fi IPv4. See [mobile-client.md](./mobile-client.md).
 
@@ -185,10 +185,10 @@ Emulator: use `10.0.2.2` instead of `localhost`. Physical phone: PC Wi‑Fi IPv4
 
 | JWT `role` | Web UI | integration `GET /v1/donor-seeker/order-intents` |
 |------------|--------|--------------------------------------------------|
-| `coordinator` | Full dashboard — donor **email + id** per intent (from Postgres `users`), all reference photos; optional list filters `since`, `near_lat`/`near_lng`, `locality_key` (no default time cap) | `dashboard: "coordinator"` — includes `donor_email` when known |
-| `donor` | Limited dashboard — list capped to **`since=Nh`** (`DONOR_NEIGHBOURHOOD_WINDOW_HOURS`, default 2); optional `near_lat`/`near_lng`; no other donors’ ids or emails; photos only within that window | `dashboard: "limited"` — response includes `since`, `feed`; no `donor_email`; photo URLs redacted outside window |
+| `coordinator` | Full dashboard — payee **email + id** per intent (from Postgres `users`), all reference photos; optional list filters `since`, `near_lat`/`near_lng`, `locality_key` (no default time cap) | `dashboard: "coordinator"` — includes `donor_email` when known |
+| `payee` | Limited dashboard — list capped to **`since=Nh`** (`DONOR_NEIGHBOURHOOD_WINDOW_HOURS`, default 2); optional `near_lat`/`near_lng`; no other payees’ ids or emails; photos only within that window | `dashboard: "limited"` — response includes `since`, `feed`; no `donor_email`; photo URLs redacted outside window |
 
-Google sign-in on web works for any account with `donor` and/or `coordinator` in `user_roles`. Users with both roles get `coordinator` on web and `donor` on mobile.
+Google sign-in on web works for any account with `payee` and/or `coordinator` in `user_roles`. Users with both roles get `coordinator` on web and `payee` on mobile.
 
 ## Local stack defaults (copy-paste)
 

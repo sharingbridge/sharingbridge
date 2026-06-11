@@ -10,18 +10,18 @@ Repository: `sharingbridge-web-app` (Vite + React).
 
 | `role` | UI |
 |--------|-----|
-| `coordinator` | Full dashboard — **donor email + user id** on each intent (list, detail, group-by-donor), all reference photos |
-| `donor` | Limited dashboard — window and radius from **integration-service env** (returned in API `feed`); browser sends `near_lat` / `near_lng` when allowed; no other donors’ emails or ids; **seeker reference thumbnails in neighbourhood feed** within the server window ([PRODUCT_ROADMAP.md](../development/PRODUCT_ROADMAP.md)) |
+| `coordinator` | Full dashboard — **payee email + user id** on each intent (list, detail, group-by-payee), all reference photos |
+| `payee` | Limited dashboard — window and radius from **integration-service env** (returned in API `feed`); browser sends `near_lat` / `near_lng` when allowed; no other payees’ emails or ids; **seeker reference thumbnails in neighbourhood feed** within the server window ([PRODUCT_ROADMAP.md](../development/PRODUCT_ROADMAP.md)) |
 
 ## How sign-in works
 
 1. User opens the site → **Sign in** screen.
 2. **Sign in with Google** (GIS) → browser obtains a Google `id_token`.
 3. App calls user-service `POST /v1/auth/google` with `{ "id_token", "client_type": "web" }`.
-4. user-service verifies the token, loads **`user_roles`**, mints JWT `role: coordinator` when that role exists, otherwise `donor`.
+4. user-service verifies the token, loads **`user_roles`**, mints JWT `role: coordinator` when that role exists, otherwise `payee`.
 5. JWT is stored in **sessionStorage** until **Sign out** or expiry (~1 hour).
 6. Coordinators: **email** stored in **localStorage** for **Use a different Google account** on later visits.
-7. Dashboard calls `GET /v1/donor-seeker/order-intents` with `Authorization: Bearer <jwt>`. **Donors** may add `near_lat` / `near_lng`; server applies `DONOR_NEIGHBOURHOOD_*` and returns `feed` + `since` for UI copy. **Coordinators** get the full list by default; the same optional query params (`since`, `near_lat`/`near_lng`, `locality_key`) filter via PostGIS in integration-service ([database.md](./database.md)). Integration redacts fields for `donor` JWTs.
+7. Dashboard calls `GET /v1/donor-seeker/order-intents` with `Authorization: Bearer <jwt>`. **Payees** may add `near_lat` / `near_lng`; server applies `DONOR_NEIGHBOURHOOD_*` and returns `feed` + `since` for UI copy. **Coordinators** get the full list by default; the same optional query params (`since`, `near_lat`/`near_lng`, `locality_key`) filter via PostGIS in integration-service ([database.md](./database.md)). Integration redacts fields for `payee` JWTs.
 8. Toolbar **List** | **Map** (`VITE_GOOGLE_MAPS_API_KEY`) | **Demand** — Demand tab loads `GET /v1/demand/board` (`seeker_demands`, `demand_windows`). Requires `seeker_demands` table ([schema-seeker-demands-migration.sql](./schema-seeker-demands-migration.sql)).
 9. On **401** or expiry → sign in again.
 
@@ -31,19 +31,19 @@ Repository: `sharingbridge-web-app` (Vite + React).
 
 | Mode | Who | Behavior |
 |------|-----|----------|
-| **By donor** | Coordinator | Sections per `user_id` (coordinator default) |
-| **By day** | Coordinator + donor | Sections per calendar day (newest first) |
-| **By area** | Coordinator + donor | Sections per `locality_key` / `location_label`; rows without location under **No location on record** |
+| **By initiator** | Coordinator | Sections per `user_id` (coordinator default) |
+| **By day** | Coordinator + payee | Sections per calendar day (newest first) |
+| **By area** | Coordinator + payee | Sections per `locality_key` / `location_label`; rows without location under **No location on record** |
 
 ### List columns (planned — [PRODUCT_ROADMAP.md](../development/PRODUCT_ROADMAP.md))
 
 | Column | Field | Notes |
 |--------|-------|--------|
-| **Order intent taken** | `created_at` | When the donor registered the intent — not a vendor order. Optional elapsed from `created_at`. |
+| **Order intent taken** | `created_at` | When the payee registered the intent — not a vendor order. Optional elapsed from `created_at`. |
 | **Delivered at** | `delivered_at` | Always shown; **—** when null until delivery-partner flow sets it. |
 | **Distance (m)** | `distance_m` | Metres from browser `near_lat` / `near_lng`; list sorted **nearest first** when distance is present. |
 
-**By area** always reads a **fresh** browser position (`maximumAge: 0`, no cached coords), reloads the list with `near_lat` / `near_lng`, then shows **Distance (m)** sorted nearest first. If location is denied or unavailable, a dialog appears and the view stays on the previous grouping (**By day** or **By donor**). **Refresh** in **By area** mode repeats the same fresh-location fetch. **Home** clears the selected row.
+**By area** always reads a **fresh** browser position (`maximumAge: 0`, no cached coords), reloads the list with `near_lat` / `near_lng`, then shows **Distance (m)** sorted nearest first. If location is denied or unavailable, a dialog appears and the view stays on the previous grouping (**By day** or **By initiator**). **Refresh** in **By area** mode repeats the same fresh-location fetch. **Home** clears the selected row.
 
 ### Sign-in screen (first visit vs returning)
 
@@ -94,9 +94,9 @@ npm run dev
 1. Set `WEB_CORS_ORIGINS=http://localhost:5173` on **user-service** and **integration-service**.
 2. Follow [google-auth-setup.md](./google-auth-setup.md) for Google client IDs and [coordinator-seed.sql](./coordinator-seed.sql).
 3. Open http://localhost:5173 → **Sign in with Google** (accounts with `coordinator` in `user_roles` only).
-4. **Refresh** after mobile donor registrations.
+4. **Refresh** after mobile payee registrations.
 
-Coordinators see **all** donors’ order intents on the integration host pointed to by `VITE_API_BASE_URL`. Mobile donors must use the **same** integration host (`API_BASE_URL`). Localhost and Render stores are separate.
+Coordinators see **all** payees’ order intents on the integration host pointed to by `VITE_API_BASE_URL`. Mobile payees must use the **same** integration host (`API_BASE_URL`). Localhost and Render stores are separate.
 
 ## Deploy (Render static site)
 
@@ -120,4 +120,4 @@ See [e2e-deployment-sequence.md](./e2e-deployment-sequence.md), [MANUAL_TESTING_
 
 ## Future
 
-OAuth / federated IdP replaces donor-id + mint-token (see [authentication.md](./authentication.md)).
+OAuth / federated IdP replaces payee-id + mint-token (see [authentication.md](./authentication.md)).

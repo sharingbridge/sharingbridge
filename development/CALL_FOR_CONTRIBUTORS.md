@@ -1,10 +1,10 @@
-# Join Us in Building SharingBridge - A Platform for Dignified Giving
+# Join Us in Building SharingBridge — Community meal coordination
 
 ## 🌟 Project Overview
 
-**SharingBridge** is an open-source, AI-driven initiative to transform charitable giving by creating a transparent, dignified platform that connects donors with alms seekers through verified food delivery services. We ensure charitable donations reach their intended purpose - providing food and essentials rather than cash that could be misused.
+**SharingBridge** is an open-source, AI-driven initiative to transform meal support by creating a transparent, dignified platform that connects payees with people who need meals through verified food delivery services. We ensure cash handouts reach their intended purpose - providing food and essentials rather than cash that could be misused.
 
-**Our Mission:** Enable compassionate giving while maintaining dignity for all parties involved.
+**Our Mission:** Make affordable meals easier to arrange and pay for—while maintaining dignity for everyone involved.
 
 **Before you contribute:** Read [SharingBridge_Business_Requirement.md](../requirements/SharingBridge_Business_Requirement.md), section **“Operating Constraints & Assumptions.”** That section is the single source of truth for product-level assumptions.
 
@@ -23,15 +23,15 @@
 
 ## 🤝 Why This Matters
 
-Every day, people meet those seeking alms and face a difficult choice - help with cash that may be misused, or walk away. SharingBridge solves this by:
+Every day, people meet those needing a meal and face a difficult choice - help with cash that may be misused, or walk away. SharingBridge solves this by:
 
-- ✅ Ensuring donations become meals and essentials, not cash
+- ✅ Turning payment into **meals and essentials**, not ambiguous cash
 - ✅ Providing delivery confirmation with photo proof
-- ✅ Maintaining dignity for both donors and seekers
+- ✅ Maintaining dignity for payees, initiators, and people receiving meals
 - ✅ Leveraging existing delivery infrastructure
 - ✅ Creating community solidarity through pledge pools and crowdfunding
 
-**Impact Potential:** Millions of charitable interactions yearly could become transparent, accountable acts of kindness.
+**Impact Potential:** Millions of meal-support interactions yearly could become transparent, accountable acts of kindness.
 
 ---
 
@@ -198,7 +198,7 @@ The easiest way to contribute is through **GitHub Discussions**:
 
 ### ⚖️ Legal & Compliance Advisors ⚠️ **HIGH PRIORITY**
 
-**Why You're Critical:** Your legal guidance protects both vulnerable seekers and well-intentioned donors. Without proper compliance, this platform cannot launch.
+**Why You're Critical:** Your legal guidance protects both vulnerable seekers and well-intentioned payees. Without proper compliance, this platform cannot launch.
 
 **What We Need:**
 - **Privacy Law Experts**
@@ -220,7 +220,7 @@ The easiest way to contribute is through **GitHub Discussions**:
   - Data protection impact assessments
   
 - **Social Welfare Law Specialists**
-  - Regulatory compliance for charitable platforms
+  - Regulatory compliance for community meal platforms
   - Government partnership frameworks
   - Anti-fraud and anti-money laundering guidance
 
@@ -243,7 +243,7 @@ The easiest way to contribute is through **GitHub Discussions**:
 - Web application design
 - Accessibility-first design for diverse users
 - Multi-language support design (especially Tamil and regional languages)
-- User journey mapping for donors, seekers, vendors
+- User journey mapping for payees, seekers, vendors
 
 **Special Considerations:**
 - Design for users with varying literacy levels
@@ -266,7 +266,7 @@ The easiest way to contribute is through **GitHub Discussions**:
 
 **Responsibilities:**
 - Coordinate between technical and non-technical teams
-- Gather requirements from donors, seekers, vendors
+- Gather requirements from payees, seekers, vendors
 - Define success criteria and track impact
 
 ---
@@ -300,9 +300,9 @@ The easiest way to contribute is through **GitHub Discussions**:
 - Shape how technology can support government welfare initiatives
 - Create public-private partnership models
 - Scale impact through institutional adoption
-- Bridge the gap between grassroots charity and formal welfare systems
+- Bridge the gap between grassroots meal support and formal welfare systems
 
-**Impact:** Enable partnerships that can scale the platform from individual acts of charity to systemic poverty alleviation.
+**Impact:** Enable partnerships that can scale the platform from individual acts of meal support to systemic poverty alleviation.
 
 ---
 
@@ -314,7 +314,7 @@ The easiest way to contribute is through **GitHub Discussions**:
 
 **What We Need:**
 - **Beta Testers** - Test the app in real-world scenarios (when ready)
-- **Community Outreach** - Educate potential users (donors, seekers, vendors)
+- **Community Outreach** - Educate potential users (payees, seekers, vendors)
 - **Local Coordinators** - Organize regional pilots and gather feedback
 - **Translators** - Localize app to regional languages (Tamil, Hindi, Telugu, etc.)
 - **Content Creators** - Document impact stories, create user guides
@@ -344,14 +344,14 @@ The easiest way to contribute is through **GitHub Discussions**:
 
 **What We Need:**
 - Small/medium food vendors willing to participate in Direct Vendor Program
-- Restaurants interested in capacity-based donations
+- Restaurants interested in capacity-based meal prep pledges
 - Food delivery personnel for feedback on logistics
 
 **Benefits for Vendors:**
 - Social recognition and CSR credits
 - Community visibility
 - Direct engagement without app development costs
-- Reduction in food waste through planned donations
+- Reduction in food waste through planned meal prep
 
 ---
 
@@ -525,8 +525,8 @@ Each repository evolves independently through direct contributions and discussio
 
 This project emerged from a simple question: *"How can I help someone in need without worrying about misuse?"*
 
-Millions share this concern. Together, we can build a platform that makes charitable giving:
-- **Safe** for donors
+Millions share this concern. Together, we can build a platform that makes meal support:
+- **Safe** for payees
 - **Dignified** for seekers  
 - **Transparent** for everyone
 - **Impactful** for society

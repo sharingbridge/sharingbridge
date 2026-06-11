@@ -1,6 +1,6 @@
 # SharingBridge - Technical Architecture Document
 
-**Project:** SharingBridge - Digital Alms Platform  
+**Project:** SharingBridge - Community meal coordination platform  
 **Version:** 1.0  
 **Date:** December 25, 2025  
 **Status:** Design + as-built MVP (see § [As-built architecture](#as-built-architecture-june-2026))  
@@ -13,6 +13,8 @@
 For product-level assumptions, use [SharingBridge_Business_Requirement.md](../requirements/SharingBridge_Business_Requirement.md), section **“Operating Constraints & Assumptions”** as the single source of truth.
 
 If this architecture document conflicts with that BRD section (for example in proposed pledge or ledger schemas), follow the BRD.
+
+**Product language (2026):** Docs use **payee**, **beneficiary**, and **meal arrangement** — not alms/donation/donor in prose. Legacy schema and API names below (e.g. `donation_type`, `/donor-setup`) are unchanged until code migration; see [PRODUCT_ROADMAP.md](../development/PRODUCT_ROADMAP.md) § Documentation verbiage.
 
 ## MVP Implementation Decisions
 
@@ -37,11 +39,11 @@ This section describes what is **running in code and on Render today**. It overr
 | Label | How SharingBridge uses it |
 |-------|---------------------------|
 | **Microservices / polyrepo** | Independent repos per service; coordination in master `sharingbridge` docs repo |
-| **Experience API** | `sharingbridge-integration-service` — donor/coordinator **journey-shaped** HTTP surface (`/v1/donor-setup/*`, `/v1/donor-seeker/*`) |
+| **Experience API** | `sharingbridge-integration-service` — payee/coordinator **journey-shaped** HTTP surface (`/v1/donor-setup/*`, `/v1/donor-seeker/*`) |
 | **Shared BFF** | One experience layer for **Flutter mobile** and **Vite/React web** (not separate mobile/web BFFs yet) |
 | **API composition / bridge** | Integration validates auth, calls ai-orchestration and user-service, applies fallbacks (`mock`, `deterministic`, `fallback`) |
 | **Process APIs** | `sharingbridge-ai-orchestration` (LLM pipelines), `sharingbridge-photo-service` (upload + signed URLs) |
-| **System APIs** | `sharingbridge-user-service` (JWT mint, donor presets in Postgres) |
+| **System APIs** | `sharingbridge-user-service` (JWT mint, payee presets in Postgres) |
 | **Facilitator platform** | Deep links to vendor apps; no platform-owned payment ledger |
 
 **Not deployed for MVP:** `sharingbridge-api-gateway`, `sharingbridge-order-service`, `sharingbridge-notification-service`, `sharingbridge-location-safety` (archived).
@@ -85,9 +87,9 @@ Clients **never** call user-service, ai-orchestration, or model providers direct
 
 | Concern | Owner | Notes |
 |---------|-------|-------|
-| Donor-facing REST contracts | **Integration** | OpenAPI in `design/contracts/` |
-| JWT validation, donor role, CORS | **Integration** | Shared with user-service signing secret |
-| Donor presets CRUD | **Delegates** → user-service | `PreferencesRepository` forwards bearer token |
+| Payee-facing REST contracts | **Integration** | OpenAPI in `design/contracts/` |
+| JWT validation, payee role, CORS | **Integration** | Shared with user-service signing secret |
+| Payee presets CRUD | **Delegates** → user-service | `PreferencesRepository` forwards bearer token |
 | Suggest vendors, instruction-pack | **Orchestrates** → ai-orchestration | Mock/template fallback on failure |
 | Order intents, neighbourhood feed | **Integration** | Postgres via `PostgresOrderIntentStore` |
 | Coordinator list views | **Integration** | Role-based formatting on order intents |
@@ -99,7 +101,7 @@ This is an **Experience API**, not a pure reverse proxy: it **shapes responses f
 
 | Component | Repo | Runtime / framework |
 |-----------|------|---------------------|
-| Mobile donor UI | `sharingbridge-mobile-app` | **Flutter** (feature folders: data / domain / application / presentation) |
+| Mobile payee UI | `sharingbridge-mobile-app` | **Flutter** (feature folders: data / domain / application / presentation) |
 | Web coordinator dashboard | `sharingbridge-web-app` | **Vite + React 19**, Vitest |
 | Experience API | `sharingbridge-integration-service` | **Node.js 20** (`node:http`, no NestJS) |
 | User / auth API | `sharingbridge-user-service` | **Node.js 20**, Google Sign-In, JWT HS256 |
@@ -119,7 +121,7 @@ Setup: [configuration/ai-setup-handhold.md](../configuration/ai-setup-handhold.m
 
 ### Mobile internal pattern
 
-Within Flutter, donor flows use **ports-and-adapters / clean architecture**: repository interfaces, use cases, HTTP adapters, DTOs. That is **client-side layering**, separate from the backend Experience API pattern.
+Within Flutter, payee flows use **ports-and-adapters / clean architecture**: repository interfaces, use cases, HTTP adapters, DTOs. That is **client-side layering**, separate from the backend Experience API pattern.
 
 ---
 
@@ -240,7 +242,7 @@ Within Flutter, donor flows use **ports-and-adapters / clean architecture**: rep
 │  │  USER SERVICE                                               │  │
 │  │  - User Registration/Login (OAuth 2.0)                      │  │
 │  │  - Profile Management                                       │  │
-│  │  - Role Management (Donor, Admin)                           │  │
+│  │  - Role Management (Payee, Admin)                           │  │
 │  │  - Session Management                                       │  │
 │  └─────────────────────────────────────────────────────────────┘  │
 │                                                                      │
@@ -265,7 +267,7 @@ Within Flutter, donor flows use **ports-and-adapters / clean architecture**: rep
 │  │  - Image Upload & Validation                                │  │
 │  │  - Encrypted Storage (S3/Azure Blob)                        │  │
 │  │  - Face embeddings; assistance history (informational)      │  │
-│  │  - Donor ↔ delivery photo match                           │  │
+│  │  - Payee ↔ delivery photo match                           │  │
 │  └─────────────────────────────────────────────────────────────┘  │
 │                                                                      │
 │  ┌─────────────────────────────────────────────────────────────┐  │
@@ -313,7 +315,7 @@ Within Flutter, donor flows use **ports-and-adapters / clean architecture**: rep
 │  ┌─────────────────────────────────────────────────────────────┐  │
 │  │  CROWDFUNDING SERVICE                                       │  │
 │  │  - Campaign Creation & Management                           │  │
-│  │  - Multi-donor Contribution Handling                        │  │
+│  │  - Multi-payee Contribution Handling                        │  │
 │  │  - Threshold Monitoring & Order Trigger                     │  │
 │  │  - Contributor Notification                                 │  │
 │  └─────────────────────────────────────────────────────────────┘  │
@@ -375,7 +377,7 @@ This section defines frontend ownership and contracts for:
 
 **Repo Responsibilities:**
 - **Mobile app (`sharingbridge-mobile-app`)**
-  - Donor field workflow: setup (including AI-assisted vendor/menu onboarding), donor-seeker interaction flow, consent capture, safety check trigger, instruction-pack generation/copy
+  - Payee field workflow: setup (including AI-assisted vendor/menu onboarding), donor-seeker interaction flow, consent capture, safety check trigger, instruction-pack generation/copy
   - Device capabilities: camera, geolocation, deep-link launch, push notification handling
   - Field reliability: offline draft state, retry queue for unstable networks, clear user recovery paths
 - **Web app (`sharingbridge-web-app`)**
@@ -391,16 +393,16 @@ This section defines frontend ownership and contracts for:
 
 **Client Non-Functional Baselines:**
 - **Mobile:** permission prompts at point-of-use, graceful fallback for denied permissions, app-state recovery after deep-link return.
-- **Web:** responsive layout for low-end devices, accessible controls for key donor/admin actions, safe session timeout handling.
+- **Web:** responsive layout for low-end devices, accessible controls for key payee/admin actions, safe session timeout handling.
 - **Both:** structured client telemetry for critical flow stages (setup, safety check, instruction generation, order redirect, confirmation).
-- **AI setup guardrail:** client must present AI suggestions as editable drafts; nothing is auto-saved without explicit donor confirmation.
+- **AI setup guardrail:** client must present AI suggestions as editable drafts; nothing is auto-saved without explicit payee confirmation.
 
 ### 3.1 User Service
 
 **Responsibilities:**
 - User authentication, authorization, and session lifecycle management
 - Profile management and secure beneficiary data access policies
-- Role-based access control (RBAC) for donor, delivery_partner, beneficiary_coordinator, and admin
+- Role-based access control (RBAC) for payee, delivery_partner, beneficiary_coordinator, and admin
 - Login/logout, refresh token handling, and session revocation
 - Audit logging and minimal data exposure for beneficiary details
 
@@ -429,7 +431,7 @@ users
 ├── phone_number (VARCHAR, UNIQUE)
 ├── email (VARCHAR, UNIQUE, NULLABLE)
 ├── name (VARCHAR)
-├── role (ENUM: donor, delivery_partner, beneficiary_coordinator, admin)
+├── role (ENUM: payee, delivery_partner, beneficiary_coordinator, admin)
 ├── auth_method (ENUM: otp, oauth, api_key)
 ├── created_at (TIMESTAMP)
 ├── updated_at (TIMESTAMP)
@@ -481,7 +483,7 @@ DELETE /api/v1/orders/:id                # Cancel order
 ```sql
 orders
 ├── id (UUID, PK)
-├── donor_id (UUID, FK → users.id)
+├── payee_id (UUID, FK → users.id)
 ├── status (ENUM)
 ├── donation_type (ENUM: food, cloth, shelter, blanket, mosquito_net, washroom_access, miscellaneous)
 ├── vendor (ENUM: swiggy, zomato, uber_eats, NULLABLE)
@@ -607,7 +609,7 @@ delivery_feedback
 - Secure storage with encryption and time-limited signed URLs
 - Face embeddings (e.g. FaceNet/DeepFace-class models)
 - **Assistance history review** (informational, non-blocking) — photo + location vs recent records
-- **Donor reference vs delivery acknowledgement photo match**
+- **Payee reference vs delivery acknowledgement photo match**
 - Auto-deletion / retention for privacy
 
 **Technology Stack:**
@@ -627,11 +629,11 @@ delivery_feedback
 
 **Assistance history review (informational only):**
 - Compare current beneficiary photo and location to recent help records (default window ~2 hours, proximity ~150m)
-- Return donor-friendly context; **never block** donation
+- Return payee-friendly context; **never block** the meal arrangement
 - Lenient similarity thresholds for lighting/angle variation
 
-**Donor ↔ delivery match:**
-- On delivery acknowledgement upload, compare embedding to donor reference photo; persist `match_score` / `match_passed` on order timeline (via order-service events)
+**Payee ↔ delivery match:**
+- On delivery acknowledgement upload, compare embedding to payee reference photo; persist `match_score` / `match_passed` on order timeline (via order-service events)
 
 **API Endpoints:**
 ```
@@ -662,13 +664,13 @@ photos
 
 ### 3.5 Integration Service
 
-**Architectural role (as-built):** **Experience API** / **shared BFF** — the only backend mobile and web call for donor and coordinator journeys. Composes user-service, ai-orchestration, and Postgres order-intent data; applies auth, CORS, and degraded-mode fallbacks. See [As-built architecture](#as-built-architecture-june-2026).
+**Architectural role (as-built):** **Experience API** / **shared BFF** — the only backend mobile and web call for payee and coordinator journeys. Composes user-service, ai-orchestration, and Postgres order-intent data; applies auth, CORS, and degraded-mode fallbacks. See [As-built architecture](#as-built-architecture-june-2026).
 
 **Shipped responsibilities (MVP):**
-- Donor setup: suggest-vendors, preferences proxy to user-service
-- Donor-seeker: instruction-pack bridge to ai-orchestration, order-intent registration and listing
+- Vendor preset setup: suggest-vendors, preferences proxy to user-service
+- Payee-seeker: instruction-pack bridge to ai-orchestration, order-intent registration and listing
 - Coordinator dashboard: order-intent list, neighbourhood feed filters
-- JWT donor-role enforcement; `WEB_CORS_ORIGINS` for browser clients
+- JWT payee-role enforcement; `WEB_CORS_ORIGINS` for browser clients
 
 **Target responsibilities (roadmap):**
 - Vendor API abstraction (food delivery platforms)
@@ -728,15 +730,15 @@ class ShadowfaxAdapter implements LogisticsAdapter { ... }
 12. Secure link remains active until delivery completion, then expires after a 30-minute look-back window
 
 **Interim Manual Flow (MVP - No API Access):**
-1. Donor captures beneficiary photo in SharingBridge app
-2. App surfaces donor's pre-stored preferred deep-link order options and generates secure beneficiary instruction text
+1. Payee captures beneficiary photo in SharingBridge app
+2. App surfaces payee's pre-stored preferred deep-link order options and generates secure beneficiary instruction text
 3. App provides copy-paste functionality for instructions
-4. Donor selects the ready-made deep-link option and pastes instructions into vendor's delivery notes field, without typing during the seeker interaction
+4. Payee selects the ready-made deep-link option and pastes instructions into vendor's delivery notes field, without typing during the seeker interaction
 5. Vendor processes order with embedded secure access instructions
 6. Delivery follows the same secure token-based access process as above
 
 **Logistics Flow (Pledged Vendors - Direct Orders):**
-1. Donor pays via vendor-hosted or licensed-provider-hosted payment link
+1. Payee pays via vendor-hosted or licensed-provider-hosted payment link
 2. Order sent to pledged vendor (restaurant/home kitchen)
 3. Vendor prepares food and marks order as READY
 4. SharingBridge automatically triggers logistics partner API (Dunzo/Porter/Shadowfax)
@@ -815,7 +817,7 @@ PUT    /api/v1/notifications/preferences
 ### 3.7 Pledge Service
 
 **Responsibilities:**
-- Manage advance donations/pledges
+- Manage advance pledges / prepaid meal commitments
 - Allocate pledged funds to orders
 - Track pledge utilization
 - Generate pledge analytics
@@ -874,7 +876,7 @@ POST   /api/v1/orders/:id/use-pledge      # Use pledge for order
 ```sql
 pledges
 ├── id (UUID, PK)
-├── donor_id (UUID, FK → users.id)
+├── payee_id (UUID, FK → users.id)
 ├── total_amount (DECIMAL)
 ├── remaining_amount (DECIMAL)
 ├── pledge_type (ENUM: general, location_based, time_based)
@@ -904,7 +906,7 @@ pledge_allocations
 **Responsibilities:**
 - Vendor registration and verification
 - Menu and availability management
-- Direct donation order handling
+- Direct meal-order handling
 - Vendor rating and recognition
 
 **Technology Stack:**
@@ -917,12 +919,12 @@ pledge_allocations
 1. Registered Restaurant: Has all licenses, verified
 2. Home Kitchen: Smaller scale, community verified
 3. Food Truck: Mobile vendors
-4. NGO Kitchen: Charity organizations
+4. NGO Kitchen: Community kitchen partners
 ```
 
 **Capacity Pledge Model:**
 ```
-Vendors pledge hourly donation capacity, not prepared food:
+Vendors pledge hourly meal-prep capacity, not prepared food:
 - Hourly capacity: "Can prepare 5-10 meals per hour"
 - Time slots: Hourly slots during active hours (e.g., 11 AM, 12 PM, 1 PM, 2 PM)
 - Active hours: "11:00 AM - 2:00 PM, 6:00 PM - 9:00 PM"
@@ -1205,7 +1207,7 @@ class VendorCapacityManager:
 
 **Responsibilities:**
 - Campaign creation and management
-- Multi-donor contribution tracking
+- Multi-payee contribution tracking
 - Threshold monitoring and order trigger
 - Contributor notifications
 
@@ -1315,7 +1317,7 @@ CREATE TABLE users (
     phone_number VARCHAR(15) UNIQUE NOT NULL,
     email VARCHAR(255) UNIQUE,
     name VARCHAR(255) NOT NULL,
-    role VARCHAR(20) CHECK (role IN ('donor', 'admin')) DEFAULT 'donor',
+    role VARCHAR(20) CHECK (role IN ('payee', 'admin')) DEFAULT 'payee',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     last_login TIMESTAMP,
@@ -1325,7 +1327,7 @@ CREATE TABLE users (
 -- Orders table
 CREATE TABLE orders (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    donor_id UUID NOT NULL REFERENCES users(id),
+    payee_id UUID NOT NULL REFERENCES users(id),
     status VARCHAR(50) NOT NULL,
     donation_type VARCHAR(30) NOT NULL CHECK (donation_type IN ('food', 'cloth', 'shelter', 'blanket', 'mosquito_net', 'washroom_access', 'miscellaneous')),
     vendor VARCHAR(20) CHECK (vendor IN ('swiggy', 'zomato', 'uber_eats')),
@@ -1343,7 +1345,7 @@ CREATE TABLE orders (
     metadata JSONB
 );
 
-CREATE INDEX idx_orders_donor ON orders(donor_id);
+CREATE INDEX idx_orders_payee ON orders(payee_id);
 CREATE INDEX idx_orders_status ON orders(status);
 CREATE INDEX idx_orders_location ON orders USING GIST(location);
 CREATE INDEX idx_orders_created ON orders(created_at);
@@ -1798,7 +1800,7 @@ Response: { signed_url, expires_in }
 
 POST /api/v1/photos/check-beneficiary-history
 Body: { photo_id, lat, lng, timestamp }
-Response: { recent_assistance, donor_message, show_to_donor, match_score? }  # informational only
+Response: { recent_assistance, payee_message, show_to_payee, match_score? }  # informational only
 ```
 
 #### **User APIs**
@@ -1853,7 +1855,7 @@ Response: { orders[], stats: { total_donations, total_amount } }
 ```json
 {
   "sub": "user_id",
-  "role": "donor",
+  "role": "payee",
   "iat": 1703505600,
   "exp": 1703509200
 }
@@ -1972,7 +1974,7 @@ To address privacy concerns with sharing beneficiary personal details, pictures,
    - Delivery completion reporting endpoint
    - Structured instruction payload for vendor notes and delivery personnel guidance
 3. Embed secure link in vendor-specific deep link or instruction field
-4. Redirect user to vendor app/website with pre-filled cart and instructions selected from the donor's saved deep-link order options, so no typing is required during seeker interaction
+4. Redirect user to vendor app/website with pre-filled cart and instructions selected from the payee's saved deep-link order options, so no typing is required during seeker interaction
 5. User completes order on vendor platform
 6. Delivery personnel access secure link via app instructions and identify the seeker through the delivery app using AI-backed description/photo guidance
 7. Personnel uses description and photo to locate/identify beneficiary
@@ -2140,9 +2142,9 @@ async handleWebhook(
     }
   );
   
-  // 5. Send notification to donor
+  // 5. Send notification to payee
   await this.notificationService.send({
-    userId: orderUpdate.donorId,
+    userId: orderUpdate.payeeId,
     type: 'order_update',
     template: this.getTemplateForStatus(orderUpdate.status),
     data: orderUpdate
@@ -2440,7 +2442,7 @@ Threshold: >= 0.65 for approval
 - See `development/AI_PLATFORM_INTEGRATION.md`.
 
 **Photo / CV (`sharingbridge-photo-service`) — separate from location safety and LLM:**
-- Face embeddings for assistance-history hints and donor↔delivery match; not LangChain.
+- Face embeddings for assistance-history hints and payee↔delivery match; not LangChain.
 
 **Implementation (Rule-Based Scoring):**
 ```python
@@ -2724,7 +2726,7 @@ Vendor Integration:
     - Full control over workflow
     - No dependency on platform APIs
     - Faster onboarding
-    - Better margins for charity
+    - Better margins for community meal programs
 ```
 
 **Phase 2: Growth (Months 4-6, 500-2000 orders/day)**
@@ -2752,7 +2754,7 @@ Vendor Integration:
   Benefits:
     - Redundancy and reliability
     - Wider coverage area
-    - Better donor experience
+    - Better payee experience
 ```
 
 **Phase 3: Scale (Months 7-12, 2000-5000+ orders/day)**

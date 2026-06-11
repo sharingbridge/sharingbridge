@@ -36,7 +36,7 @@ flutter run -d <device> `
 
 ## API
 
-- `POST /v1/photos/upload` — multipart `file`, form `photo_type=seeker_reference`, Bearer JWT (donor)
-- `GET /v1/photos/{artifact_id}` — donor (owner) or coordinator
+- `POST /v1/photos/upload` — multipart `file`, form `photo_type=seeker_reference`, Bearer JWT (payee)
+- `GET /v1/photos/{artifact_id}` — payee (owner) or coordinator
 
 Response includes `artifact_id`, `view_url`, `thumbnail_url` (Cloudinary).

@@ -23,22 +23,22 @@ SharingBridge uses **Google Sign-In** for production-style identity, plus **Shar
 
 Roles are read from Postgres **`user_roles`** only — [database.md](./database.md) · [coordinator-seed.sql](./coordinator-seed.sql). There is no email allowlist in `.env` or JSON at runtime.
 
-Every Google user gets **`donor`** ensured at sign-in. **`coordinator`** is granted via SQL ([coordinator-seed.sql](./coordinator-seed.sql)). A user may have **both** rows in `user_roles`.
+Every Google user gets **`payee`** ensured at sign-in. **`coordinator`** is granted via SQL ([coordinator-seed.sql](./coordinator-seed.sql)). A user may have **both** rows in `user_roles`.
 
 **Client rules (which hat for this JWT)**
 
 | `client_type` | Requires in `user_roles` | JWT `role` minted |
 |---------------|--------------------------|-------------------|
-| `web` | `donor` and/or `coordinator` | `coordinator` if present, else `donor` |
-| `android` / `ios` / `mobile` | `donor` | `donor` (even if they also have `coordinator`) |
+| `web` | `payee` and/or `coordinator` | `coordinator` if present, else `payee` |
+| `android` / `ios` / `mobile` | `payee` | `payee` (even if they also have `coordinator`) |
 
-JWT also includes `roles` (full array). Integration-service formats list responses by minted `role` (coordinator = full dashboard; donor = limited photos).
+JWT also includes `roles` (full array). Integration-service formats list responses by minted `role` (coordinator = full dashboard; payee = limited photos).
 
-Wrong combination → HTTP **403** `wrong_client_role` (e.g. `no_app_role` on web with no roles, or mobile without `donor`).
+Wrong combination → HTTP **403** `wrong_client_role` (e.g. `no_app_role` on web with no roles, or mobile without `payee`).
 
 ---
 
-## Donor JWT (`AUTH_TOKEN_SECRET`)
+## Payee JWT (`AUTH_TOKEN_SECRET`)
 
 | | |
 |--|--|
@@ -57,14 +57,14 @@ Wrong combination → HTTP **403** `wrong_client_role` (e.g. `no_app_role` on we
 
 ## Authorization (what each role can do)
 
-| Action | Donor (mobile) | Coordinator (web) |
+| Action | Payee (mobile) | Coordinator (web) |
 |--------|----------------|-------------------|
-| Donor setup / presets | Yes | No |
+| Vendor preset setup / presets | Yes | No |
 | Instruction pack + register order intent | Yes | No |
 | List own order intents | Yes | No |
 | List **all** order intents | No | Yes |
 
-integration-service reads `role` from the JWT. Coordinators receive every donor’s intents on `GET /v1/donor-seeker/order-intents` (optional `?user_id=` filter).
+integration-service reads `role` from the JWT. Coordinators receive every payee’s intents on `GET /v1/donor-seeker/order-intents` (optional `?user_id=` filter).
 
 ---
 

@@ -1,6 +1,6 @@
 # Google Sign-In setup (local development)
 
-Step-by-step guide for **coordinator web** + **donor mobile** using Google OAuth.  
+Step-by-step guide for **coordinator web** + **payee mobile** using Google OAuth.  
 Architecture reference: [authentication.md](./authentication.md).
 
 **Full deploy order (local → Render):** [e2e-deployment-sequence.md](./e2e-deployment-sequence.md).
@@ -13,7 +13,7 @@ Architecture reference: [authentication.md](./authentication.md).
 |-------|---------|
 | **Google Cloud project** | OAuth consent + client IDs |
 | **Web OAuth client** | `sharingbridge-web-app` (coordinators) |
-| **Android OAuth client** | `sharingbridge-mobile-app` (donors) |
+| **Android OAuth client** | `sharingbridge-mobile-app` (payees) |
 | **user-service** | Verifies Google `id_token`, assigns role, mints JWT |
 | **Coordinator role** | `user_roles` in Postgres ([coordinator-seed.sql](./coordinator-seed.sql)) — not `.env` |
 
@@ -60,7 +60,7 @@ Official Google docs:
 | [Branding](https://console.cloud.google.com/auth/branding) | Edit app name / logos |
 
 4. **Scopes** — you usually **do not** click **ADD OR REMOVE SCOPES** for MVP. GIS / `google_sign_in` request `openid`, `email`, `profile` at sign-in. Open **Data Access** only to confirm; then go to **Audience**.
-5. **Test users** — [Audience](https://console.cloud.google.com/auth/audience) → **Test users** → **+ Add users** → every coordinator and donor Gmail for dev.  
+5. **Test users** — [Audience](https://console.cloud.google.com/auth/audience) → **Test users** → **+ Add users** → every coordinator and payee Gmail for dev.  
    [Publishing status](https://support.google.com/cloud/answer/10311615#publishing-status) — while **Testing**, only listed test users can sign in (with exceptions for basic profile-only sign-in; still add test users for reliability).
 
 **Old wizard UI:** if you still see **Save and Continue** pages, use Scopes page → **Save and Continue** without adding scopes, then Test users.
@@ -90,7 +90,7 @@ Open [APIs & Services → Credentials](https://console.cloud.google.com/apis/cre
 5. **Create** → copy the **Client ID** (ends with `.apps.googleusercontent.com`).  
    This is **`GOOGLE_CLIENT_ID_WEB`** and **`VITE_GOOGLE_CLIENT_ID`**.
 
-### 2.2 Android (donor mobile app)
+### 2.2 Android (payee mobile app)
 
 1. **+ Create credentials** → **OAuth client ID** → **Android**.
 2. Name: e.g. `SharingBridge Android (debug)`.
@@ -123,9 +123,9 @@ Only if you run on iPhone/iPad:
 
 | Goal | Approach |
 |------|----------|
-| Donor + Google + Render/local APIs | **Android emulator** or device — use **Android** OAuth client (§2.2) |
+| Payee + Google + Render/local APIs | **Android emulator** or device — use **Android** OAuth client (§2.2) |
 | Coordinator | **Web dashboard** — **Web** OAuth client (§2.1) |
-| Donor on Windows desktop (dev only) | `flutter run -d windows` with `--dart-define=AUTH_TOKEN=…` (dev mint on user-service) |
+| Payee on Windows desktop (dev only) | `flutter run -d windows` with `--dart-define=AUTH_TOKEN=…` (dev mint on user-service) |
 
 **macOS** `flutter run -d macos` can use the **Web** client ID in `--dart-define=GOOGLE_CLIENT_ID=…`.
 
@@ -137,16 +137,16 @@ Coordinators are **not** configured in Google Console or in user-service `.env`.
 
 **Bootstrap (local or Supabase):**
 
-1. Sign in once with the coordinator Gmail (mobile as donor is fine) so a row exists in **`users`**, **or** run `npm run import:json` if you migrated legacy data.
+1. Sign in once with the coordinator Gmail (mobile as payee is fine) so a row exists in **`users`**, **or** run `npm run import:json` if you migrated legacy data.
 2. Edit and run [coordinator-seed.sql](./coordinator-seed.sql) — see [database.md](./database.md) § Coordinator seeding.
 3. Sign in on the **web dashboard** with that same Gmail (test user on the OAuth consent screen).
 
 **Rules:**
 
-- **`user_roles` may include both `donor` and `coordinator`** for the same user.
+- **`user_roles` may include both `payee` and `coordinator`** for the same user.
 - **Web** sign-in mints JWT `role: coordinator` (requires `coordinator` in `user_roles`).
-- **Mobile** sign-in mints JWT `role: donor` (requires `donor`; coordinators can also use the donor app).
-- Donor-only account on **web** → `403 wrong_client_role`.
+- **Mobile** sign-in mints JWT `role: payee` (requires `payee`; coordinators can also use the payee app).
+- Payee-only account on **web** → `403 wrong_client_role`.
 
 ---
 
@@ -240,9 +240,9 @@ Invoke-RestMethod http://localhost:8080/health
 3. Click **Sign in with Google** (GIS). Use a Gmail that has **`coordinator`** in `user_roles` (run [coordinator-seed.sql](./coordinator-seed.sql) first). Pick **Use another account** in Google’s dialog if Chrome pre-selects the wrong Gmail.
 4. Dashboard should load; header shows coordinator email when available. **Sign out** clears the session.
 5. Next visit on the same browser: sign-in page shows **Last signed in as** *email* and **Use a different Google account** (disconnects that Google profile from this app, then reloads).
-6. **Refresh** on the dashboard shows order initiations (after a donor registers one on mobile).
+6. **Refresh** on the dashboard shows order initiations (after a payee registers one on mobile).
 
-### 6.2 Donor (mobile)
+### 6.2 Payee (mobile)
 
 **Android emulator** — use `10.0.2.2` for **both** backends (see [MANUAL_TESTING_GUIDE.md](../testing/MANUAL_TESTING_GUIDE.md) §3-host):
 
@@ -258,9 +258,9 @@ flutter run -d emulator-5554 `
 **Windows desktop:** same URLs with `localhost` (Google Sign-In not supported on Windows — use emulator or dev token).
 
 1. Tap **Continue with Google**.
-2. Use a Gmail with **`donor`** in `user_roles` (default for all users). Coordinators with both roles can use mobile as donor and web as coordinator.
+2. Use a Gmail with **`payee`** in `user_roles` (default for all users). Coordinators with both roles can use mobile as payee and web as coordinator.
 3. Complete **Help a seeker** → copy instructions to register an order intent.
-4. On web (coordinator), **Refresh** — you should see that intent (with donor `user_id` in the list).
+4. On web (coordinator), **Refresh** — you should see that intent (with payee `user_id` in the list).
 
 **Without Google yet (emulator only):** mint a dev JWT — see [mobile-client.md](./mobile-client.md) § Dev token fallback.
 
@@ -364,7 +364,7 @@ Details: [backend-render.md](./backend-render.md), [web-client.md](./web-client.
 | Symptom | Likely cause | Fix |
 |---------|----------------|-----|
 | `403 wrong_client_role` on web | Gmail has no `coordinator` in `user_roles` | Run [coordinator-seed.sql](./coordinator-seed.sql) after the user row exists |
-| `403 wrong_client_role` on mobile | Missing `donor` in `user_roles` | Sign in again (donor is ensured on each auth); check DB `user_roles` |
+| `403 wrong_client_role` on mobile | Missing `payee` in `user_roles` | Sign in again (payee is ensured on each auth); check DB `user_roles` |
 | `401 invalid_google_token` | Wrong client ID or expired token | Web: `VITE_GOOGLE_CLIENT_ID` = Web client ID; user-service lists same ID in `GOOGLE_CLIENT_ID_WEB` |
 | Google popup “access blocked” | App in Testing, user not a test user | Add Gmail under OAuth consent → **Test users** |
 | `Failed to fetch` on sign-in | CORS | `WEB_CORS_ORIGINS=http://localhost:5173` on **both** user-service and integration-service; restart |
@@ -393,4 +393,4 @@ Invoke-RestMethod -Method POST -Uri http://localhost:8081/v1/auth/google `
 - [ ] integration-service `.env`: same secret + CORS
 - [ ] web `.env`: `VITE_GOOGLE_CLIENT_ID`, API URLs
 - [ ] All three services restarted
-- [ ] Web sign-in (coordinator) + mobile sign-in (donor) tested
+- [ ] Web sign-in (coordinator) + mobile sign-in (payee) tested

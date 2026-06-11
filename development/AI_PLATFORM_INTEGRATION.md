@@ -12,7 +12,7 @@
 
 | Capability | Shipped in code? | Where |
 |------------|-----------------|--------|
-| Donor setup vendor suggestions | **Orchestration when flagged** | integration → ai-orchestration (deterministic ranking); mock fallback |
+| Vendor preset setup vendor suggestions | **Orchestration when flagged** | integration → ai-orchestration (deterministic ranking); mock fallback |
 | Delivery instruction pack | **API + fallback** | `POST /v1/donor-seeker/instruction-pack`; mobile stub if unreachable |
 | Handover guidance (BRD step 4) | **Shipped** | `sharingbridge-mobile-app` — fixed **Quick guidance** copy |
 | Locality safety scoring | **Deferred / archived** | `sharingbridge-location-safety` — not MVP; repo archived |
@@ -31,7 +31,7 @@ Mobile and backend **must not** call OpenAI/Anthropic (or similar) directly from
 | Fixed **handover guidance** (BRD step 4) | Yes — mobile Offer food help; geo safety **deferred** |
 | **Photo** storage + embeddings + match | Yes — photo-service bootstrap §9, architecture §3.3 |
 | **LangChain** (or similar) setup on a host | **No** — until this doc |
-| Prompt chains, structured JSON, retries, fallbacks | Partially — Donor Setup sequence assumes external AI; no runtime |
+| Prompt chains, structured JSON, retries, fallbacks | Partially — Vendor preset setup sequence assumes external AI; no runtime |
 | Bridging **mobile → integration → AI platform → model APIs** | **No** — until this doc |
 | Secrets, env, cost guards, observability for AI calls | Partially — generic Render/env notes only |
 
@@ -89,14 +89,14 @@ flowchart TB
 
 ## AI capabilities → services → orchestration
 
-| Product capability | Owning API (donor-facing) | AI module | Model / technique |
+| Product capability | Owning API (payee-facing) | AI module | Model / technique |
 |--------------------|---------------------------|-----------|------------------|
-| Donor setup: vendor/menu suggestions | `POST /v1/donor-setup/suggest-vendors` (integration) | Orchestration chain | LLM + strict JSON schema; location in prompt |
+| Vendor preset setup: vendor/menu suggestions | `POST /v1/donor-setup/suggest-vendors` (integration) | Orchestration chain | LLM + strict JSON schema; location in prompt |
 | Instruction pack + dignity filter | `POST /v1/donor-seeker/instruction-pack` (integration) | Orchestration chain | LLM + template merge; optional vision on reference photo |
 | Beneficiary verbal notes sanitization | Same | Orchestration sub-chain | LLM policy pass |
-| Handover guidance | Mobile **Offer food help** step 1 | **No backend** | Fixed copy; donor judgment |
+| Handover guidance | Mobile **Offer food help** step 1 | **No backend** | Fixed copy; payee judgment |
 | Reference photo storage | `POST /v1/photos/upload` (photo-service) | Storage pipeline | S3/Cloudinary |
-| Face embedding + donor↔delivery match | photo-service + order events | CV pipeline | Embedding model (e.g. FaceNet-class); not necessarily LLM |
+| Face embedding + payee↔delivery match | photo-service + order events | CV pipeline | Embedding model (e.g. FaceNet-class); not necessarily LLM |
 | Assistance history hint (optional) | order / photo-service | Embedding similarity | Architecture §3.3 |
 
 **LangChain role:** Orchestrate **LLM** flows only (suggest-vendors, instruction-pack, text sanitization). Use **dedicated services** for safety rules and computer vision—not every path needs LangChain.
@@ -111,7 +111,7 @@ New service (**shipped** deterministic MVP; live LLM pending). Add **photo-servi
 
 - Versioned **prompt templates** and **output JSON schemas**
 - LangChain (or equivalent) chains: retrieve context → call LLM → validate → retry/fallback
-- **No** donor auth logic (trust `integration-service` service-to-service token or internal network)
+- **No** payee auth logic (trust `integration-service` service-to-service token or internal network)
 - Expose **internal** HTTP only (not public internet without gateway)
 
 **Suggested endpoints (internal):**
@@ -179,7 +179,7 @@ AI_INSTRUCTION_PACK_ENABLED=true
 
 ## Bridge: mobile ↔ backend ↔ AI (sequence)
 
-**Donor setup — suggest vendors (target):**
+**Vendor preset setup — suggest vendors (target):**
 
 ```mermaid
 sequenceDiagram
@@ -300,6 +300,6 @@ Feature flag example: `AI_SUGGEST_VENDORS_ENABLED=true` in integration-service e
 |----------|-----|
 | **This file** | AI hosting, LangChain, bridges, env, phases |
 | [IMPLEMENTATION_APPROACH.md](./IMPLEMENTATION_APPROACH.md) | Product-facing AI interactions (4 capabilities) |
-| [Donor_Setup_AI_Search_Sequence.md](../design/Donor_Setup_AI_Search_Sequence.md) | Donor setup sequence (update when orchestration ships) |
+| [Donor_Setup_AI_Search_Sequence.md](../design/Donor_Setup_AI_Search_Sequence.md) | Vendor preset setup sequence (update when orchestration ships) |
 | [SharingBridge_End_to_End_Workflow.md](../design/SharingBridge_End_to_End_Workflow.md) | Full journey diagrams |
 | [AGENT_HANDOFF.md](./AGENT_HANDOFF.md) | Shipped vs planned status |

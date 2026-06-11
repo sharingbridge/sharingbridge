@@ -1,6 +1,8 @@
-# Donor Setup AI Search Sequence
+# Vendor preset setup — AI search sequence
 
-This sequence defines the MVP flow for AI-assisted donor setup:
+> **API (legacy path):** `POST /v1/donor-setup/suggest-vendors` · **Product term:** vendor preset setup.
+
+This sequence defines the MVP flow for AI-assisted vendor preset setup:
 
 - User enters free-text (restaurant/app/menu hints)
 - App requests location (or asks user if permission is missing)
@@ -12,7 +14,7 @@ This sequence defines the MVP flow for AI-assisted donor setup:
 ```mermaid
 sequenceDiagram
     autonumber
-    participant U as Donor
+    participant U as Payee
     participant A as Flutter App
     participant G as API Gateway
     participant I as Integration API

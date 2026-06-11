@@ -1,7 +1,7 @@
 # Manual Testing Guide — Completed Modules
 
 This guide walks through how to verify the donor-setup modules and the
-**Offer food help (donor–seeker handoff)** slice that have shipped across
+**Offer food help (payee–seeker handoff)** slice that have shipped across
 `sharingbridge-integration-service`, `sharingbridge-ai-orchestration`,
 `sharingbridge-mobile-app`, and `sharingbridge-web-app`. It pairs **automated test suites** with
 **manual API smoke tests** and **end-to-end** flows on the **mobile app** and **web dashboard**.
@@ -15,12 +15,12 @@ needed.
 
 | # | Module | Where it lives |
 |---|--------|----------------|
-| 1 | Donor setup `suggest-vendors` (mock or orchestration) | `sharingbridge-integration-service`, `sharingbridge-ai-orchestration` |
-| 1b | Donor–seeker `instruction-pack` | `sharingbridge-integration-service` → `sharingbridge-ai-orchestration` |
+| 1 | Vendor preset setup `suggest-vendors` (mock or orchestration) | `sharingbridge-integration-service`, `sharingbridge-ai-orchestration` |
+| 1b | Payee–seeker `instruction-pack` | `sharingbridge-integration-service` → `sharingbridge-ai-orchestration` |
 | 2 | Preferences save/fetch HTTP API | `sharingbridge-integration-service/src/server.js`, `src/preferencesStore.js` |
 | 3 | Preferences repository boundary toward user-service | `sharingbridge-integration-service/src/preferencesRepository.js` |
 | 4 | Signed-token auth context (JWT Bearer) | `sharingbridge-integration-service/src/authContext.js`, `src/tokenService.js` |
-| 5 | Mobile donor setup UI + repository | `sharingbridge-mobile-app/lib/features/donor_setup/**` |
+| 5 | Mobile vendor preset setup UI + repository | `sharingbridge-mobile-app/lib/features/donor_setup/**` |
 | 6 | Mobile HTTP client (timeout, retry, typed errors, auth headers) | `sharingbridge-mobile-app/lib/features/donor_setup/data/http_donor_setup_api_client.dart` |
 | 7 | Mobile auth context | `sharingbridge-mobile-app/lib/features/donor_setup/data/auth_context.dart` |
 | 8 | Mobile cache fallback (`shared_preferences`) | `sharingbridge-mobile-app/lib/features/donor_setup/presentation/pages/donor_setup_page.dart` |
@@ -198,7 +198,7 @@ Coverage at a glance:
 | `test/features/donor_seeker_interaction/data/http_instruction_pack_client_test.dart` | instruction-pack POST auth payload |
 | `test/features/donor_setup/presentation/donor_setup_page_test.dart` | search; **Copy link** / **Open vendor page** / **Suggest again**; confirm saves **without** collapsing list to saved-only; success status + snackbar; presets navigation; slow-load race; cache clear |
 | `test/features/donor_setup/presentation/donor_presets_page_test.dart` | saved-presets list; copy/open; per-row **Remove**; **Clear all** |
-| `test/features/donor_seeker_interaction/donor_seeker_interaction_page_test.dart` | home hub opens **Help a seeker**; **Continue** → **Get AI delivery instructions** (injected stub) → **register donation intent** button → copy enables **Open …** |
+| `test/features/donor_seeker_interaction/donor_seeker_interaction_page_test.dart` | home hub opens **Help a seeker**; **Continue** → **Get AI delivery instructions** (injected stub) → **register order intent** button → copy enables **Open …** |
 | `test/features/donor_seeker_interaction/donation_history_page_test.dart` | home hub → **Order initiation history**; list + detail with injected intents; empty state |
 | `test/features/donor_seeker_interaction/delivery_instruction_stub_test.dart` | stub text: dignity, consent, presets; optional photo/verbal lines |
 | `test/widget_test.dart` | app boots with **SharingBridge** home hub (Vendor presets + Help a seeker + Order initiation history) |
@@ -220,7 +220,7 @@ Coverage at a glance:
 | `test/userServiceRoundtrip.test.js` | mint token + donor-presets PUT/GET roundtrip (dedupe), **`POST …/donor-presets/delete-item`**, 401/403 auth, `/health`, 404, invalid JSON bodies, presets array/type validation, URL-encoded path `user_id` |
 | `test/tokenService.test.js` | JWT mint/verify, secret/expiry/claims/tamper cases, env-driven defaults |
 | `test/authContext.test.js` | bearer extraction and authenticated `user_id` resolution |
-| `test/userStore.test.js` | file-backed init/read, `getOrCreateUser`, preset list/replace dedupe, **`deleteDonorPreset`**, persistence |
+| `test/userStore.test.js` | file-backed init/read, `getOrCreateUser`, preset list/replace dedupe, **`deletePayeePreset`**, persistence |
 
 Expected output footer:
 
@@ -333,7 +333,7 @@ Confirm:
 Invoke-RestMethod http://127.0.0.1:8092/health
 ```
 
-Mobile must pass `--dart-define=PHOTO_SERVICE_BASE_URL=…` (**§3-host**). Upload is `POST /v1/photos/upload` (Bearer donor JWT). Without photo-service running, instruction-pack still works but photo upload fails when a reference image is attached.
+Mobile must pass `--dart-define=PHOTO_SERVICE_BASE_URL=…` (**§3-host**). Upload is `POST /v1/photos/upload` (Bearer payee JWT). Without photo-service running, instruction-pack still works but photo upload fails when a reference image is attached.
 
 In another window, drive the API.
 
@@ -341,7 +341,7 @@ Mint a signed token (same `AUTH_TOKEN_SECRET` as user-service `.env`):
 
 ```powershell
 cd D:\kannan\sharingbridge\sharingbridge-user-service
-$token = node scripts/mint-dev-jwt.mjs alice donor
+$token = node scripts/mint-dev-jwt.mjs alice payee
 $headers = @{ Authorization = "Bearer $token" }
 ```
 
@@ -456,7 +456,7 @@ try {
 ### 2g. Verify per-user isolation
 
 ```powershell
-$bobToken = node scripts/mint-dev-jwt.mjs bob donor
+$bobToken = node scripts/mint-dev-jwt.mjs bob payee
 $bobHeaders = @{ Authorization = "Bearer $bobToken" }
 $bobBody = @{
   presets = @(
@@ -604,7 +604,7 @@ flutter devices                      # note device id, e.g. emulator-5554
 
 Wait until the emulator home screen is up, then use `-d <device_id>` in the commands below.
 
-### 3-auth. Google Sign-In on Android emulator (donor, recommended)
+### 3-auth. Google Sign-In on Android emulator (payee, recommended)
 
 Requires [configuration/google-auth-setup.md](../configuration/google-auth-setup.md): **Android** OAuth client (package name + debug SHA-1), `GOOGLE_CLIENT_ID_ANDROID` in user-service `.env`, Gmail added as OAuth **test user**.
 
@@ -619,7 +619,7 @@ flutter run -d emulator-5554 `
 
 Replace `emulator-5554` with your `flutter devices` id.
 
-1. App opens → **Continue with Google** (donor JWT). Users with both **`donor`** and **`coordinator`** in `user_roles` can use mobile as donor and web as coordinator (same Gmail).
+1. App opens → **Continue with Google** (payee JWT). Users with both **`payee`** and **`coordinator`** in `user_roles` can use mobile as payee and web as coordinator (same Gmail).
 2. Walk through **§3c** / **§3f** / **§3g**.
 
 **Windows desktop:** `google_sign_in` is not supported on `-d windows`; use the emulator for Google auth, or **§3-dev** with a dev token.
@@ -630,7 +630,7 @@ Mint on the **PC** with user-service `scripts/mint-dev-jwt.mjs` (same `AUTH_TOKE
 
 ```powershell
 cd D:\kannan\sharingbridge\sharingbridge-user-service
-$mobileToken = node scripts/mint-dev-jwt.mjs alice donor
+$mobileToken = node scripts/mint-dev-jwt.mjs alice payee
 
 cd D:\kannan\sharingbridge\sharingbridge-mobile-app
 flutter run -d emulator-5554 `
@@ -656,7 +656,7 @@ With `AUTH_TOKEN` set, the app sends only `Authorization: Bearer <token>` (JWT s
 
 Use after **§3-auth** (Google) or **§3-dev** (token as `alice`). On the **emulator**, confirm **§3-host** URLs before debugging empty lists or connection errors.
 
-1. App opens to the **SharingBridge** home hub with **Vendor presets**, **Help a seeker**, and **Order initiation history**. Tap **Vendor presets**. If you ran API smoke **§2c** as `alice` with the same user id as the app, you may see "Loaded saved presets from server."; a new Google donor starts empty until you save presets.
+1. App opens to the **SharingBridge** home hub with **Vendor presets**, **Help a seeker**, and **Order initiation history**. Tap **Vendor presets**. If you ran API smoke **§2c** as `alice` with the same user id as the app, you may see "Loaded saved presets from server."; a new Google payee starts empty until you save presets.
 2. Type something like `zomato a2b mini meals` → tap **Suggest Vendors** (or **Suggest again**). With **orchestration enabled** (§2a.1), rankings change with query keywords; with flags off, the list is the **same fixed mock** every time. Each row shows the **full** menu line, **Copy link**, and **Open vendor page** when the URL is `http`/`https`. Auth-protected endpoints carry `Authorization: Bearer <signed token>`.
 3. Check one or more suggestions → tap **Confirm and Save Presets**.
    A **SnackBar** and green status show "Presets saved successfully." The **full suggestion list stays on screen** (only checkboxes clear) so you can save another subset or open **Saved presets** without losing unselected rows. Server state still updates (dedupe on save as before).
@@ -673,8 +673,8 @@ Use after **§3-auth** (Google) or **§3-dev** (token as `alice`). On the **emul
 ### 3d. Why Suggest Vendors and Saved presets can both look “static”
 
 - **Suggest Vendors** uses `POST /v1/donor-setup/suggest-vendors`. With **`AI_SUGGEST_VENDORS_ENABLED`** and orchestration running, results are **query-ranked**; without those env vars, the integration service returns a **fixed mock** (three venues). That is expected until a live LLM provider is enabled.
-- **Saved presets** reflects **`GET …/preferences`**. After **Confirm and Save** on Donor Setup, the **suggestion** list is still the mock search result until you run **Suggest Vendors** again; use **Saved presets** to see persisted rows only.
-- **Clear cache / Sign out** on Donor Setup only clears the **phone’s offline cache** (`shared_preferences`). It does **not** delete presets on the server, so **Saved presets** will still show server rows after a refresh.
+- **Saved presets** reflects **`GET …/preferences`**. After **Confirm and Save** on Vendor preset setup, the **suggestion** list is still the mock search result until you run **Suggest Vendors** again; use **Saved presets** to see persisted rows only.
+- **Clear cache / Sign out** on Vendor preset setup only clears the **phone’s offline cache** (`shared_preferences`). It does **not** delete presets on the server, so **Saved presets** will still show server rows after a refresh.
 
 ### 3e. Clear server-side saved presets (empty the listing)
 
@@ -692,7 +692,7 @@ Pick one approach:
    Or **replace with an empty list** via API:
 
    ```powershell
-   $token = node scripts/mint-dev-jwt.mjs alice donor
+   $token = node scripts/mint-dev-jwt.mjs alice payee
    $uid = "alice"
    Invoke-RestMethod -Method Put -Uri "http://localhost:8081/v1/users/$uid/donor-presets" `
      -Headers @{ Authorization = "Bearer $token" } -ContentType "application/json" `
@@ -703,15 +703,15 @@ Pick one approach:
 
 **Local merge caveat:** With the default **file-backed** integration store (`local`), each save **merges** presets by `(restaurant_name, order_url)`; older venues for that user are **not** removed if you omit them in a later save. To shrink the list you must clear storage (above) or use **user-service** mode, where `PUT` donor-presets **replaces** the full set.
 
-### 3f. Help a seeker (donor–seeker handoff)
+### 3f. Help a seeker (payee–seeker handoff)
 
-Uses the same authed **`GET …/preferences`** load as Donor Setup (saved presets). There is **no** separate field-flow draft in `shared_preferences` for this screen. The flow is **three steps** (see the step label at the top of the screen).
+Uses the same authed **`GET …/preferences`** load as Vendor preset setup (saved presets). There is **no** separate field-flow draft in `shared_preferences` for this screen. The flow is **three steps** (see the step label at the top of the screen).
 
 1. From the home hub, tap **Help a seeker**.
 2. **Step 1 — Guidance:** read dignity and **photo consent** text, then tap **Continue to photo and instructions**.
 3. **Step 2 — Photo and AI:** optionally tap **Add reference photo** (**Take photo** or **Choose from gallery**; OS permission the first time). Optionally fill **Handover notes**. Tap **Get AI delivery instructions** — if a photo is attached, the app first uploads to **photo-service** (`POST /v1/photos/upload`, **§2b**), then calls `POST /v1/donor-seeker/instruction-pack` on integration-service with `reference_photo_artifact_id`. If integration is unreachable, the app falls back to a **local stub** (upload may still fail if photo-service is down). Use the app bar **Back** arrow to return to guidance and clear the photo/notes for this session.
-4. **Step 3 — Copy instructions and place order:** review the text in the filled card, tap **Copy instructions to clipboard and register donation intent**. The app copies to the clipboard and calls `POST /v1/donor-seeker/order-intents` with reference photo URLs when upload succeeded. On first success you should see **Order intent registered** with a reference id and a SnackBar saying **Donation intent registered**; **Open …** rows unlock for saved presets with valid **http/https** links. Paste into the vendor app’s delivery-notes field and complete payment there.
-5. **Repeat tap (same session):** tap the same button again without regenerating instructions. The server **updates** the existing intent for that `pack_id` (same reference id, HTTP `200`, `created: false` in the API body) — it does **not** create a second row. The SnackBar should say **Donation intent updated**; the reference id on screen stays the same.
+4. **Step 3 — Copy instructions and place order:** review the text in the filled card, tap **Copy instructions to clipboard and register order intent**. The app copies to the clipboard and calls `POST /v1/donor-seeker/order-intents` with reference photo URLs when upload succeeded. On first success you should see **Order intent registered** with a reference id and a SnackBar saying **Order intent registered**; **Open …** rows unlock for saved presets with valid **http/https** links. Paste into the vendor app’s delivery-notes field and complete payment there.
+5. **Repeat tap (same session):** tap the same button again without regenerating instructions. The server **updates** the existing intent for that `pack_id` (same reference id, HTTP `200`, `created: false` in the API body) — it does **not** create a second row. The SnackBar should say **Order intent updated**; the reference id on screen stays the same.
 
 **Photo-service troubleshooting:** SnackBar “Could not upload photo…” → start **§2b**, check `PHOTO_SERVICE_BASE_URL` (**§3-host**), and `.env` (`CLOUDINARY_*` required). Physical device: use your PC’s Wi‑Fi IP, not `localhost` or `10.0.2.2`.
 
@@ -729,7 +729,7 @@ flutter run -d emulator-5554 `
   --dart-define=USER_SERVICE_BASE_URL=https://sharingbridge-user-service.onrender.com
 ```
 
-Walk through **§3f**; step 4 must show **Donation intent registered** (or **updated** on repeat).
+Walk through **§3f**; step 4 must show **Order intent registered** (or **updated** on repeat).
 
 ### 3g. Order initiation history (mobile dashboard)
 
@@ -745,7 +745,7 @@ Empty state is normal before any intent is registered. Requires the same `AUTH_T
 
 Repository: `sharingbridge-web-app`. Configuration: [configuration/web-client.md](../configuration/web-client.md). Deploy order (Google → local → Render): [configuration/e2e-deployment-sequence.md](../configuration/e2e-deployment-sequence.md).
 
-Keep **user-service** (`8081`), **integration-service** (`8080`), and (for AI paths) **ai-orchestration** (`8091`) running as in **§2**. For coordinator **reference photo** thumbnails, the donor must have uploaded via **photo-service** (`8092`, **§2b**) during **§3f**. The web app does not call photo-service directly — it shows URLs stored on the order intent.
+Keep **user-service** (`8081`), **integration-service** (`8080`), and (for AI paths) **ai-orchestration** (`8091`) running as in **§2**. For coordinator **reference photo** thumbnails, the payee must have uploaded via **photo-service** (`8092`, **§2b**) during **§3f**. The web app does not call photo-service directly — it shows URLs stored on the order intent.
 
 ### 4a. Prerequisites (Google, CORS, `.env`)
 
@@ -760,7 +760,7 @@ Complete [configuration/e2e-deployment-sequence.md](../configuration/e2e-deploym
    - `VITE_GOOGLE_CLIENT_ID` = Web Client ID
    - `VITE_API_BASE_URL=http://localhost:8080`
    - `VITE_USER_SERVICE_BASE_URL=http://localhost:8081`
-4. Optional: register at least one order intent via mobile **§3f** (**§3-auth** Google donor or **§3-dev**) so the coordinator dashboard is not empty on first **Refresh**.
+4. Optional: register at least one order intent via mobile **§3f** (**§3-auth** Google payee or **§3-dev**) so the coordinator dashboard is not empty on first **Refresh**.
 
 No **client secret** in any `.env` for this flow.
 
@@ -784,18 +784,18 @@ npm run dev
 ### 4c. Order initiation history (coordinator view)
 
 1. After at least one successful mobile **Help a seeker** copy (**§3f**) on the **same** integration host (`localhost:8080` or hosted URL), click **Refresh** on the web dashboard.
-2. List shows **all** donors’ intents. Use **By donor** or **By day** above the list (**By city** is reserved for a future API field).
-3. Each row includes the donor **`user_id`**; detail pane shows **Donor** explicitly.
-4. Detail should match mobile **Order initiation history** (**§3g**) for that donor — same reference id, pack id, status, notes, preset snapshot.
-5. If the donor attached a reference photo, detail shows a **thumbnail** and **Open full image (Cloudinary)** link (`reference_photo_view_url`).
+2. List shows **all** initiators’ intents. Use **By initiator** or **By day** above the list (**By city** is reserved for a future API field).
+3. Each row includes the payee **`user_id`**; detail pane shows **Payee** explicitly.
+4. Detail should match mobile **Order initiation history** (**§3g**) for that payee — same reference id, pack id, status, notes, preset snapshot.
+5. If the payee attached a reference photo, detail shows a **thumbnail** and **Open full image (Cloudinary)** link (`reference_photo_view_url`).
 6. **Home** in the header clears the selected row and scrolls to the top.
 
 ### 4d. Empty list / mismatch
 
-- Coordinators see intents for **every** donor on **that** integration API host. An empty list usually means no donor has registered an intent on **this** host yet (localhost vs Render are separate stores).
+- Coordinators see intents for **every** payee on **that** integration API host. An empty list usually means no payee has registered an intent on **this** host yet (localhost vs Render are separate stores).
 - `VITE_API_BASE_URL` must match mobile `API_BASE_URL` (both localhost or both Render URLs).
-- `403 wrong_client_role` on web: account has no `donor` or `coordinator` in `user_roles` (`no_app_role`). Donor-only accounts should sign in successfully and see the **limited** dashboard.
-- `403 wrong_client_role` on mobile: account missing `donor` in `user_roles` (rare after sign-in; every user gets `donor` ensured).
+- `403 wrong_client_role` on web: account has no `payee` or `coordinator` in `user_roles` (`no_app_role`). Payee-only accounts should sign in successfully and see the **limited** dashboard.
+- `403 wrong_client_role` on mobile: account missing `payee` in `user_roles` (rare after sign-in; every user gets `payee` ensured).
 - **Connection refused** on emulator sign-in or API: you used `localhost` in dart-defines — switch both URLs to `http://10.0.2.2:8081` and `http://10.0.2.2:8080` (**§3-host**).
 - **“Network unavailable”** on a **physical phone** with correct `192.168.x.x` dart-defines: phone and PC are on **different networks** (mobile data, other broadband, guest Wi‑Fi) — join the **same Wi‑Fi as the PC**, verify `http://<PC-LAN-IP>:8080/health` in the phone browser, or use **USB + `adb reverse`** (**§3-host**).
 - `401 invalid_google_token`: `VITE_GOOGLE_CLIENT_ID` must match `GOOGLE_CLIENT_ID_WEB`; add `http://localhost:5173` under Google **Authorized JavaScript origins**.
@@ -806,7 +806,7 @@ See [configuration/google-auth-setup.md](../configuration/google-auth-setup.md) 
 
 ## 5. Cleanup / fresh slate
 
-To wipe persisted donor presets and start over (same as §3e option 1; mobile-focused):
+To wipe persisted payee presets and start over (same as §3e option 1; mobile-focused):
 
 ```powershell
 cd D:\kannan\sharingbridge\sharingbridge-integration-service
@@ -834,17 +834,17 @@ See `development/USER_SERVICE_PREFERENCES_MIGRATION.md` for the full cutover che
 
 ### 5c. Historical: local field draft key (no longer used)
 
-Earlier MVP builds stored a field draft under `sharingbridge_field_interaction_draft_v1`. The current **Help a seeker** screen does **not** use that key. To reset mobile state, use app data clear / uninstall only if you need a full wipe; donor-setup offline cache is separate (see **Clear cache / Sign out** on Donor Setup and **§3**).
+Earlier MVP builds stored a field draft under `sharingbridge_field_interaction_draft_v1`. The current **Help a seeker** screen does **not** use that key. To reset mobile state, use app data clear / uninstall only if you need a full wipe; donor-setup offline cache is separate (see **Clear cache / Sign out** on Vendor preset setup and **§3**).
 
 ## 6. Hosted backend smoke (Render)
 
 Use this after deploying per **[configuration/backend-render.md](../configuration/backend-render.md)** (Track A).
 
 1. Confirm all three `/health` endpoints return `ok: true` (allow 30–60s on cold start).
-2. Mint a token locally: `node scripts/mint-dev-jwt.mjs demo-user donor` in user-service (with hosted `AUTH_TOKEN_SECRET` in env if backfilling Render data).
+2. Mint a token locally: `node scripts/mint-dev-jwt.mjs demo-user payee` in user-service (with hosted `AUTH_TOKEN_SECRET` in env if backfilling Render data).
 3. Call **hosted** integration `POST …/v1/donor-setup/suggest-vendors` and `POST …/v1/donor-seeker/instruction-pack` with `Authorization: Bearer <token>`.
 4. `POST …/v1/donor-seeker/order-intents` with the same Bearer token (see [configuration/backend-render.md](../configuration/backend-render.md) smoke script). First call returns HTTP **201** and `created: true`. Repeat the **same** `pack_id` — expect HTTP **200**, `created: false`, and the **same** `order_intent_id`.
-5. Run the mobile app (see [configuration/mobile-client.md](../configuration/mobile-client.md) — `cd` first, then mint token, then `flutter run`). In **§3f** step 4, repeat the copy button and confirm **Donation intent updated** with an unchanged reference id.
+5. Run the mobile app (see [configuration/mobile-client.md](../configuration/mobile-client.md) — `cd` first, then mint token, then `flutter run`). In **§3f** step 4, repeat the copy button and confirm **Order intent updated** with an unchanged reference id.
 6. (Optional) Deploy `sharingbridge-web-app` as a Render static site per [configuration/e2e-deployment-sequence.md](../configuration/e2e-deployment-sequence.md) Phases 3–5; **Sign in with Google** on the live URL and **Refresh** — **§4**.
 
 If suggest-vendors or instruction-pack fail, verify `AI_ORCHESTRATION_BASE_URL`, `AI_*_ENABLED=true`, and matching `AI_ORCHESTRATION_INTERNAL_API_KEY` on integration and ai-orchestration.
@@ -871,4 +871,4 @@ If suggest-vendors or instruction-pack fail, verify `AI_ORCHESTRATION_BASE_URL`,
   and falling back to the local cache when the backend is offline.
 - Step **2i** returns a non-empty `delivery_instructions` string when orchestration is enabled.
 - Step **3f** walks **Help a seeker** (guidance → optional photo upload to photo-service + instruction-pack → copy + vendor links; repeat copy updates the same order initiation).
-- Step **4c** shows the coordinator web dashboard listing donor order intents (including donor `user_id` and reference photo thumbnail when uploaded) after mobile **§3f** on the same integration host.
+- Step **4c** shows the coordinator web dashboard listing payee order intents (including payee `user_id` and reference photo thumbnail when uploaded) after mobile **§3f** on the same integration host.

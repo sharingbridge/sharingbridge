@@ -1,10 +1,12 @@
 # Database configuration (Supabase PostgreSQL)
 
-SharingBridge stores **users, roles, donor presets, and order intents** in **PostgreSQL**. For production we use **[Supabase](https://supabase.com)** (hosted Postgres). **Render** hosts only the **APIs** (user-service, integration-service); they connect to Supabase via **`DATABASE_URL`**.
+SharingBridge stores **users, roles, payee presets, and order intents** in **PostgreSQL**. For production we use **[Supabase](https://supabase.com)** (hosted Postgres). **Render** hosts only the **APIs** (user-service, integration-service); they connect to Supabase via **`DATABASE_URL`**.
 
 There is **no** runtime fallback to JSON files after cutover — import once, then the database is the only source of truth.
 
-**Related:** [authentication.md](./authentication.md) · [backend-render.md](./backend-render.md) (APIs on Render) · [e2e-deployment-sequence.md](./e2e-deployment-sequence.md) · [IMPLEMENTATION_APPROACH.md](../development/IMPLEMENTATION_APPROACH.md) (long-term stack).
+> **SQL run order (start here for migrations):** [database-setup-sequence.md](./database-setup-sequence.md) — greenfield, brownfield, and marketplace steps in sequence.
+
+**Related:** [authentication.md](./authentication.md) · [backend-render.md](./backend-render.md) · [e2e-deployment-sequence.md](./e2e-deployment-sequence.md) · [README.md § Documentation guide](../README.md#documentation-guide)
 
 ---
 
@@ -14,7 +16,7 @@ There is **no** runtime fallback to JSON files after cutover — import once, th
 |------|----------------|-------------------------|
 | Users, Google mapping | `user-service/data/user-service-store.json` | `users` |
 | Coordinator role | — (seed in DB) | `user_roles` |
-| Donor presets | same JSON store | `donor_presets` |
+| Payee presets | same JSON store | `donor_presets` |
 | Order intents | `integration-service/data/order-intents.json` | `order_intents` |
 | Seeker demands | — | `seeker_demands` (Phase C.1 — run [schema-seeker-demands-migration.sql](./schema-seeker-demands-migration.sql) on existing DBs) |
 
@@ -52,14 +54,13 @@ There is **no** runtime fallback to JSON files after cutover — import once, th
 
 ## Step 2 — Create tables in Supabase (SQL Editor)
 
-1. In the Supabase dashboard, open **SQL Editor** (left sidebar).
-2. Click **New query**.
-3. Open [schema.sql](./schema.sql) from this repo, copy all contents, paste into the query, and **Run** (or Ctrl+Enter).
-4. Confirm success — you should see four tables under **Table Editor** (see [§ Tables](#tables)).
+Follow **[database-setup-sequence.md](./database-setup-sequence.md)** § Greenfield:
 
-**Verify:** **Table Editor** → each table exists with no rows until sign-in / migration.
+1. Run [schema.sql](./schema.sql) (core tables).
+2. For marketplace / Demand tab: run M1–M3 in setup sequence (marketplace migration, wire migration, seed).
+3. After first Google sign-in: [coordinator-seed.sql](./coordinator-seed.sql) — see [§ Coordinator seeding](#coordinator-seeding).
 
-**Coordinator access:** after a row exists in `users`, run [coordinator-seed.sql](./coordinator-seed.sql) — see [§ Coordinator seeding](#coordinator-seeding).
+**Verify:** **Table Editor** → tables listed in [§ Tables](#tables).
 
 ---
 
@@ -290,15 +291,15 @@ Set **`DATABASE_URL`** on user-service, integration-service, and photo-service (
 | Table | Replaces (file mode) |
 |-------|----------------------|
 | `users` | `user-service-store.json` users |
-| `user_roles` | coordinator / donor roles (SQL seed) |
-| `donor_presets` | donor presets in user-service store |
+| `user_roles` | coordinator / payee roles (SQL seed) |
+| `donor_presets` | payee presets in user-service store |
 | `order_intents` | `order-intents.json` |
 
 `order_intents.payload` (JSONB) holds `verbal_handover_notes`, `presets_snapshot`, `has_reference_photo`, and optional **`location_lat`**, **`location_lng`**, **`location_label`**, **`locality_key`** (set on `POST` when the client sends coordinates).
 
 | Column | Purpose |
 |--------|---------|
-| `created_at` | **Order intent taken** time (donor registered intent — not a vendor order). |
+| `created_at` | **Order intent taken** time (payee registered intent — not a vendor order). |
 | `delivered_at` | Nullable; **Delivered at** on dashboard ([schema-delivered-at-migration.sql](./schema-delivered-at-migration.sql) on older DBs). Populated when delivery-partner flow exists. |
 | `location` / `locality_key` | PostGIS neighbourhood filters; list may return computed **`distance_m`** (metres, not stored). |
 
@@ -313,7 +314,7 @@ Primary keys and `UNIQUE` constraints create indexes automatically; [schema.sql]
 | Index | Type | Why |
 |-------|------|-----|
 | `PRIMARY KEY` / `UNIQUE` | Automatic | Upsert by `order_intent_id`; one row per `(user_id, pack_id)` |
-| `idx_order_intents_user_updated` | Manual | Donor list: `WHERE user_id` + `ORDER BY updated_at DESC` |
+| `idx_order_intents_user_updated` | Manual | Payee list: `WHERE user_id` + `ORDER BY updated_at DESC` |
 | `idx_order_intents_updated` | Manual | Time-ordered lists |
 | `idx_order_intents_location` | GiST | `ST_DWithin` neighbourhood / map queries |
 | `idx_order_intents_locality_key` | Partial btree | `locality_key = $key` filters |
@@ -322,7 +323,7 @@ Primary keys and `UNIQUE` constraints create indexes automatically; [schema.sql]
 
 ## Coordinator seeding
 
-1. Ensure a row exists in `users` (e.g. one Google sign-in on mobile as donor, or `npm run import:json` from legacy JSON).
+1. Ensure a row exists in `users` (e.g. one Google sign-in on mobile as payee, or `npm run import:json` from legacy JSON).
 2. Run [coordinator-seed.sql](./coordinator-seed.sql) in psql, pgAdmin, or Supabase **SQL Editor** (edit the email in that file first).
 3. Sign in on the **web dashboard** with that Gmail — JWT will include `role: coordinator`.
 
@@ -371,7 +372,7 @@ user-service reads **`user_roles`** and mints `role` (active) + `roles` (array).
 | **Storage** | JSONB `payload` (client fields) **plus** denormalized `locality_key` and `location geography(POINT, 4326)` on upsert. |
 | **List query** | `PostgresOrderIntentStore.listForDashboard()` — SQL `WHERE` with `updated_at`, `ST_DWithin`, or `locality_key`. Service **fails at startup** if PostGIS / `location` column is missing. |
 | **Tests** | File `OrderIntentStore` mirrors list rules in memory (no Postgres); not used in production. |
-| **Donor** | Default time window from `DONOR_NEIGHBOURHOOD_WINDOW_HOURS`; without browser location → own rows only in that window. |
+| **Payee** | Default time window from `DONOR_NEIGHBOURHOOD_WINDOW_HOURS`; without browser location → own rows only in that window. |
 | **Coordinator** | Full history by default; optional `?since=…`, `?near_lat=&near_lng=`, `?locality_key=` hit the same SQL predicates. |
 
 ### Existing databases (created before PostGIS in schema.sql)

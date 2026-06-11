@@ -1,30 +1,30 @@
-# **SharingBridge - Digital Alms Platform**
+# **SharingBridge - Community meal coordination platform**
 
 ## **Problem Statement**
-When meeting people seeking alms, donors face a moral dilemma: offering cash may support unintended uses (substance abuse, exploitation) rather than basic needs like food and shelter. There's no reliable mechanism to ensure charitable donations are used exclusively for essential necessities.
+People often want to help with **food**—for someone they meet, a parent, a senior neighbour, or themselves—but **cash is ambiguous** and **meal logistics are fragmented** (which vendor, what to order, how to pay, how to confirm handover). There is no lightweight way to turn “they need a meal” into a **standard item, vendor payment, and tracked handover** without the platform holding money.
 
 ## **Solution**
-SharingBridge is a mobile/web application that enables donors to provide food and essential items to alms seekers through verified third-party delivery services, eliminating cash transactions while maintaining dignity and convenience for both parties. **The platform acts as a facilitator only - all payments are processed directly through the vendor's payment system.**
+SharingBridge is a mobile/web application that helps **payees and demand initiators** arrange meals for **beneficiaries** through standard menus and third-party delivery or local vendors—maintaining dignity and convenience. **The platform acts as a facilitator only; all payments are processed directly through the vendor's payment system.**
 
 ### **Core Workflow:**
-1. **Donor Setup (Before Field Use)** - Donor can use an AI-assisted setup flow (fixed prompt + structured output) to discover local preferred vendors and starter menu templates, then confirms/edits saved payment redirect preferences for quick ordering.
-2. **Real-World Trigger** - Workflow starts only when an alms seeker approaches the donor and asks for help.
-3. **Initial Conversation and Consent** - Donor confirms food help intent and gets consent to capture beneficiary details/photo for delivery identification.
-4. **Quick Guidance (Early)** - During this initial interaction, the app shows short, fixed guidance on consent, handover conditions, and surroundings. The donor decides whether to continue; SharingBridge does not certify that a location is safe.
-5. **Create Order Intent** - Donor captures beneficiary context and chooses a prepared order option.
-6. **Generate Delivery Instruction Pack** - App uses AI to create clean, non-offensive delivery instructions from donor input (for example: visible appearance cues, current geolocation, order summary, and secure photo reference). Donor can copy-paste this text into the delivery app instruction field.
+1. **Vendor preset setup (before field use)** — Signed-in user saves preferred vendors and menu deep links via an AI-assisted flow (fixed prompt + structured output).
+2. **Real-world trigger** — Someone needs a meal (in person, remotely, or on behalf of family); the initiator or payee opens the app.
+3. **Initial Conversation and Consent** - Payee confirms food help intent and gets consent to capture beneficiary details/photo for delivery identification.
+4. **Quick Guidance (Early)** - During this initial interaction, the app shows short, fixed guidance on consent, handover conditions, and surroundings. The payee decides whether to continue; SharingBridge does not certify that a location is safe.
+5. **Create Order Intent** - Payee captures beneficiary context and chooses a prepared order option.
+6. **Generate Delivery Instruction Pack** - App uses AI to create clean, non-offensive delivery instructions from payee input (for example: visible appearance cues, current geolocation, order summary, and secure photo reference). Payee can copy-paste this text into the delivery app instruction field.
 7. **Store Photo + Instruction Securely** - App stores the beneficiary photo and generated instruction text in a secure external repository and includes only the required reference/link in delivery instructions.
 8. **Place Order** - Order is created through external food delivery platforms (or through the direct-vendor flow once that flow is fully implemented).
-9. **Pay Externally** - Donor completes payment in vendor or licensed provider systems.
+9. **Pay Externally** - Payee completes payment in vendor or licensed provider systems.
 10. **Deliver and Verify** - Delivery personnel identify the beneficiary and complete handover; delivery photo/evidence is captured.
-11. **Confirm to Donor** - Donor receives completion status and verification details.
-12. **View History** - Donors/admins can see nearby and past order outcomes.
+11. **Confirm to Payee** - Payee receives completion status and verification details.
+12. **View History** - Payees/admins can see nearby and past order outcomes.
 
 ## **Operating Constraints & Assumptions**
 
 This section defines product constraints for volunteer-led, agile delivery.
 
-- **Charitable intent, light process:** Development is expected to be **iterative** (short cycles, progressive refinement). Edge cases—especially **privacy** and **unhappy paths**—are specified and hardened **over time**, not all upfront.
+- **Intent to help with food, light process:** Development is expected to be **iterative** (short cycles, progressive refinement). Edge cases—especially **privacy** and **unhappy paths**—are specified and hardened **over time**, not all upfront.
 - **Beneficiaries:** Beneficiaries are **not registered users** and do not log in.
 - **Facilitation, not finance:** SharingBridge is a **facilitator**. The platform **does not own financial tracking responsibility**—no authoritative **ledger of record**, settlement, or institutional money-handling role. **Payments and balances live with vendors and licensed payment providers.** The product may store **non-authoritative** data needed for coordination and UX (for example order state, external vendor order references), only as narrowly as implementation requires, and with retention rules to be tightened as privacy work proceeds.
 - **Pledges and community pools:** Pledges describe **voluntary intent** from willing participants, **not legally binding commitments** and not a regulated pooled account unless a future scope explicitly says otherwise (with professional advice). **Orchestration**—who gets notified when, how intent becomes a fulfilled order, expiry, partial fulfillment, cancellation—**is not fully specified yet** and will be designed as those features mature.
@@ -32,16 +32,16 @@ This section defines product constraints for volunteer-led, agile delivery.
 
 ## **Key Benefits**
 
-**For Donors:**
-- Ensures charitable intent is fulfilled (food, medicine, essentials only)
+**For payees and initiators:**
+- Turns intent to help with food into a concrete meal arrangement (standard items where configured)
 - Provides delivery confirmation with photo proof
 - Secure payment through trusted vendor platforms (Zomato, Swiggy, etc.)
 - Peace of mind about proper fund utilization
 - No platform-owned payment credentials or settlement ledgers; only non-authoritative coordination data as needed (see *Operating Constraints*)
-- Flexible giving options: direct, pledge, or crowdfund
+- Flexible funding options: direct pay, pledge, or crowdfund
 - Community impact visibility
 
-**For Alms Seekers:**
+**For People who need meals:**
 - Guaranteed food/essential items instead of uncertain cash
 - Maintains dignity through respectful process
 - Reduced uncertainty through direct order visibility and confirmation
@@ -55,7 +55,7 @@ This section defines product constraints for volunteer-led, agile delivery.
 - Better planning through vendor capacity slots and scheduled preparation
 
 **For Society:**
-- Reduces misuse of charitable funds
+- Reduces misuse of meal-support funds
 - Promotes safe, transparent giving
 - Leverages existing delivery infrastructure
 - Creates community solidarity through crowdfunding
@@ -76,15 +76,15 @@ This section defines product constraints for volunteer-led, agile delivery.
 - Order history and transaction logs
 
 **3. Field handover guidance (mobile — BRD step 4)**
-- **Fixed in-app guidance** in plain language (consent, surroundings, visibility, photo policy, donor judgment)
+- **Fixed in-app guidance** in plain language (consent, surroundings, visibility, photo policy, payee judgment)
 - **Not** a backend safety score or pass/fail gate for MVP
 - Optional future: post-delivery feedback for ops analytics only (non-certifying); see coordination docs
 
 **3b. Photo & Verification Module** (`sharingbridge-photo-service`)
-- Encrypted photo storage (reference at donor interaction; delivery acknowledgement)
+- Encrypted photo storage (reference at payee interaction; delivery acknowledgement)
 - Face embeddings and computer-vision pipelines (not LLM):
-  - **Assistance history review** (informational, non-blocking): compare photo + location to recent help within configurable time/proximity; inform donor only — never block donation
-  - **Donor ↔ delivery photo match** at handover verification
+  - **Assistance history review** (informational, non-blocking): compare photo + location to recent help within configurable time/proximity; inform payee only — never block the meal arrangement
+  - **Payee ↔ delivery photo match** at handover verification
 - Optional privacy controls (e.g. blur) where supported
 
 **4. Integration Layer**
@@ -130,17 +130,17 @@ This section defines product constraints for volunteer-led, agile delivery.
 ## **Future Extensions**
 
 #### **1. Pledge Pool System**
-Donors can pledge money in advance for future seekers they have not met yet.
+Payees can pledge money in advance for future seekers they have not met yet.
 - **How it works:**
-  - Donors pledge amount (₹100, ₹500, ₹1000, etc.) to a common pool
-  - When any donor meets a seeker, they can use pledged funds instead of paying directly
+  - Payees pledge amount (₹100, ₹500, ₹1000, etc.) to a common pool
+  - When any payee meets a seeker, they can use pledged funds instead of paying directly
   - Pledges can be earmarked (location-based, time-based, or general)
   - Real-time dashboard shows pledge utilization
 - **Benefits:** Enables giving even when not physically present, creates community fund
 - **Orchestration (TBD):** Matching pledges to live donor-seeker interactions, notifications to pledgors and other parties, expiry, cancellation, and visibility rules are to be designed as the feature set matures, without the platform taking on financial tracking responsibility.
 
 #### **2. Direct Vendor Program**
-Small food vendors/restaurants pledge their donation capacity without preparing food in advance.
+Small food vendors/restaurants pledge their meal-prep capacity without preparing food in advance.
 - **How it works:**
   - Vendors register and pledge: "Can prepare X meals, ready in Y minutes, valid for Z hours"
   - System maintains real-time capacity inventory per vendor
@@ -159,7 +159,7 @@ Enable multiple people to contribute to a single order when one person cannot af
   - Person spots seeker but cannot afford full meal
   - Creates a "request for help" with seeker photo and location
   - Request shared with nearby SharingBridge users
-  - Multiple donors contribute small amounts (₹20, ₹50, etc.)
+  - Multiple payees contribute small amounts (₹20, ₹50, etc.)
   - Order placed once threshold reached
   - All contributors notified of delivery
 - **Benefits:** Lower barrier to giving, community participation, no one turned away
@@ -174,4 +174,4 @@ Enable multiple people to contribute to a single order when one person cannot af
 
 ---
 
-*This platform transforms traditional alms-giving into a modern, accountable, and dignified process that benefits all stakeholders while leveraging existing delivery infrastructure.*
+*This platform coordinates affordable meals with accountability and dignity—for beneficiaries, payees, initiators, and vendors—while leveraging existing delivery infrastructure.*

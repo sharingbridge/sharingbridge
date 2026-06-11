@@ -1,10 +1,12 @@
 # SharingBridge configuration — start here
 
-**One place to orient yourself.** This folder is **how to run and wire** the MVP (not product design — see `design/` and `requirements/`).
+**One place to orient yourself.** This folder is **how to run and wire** the MVP (product design — see [README.md § Documentation guide](../README.md#documentation-guide)).
 
 | Your goal | Follow this path |
 |-----------|------------------|
+| **Which doc to read (full map)** | [README.md § Documentation guide](../README.md#documentation-guide) |
 | **First-time setup (recommended)** | [e2e-deployment-sequence.md](./e2e-deployment-sequence.md) — Phases **0 → 5** in order |
+| **Database SQL in correct order** | [database-setup-sequence.md](./database-setup-sequence.md) |
 | **Local only (laptop)** | Phase 0–1 in [e2e-deployment-sequence.md](./e2e-deployment-sequence.md) → [MANUAL_TESTING_GUIDE.md](../testing/MANUAL_TESTING_GUIDE.md) §3 (mobile) / §4 (web) |
 | **Deploy to Render** | [e2e-deployment-sequence.md](./e2e-deployment-sequence.md) Phases **2–5** → [backend-render.md](./backend-render.md) for env keys per service |
 | **Google OAuth / coordinator seed** | [google-auth-setup.md](./google-auth-setup.md) |
@@ -30,7 +32,7 @@ Phase 3   Render: static web app (VITE_* build env)
     ↓
 Phase 4   Add live site URL to Google origins + WEB_CORS_ORIGINS on both backends
     ↓
-Phase 5   Verify hosted coordinator dashboard + donor flow on same API host
+Phase 5   Verify hosted coordinator dashboard + payee flow on same API host
 ```
 
 Optional branches (any time after Phase 1):
@@ -49,16 +51,16 @@ Optional branches (any time after Phase 1):
 | **Step-by-step deploy order** | [e2e-deployment-sequence.md](./e2e-deployment-sequence.md) |
 | **All env vars by service** | [environment-variables.md](./environment-variables.md) |
 | **Render deploy (blueprint, CORS)** | [backend-render.md](./backend-render.md) |
-| **Supabase / Postgres / schema** | [database.md](./database.md) · [schema.sql](./schema.sql) · [coordinator-seed.sql](./coordinator-seed.sql) |
+| **Supabase / Postgres / schema** | [database-setup-sequence.md](./database-setup-sequence.md) · [database.md](./database.md) · [schema.sql](./schema.sql) |
 | **Auth, JWT, roles, 403 errors** | [authentication.md](./authentication.md) |
 | **All environment variables** | [environment-variables.md](./environment-variables.md) |
 | **Google Console clicks** | [google-auth-setup.md](./google-auth-setup.md) |
 | **Web dashboard (Vite, CORS)** | [web-client.md](./web-client.md) |
 | **Mobile URLs (emulator, phone, Wi‑Fi)** | [mobile-client.md](./mobile-client.md) |
 | **Manual test scripts** | [MANUAL_TESTING_GUIDE.md](../testing/MANUAL_TESTING_GUIDE.md) |
-| **Product extensions (not built yet)** | [Future Extensions](../design/Future_Extensions.md) |
-| **Neighbourhood dashboard roadmap (June 2026)** | [PRODUCT_ROADMAP.md](../development/PRODUCT_ROADMAP.md) |
-| **Agent / development docs** | [development/README.md](../development/README.md) · [AGENT_HANDOFF.md](../development/AGENT_HANDOFF.md) |
+| **Product roadmap (authoritative)** | [PRODUCT_ROADMAP.md](../development/PRODUCT_ROADMAP.md) |
+| **Order-ops supplement (A–B)** | [Future_Extensions.md](../design/Future_Extensions.md) |
+| **Agent / development docs** | [README.md](../README.md#documentation-guide) · [AGENT_HANDOFF.md](../development/AGENT_HANDOFF.md) |
 
 ---
 

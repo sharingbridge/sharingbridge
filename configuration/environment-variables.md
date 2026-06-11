@@ -93,10 +93,9 @@ Set the **same value** on all four Render Web Services if you want consistent ve
 | `AUTH_TOKEN_ISSUER` | `sharingbridge-user-service` | same |
 | `AUTH_TOKEN_SECRET` | **same** as user-service | same |
 | `DATABASE_URL` | **same** as user-service | same |
-| `DONOR_LOCALITY_BUCKET_KM` | `5` | `5` — demand-board `locality_key` cell size in **km** (~5 km squares; latitude-adjusted). Takes precedence over grid decimals. |
-| `DONOR_LOCALITY_GRID_DECIMALS` | `2` | `2` — legacy fallback when `DONOR_LOCALITY_BUCKET_KM` is unset (1–4 decimal degrees ≈ 11 km / 1 km / …) |
-| `DONOR_NEIGHBOURHOOD_RADIUS_M` | `5000` | `5000` (`near_lat` / `near_lng` filter radius in **metres**; any positive value, capped at 50000 server-side) |
-| `DONOR_NEIGHBOURHOOD_WINDOW_HOURS` | `2` | `2` (payee list `since`, photo redaction; 1–72) |
+| `INITIATOR_NEIGHBOURHOOD_RADIUS_M` | `5000` | `5000` (`near_lat` / `near_lng` filter radius in **metres**; capped at 50000 server-side) |
+| `INITIATOR_NEIGHBOURHOOD_WINDOW_HOURS` | `2` | `2` (initiator list `since`, photo redaction; 1–72) |
+| `NOMINATIM_USER_AGENT` | `SharingBridge-Integration-Service/1.0` | same — GPS → postal `locality_key` (`IN:TN:600115`) via reverse geocode |
 | `LOG_LEVEL` | `warn` | `error`, `warn`, `info`, or `debug` — see [LOG_LEVEL](#log_level-all-backend-apis) |
 | `ORDER_INTENT_LIST_MAX_ROWS` | `100` | `100` (max rows per dashboard list) |
 | `PORT` | `8080` | injected by Render — do not set |

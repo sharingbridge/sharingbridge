@@ -1,13 +1,18 @@
--- One-time pilot catalog for Chennai GPS buckets used in field testing.
+-- Standard menu catalog keyed by hierarchical locality_key: {country}:{region}:{postal}
+-- Example: IN:TN:600115 (Chennai Sholinganallur pilot near 12.9427, 80.2379)
 -- Run order: configuration/database-setup-sequence.md (step M3, after wire migration).
--- Future: chef advisors maintain offers via admin UI; this seed is for MVP only.
+-- Clear old GPS-bucket rows first: reset-marketplace-data.sql
+
+DELETE FROM standard_offers
+WHERE locality_key LIKE '%,%'
+   OR standard_offer_id LIKE '%legacy-grid%';
 
 INSERT INTO standard_offers (
   standard_offer_id, locality_key, menu_label, price_inr, created_at, updated_at
 ) VALUES
   (
     'so-breakfast-light',
-    '12.936,80.236',
+    'IN:TN:600115',
     'Light breakfast (idli / pongal)',
     45,
     NOW(),
@@ -15,7 +20,7 @@ INSERT INTO standard_offers (
   ),
   (
     'so-breakfast-full',
-    '12.936,80.236',
+    'IN:TN:600115',
     'Full breakfast (combo meal)',
     80,
     NOW(),
@@ -23,7 +28,7 @@ INSERT INTO standard_offers (
   ),
   (
     'so-lunch-full',
-    '12.936,80.236',
+    'IN:TN:600115',
     'Full course lunch (veg meals)',
     120,
     NOW(),
@@ -31,33 +36,17 @@ INSERT INTO standard_offers (
   ),
   (
     'so-dinner-light',
-    '12.936,80.236',
+    'IN:TN:600115',
     'Light dinner (chapati / rice portion)',
     55,
     NOW(),
     NOW()
   ),
   (
-    'so-breakfast-light-legacy-grid',
-    '12.94,80.24',
-    'Light breakfast (idli / pongal)',
-    45,
-    NOW(),
-    NOW()
-  ),
-  (
-    'so-lunch-full-legacy-grid',
-    '12.94,80.24',
-    'Full course lunch (veg meals)',
-    120,
-    NOW(),
-    NOW()
-  ),
-  (
-    'so-dinner-light-legacy-grid',
-    '12.94,80.24',
-    'Light dinner (chapati / rice portion)',
-    55,
+    'so-lunch-full-state',
+    'IN:TN',
+    'Full course lunch (state default)',
+    110,
     NOW(),
     NOW()
   )

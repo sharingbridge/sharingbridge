@@ -79,12 +79,13 @@ Run in this order on **greenfield or upgraded** DB:
 |------|------|---------|
 | **M1** | [schema-marketplace-migration.sql](./schema-marketplace-migration.sql) | `standard_offers`, `demand_windows`, `meal_pledges`, `vendor_bids` |
 | **M2** | [schema-standard-offers-wire-migration.sql](./schema-standard-offers-wire-migration.sql) | `standard_offer_id` FK on pledges and vendor bids |
-| **M3** | [seed-standard-offers.sql](./seed-standard-offers.sql) | One-time pilot catalog (edit `locality_key` before production PIN model) |
+| **M3** | [seed-standard-offers.sql](./seed-standard-offers.sql) | Postal catalog (`IN:TN:600115` Chennai pilot) |
+| **Reset** | [reset-marketplace-data.sql](./reset-marketplace-data.sql) | Clear old GPS-bucket data before re-seed (dev only) |
 
 **App env (integration-service on Render):**
 
 - `DATABASE_URL` — same Supabase URI as user-service
-- `DONOR_LOCALITY_BUCKET_KM` — optional; GPS bucket for demand (default 5). Future: postal `locality_key` (`IN:TN:600045`).
+- `NOMINATIM_USER_AGENT` — required for GPS → postal `locality_key` (e.g. `IN:TN:600115`)
 
 **Verify:**
 
@@ -147,7 +148,7 @@ seeker_demands migration                       │
 | `CREATE DATABASE` inside transaction | Run create-database file alone with auto-commit |
 | Demand tab `schema_pending` | Run seeker_demands migration or use current schema.sql |
 | Empty pledges / 503 marketplace | Run M1 marketplace migration |
-| Seeker demand requires `standard_offer_id` but no picker items | Run M3 seed (or add rows for your `locality_key`) |
+| Seeker demand requires `standard_offer_id` but no picker items | Run [reset-marketplace-data.sql](./reset-marketplace-data.sql) then M3 seed for your postal key (`IN:TN:PIN`) |
 | Integration-service won't start (geo) | PostGIS migration + backfill |
 
 ---

@@ -162,15 +162,15 @@ Local folder names may differ from slugs; **git only cares about `origin`**. Pac
 
 Tasks #1-#5 are complete. Remaining priority order:
 
-1. **Neighbourhood dashboard UX (June 4 memos)** — [PRODUCT_ROADMAP.md](./PRODUCT_ROADMAP.md): list columns **Order intent taken** (`created_at`), **Delivered at** (`delivered_at`, often empty until Phase B), **Distance (m)**; elapsed from **created_at** only; sort by distance asc; payee neighbourhood photos; mobile→web link.
-2. **Neighbourhood + payee-safe dashboards (broader)** — [Future_Extensions.md](../design/Future_Extensions.md) Phase A.2–A.4; then AI descriptions + embeddings per [IMPLEMENTATION_APPROACH.md](./IMPLEMENTATION_APPROACH.md) payee–seeker slice (phases B–D).
+1. **Order ops + delivery proof** — [Future_Extensions.md](../design/Future_Extensions.md) Phase A–B: payee payment-done polish, coordinator **Mark delivered** UX, delivery-partner photo → `delivered_at`.
+2. **AI field slice** — live instruction-pack on device, photo descriptions, embeddings per [IMPLEMENTATION_APPROACH.md](./IMPLEMENTATION_APPROACH.md) phases B–D.
 3. **Operational hardening for token flow (post‑MVP / AWS path).**
    - Render/Railway MVP uses dashboard env vars; centralized secret managers are **deferred** — see `development/IMPLEMENTATION_APPROACH.md` tech-debt note.
    - When ready: managed secret storage per environment, rotate dev default, disallow fallback outside local dev.
    - Add explicit token-expiry refresh flow in mobile UX.
 
-4. **Track A — hosted MVP backend.** [configuration/backend-render.md](../configuration/backend-render.md). Smoke: MANUAL_TESTING_GUIDE **§6** (hosted); web dashboard **§4**. Run marketplace **M1–M3** before testing Demand tab / standard menu picker. Then **Track B:** `sharingbridge-photo-service` + mobile upload.
-5. **AI descriptions + embeddings** — [IMPLEMENTATION_APPROACH.md](./IMPLEMENTATION_APPROACH.md) § payee–seeker field slice; optional `AI_LLM_MODE=openai`; Cloudinary TTL (1–2h) aligned with secure-link policy.
+4. **Track B — photo-service on Render** — reference photo upload on **Help a seeker** end-to-end on hosted stack ([configuration/photo-service-local.md](../configuration/photo-service-local.md)).
+5. **Marketplace allocation** — auto-match pledges/bids to demand (Phase I); fulfiller self-serve bids (beyond coordinator manual entry).
 
 ## Follow-ups Surfaced in Prior Sessions
 - `LocalPreferencesRepository` / `PreferencesStore` remain for **automated tests only**; production uses user-service Postgres.

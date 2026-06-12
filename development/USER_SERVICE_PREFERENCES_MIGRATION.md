@@ -8,7 +8,7 @@ Status: **Runtime cutover complete** — integration-service always uses user-se
 Mobile / Web  →  integration-service  →  user-service  →  Postgres (donor_presets)
 ```
 
-- **No** file-backed preset store at `npm start` (no `PREFERENCES_BACKEND`, no `data/preferences.json` in production).
+- **No** file-backed preset store at `npm start` (no `PREFERENCES_BACKEND`, no repo `data/` directory).
 - **Tests** still use `LocalPreferencesRepository` + temp `PreferencesStore` files.
 
 ## Repository contract
@@ -26,15 +26,16 @@ Integration HTTP delegates preset CRUD to user-service:
 
 ## One-off legacy import
 
-If you still have `data/preferences.json` from an old local deployment:
+If you still have an exported `preferences.json` from an old local deployment:
 
 ```text
 cd sharingbridge-integration-service
 set USER_SERVICE_BASE_URL=http://localhost:8081
+set LEGACY_PREFERENCES_JSON_PATH=C:\path\to\preferences.json
 npm run backfill:user-service-presets
 ```
 
-Optional: `LEGACY_PREFERENCES_JSON_PATH` if the JSON file is not `./data/preferences.json`; `BACKFILL_DRY_RUN=1` previews without writing.
+`BACKFILL_DRY_RUN=1` previews without writing.
 
 ## Clearing presets in dev
 

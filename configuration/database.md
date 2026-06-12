@@ -12,13 +12,14 @@ There is **no** runtime fallback to JSON files after cutover — import once, th
 
 ## Status
 
-| Data | Today (file) | Target (Supabase table) |
-|------|----------------|-------------------------|
-| Users, Google mapping | `user-service/data/user-service-store.json` | `users` |
-| Coordinator role | — (seed in DB) | `user_roles` |
-| Payee presets | same JSON store | `donor_presets` |
-| Order intents | `integration-service/data/order-intents.json` | `order_intents` |
-| Seeker demands | — | `seeker_demands` (Phase C.1 — run [schema-seeker-demands-migration.sql](./schema-seeker-demands-migration.sql) on existing DBs) |
+| Data | Supabase table | Notes |
+|------|----------------|--------|
+| Users, Google mapping | `users` | user-service |
+| Roles | `user_roles` | [coordinator-seed.sql](./coordinator-seed.sql) |
+| Payee presets | `donor_presets` | integration → user-service |
+| Order intents | `order_intents` | integration-service |
+| Seeker demands | `seeker_demands` | mobile **Record seeker demand** |
+| Marketplace | `standard_offers`, `meal_pledges`, `vendor_bids` | SQL M1–M3 — [database-setup-sequence.md](./database-setup-sequence.md) |
 
 **Code note:** Both Node services **require** **`DATABASE_URL`** at startup and read/write Postgres only (no JSON file fallback). Run [schema.sql](./schema.sql) before starting services.
 
@@ -231,6 +232,7 @@ cd sharingbridge-user-service
 npm run import:json
 
 cd sharingbridge-integration-service
+set LEGACY_ORDER_INTENTS_JSON_PATH=C:\path\to\order-intents.json
 npm run import:order-intents
 ```
 

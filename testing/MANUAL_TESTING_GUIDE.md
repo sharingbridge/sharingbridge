@@ -62,7 +62,7 @@ Both **`sharingbridge-user-service`** and **`sharingbridge-integration-service`*
 | 2 | Run [schema.sql](../configuration/schema.sql) as `postgres` |
 | 3 | Run [local-postgres-grants.sql](../configuration/local-postgres-grants.sql) as `postgres` (fixes `permission denied for table users`) |
 | 4 | Copy `env.example` → `.env` in **both** Node repos; set the same `DATABASE_URL` (match your port, e.g. `5433`) |
-| 5 | Optional one-time: `npm run import:json` (user-service), `npm run import:order-intents` (integration-service) |
+| 5 | Optional one-time legacy JSON import: `npm run import:json` (user-service), `LEGACY_ORDER_INTENTS_JSON_PATH=… npm run import:order-intents` (integration-service) |
 | 6 | Coordinator: `coordinator` row in `user_roles` ([coordinator-seed.sql](../configuration/coordinator-seed.sql)) after the user exists in `users` |
 | 7 | Marketplace (Demand tab, standard menu picker): run **M1 → M2 → M3** in [database-setup-sequence.md](../configuration/database-setup-sequence.md); set `NOMINATIM_USER_AGENT` on integration-service |
 
@@ -812,13 +812,14 @@ platform-specific shared preferences clear (e.g. uninstall and
 reinstall the app on Android, or delete the Flutter app data folder on
 Windows).
 
-### 5b. (Legacy) Import old `data/preferences.json` into user-service
+### 5b. (Legacy) Import exported `preferences.json` into user-service
 
-One-time import from a pre-Postgres local deployment. Requires user-service running and the **same `AUTH_TOKEN_SECRET`** as integration-service:
+One-time import from a pre-Postgres local deployment. Requires user-service running, the **same `AUTH_TOKEN_SECRET`** as integration-service, and an explicit file path:
 
 ```powershell
 cd D:\kannan\sharingbridge\sharingbridge-integration-service
 $env:USER_SERVICE_BASE_URL = "http://localhost:8081"
+$env:LEGACY_PREFERENCES_JSON_PATH = "C:\path\to\preferences.json"
 # Dry run: $env:BACKFILL_DRY_RUN = "1"
 npm run backfill:user-service-presets
 ```

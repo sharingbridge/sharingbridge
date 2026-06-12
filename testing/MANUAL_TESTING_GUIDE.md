@@ -787,6 +787,20 @@ npm run dev
 5. If the payee attached a reference photo, detail shows a **thumbnail** and **Open full image (Cloudinary)** link (`reference_photo_view_url`).
 6. **Home** in the header clears the selected row and scrolls to the top.
 
+### 4c-a. Order operations (payment done + mark delivered)
+
+**Payee (limited dashboard or mobile §3g):**
+
+1. Open an initiation you registered.
+2. Tap **Mark payment done** — confirm the dialog.
+3. List row shows **Payment: paid externally** chip; success banner on web.
+
+**Coordinator:**
+
+1. Select an initiation in the list — note **Payment** and **Delivery** chips on each row.
+2. In the detail pane, tap **Mark delivered** — confirm the dialog.
+3. **Delivery** chip becomes **delivered**; **Delivered at** in the metrics grid shows a timestamp (API sets `delivered_at`).
+
 ### 4c-b. Data boundaries banner (coordinator + payee)
 
 1. Sign in as **coordinator** or **payee** (limited dashboard).

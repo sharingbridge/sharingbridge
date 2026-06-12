@@ -162,7 +162,7 @@ Local folder names may differ from slugs; **git only cares about `origin`**. Pac
 
 Tasks #1-#5 are complete. Remaining priority order:
 
-1. **Order ops + delivery proof** — [Future_Extensions.md](../design/Future_Extensions.md) Phase A–B: payee payment-done polish, coordinator **Mark delivered** UX, delivery-partner photo → `delivered_at`.
+1. **Order ops + delivery proof** — [Future_Extensions.md](../design/Future_Extensions.md) Phase B: delivery-partner photo proof → `delivered_at` (Phase A largely shipped: payment-done + coordinator mark delivered with confirm dialogs, status chips, `delivered_at` on PATCH).
 2. **AI field slice** — live instruction-pack on device, photo descriptions, embeddings per [IMPLEMENTATION_APPROACH.md](./IMPLEMENTATION_APPROACH.md) phases B–D.
 3. **Operational hardening for token flow (post‑MVP / AWS path).**
    - Render/Railway MVP uses dashboard env vars; centralized secret managers are **deferred** — see `development/IMPLEMENTATION_APPROACH.md` tech-debt note.
@@ -217,3 +217,4 @@ Tasks #1-#5 are complete. Remaining priority order:
 - `feat` (web): **Data boundaries** banner on List / Map / Demand; coordinator **scope toolbar** (time + area) wired to order-intent list and demand board query params; `feedScope.ts` + Vitest.
 - `feat` (integration): coordinator `feed` on order-intent list; `GET /v1/demand/board` accepts `since` + neighbourhood query params; demand rows filtered server-side.
 - `fix` (web): Demand tab infinite reload loop (unstable empty scope object retriggered fetch effect).
+- `feat` (web + mobile): Order ops Phase A polish — confirm before mark payment/delivered; payment/delivery chips on list rows; success banner; mobile payment confirm dialog.

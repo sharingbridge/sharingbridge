@@ -61,6 +61,15 @@ Coordinators see a **scope toolbar** above the data boundaries banner (not shown
 
 Header **Refresh** on List/Map reapplies the last applied scope. On **Demand**, **Refresh demand** (or header **Refresh**) bumps the demand fetch with the same scope.
 
+### Order operations (Phase A)
+
+| Action | Who | UI |
+|--------|-----|-----|
+| **Mark payment done** | Payee (own row) | Confirmation dialog; sets `payment_status` → `paid_externally` |
+| **Mark delivered** | Coordinator | Confirmation dialog; sets `delivery_status` → `delivered` and `delivered_at` |
+
+List rows show **Payment** and **Delivery** status chips. Phase B (delivery-partner photo proof) is not live yet — coordinators manually mark delivered today.
+
 **Deploy note:** scope filtering on `GET /v1/demand/board` requires integration-service **June 2026+** (`feed` on list + demand responses). Web-only deploy against an older API still shows the boundaries banner for order intents but demand filtering may not match.
 
 **Code:** `sharingbridge-web-app` — `CoordinatorScopeToolbar.tsx`, `DashboardBoundariesBanner.tsx`, `coordinatorScope.ts`, `feedScope.ts`; `DemandBoardPanel.tsx` passes scope query to the demand API.

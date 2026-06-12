@@ -1,6 +1,7 @@
 -- Standard menu catalog keyed by hierarchical locality_key: {country}:{region}:{postal}
--- Example: IN:TN:600115 (Chennai Sholinganallur pilot near 12.9427, 80.2379)
+-- Example: IN:TN:600115 (Chennai Sholinganallur near 12.9427, 80.2379)
 -- Run order: configuration/database-setup-sequence.md (step M3, after wire migration).
+-- Test mirror: sharingbridge-integration-service/test/fixtures/standardOffersCatalog.js
 -- Clear old GPS-bucket rows first: reset-marketplace-data.sql
 
 DELETE FROM standard_offers

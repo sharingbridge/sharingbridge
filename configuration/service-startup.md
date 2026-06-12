@@ -35,8 +35,8 @@ Expect `llm_mode: live`, `gemini_vision_model: gemini-2.5-flash`, `groq_configur
 ### Boot sequence
 
 1. **`npm start`** → `node src/server.js` with `import "dotenv/config"` (local `.env` only).
-2. **Module load** — imports routes, stores, auth; constructs `AiOrchestrationClient`, `OrderIntentStore` / Postgres pool, `PostgresSeekerDemandStore` (when `DATABASE_URL` set), `UserServicePreferencesRepository`.
-3. **Postgres guard** (integration) — `assertOrderIntentGeoSchema()` may fail fast if geo columns missing; `seeker_demands` is optional at boot — store sets `enabled: false` until [schema-seeker-demands-migration.sql](./schema-seeker-demands-migration.sql) is applied.
+2. **Module load** — imports routes, stores, auth; constructs `AiOrchestrationClient`, `PostgresOrderIntentStore`, `PostgresSeekerDemandStore` and `PostgresMarketplaceStore` (when `DATABASE_URL` set), `UserServicePreferencesRepository` (requires `USER_SERVICE_BASE_URL`).
+3. **Postgres guard** (integration) — `assertOrderIntentGeoSchema()` may fail fast if geo columns missing. Marketplace startup probes `meal_pledges`, `vendor_bids`, and `standard_offer_id` columns — missing M2 shape fails boot with the Postgres error (no schema bypass). Missing marketplace tables disable marketplace routes (503) until [schema-marketplace-migration.sql](./schema-marketplace-migration.sql) is applied.
 4. **HTTP listen** — `createServer` callback handles routes; on listen:
    - `logListenMessage()` — port + service name.
    - `logStartupDiagnostics(buildStartupConfig())` — AI bridge flags, timeouts, DB URL set, CORS set; warnings only at `LOG_LEVEL=warn`.
@@ -45,7 +45,7 @@ Expect `llm_mode: live`, `gemini_vision_model: gemini-2.5-flash`, `groq_configur
 
 - No Nest modules, no dependency-injection container.
 - AI orchestration is **not** called at boot — only on `POST /v1/donor-setup/suggest-vendors` and `POST /v1/donor-seeker/instruction-pack`.
-- Seeker demand routes (`POST/GET /v1/seeker-demands`, `GET /v1/demand/board`) read/write Postgres only when `seeker_demands` exists — see [field-handoff.md](./field-handoff.md) § Seeker demand.
+- Marketplace and seeker-demand routes use Postgres only when `DATABASE_URL` is set and tables exist — no in-memory catalog in production. See [field-handoff.md](./field-handoff.md) and [database-setup-sequence.md](./database-setup-sequence.md) (M1–M3).
 
 ### Operator checks after deploy
 

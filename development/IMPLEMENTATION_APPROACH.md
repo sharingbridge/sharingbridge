@@ -56,7 +56,7 @@ Develop and test all SharingBridge components using free-tier platforms with nea
 | **Version Control** | GitHub | Unlimited private repos | Keep GitHub |
 | **API Gateway** | Self-hosted Kong (Docker) | Manual setup | Keep or move to AWS |
 
-**How this relates to donor-setup code today:** The table and diagrams below assume backend services eventually use **Supabase Postgres** (or equivalent) for durable data. The **shipped donor-setup path** (`sharingbridge-integration-service` + `sharingbridge-user-service`) currently persists preferences and payee profile/presets in **JSON files** so the team can ship contracts and integration without standing up a database first. Treat that as an intentional **staging step** (mini MVP); migrate user-scoped state to Postgres when you need deploy durability, replicas, or alignment with this doc’s full free-tier stack. See `development/AGENT_HANDOFF.md` section **MVP staging (mini vs matured)**.
+**How this relates to code today:** The table and diagrams below describe the **target free-tier stack**. **Shipped MVP** already uses **Supabase Postgres** for users, presets, order intents, seeker demands, and marketplace tables — both Node services require **`DATABASE_URL`** at startup. Integration-service forwards presets to user-service (`donor_presets`); there is no production JSON preset store and no in-memory marketplace catalog in `src/`. SQL order: [database-setup-sequence.md](../configuration/database-setup-sequence.md). Live snapshot: `development/AGENT_HANDOFF.md` § **Persistence model (current)**.
 
 ---
 

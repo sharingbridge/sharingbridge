@@ -1,6 +1,6 @@
 # Payee Preferences → User Service
 
-Status: **Runtime cutover complete** — integration-service always uses user-service (`USER_SERVICE_BASE_URL`). Presets live in Postgres table `donor_presets`.
+Status: **Runtime cutover complete** — integration-service always uses user-service (`USER_SERVICE_BASE_URL`). Presets live in Postgres table `donor_presets`. Marketplace catalog is Postgres `standard_offers` (M3 seed) — not `test/fixtures/standardOffersCatalog.js` (tests only).
 
 ## Architecture
 

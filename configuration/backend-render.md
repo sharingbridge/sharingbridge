@@ -24,7 +24,7 @@ Each repo has a root **`render.yaml`** blueprint. Connect via **New + → Bluepr
 
 **Database:** use **[Supabase](https://supabase.com)** (hosted Postgres) for tables and data. Render hosts **APIs only** — set **`DATABASE_URL`** on both Node services to your Supabase connection URI. Full steps: [database.md](./database.md) (create tables in Supabase **SQL Editor**, then wire Render).
 
-Without `DATABASE_URL` (and DB-enabled code), services still use JSON on disk (not durable on Render).
+Both Node services **require** `DATABASE_URL` at startup (Postgres only — no JSON or in-memory marketplace fallback). Without it, deploy fails or marketplace routes return 503. See [database.md](./database.md).
 
 ---
 

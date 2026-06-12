@@ -64,7 +64,7 @@ Run **only** migrations for features missing from your DB. If unsure, check Tabl
 | `seeker_demands` (or old `demand_signals`) | [schema-seeker-demands-migration.sql](./schema-seeker-demands-migration.sql) | — |
 | `meal_pledges`, `vendor_bids`, `standard_offers` | [schema-marketplace-migration.sql](./schema-marketplace-migration.sql) | — |
 | `standard_offer_id` on pledges/bids | [schema-standard-offers-wire-migration.sql](./schema-standard-offers-wire-migration.sql) | Requires marketplace tables |
-| Pilot menu catalog | [seed-standard-offers.sql](./seed-standard-offers.sql) | After `standard_offers` table exists |
+| Sample menu catalog | [seed-standard-offers.sql](./seed-standard-offers.sql) | After `standard_offers` table exists |
 | `initiator` role in `user_roles` | [schema-initiator-role-migration.sql](./schema-initiator-role-migration.sql) | Optional — legacy `donor` rows still work |
 
 **Note:** Fresh installs from current [schema.sql](./schema.sql) already include PostGIS columns, `delivered_at`, and `seeker_demands`. Brownfield files exist for databases created **before** those were merged into `schema.sql`.
@@ -79,7 +79,7 @@ Run in this order on **greenfield or upgraded** DB:
 |------|------|---------|
 | **M1** | [schema-marketplace-migration.sql](./schema-marketplace-migration.sql) | `standard_offers`, `demand_windows`, `meal_pledges`, `vendor_bids` |
 | **M2** | [schema-standard-offers-wire-migration.sql](./schema-standard-offers-wire-migration.sql) | `standard_offer_id` FK on pledges and vendor bids |
-| **M3** | [seed-standard-offers.sql](./seed-standard-offers.sql) | Postal catalog (`IN:TN:600115` Chennai pilot) |
+| **M3** | [seed-standard-offers.sql](./seed-standard-offers.sql) | Postal catalog (`IN:TN:600115`); test mirror in `sharingbridge-integration-service/test/fixtures/standardOffersCatalog.js` |
 | **Reset** | [reset-marketplace-data.sql](./reset-marketplace-data.sql) | Clear old GPS-bucket data before re-seed (dev only) |
 
 **App env (integration-service on Render):**
@@ -91,7 +91,7 @@ Run in this order on **greenfield or upgraded** DB:
 
 1. Restart integration-service.
 2. Web **Demand** tab loads without `schema_pending`.
-3. Mobile **Record seeker demand** → standard item picker returns offers (after M3 + GPS in pilot area).
+3. Mobile **Record seeker demand** → standard item picker returns offers (after M3 + GPS in seeded postal area).
 
 ---
 
@@ -154,4 +154,4 @@ seeker_demands migration                       │
 
 ---
 
-**Last updated:** 2026-06 — aligned with standard offers pilot.
+**Last updated:** 2026-06 — postal locality keys; production catalog is SQL seed only (test fixtures live under integration-service `test/`).

@@ -6,5 +6,5 @@ DELETE FROM meal_pledges;
 DELETE FROM seeker_demands;
 DELETE FROM standard_offers;
 
--- Optional: wipe order intent geo keys from GPS-bucket pilot (uncomment if desired)
+-- Optional: wipe order intent geo keys from legacy GPS-bucket era (uncomment if desired)
 -- UPDATE order_intents SET locality_key = NULL, location = NULL;

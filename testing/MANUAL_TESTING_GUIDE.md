@@ -27,6 +27,8 @@ needed.
 | 9 | Mobile home hub + **Offer food help** (3 steps: guidance → optional reference photo + **Get AI delivery instructions** (API with local fallback) → copy + vendor deep links) | `sharingbridge-mobile-app/lib/presentation/app_home_page.dart`, `lib/features/donor_seeker_interaction/**` |
 | 10 | Web **Order initiation history** (coordinator dashboard) | `sharingbridge-web-app` — see **§4** |
 | 11 | Reference photo upload (Cloudinary) | `sharingbridge-photo-service` — see **§1e**, **§2b**, **§3f**; [photo-service-local.md](../configuration/photo-service-local.md) |
+| 12 | **Record seeker demand** + standard menu picker | `sharingbridge-mobile-app/lib/features/seeker_demand/**` → `GET /v1/standard-offers`, `POST /v1/seeker-demands` |
+| 13 | Web **Demand** board (pledges, vendor bids) | `sharingbridge-web-app` → `GET /v1/demand/board`; requires marketplace SQL **M1–M3** |
 
 ## Prerequisites
 
@@ -62,6 +64,7 @@ Both **`sharingbridge-user-service`** and **`sharingbridge-integration-service`*
 | 4 | Copy `env.example` → `.env` in **both** Node repos; set the same `DATABASE_URL` (match your port, e.g. `5433`) |
 | 5 | Optional one-time: `npm run import:json` (user-service), `npm run import:order-intents` (integration-service) |
 | 6 | Coordinator: `coordinator` row in `user_roles` ([coordinator-seed.sql](../configuration/coordinator-seed.sql)) after the user exists in `users` |
+| 7 | Marketplace (Demand tab, standard menu picker): run **M1 → M2 → M3** in [database-setup-sequence.md](../configuration/database-setup-sequence.md); set `NOMINATIM_USER_AGENT` on integration-service |
 
 **Verify DB before starting apps (psql or pgAdmin on `sharingbridge`):**
 
@@ -94,7 +97,7 @@ Tokens are signed and verified with that **symmetric** secret (`AUTH_TOKEN_SECRE
 
 ## 1. Automated test suites
 
-### 1a. Integration service (Node.js, currently 46 tests)
+### 1a. Integration service (Node.js)
 
 ```powershell
 cd D:\kannan\sharingbridge\sharingbridge-integration-service
@@ -114,18 +117,12 @@ Coverage at a glance:
 | `test/userServicePreferencesRoundtrip.test.js` | integration-service → user-service backend path roundtrip, **`POST …/delete-item`** through stub user-service, upstream 403 surfacing |
 | `test/backfill-presets.test.js` | normalizing `PreferencesStore` rows for user-service backfill |
 | `test/orchestrationRoutes.test.js` | feature-flag wiring to mock orchestration HTTP (`suggest-vendors`, `instruction-pack`) |
+| `test/seekerDemandsRoute.test.js`, `test/marketplaceRoute.test.js` | seeker demand + marketplace HTTP (in-memory stores injected in tests only) |
+| `test/localityKey.test.js`, `test/fixtures/standardOffersCatalog.js` | postal `locality_key` resolution; catalog mirror of M3 seed SQL |
 
-Each roundtrip test boots a real `http.Server` on port 0 against a
-temp-dir `PreferencesStore`, so the HTTP wiring under test is the same
-code that runs in `npm start`.
+Route tests inject temp `PreferencesStore` or `test/support/inMemoryMarketplaceStore.js` — production `npm start` uses Postgres only (`DATABASE_URL` + `USER_SERVICE_BASE_URL`).
 
-Expected output footer:
-
-```
-# tests 42
-# pass 42
-# fail 0
-```
+Expected: `# fail 0` in the `npm test` footer (count grows with the suite).
 
 ### 1d. AI orchestration service (Python, currently 6 tests)
 
@@ -701,7 +698,7 @@ Pick one approach:
 
 3. **Fresh user id**: run the app with a new `--dart-define=USER_ID=...` and mint a matching token. That user has no presets until you save again.
 
-**Local merge caveat:** With the default **file-backed** integration store (`local`), each save **merges** presets by `(restaurant_name, order_url)`; older venues for that user are **not** removed if you omit them in a later save. To shrink the list you must clear storage (above) or use **user-service** mode, where `PUT` donor-presets **replaces** the full set.
+**Replace semantics:** Production saves go through user-service — `PUT` donor-presets **replaces** the full preset list for that user. Use **Clear all** or the API/SQL above to shrink the list; integration does not merge against a local file store at runtime.
 
 ### 3f. Help a seeker (payee–seeker handoff)
 
@@ -806,22 +803,18 @@ See [configuration/google-auth-setup.md](../configuration/google-auth-setup.md) 
 
 ## 5. Cleanup / fresh slate
 
-To wipe persisted payee presets and start over (same as §3e option 1; mobile-focused):
+To wipe persisted payee presets, use **§3e** (app **Clear all**, user-service `PUT { presets: [] }`, or SQL on `donor_presets`). Presets live in **Postgres**, not integration-service `data/`.
 
-```powershell
-cd D:\kannan\sharingbridge\sharingbridge-integration-service
-Remove-Item -Recurse -Force data -ErrorAction SilentlyContinue
-npm start
-```
+To reset marketplace / seeker demand rows (dev only): [reset-marketplace-data.sql](../configuration/reset-marketplace-data.sql) then re-run M3 seed.
 
 To reset the mobile client's local fallback cache, use the
 platform-specific shared preferences clear (e.g. uninstall and
 reinstall the app on Android, or delete the Flutter app data folder on
 Windows).
 
-### 5b. (Optional) Copy file-backed presets into user-service
+### 5b. (Legacy) Import old `data/preferences.json` into user-service
 
-One-time import from legacy `data/preferences.json` into Postgres. Requires user-service running and the **same `AUTH_TOKEN_SECRET`** as integration-service:
+One-time import from a pre-Postgres local deployment. Requires user-service running and the **same `AUTH_TOKEN_SECRET`** as integration-service:
 
 ```powershell
 cd D:\kannan\sharingbridge\sharingbridge-integration-service

@@ -148,6 +148,7 @@ seeker_demands migration                       │
 | `CREATE DATABASE` inside transaction | Run create-database file alone with auto-commit |
 | Demand tab `schema_pending` | Run seeker_demands migration or use current schema.sql |
 | Empty pledges / 503 marketplace | Run M1 marketplace migration |
+| Demand tab `column p.standard_offer_id does not exist` | Run **M2** [schema-standard-offers-wire-migration.sql](./schema-standard-offers-wire-migration.sql) (after M1) |
 | Seeker demand requires `standard_offer_id` but no picker items | Run [reset-marketplace-data.sql](./reset-marketplace-data.sql) then M3 seed for your postal key (`IN:TN:PIN`) |
 | Integration-service won't start (geo) | PostGIS migration + backfill |
 

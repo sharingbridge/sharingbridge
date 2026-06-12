@@ -31,6 +31,7 @@ CREATE TABLE IF NOT EXISTS meal_pledges (
   pledged_by_user_id   TEXT NOT NULL REFERENCES users(id),
   demand_window_id     TEXT REFERENCES demand_windows(demand_window_id),
   locality_key         TEXT NOT NULL,
+  standard_offer_id    TEXT REFERENCES standard_offers(standard_offer_id),
   meal_units           INTEGER NOT NULL CHECK (meal_units >= 1 AND meal_units <= 50),
   status               TEXT NOT NULL DEFAULT 'pledged'
     CHECK (status IN ('pledged', 'assigned', 'paid', 'cancelled')),
@@ -46,6 +47,7 @@ CREATE TABLE IF NOT EXISTS vendor_bids (
   submitted_by_user_id   TEXT NOT NULL REFERENCES users(id),
   demand_window_id       TEXT REFERENCES demand_windows(demand_window_id),
   locality_key           TEXT NOT NULL,
+  standard_offer_id      TEXT REFERENCES standard_offers(standard_offer_id),
   vendor_name            TEXT NOT NULL,
   portions               INTEGER NOT NULL CHECK (portions >= 1 AND portions <= 500),
   notes                  TEXT,

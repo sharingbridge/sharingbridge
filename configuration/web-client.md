@@ -22,8 +22,9 @@ Repository: `sharingbridge-web-app` (Vite + React).
 5. JWT is stored in **sessionStorage** until **Sign out** or expiry (~1 hour).
 6. Coordinators: **email** stored in **localStorage** for **Use a different Google account** on later visits.
 7. Dashboard calls `GET /v1/donor-seeker/order-intents` with `Authorization: Bearer <jwt>`. **Payees** may add `near_lat` / `near_lng`; server applies `DONOR_NEIGHBOURHOOD_*` and returns `feed` + `since` for UI copy. **Coordinators** get the full list by default; the same optional query params (`since`, `near_lat`/`near_lng`, `locality_key`) filter via PostGIS in integration-service ([database.md](./database.md)). Integration redacts fields for `payee` JWTs.
-8. Toolbar **List** | **Map** (`VITE_GOOGLE_MAPS_API_KEY`) | **Demand** — Demand tab loads `GET /v1/demand/board` (`seeker_demands`, `demand_windows`). Requires `seeker_demands` table ([schema-seeker-demands-migration.sql](./schema-seeker-demands-migration.sql)).
-9. On **401** or expiry → sign in again.
+8. Toolbar **List** | **Map** (`VITE_GOOGLE_MAPS_API_KEY`) | **Demand** — Demand tab loads `GET /v1/demand/board` (`seeker_demands`, `demand_windows`). Requires `seeker_demands` table ([schema-seeker-demands-migration.sql](./schema-seeker-demands-migration.sql)). Coordinators may pass the **same** query params on the demand board (`since`, `near_lat`/`near_lng`, `locality_key`) so List, Map, and Demand stay in sync.
+9. **Data boundaries banner** — above the List / Map / Demand tabs, every view shows **Time**, **Area**, **Sort**, and **Limit** (parsed from API `feed` + `neighbourhood`). Payees see the server-enforced neighbourhood window; coordinators see the active scope after **Apply scope**.
+10. On **401** or expiry → sign in again.
 
 **No client secret** in `.env` — only the Web **Client ID** (`VITE_GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_ID_WEB`).
 
@@ -44,6 +45,25 @@ Repository: `sharingbridge-web-app` (Vite + React).
 | **Distance (m)** | `distance_m` | Metres from browser `near_lat` / `near_lng`; list sorted **nearest first** when distance is present. |
 
 **By area** always reads a **fresh** browser position (`maximumAge: 0`, no cached coords), reloads the list with `near_lat` / `near_lng`, then shows **Distance (m)** sorted nearest first. If location is denied or unavailable, a dialog appears and the view stays on the previous grouping (**By day** or **By initiator**). **Refresh** in **By area** mode repeats the same fresh-location fetch. **Home** clears the selected row.
+
+### Coordinator dashboard scope (time + area)
+
+Coordinators see a **scope toolbar** above the data boundaries banner (not shown to payees on the limited dashboard).
+
+| Control | Maps to API | Effect |
+|---------|-------------|--------|
+| **Time window** | `since` query (`2h`, `24h`, `7d`, `30d`, or omit for all time) | Filters order intents and demand-board rows by `created_at` / `updated_at` |
+| **Area → All areas** | (no geo params) | All postal areas on this integration host |
+| **Area → Near my location** | `near_lat`, `near_lng` (+ server default radius) | Browser GPS required on **Apply scope**; sorts by distance when handover GPS exists |
+| **Area → Postal area key** | `locality_key` (e.g. `IN:TN:600001`) | Includes that key and sub-areas per [locality_key](./database.md) rules |
+| **Apply scope** | — | Reloads **List**, **Map**, and **Demand** with the same filters |
+| **Reset** | — | Clears draft controls to all time + all areas (click **Apply scope** to reload) |
+
+Header **Refresh** on List/Map reapplies the last applied scope. On **Demand**, **Refresh demand** (or header **Refresh**) bumps the demand fetch with the same scope.
+
+**Deploy note:** scope filtering on `GET /v1/demand/board` requires integration-service **June 2026+** (`feed` on list + demand responses). Web-only deploy against an older API still shows the boundaries banner for order intents but demand filtering may not match.
+
+**Code:** `sharingbridge-web-app` — `CoordinatorScopeToolbar.tsx`, `DashboardBoundariesBanner.tsx`, `coordinatorScope.ts`, `feedScope.ts`; `DemandBoardPanel.tsx` passes scope query to the demand API.
 
 ### Sign-in screen (first visit vs returning)
 

@@ -104,8 +104,8 @@ Deliver the MVP **donor-setup → donor-seeker interaction → vendor redirect �
 - **37+** Node tests; CI on push/PR.
 
 ### `sharingbridge-web-app` (coordinator + payee dashboard)
-- Vite + React: **Google Sign-In** (GIS), order initiation history (List / Map / Demand toolbar), AI fields on detail (`location_description`, `seeker_handover_hints`, etc.), Demand board via `GET /v1/demand/board`.
-- Deploy: Render static site; config [configuration/web-client.md](../configuration/web-client.md), test **MANUAL_TESTING_GUIDE §4**.
+- Vite + React: **Google Sign-In** (GIS), order initiation history (List / Map / Demand toolbar), **data boundaries banner** (time / area / sort / limit from API `feed`), coordinator **scope toolbar** (`since`, `near_lat`/`near_lng`, `locality_key` on list + demand board), AI fields on detail (`location_description`, `seeker_handover_hints`, etc.), Demand board via `GET /v1/demand/board` (scoped query params for coordinators).
+- Deploy: Render static site; config [configuration/web-client.md](../configuration/web-client.md), test **MANUAL_TESTING_GUIDE §4** (boundaries **§4c-b**, scope **§4c-c**, Demand **§4d**).
 
 ### Other repos
 - `sharingbridge-ai-orchestration`: deterministic MVP (FastAPI); live LLM optional.
@@ -214,3 +214,6 @@ Tasks #1-#5 are complete. Remaining priority order:
 - `docs`: **AI interactions — payee–seeker field slice** in `IMPLEMENTATION_APPROACH.md` (safety, deep links, instruction-pack template, photo match); photo-service / location-safety notes (latter deferred).
 - `docs`: **AI platform integration** — `AI_PLATFORM_INTEGRATION.md` (LangChain orchestration, hosting, mobile/backend bridges).
 - `docs`: BRD + Technical Architecture aligned — **Location Safety Module** / `sharingbridge-location-safety` (rule-based geo; not LLM); photo/face in `sharingbridge-photo-service`.
+- `feat` (web): **Data boundaries** banner on List / Map / Demand; coordinator **scope toolbar** (time + area) wired to order-intent list and demand board query params; `feedScope.ts` + Vitest.
+- `feat` (integration): coordinator `feed` on order-intent list; `GET /v1/demand/board` accepts `since` + neighbourhood query params; demand rows filtered server-side.
+- `fix` (web): Demand tab infinite reload loop (unstable empty scope object retriggered fetch effect).

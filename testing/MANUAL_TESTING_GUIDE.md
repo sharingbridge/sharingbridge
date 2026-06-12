@@ -29,6 +29,7 @@ needed.
 | 11 | Reference photo upload (Cloudinary) | `sharingbridge-photo-service` — see **§1e**, **§2b**, **§3f**; [photo-service-local.md](../configuration/photo-service-local.md) |
 | 12 | **Record seeker demand** + standard menu picker | `sharingbridge-mobile-app/lib/features/seeker_demand/**` → `GET /v1/standard-offers`, `POST /v1/seeker-demands` |
 | 13 | Web **Demand** board (pledges, vendor bids) | `sharingbridge-web-app` → `GET /v1/demand/board`; requires marketplace SQL **M1–M3** |
+| 14 | Web **data boundaries** banner + coordinator **scope** (time / area) | `sharingbridge-web-app` — List, Map, and Demand share scope; integration `feed` on list + demand |
 
 ## Prerequisites
 
@@ -238,8 +239,9 @@ npm test
 | `src/authSession.test.ts` | session save/load/expiry |
 | `src/config.test.ts` | `VITE_*` config from env |
 | `src/format.test.ts` | list/detail formatting helpers |
+| `src/feedScope.test.ts` | dashboard boundaries banner copy; coordinator vs payee `feed` parsing |
 
-Expected: **6 passed** (Vitest). End-to-end browser checks are in **§4**.
+Expected: **27 passed** (Vitest). End-to-end browser checks are in **§4**.
 
 ## 2. Manual API smoke tests
 
@@ -785,9 +787,36 @@ npm run dev
 5. If the payee attached a reference photo, detail shows a **thumbnail** and **Open full image (Cloudinary)** link (`reference_photo_view_url`).
 6. **Home** in the header clears the selected row and scrolls to the top.
 
-### 4d. Empty list / mismatch
+### 4c-b. Data boundaries banner (coordinator + payee)
 
-- Coordinators see intents for **every** payee on **that** integration API host. An empty list usually means no payee has registered an intent on **this** host yet (localhost vs Render are separate stores).
+1. Sign in as **coordinator** or **payee** (limited dashboard).
+2. Below the hero (and coordinator scope toolbar when applicable), confirm **Data boundaries — List** (or **Map** / **Demand** when you switch tabs).
+3. Expect four lines: **Time**, **Area**, **Sort**, **Limit** — they should match what the API is actually applying (not decorative).
+4. **Payee:** default is usually the last **2 hours** and **your initiations only** until you tap **By area** and allow location; then **Area** should mention distance from your position.
+5. **Coordinator:** default **Time** = **All time**, **Area** = **All areas**, **Limit** = up to the server max rows (typically 100).
+
+### 4c-c. Coordinator scope toolbar (time + area)
+
+Requires **coordinator** role and integration-service with demand-board query support (same deploy generation as web **June 2026** boundaries work).
+
+1. Set **Time window** to **Last 24 hours** and **Area** to **All areas** → **Apply scope**.
+2. **Data boundaries** banner updates; List row count should drop if you have older test intents.
+3. Switch to **Demand** — banner still shows the same time/area; demand lines and pledges respect the scope (no endless **Loading…** flicker after load completes).
+4. Set **Area** to **Postal area key** `IN:TN:600001` (or a key from your seed data) → **Apply scope** — List and Demand should only show rows for that postal grid (and sub-areas).
+5. Set **Area** to **Near my location** → **Apply scope** — allow browser location when prompted; **Area** in the banner should mention distance from your location.
+6. **Reset** clears the form; click **Apply scope** again to return to all time / all areas.
+7. Header **Refresh** on List/Map should keep the last applied scope (not revert to defaults).
+
+### 4d. Demand board (coordinator)
+
+1. Open the **Demand** tab after marketplace SQL **M1–M3** is applied and at least one seeker demand exists (mobile **Record seeker demand** or API).
+2. Confirm **Demand & vendor bids** loads once (brief **Loading…**, then content — not a continuous spinner).
+3. Use **Pick this for pledge** / **Pick this for vendor bid** — forms below pre-select the line; submit separately.
+4. **Refresh demand** (panel) or header **Refresh** reloads the board; with **§4c-c** scope applied, counts match the filtered boundaries banner.
+
+### 4e. Empty list / mismatch
+
+- Coordinators see intents for **every** payee on **that** integration API host (unless a scope filter from **§4c-c** is applied). An empty list usually means no payee has registered an intent on **this** host yet (localhost vs Render are separate stores).
 - `VITE_API_BASE_URL` must match mobile `API_BASE_URL` (both localhost or both Render URLs).
 - `403 wrong_client_role` on web: account has no `payee` or `coordinator` in `user_roles` (`no_app_role`). Payee-only accounts should sign in successfully and see the **limited** dashboard.
 - `403 wrong_client_role` on mobile: account missing `payee` in `user_roles` (rare after sign-in; every user gets `payee` ensured).
@@ -834,7 +863,7 @@ If suggest-vendors or instruction-pack fail, verify `AI_ORCHESTRATION_BASE_URL`,
 - `python -m pytest -q` in `sharingbridge-ai-orchestration` reports `6 passed`.
 - `npm test` in `sharingbridge-integration-service` reports `# pass 46 / # fail 0`.
 - `npm test` in `sharingbridge-user-service` reports `# pass 40 / # fail 0`.
-- `npm test` in `sharingbridge-web-app` (Vitest) reports **6 passed**.
+- `npm test` in `sharingbridge-web-app` (Vitest) reports **27 passed**.
 - `flutter test` in `sharingbridge-mobile-app` ends with `All tests passed!` (**53 tests**, including auth payload guards on order-intent and instruction-pack HTTP clients).
 - `Invoke-RestMethod http://localhost:8080/health` returns `ok=True`.
 - Step 2c returns HTTP 200 with `saved_count=1`; step 2d echoes the
@@ -850,3 +879,5 @@ If suggest-vendors or instruction-pack fail, verify `AI_ORCHESTRATION_BASE_URL`,
 - Step **2i** returns a non-empty `delivery_instructions` string when orchestration is enabled.
 - Step **3f** walks **Help a seeker** (guidance → optional photo upload to photo-service + instruction-pack → copy + vendor links; repeat copy updates the same order initiation).
 - Step **4c** shows the coordinator web dashboard listing payee order intents (including payee `user_id` and reference photo thumbnail when uploaded) after mobile **§3f** on the same integration host.
+- Step **4c-b** shows the **Data boundaries** banner on List / Map / Demand with sensible Time / Area / Limit copy.
+- Step **4c-c** lets coordinators **Apply scope** (time + area) and see List, Map, and Demand stay aligned; Demand tab does not spin forever on **Loading…**.

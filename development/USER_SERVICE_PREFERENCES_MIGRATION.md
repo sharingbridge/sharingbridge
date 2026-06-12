@@ -1,41 +1,15 @@
-# Payee Preferences → User Service
+# Payee preferences — user-service authority
 
-Status: **Runtime cutover complete** — integration-service always uses user-service (`USER_SERVICE_BASE_URL`). Presets live in Postgres table `donor_presets`. Marketplace catalog is Postgres `standard_offers` (M3 seed) — not `test/fixtures/standardOffersCatalog.js` (tests only).
+Status: **complete** — no file import path remains.
 
 ## Architecture
 
-```
+```text
 Mobile / Web  →  integration-service  →  user-service  →  Postgres (donor_presets)
 ```
 
-- **No** file-backed preset store at `npm start` (no `PREFERENCES_BACKEND`, no repo `data/` directory).
-- **Tests** still use `LocalPreferencesRepository` + temp `PreferencesStore` files.
-
-## Repository contract
-
-`sharingbridge-integration-service/src/preferencesRepository.js`:
-
-- `UserServicePreferencesRepository` — production
-- `LocalPreferencesRepository` — unit tests only
-
-Integration HTTP delegates preset CRUD to user-service:
-
-- `GET/PUT /v1/donor-setup/preferences` → user-service donor-presets API
-- `DELETE` → `PUT { presets: [] }`
-- `POST …/delete-item` → `POST …/donor-presets/delete-item`
-
-## One-off legacy import
-
-If you still have an exported `preferences.json` from an old local deployment:
-
-```text
-cd sharingbridge-integration-service
-set USER_SERVICE_BASE_URL=http://localhost:8081
-set LEGACY_PREFERENCES_JSON_PATH=C:\path\to\preferences.json
-npm run backfill:user-service-presets
-```
-
-`BACKFILL_DRY_RUN=1` previews without writing.
+- Integration **`npm start`** requires `USER_SERVICE_BASE_URL` and forwards preset CRUD to user-service.
+- `LocalPreferencesRepository` + `PreferencesStore` exist **only for automated tests** (temp files under the OS temp directory).
 
 ## Clearing presets in dev
 

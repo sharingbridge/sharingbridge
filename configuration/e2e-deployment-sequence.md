@@ -229,7 +229,6 @@ Same env index § web-app: [environment-variables.md](./environment-variables.md
 1. Create database and run `configuration/schema.sql`.
 2. **Local only:** run `configuration/local-postgres-grants.sql` as `postgres` if the app user is `sharingbridge`.
 3. Set **`DATABASE_URL`** in both services’ `.env` (local) or Render env (hosted).
-4. Optional one-time: `npm run import:json` / `npm run import:order-intents` per [database.md](./database.md).
 
 **Supabase (Render):** create project → SQL Editor → `schema.sql` → copy database URI → `DATABASE_URL` on both Node services → redeploy.
 

@@ -62,9 +62,8 @@ Both **`sharingbridge-user-service`** and **`sharingbridge-integration-service`*
 | 2 | Run [schema.sql](../configuration/schema.sql) as `postgres` |
 | 3 | Run [local-postgres-grants.sql](../configuration/local-postgres-grants.sql) as `postgres` (fixes `permission denied for table users`) |
 | 4 | Copy `env.example` → `.env` in **both** Node repos; set the same `DATABASE_URL` (match your port, e.g. `5433`) |
-| 5 | Optional one-time legacy JSON import: `npm run import:json` (user-service), `LEGACY_ORDER_INTENTS_JSON_PATH=… npm run import:order-intents` (integration-service) |
-| 6 | Coordinator: `coordinator` row in `user_roles` ([coordinator-seed.sql](../configuration/coordinator-seed.sql)) after the user exists in `users` |
-| 7 | Marketplace (Demand tab, standard menu picker): run **M1 → M2 → M3** in [database-setup-sequence.md](../configuration/database-setup-sequence.md); set `NOMINATIM_USER_AGENT` on integration-service |
+| 5 | Coordinator: `coordinator` row in `user_roles` ([coordinator-seed.sql](../configuration/coordinator-seed.sql)) after the user exists in `users` |
+| 6 | Marketplace (Demand tab, standard menu picker): run **M1 → M2 → M3** in [database-setup-sequence.md](../configuration/database-setup-sequence.md); set `NOMINATIM_USER_AGENT` on integration-service |
 
 **Verify DB before starting apps (psql or pgAdmin on `sharingbridge`):**
 
@@ -115,7 +114,6 @@ Coverage at a glance:
 | `test/authContext.test.js` | signed bearer parsing/verification + `user_id` reconciliation |
 | `test/authContextRoundtrip.test.js` | signed-token flow, mismatch and missing-token guards (`403`/`401`), **`DELETE` without token → `401`** |
 | `test/userServicePreferencesRoundtrip.test.js` | integration-service → user-service backend path roundtrip, **`POST …/delete-item`** through stub user-service, upstream 403 surfacing |
-| `test/backfill-presets.test.js` | normalizing `PreferencesStore` rows for user-service backfill |
 | `test/orchestrationRoutes.test.js` | feature-flag wiring to mock orchestration HTTP (`suggest-vendors`, `instruction-pack`) |
 | `test/seekerDemandsRoute.test.js`, `test/marketplaceRoute.test.js` | seeker demand + marketplace HTTP (in-memory stores injected in tests only) |
 | `test/localityKey.test.js`, `test/fixtures/standardOffersCatalog.js` | postal `locality_key` resolution; catalog mirror of M3 seed SQL |
@@ -812,21 +810,7 @@ platform-specific shared preferences clear (e.g. uninstall and
 reinstall the app on Android, or delete the Flutter app data folder on
 Windows).
 
-### 5b. (Legacy) Import exported `preferences.json` into user-service
-
-One-time import from a pre-Postgres local deployment. Requires user-service running, the **same `AUTH_TOKEN_SECRET`** as integration-service, and an explicit file path:
-
-```powershell
-cd D:\kannan\sharingbridge\sharingbridge-integration-service
-$env:USER_SERVICE_BASE_URL = "http://localhost:8081"
-$env:LEGACY_PREFERENCES_JSON_PATH = "C:\path\to\preferences.json"
-# Dry run: $env:BACKFILL_DRY_RUN = "1"
-npm run backfill:user-service-presets
-```
-
-See `development/USER_SERVICE_PREFERENCES_MIGRATION.md` for the full cutover checklist.
-
-### 5c. Historical: local field draft key (no longer used)
+### 5b. Historical: local field draft key (no longer used)
 
 Earlier MVP builds stored a field draft under `sharingbridge_field_interaction_draft_v1`. The current **Help a seeker** screen does **not** use that key. To reset mobile state, use app data clear / uninstall only if you need a full wipe; donor-setup offline cache is separate (see **Clear cache / Sign out** on Vendor preset setup and **§3**).
 

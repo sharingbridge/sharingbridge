@@ -137,7 +137,7 @@ Coordinators are **not** configured in Google Console or in user-service `.env`.
 
 **Bootstrap (local or Supabase):**
 
-1. Sign in once with the coordinator Gmail (mobile as payee is fine) so a row exists in **`users`**, **or** run `npm run import:json` if you migrated legacy data.
+1. Sign in once with the coordinator Gmail (mobile as payee is fine) so a row exists in **`users`**.
 2. Edit and run [coordinator-seed.sql](./coordinator-seed.sql) — see [database.md](./database.md) § Coordinator seeding.
 3. Sign in on the **web dashboard** with that same Gmail (test user on the OAuth consent screen).
 

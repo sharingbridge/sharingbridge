@@ -11,7 +11,7 @@
 | [IMPLEMENTATION_APPROACH.md](./IMPLEMENTATION_APPROACH.md) | **Engineering plan** — phases, repos, free-tier stack |
 | [AI_IMPLEMENTATION_PLAN.md](./AI_IMPLEMENTATION_PLAN.md) | AI presets, descriptions, seeker ID |
 | [AI_PLATFORM_INTEGRATION.md](./AI_PLATFORM_INTEGRATION.md) | Orchestration hosting and bridges |
-| [USER_SERVICE_PREFERENCES_MIGRATION.md](./USER_SERVICE_PREFERENCES_MIGRATION.md) | Legacy JSON import; production prefs in Postgres |
+| [USER_SERVICE_PREFERENCES_MIGRATION.md](./USER_SERVICE_PREFERENCES_MIGRATION.md) | Preferences via user-service Postgres |
 | [CALL_FOR_CONTRIBUTORS.md](./CALL_FOR_CONTRIBUTORS.md) | Contributing |
 
 ## Design (product + architecture)

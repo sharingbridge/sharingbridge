@@ -221,22 +221,9 @@ DATABASE_URL=postgresql://sharingbridge:sharingbridge@localhost:5433/sharingbrid
 
 Restart both Node services after setting `DATABASE_URL`.
 
-#### Import existing JSON (optional, one-time)
+#### Coordinator seed
 
-Requires Step A6b if you see `permission denied for table users`.
-
-From each service repo with the same `DATABASE_URL`:
-
-```text
-cd sharingbridge-user-service
-npm run import:json
-
-cd sharingbridge-integration-service
-set LEGACY_ORDER_INTENTS_JSON_PATH=C:\path\to\order-intents.json
-npm run import:order-intents
-```
-
-Seed a coordinator after import (pgAdmin/psql), or sign in once and run:
+Sign in once (creates a `users` row), then run:
 
 ```sql
 INSERT INTO user_roles (user_id, role)
@@ -325,7 +312,7 @@ Primary keys and `UNIQUE` constraints create indexes automatically; [schema.sql]
 
 ## Coordinator seeding
 
-1. Ensure a row exists in `users` (e.g. one Google sign-in on mobile as payee, or `npm run import:json` from legacy JSON).
+1. Ensure a row exists in `users` (e.g. one Google sign-in on mobile as payee).
 2. Run [coordinator-seed.sql](./coordinator-seed.sql) in psql, pgAdmin, or Supabase **SQL Editor** (edit the email in that file first).
 3. Sign in on the **web dashboard** with that Gmail — JWT will include `role: coordinator`.
 
@@ -343,7 +330,6 @@ user-service reads **`user_roles`** and mints `role` (active) + `roles` (array).
 - [ ] [schema.sql](./schema.sql) run in **SQL Editor** (tables + PostGIS on `order_intents`)
 - [ ] `DATABASE_URL` set on **both** Render Node services (Supabase URI, not anon key)
 - [ ] Both services redeployed
-- [ ] One-time JSON import (when migration script exists)
 - [ ] Coordinator row in `user_roles`
 - [ ] Smoke: Google sign-in, order intent, web **Refresh**
 

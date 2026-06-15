@@ -6,12 +6,12 @@ Repository: `sharingbridge-web-app` (Vite + React).
 
 ## Scope
 
-**Order initiation history** and **Demand board** (Phase C.1) on web — same integration API as mobile. View depends on JWT `role`:
+**Order initiation history** and **Actions** workspace (pledges, kitchen commitments) on web — same integration API as mobile. View depends on JWT `role`:
 
 | `role` | UI |
 |--------|-----|
-| `coordinator` | Full dashboard — **payee email + user id** on each intent (list, detail, group-by-payee), all reference photos |
-| `payee` | Limited dashboard — window and radius from **integration-service env** (returned in API `feed`); browser sends `near_lat` / `near_lng` when allowed; no other payees’ emails or ids; **seeker reference thumbnails in neighbourhood feed** within the server window ([PRODUCT_ROADMAP.md](../development/PRODUCT_ROADMAP.md)) |
+| `coordinator` | Full dashboard — **Initiations** \| **Actions** \| **Map** tabs; payee email on each intent |
+| `payee` | Limited dashboard — neighbourhood window from integration `feed`; no other payees’ emails |
 
 ## How sign-in works
 
@@ -22,8 +22,8 @@ Repository: `sharingbridge-web-app` (Vite + React).
 5. JWT is stored in **sessionStorage** until **Sign out** or expiry (~1 hour).
 6. Coordinators: **email** stored in **localStorage** for **Use a different Google account** on later visits.
 7. Dashboard calls `GET /v1/donor-seeker/order-intents` with `Authorization: Bearer <jwt>`. **Payees** may add `near_lat` / `near_lng`; server applies `DONOR_NEIGHBOURHOOD_*` and returns `feed` + `since` for UI copy. **Coordinators** get the full list by default; the same optional query params (`since`, `near_lat`/`near_lng`, `locality_key`) filter via PostGIS in integration-service ([database.md](./database.md)). Integration redacts fields for `payee` JWTs.
-8. Toolbar **List** | **Map** (`VITE_GOOGLE_MAPS_API_KEY`) | **Demand** — Demand tab loads `GET /v1/demand/board` (`seeker_demands`, `demand_windows`). Requires `seeker_demands` table ([schema-seeker-demands-migration.sql](./schema-seeker-demands-migration.sql)). Coordinators may pass the **same** query params on the demand board (`since`, `near_lat`/`near_lng`, `locality_key`) so List, Map, and Demand stay in sync.
-9. **Data boundaries banner** — above the List / Map / Demand tabs, every view shows **Time**, **Area**, **Sort**, and **Limit** (parsed from API `feed` + `neighbourhood`). Payees see the server-enforced neighbourhood window; coordinators see the active scope after **Apply scope**.
+8. Toolbar **Initiations** | **Actions** | **Map** — **Actions** loads `GET /v1/demand/board` (pledges, demand lines, kitchen commitments). Requires `seeker_demands` table ([schema-seeker-demands-migration.sql](./schema-seeker-demands-migration.sql)). Coordinators may pass scope query params (`since`, `near_lat`/`near_lng`, `locality_key`) on list and demand board.
+9. **Data boundaries banner** — above the tabs, every view shows **Time**, **Area**, **Sort**, and **Limit** (from API `feed` + `neighbourhood`).
 10. On **401** or expiry → sign in again.
 
 **No client secret** in `.env` — only the Web **Client ID** (`VITE_GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_ID_WEB`).
@@ -56,10 +56,12 @@ Coordinators see a **scope toolbar** above the data boundaries banner (not shown
 | **Area → All areas** | (no geo params) | All postal areas on this integration host |
 | **Area → Near my location** | `near_lat`, `near_lng` (+ server default radius) | Browser GPS required on **Apply scope**; sorts by distance when handover GPS exists |
 | **Area → Postal area key** | `locality_key` (e.g. `IN:TN:600001`) | Includes that key and sub-areas per [locality_key](./database.md) rules |
-| **Apply scope** | — | Reloads **List**, **Map**, and **Demand** with the same filters |
+| **Apply scope** | — | Reloads **Initiations**, **Map**, and **Actions** with the same filters |
 | **Reset** | — | Clears draft controls to all time + all areas (click **Apply scope** to reload) |
 
-Header **Refresh** on List/Map reapplies the last applied scope. On **Demand**, **Refresh demand** (or header **Refresh**) bumps the demand fetch with the same scope.
+Header **Refresh** on Initiations/Map reapplies the last applied scope. On **Actions**, refresh bumps the demand fetch with the same scope.
+
+Product flows (eco kitchens, connection): [Eco_Kitchen_Initiation_Flow.md](../design/Eco_Kitchen_Initiation_Flow.md).
 
 ### Order operations (Phase A)
 

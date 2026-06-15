@@ -26,6 +26,7 @@ New here or unsure which file to open? Use this section. It defines **reading or
 | **Understand what is shipped today** | [development/AGENT_HANDOFF.md](development/AGENT_HANDOFF.md) |
 | **Product vocabulary, verbiage & marketplace** | [development/PRODUCT_ROADMAP.md](development/PRODUCT_ROADMAP.md) § Documentation verbiage |
 | **Configurator, unified initiation, payee** | [design/Configurator_Role_and_Unified_Initiation.md](design/Configurator_Role_and_Unified_Initiation.md) |
+| **Eco kitchens — three routes, connection, payment boundaries** | [design/Eco_Kitchen_Initiation_Flow.md](design/Eco_Kitchen_Initiation_Flow.md) |
 | **How we build (phases, repos, AI)** | [development/IMPLEMENTATION_APPROACH.md](development/IMPLEMENTATION_APPROACH.md) |
 | **BRD steps 1–12 with diagrams** | [design/SharingBridge_End_to_End_Workflow.md](design/SharingBridge_End_to_End_Workflow.md) |
 | **Order payment / delivery proof** | [design/Future_Extensions.md](design/Future_Extensions.md) § Phase A–B only |
@@ -38,37 +39,40 @@ When two docs conflict, **higher row wins** for that topic.
 | Layer | Document | Owns |
 |-------|----------|------|
 | **1 — Requirements** | [requirements/SharingBridge_Business_Requirement.md](requirements/SharingBridge_Business_Requirement.md) | BRD, operating constraints |
-| **2 — Product** | [development/PRODUCT_ROADMAP.md](development/PRODUCT_ROADMAP.md) | Glossary, **verbiage**, actors, marketplace |
-| **3 — Ops model** | [design/Configurator_Role_and_Unified_Initiation.md](design/Configurator_Role_and_Unified_Initiation.md) | Configurator vs runtime owners; prepaid order intent |
-| **4 — Engineering** | [development/IMPLEMENTATION_APPROACH.md](development/IMPLEMENTATION_APPROACH.md) | Build phases, marketplace **E–I**, AI/photo timelines |
-| **5 — Architecture** | [design/SharingBridge_Technical_Architecture.md](design/SharingBridge_Technical_Architecture.md) | Services, APIs, as-built MVP |
-| **6 — Live status** | [development/AGENT_HANDOFF.md](development/AGENT_HANDOFF.md) | Shipped snapshot, next tasks |
-| **7 — Run & configure** | [configuration/](configuration/) | Deploy, env, auth, SQL sequence |
-| **8 — Supplement** | [design/Future_Extensions.md](design/Future_Extensions.md) | Order-ops Phase A–B only |
+| **2 — Product** | [development/PRODUCT_ROADMAP.md](development/PRODUCT_ROADMAP.md) | Glossary, **verbiage**, actors, initiation routes |
+| **3 — Initiation flows** | [design/Eco_Kitchen_Initiation_Flow.md](design/Eco_Kitchen_Initiation_Flow.md) | Three routes, eco kitchens, connection + payment boundaries |
+| **4 — Ops model** | [design/Configurator_Role_and_Unified_Initiation.md](design/Configurator_Role_and_Unified_Initiation.md) | Configurator vs runtime owners |
+| **5 — Engineering** | [development/IMPLEMENTATION_APPROACH.md](development/IMPLEMENTATION_APPROACH.md) | Build phases, marketplace **E–I**, AI/photo timelines |
+| **6 — Architecture** | [design/SharingBridge_Technical_Architecture.md](design/SharingBridge_Technical_Architecture.md) | Services, APIs, as-built MVP |
+| **7 — Live status** | [development/AGENT_HANDOFF.md](development/AGENT_HANDOFF.md) | Shipped snapshot, next tasks |
+| **8 — Run & configure** | [configuration/](configuration/) | Deploy, env, auth, SQL sequence |
+| **9 — Supplement** | [design/Future_Extensions.md](design/Future_Extensions.md) | Direct-order ops Phase A–B only |
 
-Do not create parallel roadmap files. Extend **PRODUCT_ROADMAP.md** (product) or **IMPLEMENTATION_APPROACH.md** (engineering).
+Do not create parallel roadmap files. Extend **PRODUCT_ROADMAP.md** (product), **Eco_Kitchen_Initiation_Flow.md** (initiation routes), or **IMPLEMENTATION_APPROACH.md** (engineering).
 
 ### Natural reading order (onboarding)
 
 ```text
 1. requirements/SharingBridge_Business_Requirement.md     — business context
-2. development/PRODUCT_ROADMAP.md                       — terms, actors, lanes
-3. design/Configurator_Role_and_Unified_Initiation.md   — configurator, unified flow
-4. development/AGENT_HANDOFF.md                         — shipped today
-5. design/SharingBridge_End_to_End_Workflow.md          — journey diagrams
-6. configuration/e2e-deployment-sequence.md            — deploy
-7. configuration/database-setup-sequence.md             — SQL order
-8. Deep dives as needed (field-handoff, auth, testing)
+2. development/PRODUCT_ROADMAP.md                       — terms, actors, routes
+3. design/Eco_Kitchen_Initiation_Flow.md                — three initiation routes (authoritative)
+4. design/Configurator_Role_and_Unified_Initiation.md   — configurator, no daily ops desk
+5. development/AGENT_HANDOFF.md                         — shipped today
+6. design/SharingBridge_End_to_End_Workflow.md          — journey diagrams
+7. configuration/e2e-deployment-sequence.md            — deploy
+8. configuration/database-setup-sequence.md            — SQL order
+9. Deep dives as needed (field-handoff, auth, testing)
 ```
 
 ### Roadmap docs — how they relate
 
 ```text
-PRODUCT_ROADMAP.md              ← WHAT (vocabulary, marketplace)
+PRODUCT_ROADMAP.md              ← WHAT (vocabulary, initiation routes)
+        ├── Eco_Kitchen_Initiation_Flow.md  ← three routes, connection, payment boundaries
         ├── Configurator_Role…  ← WHO owns ops vs config
         └── IMPLEMENTATION…     ← HOW / WHEN (phases E–I, repos)
 
-Future_Extensions.md            ← Order-ops A–B supplement only
+Future_Extensions.md            ← Direct-order ops A–B supplement only
 AGENT_HANDOFF.md                ← Shipped vs planned
 ```
 
@@ -125,8 +129,8 @@ Each repository evolves independently. Coordination happens here through GitHub 
 
 ## Project Status
 
-🚧 **Status:** Design Phase  
-📅 **Date:** December 25, 2025
+🚧 **Status:** MVP in active development (mobile, web, integration-service on Render)  
+📅 **Product model:** Eco kitchens + three initiation routes — [Eco_Kitchen_Initiation_Flow.md](design/Eco_Kitchen_Initiation_Flow.md)
 
 ## Problem Statement
 

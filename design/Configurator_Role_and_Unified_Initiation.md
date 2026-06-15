@@ -4,6 +4,8 @@
 
 **Status:** Design / roadmap — not fully implemented in code. Current MVP still uses JWT role `coordinator`, separate mobile entry points, and `seeker_demands` vs `order_intents` tables.
 
+> **Initiation routes (authoritative):** [Eco_Kitchen_Initiation_Flow.md](./Eco_Kitchen_Initiation_Flow.md) defines **Direct order**, **Eco kitchen · I pay**, and **Eco kitchen · open for pledging**, plus connection and payment boundaries. Sections 5–6 below describe an older unified-flow sketch; prefer the Eco Kitchen doc for route naming and payment model.
+
 **Doc map:** [README.md § Documentation guide](../README.md#documentation-guide)  
 **Related:** [PRODUCT_ROADMAP.md](../development/PRODUCT_ROADMAP.md) (glossary, actors), [IMPLEMENTATION_APPROACH.md](../development/IMPLEMENTATION_APPROACH.md) (phases E–I), [database-setup-sequence.md](../configuration/database-setup-sequence.md) (marketplace SQL).
 

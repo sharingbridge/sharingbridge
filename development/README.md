@@ -7,7 +7,7 @@
 | Document | Role |
 |----------|------|
 | [AGENT_HANDOFF.md](./AGENT_HANDOFF.md) | **Live status** — shipped features, next tasks |
-| [PRODUCT_ROADMAP.md](./PRODUCT_ROADMAP.md) | **Product authority** — glossary, actors, marketplace |
+| [PRODUCT_ROADMAP.md](./PRODUCT_ROADMAP.md) | **Product authority** — glossary, actors, initiation routes |
 | [IMPLEMENTATION_APPROACH.md](./IMPLEMENTATION_APPROACH.md) | **Engineering plan** — phases, repos, free-tier stack |
 | [AI_IMPLEMENTATION_PLAN.md](./AI_IMPLEMENTATION_PLAN.md) | AI presets, descriptions, seeker ID |
 | [AI_PLATFORM_INTEGRATION.md](./AI_PLATFORM_INTEGRATION.md) | Orchestration hosting and bridges |
@@ -18,8 +18,9 @@
 
 | Document | Role |
 |----------|------|
-| [Configurator_Role_and_Unified_Initiation.md](../design/Configurator_Role_and_Unified_Initiation.md) | Configurator, payee, unified flow |
-| [Future_Extensions.md](../design/Future_Extensions.md) | Order-ops supplement (A–B only) |
+| [Eco_Kitchen_Initiation_Flow.md](../design/Eco_Kitchen_Initiation_Flow.md) | **Authoritative** — three routes, connection, payment boundaries |
+| [Configurator_Role_and_Unified_Initiation.md](../design/Configurator_Role_and_Unified_Initiation.md) | Configurator vs daily ops |
+| [Future_Extensions.md](../design/Future_Extensions.md) | Direct-order ops supplement (A–B only) |
 | [SharingBridge_End_to_End_Workflow.md](../design/SharingBridge_End_to_End_Workflow.md) | BRD journey diagrams |
 
 **Run and deploy** → [configuration/README.md](../configuration/README.md) · **SQL order** → [database-setup-sequence.md](../configuration/database-setup-sequence.md)

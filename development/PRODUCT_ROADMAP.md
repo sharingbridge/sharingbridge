@@ -8,7 +8,8 @@
 |-----------|-----|
 | [AGENT_HANDOFF.md](./AGENT_HANDOFF.md) | What is shipped **today** |
 | [IMPLEMENTATION_APPROACH.md](./IMPLEMENTATION_APPROACH.md) | Engineering phases, repos, timelines (marketplace **E–I**) |
-| [Configurator_Role_and_Unified_Initiation.md](../design/Configurator_Role_and_Unified_Initiation.md) | Configurator, payee, unified initiation |
+| [Configurator_Role_and_Unified_Initiation.md](../design/Configurator_Role_and_Unified_Initiation.md) | Configurator vs daily ops |
+| [Eco_Kitchen_Initiation_Flow.md](../design/Eco_Kitchen_Initiation_Flow.md) | Three routes, connection, payment boundaries |
 | [Future_Extensions.md](../design/Future_Extensions.md) | Order-ops supplement only (payment-done, delivery proof) |
 
 **Do not** spin up parallel roadmap docs — extend **this file** for product themes.
@@ -56,7 +57,11 @@ When documenting APIs or SQL, show the **legacy identifier** in backticks. Use *
 | **Elapsed (freshness)** | `now − created_at`. Shown near **Order intent taken**; **do not** derive elapsed from `delivered_at`. |
 | **Distance (m)** | **`distance_m`** — metres from viewer `near_lat` / `near_lng` to intent location (API-computed). |
 | **Radius** | Server filter: **`DONOR_NEIGHBOURHOOD_RADIUS_M`** (metres; default 5000). |
-| **Seeker demand** | Logged meal need for aggregation (`seeker_demands`). **Not** an order intent and **not** a paid vendor order. Distinct from **pledge** (future funding commitment). **Planned merge** into prepaid **order intent** — see [Configurator_Role_and_Unified_Initiation.md](../design/Configurator_Role_and_Unified_Initiation.md). |
+| **Seeker demand** | Logged need for pledging (`seeker_demands`). Maps to initiation route **Eco kitchen · open for pledging** until unified `initiation.route` ships. **Not** a placed vendor order. Distinct from **pledge** (funding commitment on dashboard). See [Eco_Kitchen_Initiation_Flow.md](../design/Eco_Kitchen_Initiation_Flow.md). |
+| **Eco kitchen** | Crowd-sourced kitchen on the network: standard menu, eco-friendly packaging, economical volume prep. Commits to fulfil; payment off-platform after SB **connection**. |
+| **Initiation route** | One of: **Direct order** \| **Eco kitchen · I pay** \| **Eco kitchen · open for pledging**. API target: `direct_order` \| `eco_kitchen_self_pay` \| `eco_kitchen_pledge`. |
+| **Order code** | Scoped id (e.g. `SB-7K2M-9F3`) visible only to parties on that order; trust anchor for off-platform payment. |
+| **Kitchen commitment** | Eco kitchen accepts a line (portions, price, ETA). Product term; legacy table `vendor_bids` during migration. |
 | **Beneficiary / seeker** | Person who receives food. **No app login** — linked on records (address, notes, optional photo) with consent captured by an initiator. |
 | **Demand initiator** | Signed-in user who arranges meals **for** a beneficiary (e.g. adult child for a parent, or anyone they meet). May be one-off or **recurring**. Today overlaps payee role and **Record seeker demand**. Target: single **meal initiation** flow. |
 | **Configurator** | **One-time** geographic actor: menus, `locality_key` tiers, optional zone setup. **Not** full-time ops — renames local **coordinator** for config-only work. Runtime ops → payees, fulfillers, automation. See [Configurator_Role_and_Unified_Initiation.md](../design/Configurator_Role_and_Unified_Initiation.md). |
@@ -71,7 +76,7 @@ When documenting APIs or SQL, show the **legacy identifier** in backticks. Use *
 |-------|----------|--------|
 | **Payee / supporter** | Yes (mobile) | Field handover or remote arrangement; pays vendor directly. API role `payee` today. |
 | **Demand initiator** | Yes | Plans meals for a beneficiary; sets pickup vs delivery. |
-| **Coordinator** | Yes (web) | **Transitioning:** runtime ops UI (demand board, manual vendor bid MVP). Long-term **configurator** = menu/zone setup only; see design doc above. |
+| **Coordinator** | Yes (web) | **Transitioning:** **Actions** tab (pledges, kitchen commitments). Long-term **configurator** = menu/zone setup only. |
 | **Configurator** | Yes (web, future) | One-time menus and geography per `locality_key`; not daily operations. |
 | **Demand fulfiller** | Yes | Prep bids; may self-deliver or hire transport. |
 | **Transport bidder** | Yes | Route bids; paid by fulfiller. |
@@ -81,10 +86,24 @@ When documenting APIs or SQL, show the **legacy identifier** in backticks. Use *
 
 | Lane | Status | Initiator | Payment |
 |------|--------|-----------|---------|
-| **A — Field handover** | Shipped | Payee / initiator in person | Payee → vendor app (one-time) |
-| **B — Seeker demand log** | Shipped (C.1) | Payee / initiator / coordinator | None yet — aggregation only |
-| **C — Meal arrangement** | Future | Demand initiator | Family / self-funded plans; recurring |
-| **D — Marketplace window** | Future | Pledges + aggregated demand | Payee → vendor (food); bulk prep + transport |
+| **A — Direct order** | Shipped | Initiator | Initiator → vendor app (external) |
+| **B — Eco kitchen · open for pledging** | Partial | Initiator opens; pledgers fund | Pledgers → eco kitchen off-platform after **connection** |
+| **C — Eco kitchen · I pay** | Planned | Initiator | Initiator → eco kitchen off-platform after **connection** |
+| **D — Meal arrangement / recurring** | Future | Demand initiator | Family / self-funded plans |
+
+Authoritative step-by-step flows: [Eco_Kitchen_Initiation_Flow.md](../design/Eco_Kitchen_Initiation_Flow.md).
+
+---
+
+## Initiation routes (authoritative summary)
+
+| Route | Label | Shipped? |
+|-------|-------|----------|
+| 1 | **Direct order** | Yes (`order_intents`, Help a seeker) |
+| 2 | **Eco kitchen · I pay** | Design + mobile teaser only |
+| 3 | **Eco kitchen · open for pledging** | Partial (`seeker_demands` + Actions pledges) |
+
+**SharingBridge never** processes payments, publishes phone numbers in listings, or sends QR/payment links by email. See [Eco_Kitchen_Initiation_Flow.md](../design/Eco_Kitchen_Initiation_Flow.md) §7–8.
 
 ---
 

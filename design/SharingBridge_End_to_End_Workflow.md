@@ -18,7 +18,8 @@
 | **[Vendor preset setup AI Search Sequence](Donor_Setup_AI_Search_Sequence.md)** | Vendor preset setup only (suggest → save presets) | Sequence diagram |
 | **[Manual Testing Guide](../testing/MANUAL_TESTING_GUIDE.md)** | How to **verify** shipped slices on a device | Commands, not product flow |
 | **[Agent Handoff](../development/AGENT_HANDOFF.md)** | What is **live in code today** and next tasks | Status bullets |
-| **[Future Extensions](Future_Extensions.md)** | Order payment/delivery tracking, delivery proof, locality demand + vendor bidding | Roadmap; Mermaid |
+| **[Eco Kitchen initiation flow](Eco_Kitchen_Initiation_Flow.md)** | Three routes, eco kitchens, connection, payment boundaries | Yes (Mermaid) |
+| **[Future Extensions](Future_Extensions.md)** | Direct-order payment/delivery tracking, delivery proof | Roadmap; Mermaid |
 
 **Gap this doc fills:** The BRD defines *what* happens; the architecture defines *how* technically; the manual guide defines *how to test*. This file connects them with **visual flows** and marks **shipped / partial / planned**.
 

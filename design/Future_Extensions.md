@@ -25,7 +25,7 @@
 | Geo on order intent (`location_lat/lng`, `locality_key`); payee neighbourhood feed; PostGIS `ST_DWithin` list queries | Shipped — [database.md](../configuration/database.md) |
 | Payment / delivery lifecycle, coordinator **map** UI (bbox / clustering) | **Not shipped** |
 | Delivery photo proof, delivery-partner role | **Planned** |
-| Locality demand + vendor bidding marketplace | [PRODUCT_ROADMAP.md](../development/PRODUCT_ROADMAP.md) § Marketplace; phases E–I in [IMPLEMENTATION_APPROACH.md](../development/IMPLEMENTATION_APPROACH.md) |
+| Locality demand + eco kitchen commitments | [Eco_Kitchen_Initiation_Flow.md](./Eco_Kitchen_Initiation_Flow.md); engineering phases E–I in [IMPLEMENTATION_APPROACH.md](../development/IMPLEMENTATION_APPROACH.md) |
 
 Payments for food still happen in **vendor apps** (Swiggy, Zomato, etc.). SharingBridge tracks **intent and status**, not card charges, unless a later scope explicitly adds audited payment references.
 
@@ -144,10 +144,11 @@ sequenceDiagram
 
 ## Marketplace (moved — do not extend this file)
 
-Locality demand, standard offers, pledges, vendor bids, allocation, and configurator model are documented in:
+Eco kitchen pledging, kitchen commitments, allocation, and configurator model:
 
-- [PRODUCT_ROADMAP.md](../development/PRODUCT_ROADMAP.md) — product lanes, glossary, fulfillment paths
-- [Configurator_Role_and_Unified_Initiation.md](./Configurator_Role_and_Unified_Initiation.md) — configurator vs automation; prepaid order intent
+- [Eco_Kitchen_Initiation_Flow.md](./Eco_Kitchen_Initiation_Flow.md) — **authoritative** initiation routes and connection
+- [PRODUCT_ROADMAP.md](../development/PRODUCT_ROADMAP.md) — glossary, actors
+- [Configurator_Role_and_Unified_Initiation.md](./Configurator_Role_and_Unified_Initiation.md) — configurator vs automation
 - [IMPLEMENTATION_APPROACH.md](../development/IMPLEMENTATION_APPROACH.md) — marketplace phases **E–I**
 - [database-setup-sequence.md](../configuration/database-setup-sequence.md) — SQL for marketplace tables
 

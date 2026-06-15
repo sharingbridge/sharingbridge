@@ -80,15 +80,15 @@ See [IMPLEMENTATION_APPROACH.md](../development/IMPLEMENTATION_APPROACH.md).
 
 ## Seeker demand — Record seeker demand (Phase C.1, shipped)
 
-Separate from **Help a seeker** (order intent after copy). **Record seeker demand** logs meal need in the field for neighbourhood aggregation on the web **Demand** tab.
+Separate from **Help a seeker** (direct order / `order_intents`). **For pledging** records a need for the web **Actions** tab (legacy API `seeker_demands`).
 
 | Piece | Detail |
 |-------|--------|
-| Mobile hub | **Record seeker demand** → `RecordSeekerDemandPage` |
+| Mobile hub | **Start initiation** → **For pledging** → `RecordSeekerDemandPage` |
 | API | `POST /v1/seeker-demands` on **integration-service** (Bearer JWT) |
 | Who can record | **Payee** or **coordinator** (`requireReporterRole`) |
 | Stored as | Postgres `seeker_demands` — [database-setup-sequence.md](./database-setup-sequence.md) |
 | Response field | `seeker_demand.seeker_demand_id` (`sd-…` prefix); reporter = `reported_by_user_id` |
-| Web | `GET /v1/demand/board` — aggregated `demand_windows` + recent `seeker_demands` |
+| Web | `GET /v1/demand/board` — **Actions** tab (pledges, kitchen commitments) |
 
-**Not** a vendor order or pledge. **Pledges** and **vendor bids** persist after marketplace SQL (M1–M2 in [database-setup-sequence.md](./database-setup-sequence.md)); auto-allocation is still future (Phase I).
+**Not** a vendor order. **Pledges** and **kitchen commitments** (legacy `vendor_bids`) persist after marketplace SQL (M1–M2). Auto-allocation and eco **connection** handoff: [Eco_Kitchen_Initiation_Flow.md](../design/Eco_Kitchen_Initiation_Flow.md).

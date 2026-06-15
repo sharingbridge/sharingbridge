@@ -132,7 +132,7 @@ After sign-in, the app uses an inner navigator with **SharingBridge** (hub) as t
 | Screen | App bar |
 |--------|---------|
 | Hub (`AppHomePage`) | Title only — no Back or Home |
-| Vendor presets, Help a seeker, Record seeker demand, Order initiation history, detail | **Back** + labeled **Home** → returns to the hub |
+| Vendor presets, Help a seeker, Start initiation, Initiations, detail | **Back** + labeled **Home** → returns to the hub |
 
 Rebuild or `flutter run` after pulling; an older APK will not show Home.
 
@@ -141,9 +141,12 @@ Rebuild or `flutter run` after pulling; an older APK will not show Home.
 | Screen | Backend |
 |--------|---------|
 | Vendor presets | integration — suggest-vendors, save/load presets |
-| Help a seeker | instruction-pack + `POST …/order-intents` on copy — see [field-handoff.md](./field-handoff.md) |
-| Record seeker demand | `POST /v1/seeker-demands` — meal need for web Demand tab ([field-handoff.md](./field-handoff.md) § Seeker demand) |
-| Order initiation history | `GET …/order-intents` — list grouped **by day**, detail on tap |
+| Help a seeker | **Direct order** — instruction-pack + `POST …/order-intents` — [field-handoff.md](./field-handoff.md) |
+| Start initiation | Route picker: Direct order, For pledging, Eco kitchen · I pay (coming soon) |
+| For pledging | `POST /v1/seeker-demands` — web **Actions** tab |
+| Initiations | `GET …/order-intents` + seeker demands — merged list |
+
+Initiation routes: [Eco_Kitchen_Initiation_Flow.md](../design/Eco_Kitchen_Initiation_Flow.md).
 
 Offline: presets may cache in `shared_preferences` when integration is unreachable.
 

@@ -2,7 +2,7 @@
 
 **Purpose:** Authoritative product flow for **how initiations are started**, **how eco kitchens fulfil**, and **how payers connect without SharingBridge handling money or publishing phone numbers**.
 
-**Status:** Design approved (June 2026). **Phase 1–2 shipped:** copy + consent UI. **Phase 3 shipped:** order codes, `initiation_route`, consent API. **Phase 4 partial:** `GET /v1/connections/:orderCode`, web Connection panel, webhook hook for notification email (`CONNECTION_NOTIFY_WEBHOOK_URL`).
+**Status:** Design approved (June 2026). **Phase 1–2 shipped:** copy + consent UI. **Phase 3 shipped:** order codes, `initiation_route`, consent API. **Phase 4 shipped:** `GET /v1/connections/:orderCode`, web Connection panel, FCM webhook path (`CONNECTION_NOTIFY_WEBHOOK_URL`). **Phase 5 shipped:** mobile **Eco kitchen · I pay** route. **Phase 6 shipped:** unified eco kitchen labels, kitchen-commit copy on Actions, per-route initiation display.
 
 **Doc map:** [README.md § Documentation guide](../README.md#documentation-guide)
 
@@ -242,9 +242,9 @@ Legacy code names (`OperationsPage`, `supply-*` CSS, `vendor_bids` table) are en
 | **1 — Copy** ✅ | Initiations / Actions / Map; route labels; eco kitchen teaser |
 | **2 — Docs + consent UI** ✅ | Eco Kitchen flow doc; pledge/initiator email-share consent on web + mobile |
 | **3 — API** ✅ | `initiation.route`; order codes; `kitchen_commitments` |
-| **4 — Connection** 🟡 | `GET /v1/connections/:orderCode`; web Connection panel; `CONNECTION_NOTIFY_WEBHOOK_URL` for email |
-| **5 — Eco kitchen · I pay** | Mobile route card live; pool + commit UX |
-| **6 — Pledge + eco** | Unify pledge flow with kitchen commit + per-pledger connection |
+| **4 — Connection** ✅ | `GET /v1/connections/:orderCode`; web Connection panel; FCM + `CONNECTION_NOTIFY_WEBHOOK_URL` |
+| **5 — Eco kitchen · I pay** ✅ | Mobile route card live; `initiation_route: eco_kitchen_self_pay` |
+| **6 — Pledge + eco** ✅ | Eco kitchen pledge labels; kitchen-commit copy; order codes in feed; per-pledger connection (API) |
 
 ---
 

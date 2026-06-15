@@ -218,8 +218,8 @@ Legacy code names (`OperationsPage`, `supply-*` CSS, `vendor_bids` table) are en
 
 | Phase | Deliverable |
 |-------|-------------|
-| **1 — Copy** ✅ | Initiations / Actions / Map; Direct order + For pledging labels; Eco kitchens teased on mobile |
-| **2 — Docs** ✅ | This file + doc index updates |
+| **1 — Copy** ✅ | Initiations / Actions / Map; route labels; eco kitchen teaser |
+| **2 — Docs + consent UI** ✅ | Eco Kitchen flow doc; pledge/initiator email-share consent on web + mobile |
 | **3 — API** | `initiation.route`; order codes; `kitchen_commitments` |
 | **4 — Connection** | In-app Connection panel; notification-service transactional email |
 | **5 — Eco kitchen · I pay** | Mobile route card live; pool + commit UX |

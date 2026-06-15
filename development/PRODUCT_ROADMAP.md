@@ -61,6 +61,7 @@ When documenting APIs or SQL, show the **legacy identifier** in backticks. Use *
 | **Eco kitchen** | Crowd-sourced kitchen on the network: standard menu, eco-friendly packaging, economical volume prep. Commits to fulfil; payment off-platform after SB **connection**. |
 | **Initiation route** | One of: **Direct order** \| **Eco kitchen · I pay** \| **Eco kitchen · open for pledging**. API target: `direct_order` \| `eco_kitchen_self_pay` \| `eco_kitchen_pledge`. |
 | **Order code** | Scoped id (e.g. `SB-7K2M-9F3`) visible only to parties on that order; trust anchor for off-platform payment. |
+| **Email share consent** | Explicit opt-in before pledging or opening eco-kitchen routes; login email revealed in-app after kitchen commit — [Eco_Kitchen_Initiation_Flow.md](../design/Eco_Kitchen_Initiation_Flow.md) §7.5. |
 | **Kitchen commitment** | Eco kitchen accepts a line (portions, price, ETA). Product term; legacy table `vendor_bids` during migration. |
 | **Beneficiary / seeker** | Person who receives food. **No app login** — linked on records (address, notes, optional photo) with consent captured by an initiator. |
 | **Demand initiator** | Signed-in user who arranges meals **for** a beneficiary (e.g. adult child for a parent, or anyone they meet). May be one-off or **recurring**. Today overlaps payee role and **Record seeker demand**. Target: single **meal initiation** flow. |

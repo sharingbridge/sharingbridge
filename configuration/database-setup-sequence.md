@@ -66,6 +66,7 @@ Run **only** migrations for features missing from your DB. If unsure, check Tabl
 | `standard_offer_id` on pledges/bids | [schema-standard-offers-wire-migration.sql](./schema-standard-offers-wire-migration.sql) | Requires marketplace tables |
 | Sample menu catalog | [seed-standard-offers.sql](./seed-standard-offers.sql) | After `standard_offers` table exists |
 | `initiator` role in `user_roles` | [schema-initiator-role-migration.sql](./schema-initiator-role-migration.sql) | Optional — legacy `donor` rows still work |
+| Eco Kitchen Phase 3 (`order_code`, `initiation_route`, consent) | [schema-eco-kitchen-phase3-migration.sql](./schema-eco-kitchen-phase3-migration.sql) | After marketplace M1–M2; new initiations get `SB-…` codes when columns exist |
 
 **Note:** Fresh installs from current [schema.sql](./schema.sql) already include PostGIS columns, `delivered_at`, and `seeker_demands`. Brownfield files exist for databases created **before** those were merged into `schema.sql`.
 
@@ -80,6 +81,7 @@ Run in this order on **greenfield or upgraded** DB:
 | **M1** | [schema-marketplace-migration.sql](./schema-marketplace-migration.sql) | `standard_offers`, `demand_windows`, `meal_pledges`, `vendor_bids` |
 | **M2** | [schema-standard-offers-wire-migration.sql](./schema-standard-offers-wire-migration.sql) | `standard_offer_id` FK on pledges and vendor bids |
 | **M3** | [seed-standard-offers.sql](./seed-standard-offers.sql) | Postal catalog (`IN:TN:600115`); test mirror in `sharingbridge-integration-service/test/fixtures/standardOffersCatalog.js` |
+| **M4** | [schema-eco-kitchen-phase3-migration.sql](./schema-eco-kitchen-phase3-migration.sql) | Order codes (`SB-…`), `initiation_route`, email-share consent timestamps |
 | **Reset** | [reset-marketplace-data.sql](./reset-marketplace-data.sql) | Clear old GPS-bucket data before re-seed (dev only) |
 
 **App env (integration-service on Render):**
@@ -110,6 +112,7 @@ coordinator-seed.sql (after sign-in)           │
    │ M1 marketplace migration       │         │
    │ M2 standard-offers wire        │         │
    │ M3 seed-standard-offers        │         │
+   │ M4 eco-kitchen phase3          │         │
    └────────────────────────────────┘         │
                                                │
 BROWFIELD (pick rows you need)                 │
@@ -136,6 +139,7 @@ seeker_demands migration                       │
 | [schema-marketplace-migration.sql](./schema-marketplace-migration.sql) | Feature | `users` |
 | [schema-standard-offers-wire-migration.sql](./schema-standard-offers-wire-migration.sql) | Feature | marketplace + `standard_offers` |
 | [seed-standard-offers.sql](./seed-standard-offers.sql) | Data | `standard_offers` |
+| [schema-eco-kitchen-phase3-migration.sql](./schema-eco-kitchen-phase3-migration.sql) | Feature | marketplace + `seeker_demands` |
 | [coordinator-seed.sql](./coordinator-seed.sql) | Data | `users` row |
 
 ---

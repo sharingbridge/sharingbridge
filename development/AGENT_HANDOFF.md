@@ -164,11 +164,9 @@ Local folder names may differ from slugs; **git only cares about `origin`**. Pac
 
 Tasks #1-#5 are complete. Remaining priority order:
 
-1. **Eco kitchen API + connection** — `initiation.route`, order codes, kitchen commitments, in-app **Connection** panel, notification-only email — [Eco_Kitchen_Initiation_Flow.md](../design/Eco_Kitchen_Initiation_Flow.md) phases 3–4.
-2. **Order ops + delivery proof** — [Future_Extensions.md](../design/Future_Extensions.md) Phase B (direct-order path).
-3. **AI field slice** — live instruction-pack, photo descriptions per [IMPLEMENTATION_APPROACH.md](./IMPLEMENTATION_APPROACH.md).
-4. **Track B — photo-service on Render** — reference photos on hosted stack.
-5. **Marketplace allocation** — auto-match pledges to kitchen commits (Phase I).
+1. **Eco kitchen — Phase 5–6** — Eco kitchen · I pay on mobile; unify pledge + kitchen commit UX — [Eco_Kitchen_Initiation_Flow.md](../design/Eco_Kitchen_Initiation_Flow.md).
+2. **Notification email delivery** — implement `connection_ready` handler in notification-service (webhook from `CONNECTION_NOTIFY_WEBHOOK_URL`).
+3. **Order ops + delivery proof** — [Future_Extensions.md](../design/Future_Extensions.md) Phase B (direct-order path).
 
 ## Follow-ups Surfaced in Prior Sessions
 - `LocalPreferencesRepository` / `PreferencesStore` remain for **automated tests only**; production uses user-service Postgres.
@@ -217,4 +215,4 @@ Tasks #1-#5 are complete. Remaining priority order:
 - `feat` (integration): coordinator `feed` on order-intent list; `GET /v1/demand/board` accepts `since` + neighbourhood query params; demand rows filtered server-side.
 - `fix` (web): Demand tab infinite reload loop (unstable empty scope object retriggered fetch effect).
 - `docs` + `feat` (web/mobile): **Initiations** product copy — tabs Initiations/Actions/Map; **Direct order** / **For pledging** / **Eco kitchens** labels; mobile copy parity.
-- `docs`: **Eco_Kitchen_Initiation_Flow.md** — authoritative three-route flow, connection, payment boundaries; doc index consolidation.
+- `docs`: **Eco_Kitchen_Initiation_Flow.md** — Phase 4 connection API + web panel; `CONNECTION_NOTIFY_WEBHOOK_URL`.

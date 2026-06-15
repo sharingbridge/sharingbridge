@@ -96,6 +96,7 @@ Set the **same value** on all four Render Web Services if you want consistent ve
 | `INITIATOR_NEIGHBOURHOOD_RADIUS_M` | `5000` | `5000` (`near_lat` / `near_lng` filter radius in **metres**; capped at 50000 server-side) |
 | `INITIATOR_NEIGHBOURHOOD_WINDOW_HOURS` | `2` | `2` (initiator list `since`, photo redaction; 1–72) |
 | `NOMINATIM_USER_AGENT` | `SharingBridge-Integration-Service/1.0` | same — GPS → postal `locality_key` (`IN:TN:600115`) via reverse geocode |
+| `CONNECTION_NOTIFY_WEBHOOK_URL` | *(unset)* | Optional — POST JSON when eco kitchen commits (`connection_ready`); for notification-service or mailer |
 | `LOG_LEVEL` | `warn` | `error`, `warn`, `info`, or `debug` — see [LOG_LEVEL](#log_level-all-backend-apis) |
 | `ORDER_INTENT_LIST_MAX_ROWS` | `100` | `100` (max rows per dashboard list) |
 | `PORT` | `8080` | injected by Render — do not set |

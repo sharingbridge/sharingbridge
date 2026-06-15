@@ -187,6 +187,27 @@ On order `SB-…` when logged in:
 
 ---
 
+## 7.5 Upfront consent (email sharing)
+
+Before a user **opens for pledging**, **pledges**, **opts for eco kitchen · I pay**, or an **eco kitchen commits**, SharingBridge must:
+
+1. **Explain** that the party’s **SharingBridge login email** may be shared with the other side **in-app** after a kitchen commits (for payment and delivery coordination off-platform).
+2. **Obtain explicit opt-in** (checkbox + continue) — not buried in terms alone.
+3. **Clarify** SB does not process payments and does not email QR / payment links.
+
+| Moment | Actor | Shipped UI |
+|--------|--------|------------|
+| Choose **For pledging** on mobile | Initiator | Consent dialog on **Start initiation** + checkbox on record screen |
+| **Pledge** on web **Actions** tab | Pledger | Consent panel; pledge buttons disabled until checked (session) |
+| **Eco kitchen · I pay** | Initiator | Consent dialog (when route ships) |
+| **Kitchen commits** | Eco kitchen account | Consent before commit (when self-service ships) |
+
+**Direct order** does not share emails with eco kitchens — no extra consent beyond sign-in.
+
+**Future API:** store `email_share_consent_at` on pledge / initiation / commitment rows for audit.
+
+---
+
 ## 8. Security — email and fraud
 
 | Threat | Mitigation |

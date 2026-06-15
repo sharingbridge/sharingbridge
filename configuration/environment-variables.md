@@ -8,6 +8,7 @@ Tables are sorted **A–Z by variable name** to match Render’s environment UI.
 |---------|-------------|-----------|
 | user-service | `sharingbridge-user-service/.env` | `npm start` (dotenv) |
 | integration-service | `sharingbridge-integration-service/.env` | `npm start` |
+| notification-service | `sharingbridge-notification-service/.env` | `npm start` |
 | photo-service | `sharingbridge-photo-service/.env` | `uvicorn` / pytest |
 | ai-orchestration | `sharingbridge-ai-orchestration/.env` | `uvicorn` |
 | web-app | `sharingbridge-web-app/.env` | `npm run dev` / **build** (`VITE_*` baked into `dist/`) |
@@ -23,12 +24,13 @@ Render deploy details: [backend-render.md](./backend-render.md). Auth secrets: [
 
 ## `LOG_LEVEL` (all backend APIs)
 
-Set the **same value** on all four Render Web Services if you want consistent verbosity:
+Set the **same value** on all five Render Web Services if you want consistent verbosity:
 
 | Service | Supports `LOG_LEVEL` |
 |---------|----------------------|
 | `sharingbridge-user-service` | Yes |
 | `sharingbridge-integration-service` | Yes |
+| `sharingbridge-notification-service` | Yes |
 | `sharingbridge-ai-orchestration` | Yes |
 | `sharingbridge-photo-service` | Yes |
 | web-app, mobile-app | No (no server runtime logs) |
@@ -114,7 +116,7 @@ Set the **same value** on all four Render Web Services if you want consistent ve
 | `WEBHOOK_SECRET` | **same** as integration `CONNECTION_NOTIFY_WEBHOOK_SECRET` | same |
 | `FIREBASE_SERVICE_ACCOUNT_PATH` | path to `firebase-adminsdk.json` | Render secret file mount |
 | `FIREBASE_SERVICE_ACCOUNT_JSON` | — | inline JSON alternative to path |
-| `PORT` | `8092` | injected by Render |
+| `PORT` | `8093` (local — photo-service uses 8092) | injected by Render |
 
 Webhook route: `POST /internal/connection-ready` — set integration `CONNECTION_NOTIFY_WEBHOOK_URL` to this URL.
 
@@ -209,7 +211,8 @@ Google sign-in on web works for any account with `payee` and/or `coordinator` in
 
 | Repo | Key vars |
 |------|----------|
-| integration-service | `AUTH_TOKEN_SECRET`, `DATABASE_URL`, `USER_SERVICE_BASE_URL=http://localhost:8081`, `WEB_CORS_ORIGINS=http://localhost:5173` |
+| integration-service | `AUTH_TOKEN_SECRET`, `DATABASE_URL`, `USER_SERVICE_BASE_URL=http://localhost:8081`, `WEB_CORS_ORIGINS=http://localhost:5173`, optional `CONNECTION_NOTIFY_WEBHOOK_URL=http://localhost:8093/internal/connection-ready` |
+| notification-service | `DATABASE_URL`, `WEBHOOK_SECRET`, `FIREBASE_SERVICE_ACCOUNT_PATH` or `FIREBASE_SERVICE_ACCOUNT_JSON` — [notification-service-local.md](./notification-service-local.md) |
 | photo-service | `AUTH_TOKEN_SECRET`, `CLOUDINARY_*`, `DATABASE_URL` |
 | user-service | `AUTH_TOKEN_SECRET`, `DATABASE_URL`, `GOOGLE_CLIENT_ID_WEB`, `WEB_CORS_ORIGINS=http://localhost:5173` |
 | web-app | `VITE_API_BASE_URL`, `VITE_GOOGLE_CLIENT_ID`, `VITE_USER_SERVICE_BASE_URL` → localhost ports above |

@@ -26,7 +26,8 @@ Phase 0   Google Cloud (OAuth client + test users)
     ↓
 Phase 1   Local Postgres + .env on user-service & integration-service
     ↓     Google sign-in on http://localhost:5173 (web) + mobile
-Phase 2   Render: user-service → integration-service (+ photo-service if needed)
+Phase 2   Render: user-service → ai-orchestration → integration-service → photo-service
+    ↓     optional: notification-service + CONNECTION_NOTIFY_WEBHOOK_* on integration
     ↓
 Phase 3   Render: static web app (VITE_* build env)
     ↓
@@ -38,6 +39,7 @@ Phase 5   Verify hosted coordinator dashboard + payee flow on same API host
 Optional branches (any time after Phase 1):
 
 - **Photos:** [photo-service-local.md](./photo-service-local.md)
+- **Connection push (FCM):** [notification-service-local.md](./notification-service-local.md) · [backend-render.md](./backend-render.md) § Notification service
 - **AI suggestions:** [ai-orchestration-local.md](./ai-orchestration-local.md)
 - **Live AI keys (Groq, Gemini, Nominatim):** [ai-setup-handhold.md](./ai-setup-handhold.md)
 - **Field flow (BRD):** [field-handoff.md](./field-handoff.md)
@@ -51,6 +53,7 @@ Optional branches (any time after Phase 1):
 | **Step-by-step deploy order** | [e2e-deployment-sequence.md](./e2e-deployment-sequence.md) |
 | **All env vars by service** | [environment-variables.md](./environment-variables.md) |
 | **Render deploy (blueprint, CORS)** | [backend-render.md](./backend-render.md) |
+| **FCM / notification-service** | [notification-service-local.md](./notification-service-local.md) |
 | **Supabase / Postgres / schema** | [database-setup-sequence.md](./database-setup-sequence.md) · [database.md](./database.md) · [schema.sql](./schema.sql) |
 | **Auth, JWT, roles, 403 errors** | [authentication.md](./authentication.md) |
 | **All environment variables** | [environment-variables.md](./environment-variables.md) |
@@ -76,10 +79,11 @@ Restart Node after `.env` changes. Restart `npm run dev` after web `VITE_*` chan
 
 Follow [e2e-deployment-sequence.md](./e2e-deployment-sequence.md) Phases 2–5.
 
-1. Supabase + `DATABASE_URL` on Node services — [database.md](./database.md)
-2. Deploy user-service → integration-service (shared `AUTH_TOKEN_SECRET`) — [backend-render.md](./backend-render.md)
-3. Static site `VITE_*` — [web-client.md](./web-client.md)
-4. `WEB_CORS_ORIGINS` on **both** backends = static site `https://…onrender.com`
-5. Mobile uses **same** integration host as `VITE_API_BASE_URL` — [mobile-client.md](./mobile-client.md)
+1. Supabase + migrations (M1–M5 for eco kitchen + push) — [database-setup-sequence.md](./database-setup-sequence.md)
+2. Deploy user-service → integration-service → photo-service (shared `AUTH_TOKEN_SECRET`) — [backend-render.md](./backend-render.md)
+3. Optional: notification-service → wire `CONNECTION_NOTIFY_WEBHOOK_*` on integration — [notification-service-local.md](./notification-service-local.md)
+4. Static site `VITE_*` — [web-client.md](./web-client.md)
+5. `WEB_CORS_ORIGINS` on **both** backends = static site `https://…onrender.com`
+6. Mobile uses **same** integration host as `VITE_API_BASE_URL`; rebuild APK for FCM — [mobile-client.md](./mobile-client.md)
 
 **Testing:** [MANUAL_TESTING_GUIDE.md](../testing/MANUAL_TESTING_GUIDE.md) — mobile **§3**, web **§4**.

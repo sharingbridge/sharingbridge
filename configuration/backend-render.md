@@ -14,6 +14,7 @@ Layering detail: [Technical Architecture § As-built](../design/SharingBridge_Te
 | **System** | `sharingbridge-user-service` | Node 20 | integration only |
 | **Process** | `sharingbridge-ai-orchestration` | Docker | integration (`/internal/...`) |
 | **Process** | `sharingbridge-photo-service` | Docker | mobile (`PHOTO_SERVICE_BASE_URL`) |
+| **Process** | `sharingbridge-notification-service` | Node 20 | integration only (`CONNECTION_NOTIFY_WEBHOOK_URL`) |
 | **Client** | `sharingbridge-web-app` | **Static Site** | coordinator browser |
 
 **Not on Render for MVP:** `sharingbridge-location-safety` (archived), api-gateway, order-service.
@@ -22,9 +23,9 @@ Each repo has a root **`render.yaml`** blueprint. Connect via **New + → Bluepr
 
 **Do not use:** Static Site, Private Service, Worker, Cron, Key Value (for MVP app data).
 
-**Database:** use **[Supabase](https://supabase.com)** (hosted Postgres) for tables and data. Render hosts **APIs only** — set **`DATABASE_URL`** on both Node services to your Supabase connection URI. Full steps: [database.md](./database.md) (create tables in Supabase **SQL Editor**, then wire Render).
+**Database:** use **[Supabase](https://supabase.com)** (hosted Postgres) for tables and data. Render hosts **APIs only** — set **`DATABASE_URL`** on **user-service, integration-service, photo-service, and notification-service** to your Supabase connection URI. Full steps: [database.md](./database.md) (create tables in Supabase **SQL Editor**, then wire Render). SQL order: [database-setup-sequence.md](./database-setup-sequence.md) (include M4 eco-kitchen + M5 `device_tokens` for connection push).
 
-Both Node services **require** `DATABASE_URL` at startup (Postgres only — no JSON or in-memory marketplace fallback). Without it, deploy fails or marketplace routes return 503. See [database.md](./database.md).
+Node services that use Postgres **require** `DATABASE_URL` at startup (no in-memory marketplace fallback). Without it, deploy fails or marketplace / device-token routes return 503. See [database.md](./database.md).
 
 ---
 
@@ -38,13 +39,13 @@ Both Node services **require** `DATABASE_URL` at startup (Postgres only — no J
 
 ## Build and deploy settings
 
-| Field | User-service | AI orchestration | Integration | Photo service |
-|-------|--------------|------------------|-------------|---------------|
-| Build Command | `npm install` | *(empty)* | `npm install` | *(empty — Docker)* |
-| Start Command | `npm start` | **blank** | `npm start` | **blank** |
-| Pre-Deploy Command | blank | blank | blank | blank |
-| Health Check Path | `/health` | `/health` | `/health` | `/health` |
-| Auto-Deploy | **On commit** to `main` | same | same | same |
+| Field | User-service | AI orchestration | Integration | Photo service | Notification service |
+|-------|--------------|------------------|-------------|---------------|----------------------|
+| Build Command | `npm install` | *(empty)* | `npm install` | *(empty — Docker)* | `npm install` |
+| Start Command | `npm start` | **blank** | `npm start` | **blank** | `npm start` |
+| Pre-Deploy Command | blank | blank | blank | blank | blank |
+| Health Check Path | `/health` | `/health` | `/health` | `/health` | `/health` |
+| Auto-Deploy | **On commit** to `main` | same | same | same | same |
 
 **Static site (`sharingbridge-web-app`):** Build `npm install && npm run build` · Publish **`dist`** · Auto-Deploy **On commit** · see [web-client.md](./web-client.md).
 
@@ -77,7 +78,7 @@ Secret generation: [authentication.md](./authentication.md). Postgres: [database
 - Web static site: set `VITE_*` at **build** time; redeploy after changing them.
 - Web and mobile use **Google Sign-In** only on production (no dev token mint over HTTP).
 - photo-service: **Docker** — keep Render **Start Command** blank (`Dockerfile` + `start.sh`).
-- **`LOG_LEVEL`:** set `warn` (default) on all four backend APIs; use `info` temporarily for startup config dumps — see [environment-variables.md](./environment-variables.md#log_level-all-backend-apis).
+- **`LOG_LEVEL`:** set `warn` (default) on all five backend APIs; use `info` temporarily for startup config dumps — see [environment-variables.md](./environment-variables.md#log_level-all-backend-apis).
 
 After deploy, complete [e2e-deployment-sequence.md](./e2e-deployment-sequence.md) Phase 4 (Google origins + `WEB_CORS_ORIGINS`).
 
@@ -103,9 +104,60 @@ Comma-separated, no trailing slashes, no paths. Redeploy both Node services afte
 
 ---
 
+## Notification service (optional — connection-ready FCM push)
+
+**Repo:** `sharingbridge-notification-service` · **Not browser-facing** — integration-service calls it when an eco kitchen commits.
+
+| When you need it | Skip it when… |
+|------------------|----------------|
+| Mobile push after kitchen commit | Connection panel on web Actions is enough for your pilot |
+| FCM tokens registered via `PUT /v1/device-tokens` | You have not run `device_tokens` migration or rebuilt the APK with Firebase |
+
+**Local guide (Firebase, ports, smoke):** [notification-service-local.md](./notification-service-local.md)
+
+### Create on Render
+
+1. **New +** → **Web Service** → repo `sharingbridge-notification-service`, branch `main`.
+2. **Runtime:** Node 20 · **Build:** `npm install` · **Start:** `npm start` · **Health:** `/health`
+3. Or **Blueprint** → apply root `render.yaml` → set secrets when prompted.
+
+**Local port:** `8093` (photo-service uses `8092`). On Render, `PORT` is injected — do not set it.
+
+### Environment (Render dashboard)
+
+| Variable | Value |
+|----------|--------|
+| `DATABASE_URL` | **Same** Supabase URI as integration-service (`device_tokens` table — [schema-device-tokens-migration.sql](./schema-device-tokens-migration.sql)) |
+| `WEBHOOK_SECRET` | Generate a long random string — **copy the same value** to integration-service as `CONNECTION_NOTIFY_WEBHOOK_SECRET` |
+| `FIREBASE_SERVICE_ACCOUNT_JSON` | Full Firebase Admin service-account JSON (one secret env var). Alternative local-only: `FIREBASE_SERVICE_ACCOUNT_PATH` |
+| `LOG_LEVEL` | `warn` |
+
+Do **not** set `AUTH_TOKEN_SECRET` on notification-service — webhook auth uses `WEBHOOK_SECRET` / `X-Webhook-Secret`, not JWT.
+
+### Wire integration-service (after notification URL exists)
+
+On **integration-service** Render env:
+
+```env
+CONNECTION_NOTIFY_WEBHOOK_URL=https://<your-notification-service>.onrender.com/internal/connection-ready
+CONNECTION_NOTIFY_WEBHOOK_SECRET=<same string as notification WEBHOOK_SECRET>
+```
+
+Redeploy **integration-service** after saving. Without these vars, connection handoff still works in-app; only push/email webhook is skipped.
+
+### Mobile + Firebase (required for push to devices)
+
+1. Firebase project → Android app `app.sharingbridge` + `google-services.json` in mobile repo.
+2. SHA fingerprints in Firebase Console for your APK signing key.
+3. Rebuild release/debug APK after pulling mobile FCM changes.
+
+Detail: [notification-service-local.md](./notification-service-local.md) · [mobile-client.md](./mobile-client.md) § FCM push.
+
+---
+
 ## Local `.env` (not used on Render)
 
-Both Node services load a repo-root `.env` on `npm start` via `dotenv` (`import "dotenv/config"` in `src/server.js`).
+Both Node services (and notification-service) load a repo-root `.env` on `npm start` via `dotenv`.
 
 ```powershell
 cd sharingbridge-user-service
@@ -116,22 +168,32 @@ cd ..\sharingbridge-integration-service
 copy env.example .env
 # match AUTH_TOKEN_SECRET; set USER_SERVICE_BASE_URL=http://localhost:8081
 # set WEB_CORS_ORIGINS=http://localhost:5173 when using sharingbridge-web-app locally
+# optional push: CONNECTION_NOTIFY_WEBHOOK_URL=http://localhost:8093/internal/connection-ready
+
+cd ..\sharingbridge-notification-service
+copy env.example .env
+# same DATABASE_URL; WEBHOOK_SECRET matches integration CONNECTION_NOTIFY_WEBHOOK_SECRET
+# FIREBASE_SERVICE_ACCOUNT_PATH=.\firebase-adminsdk.json
 ```
 
 Web app: `sharingbridge-web-app/.env` from `env.example` (`VITE_*` URLs). Rebuild or restart `npm run dev` after changing `VITE_*`.
+
+Optional FCM stack: [notification-service-local.md](./notification-service-local.md).
 
 ---
 
 ## Deploy order
 
-1. **PostgreSQL** (when using DB) → schema + migration — [database.md](./database.md)
+1. **PostgreSQL** (when using DB) → schema + migrations — [database-setup-sequence.md](./database-setup-sequence.md) (M1–M5 for full eco kitchen + push)
 2. user-service → URL + `AUTH_TOKEN_SECRET` + `DATABASE_URL`
 3. ai-orchestration → URL + API key + `SHARINGBRIDGE_WEBSITE_URL=pending`
 4. integration-service → both URLs + both secrets + `DATABASE_URL`
 5. photo-service → same `DATABASE_URL` + `AUTH_TOKEN_SECRET` + **Cloudinary** (`CLOUDINARY_*` or `CLOUDINARY_URL`)
-6. web-app static site → `VITE_*` → then Phase 4 CORS + Google origins
+6. **notification-service** (optional) → same `DATABASE_URL` + `WEBHOOK_SECRET` + `FIREBASE_SERVICE_ACCOUNT_JSON` → note public URL
+7. integration-service → set `CONNECTION_NOTIFY_WEBHOOK_URL` + `CONNECTION_NOTIFY_WEBHOOK_SECRET` → redeploy
+8. web-app static site → `VITE_*` → then Phase 4 CORS + Google origins
 
-Blueprints: each repo’s `render.yaml`. Integration still needs pasted URLs and `AUTH_TOKEN_SECRET` after 1–2 exist.
+Blueprints: each repo’s `render.yaml`. Integration still needs pasted URLs and `AUTH_TOKEN_SECRET` after steps 1–3 exist. Notification webhook URL is step 6–7.
 
 ---
 
@@ -142,11 +204,13 @@ $USER_URL = "https://sharingbridge-user-service.onrender.com"
 $INT_URL  = "https://sharingbridge-integration-service.onrender.com"
 $AI_URL   = "https://sharingbridge-ai-orchestration.onrender.com"
 $PHO_URL  = "https://sharingbridge-photo-service.onrender.com"
+$NOT_URL  = "https://sharingbridge-notification-service.onrender.com"
 
 Invoke-RestMethod "$USER_URL/health"
 Invoke-RestMethod "$AI_URL/health"
 Invoke-RestMethod "$INT_URL/health"
 Invoke-RestMethod "$PHO_URL/health"
+Invoke-RestMethod "$NOT_URL/health"
 
 # Authenticated smoke: mint JWT locally with the same AUTH_TOKEN_SECRET as Render user-service
 cd path\to\sharingbridge-user-service
@@ -198,3 +262,5 @@ See [mobile-client.md](./mobile-client.md) — mint JWT, then `flutter run` from
 | `DATABASE_URL` / connection errors | Use **internal** URL; run schema SQL; redeploy both services |
 | Browser **Failed to fetch** on web | `WEB_CORS_ORIGINS` on **both** backends includes the web origin; web `.env` `VITE_*` must point at the same API hosts you use for mobile |
 | Local env ignored | Copy `env.example` → `.env` in each Node repo; restart `npm start` |
+| Push never arrives | `device_tokens` migration; mobile `google-services.json`; Firebase SHA; `CONNECTION_NOTIFY_WEBHOOK_*` on integration; notification `FIREBASE_SERVICE_ACCOUNT_JSON` — [notification-service-local.md](./notification-service-local.md) |
+| Webhook `401` / `403` on connection-ready | `WEBHOOK_SECRET` on notification-service must equal integration `CONNECTION_NOTIFY_WEBHOOK_SECRET`; header `X-Webhook-Secret` |

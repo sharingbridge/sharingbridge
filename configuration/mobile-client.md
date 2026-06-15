@@ -142,11 +142,26 @@ Rebuild or `flutter run` after pulling; an older APK will not show Home.
 |--------|---------|
 | Vendor presets | integration — suggest-vendors, save/load presets |
 | Help a seeker | **Direct order** — instruction-pack + `POST …/order-intents` — [field-handoff.md](./field-handoff.md) |
-| Start initiation | Route picker: Direct order, For pledging, Eco kitchen · I pay (coming soon) |
-| For pledging | `POST /v1/seeker-demands` — web **Actions** tab |
+| Start initiation | Route picker: **Direct order**, **Eco kitchen · open for pledging**, **Eco kitchen · I pay** |
+| Eco kitchen routes | `POST /v1/seeker-demands` with `initiation_route` — web **Actions** tab (pledge + kitchen commit) |
 | Initiations | `GET …/order-intents` + seeker demands — merged list |
 
 Initiation routes: [Eco_Kitchen_Initiation_Flow.md](../design/Eco_Kitchen_Initiation_Flow.md).
+
+## FCM push (connection-ready)
+
+**Optional** — requires notification-service on Render and Firebase setup.
+
+| Step | Action |
+|------|--------|
+| 1 | Run [schema-device-tokens-migration.sql](./schema-device-tokens-migration.sql) on Postgres |
+| 2 | Deploy [notification-service](./notification-service-local.md) + wire `CONNECTION_NOTIFY_WEBHOOK_*` on integration-service |
+| 3 | Firebase Console → Android app package `app.sharingbridge` |
+| 4 | Download `google-services.json` → `sharingbridge-mobile-app/android/app/google-services.json` (template: `google-services.json.example`) |
+| 5 | Add APK signing **SHA-1** / **SHA-256** in Firebase (debug keystore for dev; release keystore for production) |
+| 6 | Rebuild APK — after sign-in, app registers token via `PUT /v1/device-tokens` |
+
+Push fires when a coordinator records a **kitchen commit** on the Actions tab and integration-service POSTs to the notification webhook. Users can still open **Connection** in the web dashboard without push.
 
 Offline: presets may cache in `shared_preferences` when integration is unreachable.
 

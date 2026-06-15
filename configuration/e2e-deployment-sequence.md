@@ -8,8 +8,8 @@ Sequential checklist for configuring SharingBridge from **Google OAuth** through
 |-------|------|------------|
 | 0 | Google Web client + Client ID | [google-auth-setup.md](./google-auth-setup.md) Part 1–2 |
 | 1 | Local web + backends (Google sign-in) | [google-auth-setup.md](./google-auth-setup.md) Part 3–6, [web-client.md](./web-client.md) |
-| 2 | Render backends (user + integration) | [backend-render.md](./backend-render.md) |
-| 2b | Postgres + `DATABASE_URL` (when using DB) | [database.md](./database.md) |
+| 2 | Render backends (user + integration + photo + optional notification) | [backend-render.md](./backend-render.md) |
+| 2b | Postgres + `DATABASE_URL` (when using DB) | [database-setup-sequence.md](./database-setup-sequence.md) · [database.md](./database.md) |
 | 3 | Render static site (first deploy) | [web-client.md](./web-client.md) Deploy |
 | 4 | Google origin + CORS for live URL | [google-auth-setup.md](./google-auth-setup.md) Part 7 |
 | 5 | Verify hosted coordinator dashboard | [MANUAL_TESTING_GUIDE.md](../testing/MANUAL_TESTING_GUIDE.md) §4 |
@@ -228,7 +228,9 @@ Same env index § web-app: [environment-variables.md](./environment-variables.md
 
 1. Create database and run `configuration/schema.sql`.
 2. **Local only:** run `configuration/local-postgres-grants.sql` as `postgres` if the app user is `sharingbridge`.
-3. Set **`DATABASE_URL`** in both services’ `.env` (local) or Render env (hosted).
+3. **Marketplace + eco kitchen:** M1–M4 in [database-setup-sequence.md](./database-setup-sequence.md).
+4. **FCM push (optional):** M5 `schema-device-tokens-migration.sql`.
+5. Set **`DATABASE_URL`** in each service’s `.env` (local) or Render env (hosted).
 
 **Supabase (Render):** create project → SQL Editor → `schema.sql` → copy database URI → `DATABASE_URL` on both Node services → redeploy.
 
@@ -238,10 +240,12 @@ Deploy in order — [backend-render.md](./backend-render.md). Each repo’s **`r
 2. **ai-orchestration** (Docker) — if integration uses AI paths.
 3. **integration-service** (Web Service, Node 20).
 4. **photo-service** (Docker) — reference photo upload from mobile.
+5. **notification-service** (Web Service, Node 20) — **optional** FCM push when eco kitchen commits; see [backend-render.md](./backend-render.md) § Notification service.
+6. **integration-service** (redeploy) — set `CONNECTION_NOTIFY_WEBHOOK_URL` + `CONNECTION_NOTIFY_WEBHOOK_SECRET` after step 5.
 
 ### Render backend env
 
-Set **Render production** column in [environment-variables.md](./environment-variables.md) on user-service, integration-service, and photo-service. `DATABASE_URL`: [database.md](./database.md).
+Set **Render production** column in [environment-variables.md](./environment-variables.md) on user-service, integration-service, photo-service, and (if used) notification-service. `DATABASE_URL`: [database-setup-sequence.md](./database-setup-sequence.md).
 
 **This phase only:** `WEB_CORS_ORIGINS` may stay `http://localhost:5173` until Phase 4 if you test local Vite against hosted APIs; otherwise set the static site origin in Phase 4. Use Google Sign-In only on Render production (no dev JWT mint over HTTP).
 
@@ -250,7 +254,7 @@ Note the two public URLs:
 - `https://<your-user-service>.onrender.com`
 - `https://<your-integration-service>.onrender.com`
 
-**Checkpoint:** `GET …/health` succeeds on user-service, integration-service, and photo-service.
+**Checkpoint:** `GET …/health` succeeds on user-service, integration-service, photo-service, and (if deployed) notification-service.
 
 **Mobile (hosted):** `PHOTO_SERVICE_BASE_URL=https://<your-photo-service>.onrender.com` — see [environment-variables.md](./environment-variables.md) § mobile.
 
@@ -351,8 +355,12 @@ Hosted mobile uses the same integration URL as the web dashboard:
 ```text
 USER_SERVICE_BASE_URL=https://<your-user-service>.onrender.com
 API_BASE_URL=https://<your-integration-service>.onrender.com
+PHOTO_SERVICE_BASE_URL=https://<your-photo-service>.onrender.com
 GOOGLE_CLIENT_ID=<Android client id>
+WEB_DASHBOARD_URL=https://<your-static-site>.onrender.com
 ```
+
+**FCM push (optional):** rebuild APK with `google-services.json` + Firebase SHA fingerprints — [mobile-client.md](./mobile-client.md) § FCM push · [notification-service-local.md](./notification-service-local.md).
 
 See [mobile-client.md](./mobile-client.md).
 

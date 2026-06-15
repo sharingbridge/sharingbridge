@@ -178,13 +178,16 @@ Flutter mobile ──┐
 Vite/React web ──┘           │
                                ├──► user-service → Postgres (presets, auth)
                                ├──► ai-orchestration → Groq / Gemini / Nominatim
-                               ├──► Postgres (order intents, coordinator feed)
-                               └──► photo-service (reference photos)
+                               ├──► Postgres (order intents, marketplace, device_tokens)
+                               ├──► photo-service (reference photos)
+                               └──► notification-service (optional FCM webhook on kitchen commit)
                                          ↓
                               Vendor deep links (Swiggy, Zomato, …)
 ```
 
-**Not on Render for MVP:** api-gateway, order-service, notification-service, location-safety.
+**Optional on Render:** `sharingbridge-notification-service` (FCM push) — [configuration/backend-render.md](configuration/backend-render.md) § Notification service.
+
+**Not on Render for MVP:** api-gateway, order-service, location-safety (archived).
 
 ## Security & Privacy
 

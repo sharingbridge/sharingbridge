@@ -97,11 +97,26 @@ Set the **same value** on all four Render Web Services if you want consistent ve
 | `INITIATOR_NEIGHBOURHOOD_WINDOW_HOURS` | `2` | `2` (initiator list `since`, photo redaction; 1–72) |
 | `NOMINATIM_USER_AGENT` | `SharingBridge-Integration-Service/1.0` | same — GPS → postal `locality_key` (`IN:TN:600115`) via reverse geocode |
 | `CONNECTION_NOTIFY_WEBHOOK_URL` | *(unset)* | Optional — POST JSON when eco kitchen commits (`connection_ready`); for notification-service or mailer |
+| `CONNECTION_NOTIFY_WEBHOOK_SECRET` | *(unset)* | Shared secret sent as `X-Webhook-Secret` — must match notification-service `WEBHOOK_SECRET` |
 | `LOG_LEVEL` | `warn` | `error`, `warn`, `info`, or `debug` — see [LOG_LEVEL](#log_level-all-backend-apis) |
 | `ORDER_INTENT_LIST_MAX_ROWS` | `100` | `100` (max rows per dashboard list) |
 | `PORT` | `8080` | injected by Render — do not set |
 | `USER_SERVICE_BASE_URL` | `http://localhost:8081` (required) | `https://<user-host>.onrender.com` — payee presets in Postgres |
 | `WEB_CORS_ORIGINS` | **same string** as user-service | same |
+
+---
+
+## `sharingbridge-notification-service`
+
+| Variable | Local example | Render production |
+|----------|---------------|-------------------|
+| `DATABASE_URL` | **same** as integration-service | same — reads `device_tokens` |
+| `WEBHOOK_SECRET` | **same** as integration `CONNECTION_NOTIFY_WEBHOOK_SECRET` | same |
+| `FIREBASE_SERVICE_ACCOUNT_PATH` | path to `firebase-adminsdk.json` | Render secret file mount |
+| `FIREBASE_SERVICE_ACCOUNT_JSON` | — | inline JSON alternative to path |
+| `PORT` | `8092` | injected by Render |
+
+Webhook route: `POST /internal/connection-ready` — set integration `CONNECTION_NOTIFY_WEBHOOK_URL` to this URL.
 
 ---
 

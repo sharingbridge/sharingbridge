@@ -67,6 +67,7 @@ Run **only** migrations for features missing from your DB. If unsure, check Tabl
 | Sample menu catalog | [seed-standard-offers.sql](./seed-standard-offers.sql) | After `standard_offers` table exists |
 | `initiator` role in `user_roles` | [schema-initiator-role-migration.sql](./schema-initiator-role-migration.sql) | Optional — legacy `donor` rows still work |
 | Eco Kitchen Phase 3 (`order_code`, `initiation_route`, consent) | [schema-eco-kitchen-phase3-migration.sql](./schema-eco-kitchen-phase3-migration.sql) | After marketplace M1–M2; new initiations get `SB-…` codes when columns exist |
+| FCM `device_tokens` (connection push) | [schema-device-tokens-migration.sql](./schema-device-tokens-migration.sql) | After `users` table |
 
 **Note:** Fresh installs from current [schema.sql](./schema.sql) already include PostGIS columns, `delivered_at`, and `seeker_demands`. Brownfield files exist for databases created **before** those were merged into `schema.sql`.
 

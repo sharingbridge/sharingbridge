@@ -2,36 +2,32 @@
 
 OpenAPI specs for **published HTTP surfaces**. These are not auto-generated from code — update them when the matching route contract changes.
 
+**Naming:** Prefer **initiator** in new specs and client paths. Legacy `/v1/donor-*` routes and `donor_email` response fields remain accepted — see [PRODUCT_MODEL.md](../../development/PRODUCT_MODEL.md).
+
 ## Covered (maintained)
 
 | File | Service | Routes |
 |------|---------|--------|
-| [donor_setup_suggest_vendors.openapi.yaml](./donor_setup_suggest_vendors.openapi.yaml) | integration-service | `POST /v1/donor-setup/suggest-vendors` |
-| [donor_setup_preferences.openapi.yaml](./donor_setup_preferences.openapi.yaml) | integration-service | `GET/POST/DELETE /v1/donor-setup/preferences`, `POST …/delete-item` |
+| [donor_setup_suggest_vendors.openapi.yaml](./donor_setup_suggest_vendors.openapi.yaml) | integration-service | `POST /v1/donor-setup/suggest-vendors` (alias `/v1/initiator-setup/suggest-vendors`) |
+| [donor_setup_preferences.openapi.yaml](./donor_setup_preferences.openapi.yaml) | integration-service | `GET/POST/DELETE /v1/donor-setup/preferences`, `POST …/delete-item` (aliases under `/v1/initiator-setup/…`) |
 | [user_service_donor_presets.openapi.yaml](./user_service_donor_presets.openapi.yaml) | user-service | `GET/PUT /v1/users/{id}/donor-presets`, `POST …/delete-item` |
+| [initiator_handoff.openapi.yaml](./initiator_handoff.openapi.yaml) | integration-service | `POST /v1/instruction-pack`, `GET/POST/PATCH /v1/order-intents`, `GET /v1/connections/{orderCode}`, `PUT /v1/device-tokens` |
+| [marketplace.openapi.yaml](./marketplace.openapi.yaml) | integration-service | `GET /v1/standard-offers`, `GET/POST /v1/seeker-demands`, `GET /v1/demand/board`, `POST /v1/pledges`, `POST /v1/vendor-bids` |
 
 Examples: [examples/](./examples/) (suggest-vendors request/response only).
 
-## Not yet specified here
+## Auth (all integration routes above)
 
-Implemented in code but **no OpenAPI file yet** (see integration `src/server.js` and [STATUS.md](../../development/STATUS.md)):
+Bearer JWT from user-service. Mobile mints `role: initiator`; web mints `coordinator` or `initiator`. Legacy JWT `role: donor` is treated as initiator. See [authentication.md](../../configuration/authentication.md).
 
-- `POST /v1/donor-seeker/instruction-pack`
-- `POST/GET/PATCH /v1/donor-seeker/order-intents`
-- `POST/GET /v1/seeker-demands`
-- `GET /v1/standard-offers`
-- `GET /v1/demand/board`
-- `POST /v1/pledges`, `POST /v1/vendor-bids`
-- `GET /v1/connections/{orderCode}`
-- `PUT /v1/device-tokens`
+## Not in OpenAPI yet
 
-photo-service and notification-service define their contracts in repo READMEs / [notification-service-local.md](../../configuration/notification-service-local.md).
+- photo-service (`POST /v1/photos/upload`) — [photo-service-local.md](../../configuration/photo-service-local.md)
+- notification-service webhook — [notification-service-local.md](../../configuration/notification-service-local.md)
 
-## When to add a contract
-
-Add or extend OpenAPI when:
+## When to add or change a contract
 
 1. A route is stable enough for mobile/web/codegen consumers.
 2. You change request/response shape — update the YAML in the **same commit** as the code.
 
-Prefer one file per bounded context (e.g. `marketplace.openapi.yaml`, `donor_seeker_handoff.openapi.yaml`) rather than one giant spec.
+Prefer one file per bounded context rather than one giant spec.

@@ -1,7 +1,7 @@
 # Manual Testing Guide — Completed Modules
 
 This guide walks through how to verify the donor-setup modules and the
-**Offer food help (payee–seeker handoff)** slice that have shipped across
+**Offer food help (initiator–seeker handoff)** slice that have shipped across
 `sharingbridge-integration-service`, `sharingbridge-ai-orchestration`,
 `sharingbridge-mobile-app`, and `sharingbridge-web-app`. It pairs **automated test suites** with
 **manual API smoke tests** and **end-to-end** flows on the **mobile app** and **web dashboard**.
@@ -16,7 +16,7 @@ needed.
 | # | Module | Where it lives |
 |---|--------|----------------|
 | 1 | Vendor preset setup `suggest-vendors` (mock or orchestration) | `sharingbridge-integration-service`, `sharingbridge-ai-orchestration` |
-| 1b | Payee–seeker `instruction-pack` | `sharingbridge-integration-service` → `sharingbridge-ai-orchestration` |
+| 1b | Initiator–beneficiary `instruction-pack` | `sharingbridge-integration-service` → `sharingbridge-ai-orchestration` |
 | 2 | Preferences save/fetch HTTP API | `sharingbridge-integration-service/src/server.js`, `src/preferencesStore.js` |
 | 3 | Preferences repository boundary toward user-service | `sharingbridge-integration-service/src/preferencesRepository.js` |
 | 4 | Signed-token auth context (JWT Bearer) | `sharingbridge-integration-service/src/authContext.js`, `src/tokenService.js` |
@@ -273,7 +273,7 @@ npm test
 | `src/authSession.test.ts` | session save/load/expiry |
 | `src/config.test.ts` | `VITE_*` config from env |
 | `src/format.test.ts` | list/detail formatting helpers |
-| `src/feedScope.test.ts` | dashboard boundaries banner copy; coordinator vs payee `feed` parsing |
+| `src/feedScope.test.ts` | dashboard boundaries banner copy; coordinator vs initiator `feed` parsing |
 
 Expected: **34 passed** (Vitest). End-to-end browser checks are in **§4**.
 
@@ -364,7 +364,7 @@ Confirm:
 Invoke-RestMethod http://127.0.0.1:8092/health
 ```
 
-Mobile must pass `--dart-define=PHOTO_SERVICE_BASE_URL=…` (**§3-host**). Upload is `POST /v1/photos/upload` (Bearer payee JWT). Without photo-service running, instruction-pack still works but photo upload fails when a reference image is attached.
+Mobile must pass `--dart-define=PHOTO_SERVICE_BASE_URL=…` (**§3-host**). Upload is `POST /v1/photos/upload` (Bearer initiator JWT). Without photo-service running, instruction-pack still works but photo upload fails when a reference image is attached.
 
 In another window, drive the API.
 
@@ -372,7 +372,7 @@ Mint a signed token (same `AUTH_TOKEN_SECRET` as user-service `.env`):
 
 ```powershell
 cd D:\kannan\sharingbridge\sharingbridge-user-service
-$token = node scripts/mint-dev-jwt.mjs alice payee
+$token = node scripts/mint-dev-jwt.mjs alice initiator
 $headers = @{ Authorization = "Bearer $token" }
 ```
 
@@ -487,7 +487,7 @@ try {
 ### 2g. Verify per-user isolation
 
 ```powershell
-$bobToken = node scripts/mint-dev-jwt.mjs bob payee
+$bobToken = node scripts/mint-dev-jwt.mjs bob initiator
 $bobHeaders = @{ Authorization = "Bearer $bobToken" }
 $bobBody = @{
   presets = @(
@@ -635,7 +635,7 @@ flutter devices                      # note device id, e.g. emulator-5554
 
 Wait until the emulator home screen is up, then use `-d <device_id>` in the commands below.
 
-### 3-auth. Google Sign-In on Android emulator (payee, recommended)
+### 3-auth. Google Sign-In on Android emulator (initiator, recommended)
 
 Requires [configuration/google-auth-setup.md](../configuration/google-auth-setup.md): **Android** OAuth client (package name + debug SHA-1), `GOOGLE_CLIENT_ID_ANDROID` in user-service `.env`, Gmail added as OAuth **test user**.
 
@@ -650,7 +650,7 @@ flutter run -d emulator-5554 `
 
 Replace `emulator-5554` with your `flutter devices` id.
 
-1. App opens → **Continue with Google** (payee JWT). Users with both **`payee`** and **`coordinator`** in `user_roles` can use mobile as payee and web as coordinator (same Gmail).
+1. App opens → **Continue with Google** (initiator JWT). Users with both **`initiator`** and **`coordinator`** in `user_roles` can use mobile as initiator and web as coordinator (same Gmail).
 2. Walk through **§3c** / **§3f** / **§3g**.
 
 **Windows desktop:** `google_sign_in` is not supported on `-d windows`; use the emulator for Google auth, or **§3-dev** with a dev token.
@@ -661,7 +661,7 @@ Mint on the **PC** with user-service `scripts/mint-dev-jwt.mjs` (same `AUTH_TOKE
 
 ```powershell
 cd D:\kannan\sharingbridge\sharingbridge-user-service
-$mobileToken = node scripts/mint-dev-jwt.mjs alice payee
+$mobileToken = node scripts/mint-dev-jwt.mjs alice initiator
 
 cd D:\kannan\sharingbridge\sharingbridge-mobile-app
 flutter run -d emulator-5554 `
@@ -687,7 +687,7 @@ With `AUTH_TOKEN` set, the app sends only `Authorization: Bearer <token>` (JWT s
 
 Use after **§3-auth** (Google) or **§3-dev** (token as `alice`). On the **emulator**, confirm **§3-host** URLs before debugging empty lists or connection errors.
 
-1. App opens to the **SharingBridge** home hub with **Vendor presets**, **Help a seeker**, and **Order initiation history**. Tap **Vendor presets**. If you ran API smoke **§2c** as `alice` with the same user id as the app, you may see "Loaded saved presets from server."; a new Google payee starts empty until you save presets.
+1. App opens to the **SharingBridge** home hub with **Vendor presets**, **Help a seeker**, and **Order initiation history**. Tap **Vendor presets**. If you ran API smoke **§2c** as `alice` with the same user id as the app, you may see "Loaded saved presets from server."; a new Google initiator starts empty until you save presets.
 2. Type something like `zomato a2b mini meals` → tap **Suggest Vendors** (or **Suggest again**). With **orchestration enabled** (§2a.1), rankings change with query keywords; with flags off, the list is the **same fixed mock** every time. Each row shows the **full** menu line, **Copy link**, and **Open vendor page** when the URL is `http`/`https`. Auth-protected endpoints carry `Authorization: Bearer <signed token>`.
 3. Check one or more suggestions → tap **Confirm and Save Presets**.
    A **SnackBar** and green status show "Presets saved successfully." The **full suggestion list stays on screen** (only checkboxes clear) so you can save another subset or open **Saved presets** without losing unselected rows. Server state still updates (dedupe on save as before).
@@ -723,7 +723,7 @@ Pick one approach:
    Or **replace with an empty list** via API:
 
    ```powershell
-   $token = node scripts/mint-dev-jwt.mjs alice payee
+   $token = node scripts/mint-dev-jwt.mjs alice initiator
    $uid = "alice"
    Invoke-RestMethod -Method Put -Uri "http://localhost:8081/v1/users/$uid/donor-presets" `
      -Headers @{ Authorization = "Bearer $token" } -ContentType "application/json" `
@@ -734,7 +734,7 @@ Pick one approach:
 
 **Replace semantics:** Production saves go through user-service — `PUT` donor-presets **replaces** the full preset list for that user. Use **Clear all** or the API/SQL above to shrink the list; integration does not merge against a local file store at runtime.
 
-### 3f. Help a seeker (payee–seeker handoff)
+### 3f. Help a seeker (initiator–seeker handoff)
 
 Uses the same authed **`GET …/preferences`** load as Vendor preset setup (saved presets). There is **no** separate field-flow draft in `shared_preferences` for this screen. The flow is **three steps** (see the step label at the top of the screen).
 
@@ -776,7 +776,7 @@ Empty state is normal before any intent is registered. Requires the same `AUTH_T
 
 Repository: `sharingbridge-web-app`. Configuration: [configuration/web-client.md](../configuration/web-client.md). Deploy order (Google → local → Render): [configuration/e2e-deployment-sequence.md](../configuration/e2e-deployment-sequence.md).
 
-Keep **user-service** (`8081`), **integration-service** (`8080`), and (for AI paths) **ai-orchestration** (`8091`) running as in **§2**. For coordinator **reference photo** thumbnails, the payee must have uploaded via **photo-service** (`8092`, **§2b**) during **§3f**. The web app does not call photo-service directly — it shows URLs stored on the order intent.
+Keep **user-service** (`8081`), **integration-service** (`8080`), and (for AI paths) **ai-orchestration** (`8091`) running as in **§2**. For coordinator **reference photo** thumbnails, the initiator must have uploaded via **photo-service** (`8092`, **§2b**) during **§3f**. The web app does not call photo-service directly — it shows URLs stored on the order intent.
 
 ### 4a. Prerequisites (Google, CORS, `.env`)
 
@@ -791,7 +791,7 @@ Complete [configuration/e2e-deployment-sequence.md](../configuration/e2e-deploym
    - `VITE_GOOGLE_CLIENT_ID` = Web Client ID
    - `VITE_API_BASE_URL=http://localhost:8080`
    - `VITE_USER_SERVICE_BASE_URL=http://localhost:8081`
-4. Optional: register at least one order intent via mobile **§3f** (**§3-auth** Google payee or **§3-dev**) so the coordinator dashboard is not empty on first **Refresh**.
+4. Optional: register at least one order intent via mobile **§3f** (**§3-auth** Google initiator or **§3-dev**) so the coordinator dashboard is not empty on first **Refresh**.
 
 No **client secret** in any `.env` for this flow.
 
@@ -816,14 +816,14 @@ npm run dev
 
 1. After at least one successful mobile **Help a seeker** copy (**§3f**) on the **same** integration host (`localhost:8080` or hosted URL), click **Refresh** on the web dashboard.
 2. List shows **all** initiators’ intents. Use **By initiator** or **By day** above the list (**By city** is reserved for a future API field).
-3. Each row includes the payee **`user_id`**; detail pane shows **Payee** explicitly.
-4. Detail should match mobile **Order initiation history** (**§3g**) for that payee — same reference id, pack id, status, notes, preset snapshot.
-5. If the payee attached a reference photo, detail shows a **thumbnail** and **Open full image (Cloudinary)** link (`reference_photo_view_url`).
+3. Each row includes the initiator **`user_id`**; detail pane shows **Initiator** explicitly.
+4. Detail should match mobile **Order initiation history** (**§3g**) for that initiator — same reference id, pack id, status, notes, preset snapshot.
+5. If the initiator attached a reference photo, detail shows a **thumbnail** and **Open full image (Cloudinary)** link (`reference_photo_view_url`).
 6. **Home** in the header clears the selected row and scrolls to the top.
 
 ### 4c-a. Order operations (payment done + mark delivered)
 
-**Payee (limited dashboard or mobile §3g):**
+**Initiator (limited dashboard or mobile §3g):**
 
 1. Open an initiation you registered.
 2. Tap **Mark payment done** — confirm the dialog.
@@ -835,12 +835,12 @@ npm run dev
 2. In the detail pane, tap **Mark delivered** — confirm the dialog.
 3. **Delivery** chip becomes **delivered**; **Delivered at** in the metrics grid shows a timestamp (API sets `delivered_at`).
 
-### 4c-b. Data boundaries banner (coordinator + payee)
+### 4c-b. Data boundaries banner (coordinator + initiator)
 
-1. Sign in as **coordinator** or **payee** (limited dashboard).
+1. Sign in as **coordinator** or **initiator** (limited dashboard).
 2. Below the hero (and coordinator scope toolbar when applicable), confirm **Data boundaries** on **Initiations**, **Actions**, or **Map**.
 3. Expect four lines: **Time**, **Area**, **Sort**, **Limit** — they should match what the API is actually applying (not decorative).
-4. **Payee:** default is usually the last **2 hours** and **your initiations only** until you tap **By area** and allow location; then **Area** should mention distance from your position.
+4. **Initiator:** default is usually the last **2 hours** and **your initiations only** until you tap **By area** and allow location; then **Area** should mention distance from your position.
 5. **Coordinator:** default **Time** = **All time**, **Area** = **All areas**, **Limit** = up to the server max rows (typically 100).
 
 ### 4c-c. Coordinator scope toolbar (time + area)
@@ -879,7 +879,7 @@ Requires **M4** and a kitchen commit on a matching demand line (**§4d** step 4)
 
 1. On **Actions**, scroll to **Connection** (or `ConnectionLookupPanel`).
 2. Enter the order code shown on mobile after recording a seeker demand (`SB-…`).
-3. As **initiator** (payee who recorded the demand) or **coordinator**, confirm kitchen display name and login emails appear in-app.
+3. As **initiator** (initiator who recorded the demand) or **coordinator**, confirm kitchen display name and login emails appear in-app.
 4. Unrelated users receive **403** from `GET /v1/connections/:orderCode`.
 
 In-app source of truth per [Eco_Kitchen_Initiation_Flow.md](../design/Eco_Kitchen_Initiation_Flow.md). Connection lookup UI is on **web** today.
@@ -897,10 +897,10 @@ Setup gaps: [database-setup-sequence.md](../configuration/database-setup-sequenc
 
 ### 4e. Empty list / mismatch
 
-- Coordinators see intents for **every** payee on **that** integration API host (unless a scope filter from **§4c-c** is applied). An empty list usually means no payee has registered an intent on **this** host yet (localhost vs Render are separate stores).
+- Coordinators see intents for **every** initiator on **that** integration API host (unless a scope filter from **§4c-c** is applied). An empty list usually means no initiator has registered an intent on **this** host yet (localhost vs Render are separate stores).
 - `VITE_API_BASE_URL` must match mobile `API_BASE_URL` (both localhost or both Render URLs).
-- `403 wrong_client_role` on web: account has no `payee` or `coordinator` in `user_roles` (`no_app_role`). Payee-only accounts should sign in successfully and see the **limited** dashboard.
-- `403 wrong_client_role` on mobile: account missing `payee` in `user_roles` (rare after sign-in; every user gets `payee` ensured).
+- `403 wrong_client_role` on web: account has no `donor`/`initiator` or `coordinator` in `user_roles` (`no_app_role`). Initiator-only accounts should sign in successfully and see the **limited** dashboard.
+- `403 wrong_client_role` on mobile: account missing `initiator` in `user_roles` (rare after sign-in; every user gets `initiator` ensured).
 - **Connection refused** on emulator sign-in or API: you used `localhost` in dart-defines — switch both URLs to `http://10.0.2.2:8081` and `http://10.0.2.2:8080` (**§3-host**).
 - **“Network unavailable”** on a **physical phone** with correct `192.168.x.x` dart-defines: phone and PC are on **different networks** (mobile data, other broadband, guest Wi‑Fi) — join the **same Wi‑Fi as the PC**, verify `http://<PC-LAN-IP>:8080/health` in the phone browser, or use **USB + `adb reverse`** (**§3-host**).
 - `401 invalid_google_token`: `VITE_GOOGLE_CLIENT_ID` must match `GOOGLE_CLIENT_ID_WEB`; add `http://localhost:5173` under Google **Authorized JavaScript origins**.
@@ -911,7 +911,7 @@ See [configuration/google-auth-setup.md](../configuration/google-auth-setup.md) 
 
 ## 5. Cleanup / fresh slate
 
-To wipe persisted payee presets, use **§3e** (app **Clear all**, user-service `PUT { presets: [] }`, or SQL on `donor_presets`). Presets live in **Postgres**, not integration-service `data/`.
+To wipe persisted initiator presets, use **§3e** (app **Clear all**, user-service `PUT { presets: [] }`, or SQL on `donor_presets`). Presets live in **Postgres**, not integration-service `data/`.
 
 To reset marketplace / seeker demand rows (dev only): [reset-marketplace-data.sql](../configuration/reset-marketplace-data.sql) then re-run **M3** seed. SQL pick-up guide: [database-setup-sequence.md](../configuration/database-setup-sequence.md) § Where you are.
 
@@ -929,7 +929,7 @@ Earlier MVP builds stored a field draft under `sharingbridge_field_interaction_d
 Use this after deploying per **[configuration/backend-render.md](../configuration/backend-render.md)**.
 
 1. Confirm `/health` on user-service, integration-service, photo-service, and notification-service return `ok: true` (allow 30–60s on cold start).
-2. Mint a token locally: `node scripts/mint-dev-jwt.mjs demo-user payee` in user-service (with hosted `AUTH_TOKEN_SECRET` in env if backfilling Render data).
+2. Mint a token locally: `node scripts/mint-dev-jwt.mjs demo-user initiator` in user-service (with hosted `AUTH_TOKEN_SECRET` in env if backfilling Render data).
 3. Call **hosted** integration `POST …/v1/donor-setup/suggest-vendors` and `POST …/v1/donor-seeker/instruction-pack` with `Authorization: Bearer <token>`.
 4. `POST …/v1/donor-seeker/order-intents` with the same Bearer token (see [configuration/backend-render.md](../configuration/backend-render.md) smoke script). First call returns HTTP **201** and `created: true`. Repeat the **same** `pack_id` — expect HTTP **200**, `created: false`, and the **same** `order_intent_id`.
 5. Run the mobile app (see [configuration/mobile-client.md](../configuration/mobile-client.md)). Walk **§3f**, eco kitchen routes, **§4f** Connection, and **§4g** FCM after kitchen commit.
@@ -959,7 +959,7 @@ If suggest-vendors or instruction-pack fail, verify `AI_ORCHESTRATION_BASE_URL`,
   and falling back to the local cache when the backend is offline.
 - Step **2i** returns a non-empty `delivery_instructions` string when orchestration is enabled.
 - Step **3f** walks **Help a seeker** (guidance → optional photo upload to photo-service + instruction-pack → copy + vendor links; repeat copy updates the same order initiation).
-- Step **4c** shows the coordinator web dashboard listing payee order intents (including payee `user_id` and reference photo thumbnail when uploaded) after mobile **§3f** on the same integration host.
+- Step **4c** shows the coordinator web dashboard listing initiator order intents (including initiator `user_id` and reference photo thumbnail when uploaded) after mobile **§3f** on the same integration host.
 - Step **4c-b** shows the **Data boundaries** banner on Initiations / Actions / Map with sensible Time / Area / Limit copy.
 - Step **4c-c** lets coordinators **Apply scope** (time + area) and see Initiations, Map, and Actions stay aligned.
 - Step **4d** / **4d-b** / **4f** / **4g**: Actions pledge + kitchen commit; **Updates** banner on sign-in/refresh; Connection emails on web; FCM push on mobile (**M4** + **M5** + notification deploy).

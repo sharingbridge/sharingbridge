@@ -1,0 +1,604 @@
+openapi: 3.0.3
+info:
+  title: SharingBridge Integration Service — Initiator handoff
+  version: 0.1.0
+  description: |
+    **Help a seeker** and **direct order** flows: AI instruction pack, order intent
+    registration/list, off-platform **Connection** lookup, and FCM device tokens.
+
+    **Canonical paths** (preferred in new clients): `/v1/instruction-pack`, `/v1/order-intents`.
+    **Legacy aliases** (still accepted): `/v1/donor-seeker/instruction-pack`,
+    `/v1/donor-seeker/order-intents`.
+
+    **Auth:** `Authorization: Bearer <JWT>` minted by user-service. Initiator routes require
+    JWT `role` `initiator` or legacy `donor`. Connection and list endpoints also accept
+    `coordinator`, `pledger`, and `kitchen` party roles where noted.
+
+servers:
+  - url: http://localhost:8080
+    description: Local integration-service
+
+tags:
+  - name: instruction-pack
+  - name: order-intents
+  - name: connections
+  - name: device-tokens
+
+paths:
+  /v1/instruction-pack:
+    post:
+      summary: Generate AI delivery instructions (Help a seeker step 3)
+      tags: [instruction-pack]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/InstructionPackRequest"
+      responses:
+        "200":
+          description: Instruction pack generated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InstructionPackResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/ForbiddenInitiator"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "503":
+          $ref: "#/components/responses/ServiceUnavailable"
+
+  /v1/order-intents:
+    get:
+      summary: List order intents (coordinator or initiator limited dashboard)
+      tags: [order-intents]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: user_id
+          in: query
+          schema:
+            type: string
+          description: Coordinator-only filter by initiator user id.
+        - name: since
+          in: query
+          schema:
+            type: string
+            example: 2h
+          description: Time window (`Nh`, `Nd`) — default for initiator limited dashboard.
+        - name: near_lat
+          in: query
+          schema:
+            type: number
+        - name: near_lng
+          in: query
+          schema:
+            type: number
+        - name: locality_key
+          in: query
+          schema:
+            type: string
+            example: IN:TN:600115
+      responses:
+        "200":
+          description: Order intent list with dashboard metadata
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OrderIntentListResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+    post:
+      summary: Register or update an order intent after copying instructions
+      tags: [order-intents]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateOrderIntentRequest"
+      responses:
+        "200":
+          description: Existing intent updated (same pack_id)
+        "201":
+          description: New intent created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OrderIntentMutationResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/ForbiddenInitiator"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+
+  /v1/order-intents/{orderIntentId}:
+    patch:
+      summary: Patch payment/delivery status on an order intent
+      tags: [order-intents]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: orderIntentId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PatchOrderIntentRequest"
+      responses:
+        "200":
+          description: Patched intent
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OrderIntentMutationResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+
+  /v1/connections/{orderCode}:
+    get:
+      summary: Connection handoff for an eco-kitchen order code
+      tags: [connections]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: orderCode
+          in: path
+          required: true
+          schema:
+            type: string
+            pattern: "^SB-[A-Z0-9]{4}-[A-Z0-9]{3}$"
+            example: SB-7K2M-9F3
+      responses:
+        "200":
+          description: Connection payload (fields vary by viewer_role)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ConnectionResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          description: Not a party on this order
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorBody"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "503":
+          description: Eco Kitchen Phase 3 migration not applied
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorBody"
+
+  /v1/device-tokens:
+    put:
+      summary: Register or refresh FCM device token (mobile)
+      tags: [device-tokens]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpsertDeviceTokenRequest"
+      responses:
+        "200":
+          description: Token stored
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UpsertDeviceTokenResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "503":
+          description: device_tokens table not configured (M5 migration)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorBody"
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  responses:
+    Unauthorized:
+      description: Missing or invalid Bearer token
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorBody"
+    Forbidden:
+      description: Authenticated but not allowed
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorBody"
+    ForbiddenInitiator:
+      description: Requires initiator capability (JWT role initiator or legacy donor)
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorBody"
+    BadRequest:
+      description: Validation error
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorBody"
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorBody"
+    ServiceUnavailable:
+      description: AI or upstream unavailable
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorBody"
+
+  schemas:
+    ErrorBody:
+      type: object
+      required: [code, message]
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+
+    PresetSnapshotItem:
+      type: object
+      required: [restaurant_name, menu_items, app_name]
+      properties:
+        restaurant_name:
+          type: string
+        menu_items:
+          type: array
+          items:
+            type: string
+        app_name:
+          type: string
+        deep_link_url:
+          type: string
+          nullable: true
+
+    InstructionPackRequest:
+      type: object
+      properties:
+        verbal_handover_notes:
+          type: string
+        has_reference_photo:
+          type: boolean
+        reference_photo_artifact_id:
+          type: string
+          nullable: true
+        reference_photo_view_url:
+          type: string
+          nullable: true
+        reference_photo_thumbnail_url:
+          type: string
+          nullable: true
+        lat:
+          type: number
+          nullable: true
+        lng:
+          type: number
+          nullable: true
+        location_label:
+          type: string
+          nullable: true
+        presets:
+          type: array
+          items:
+            $ref: "#/components/schemas/PresetSnapshotItem"
+        donor_display_name:
+          type: string
+          nullable: true
+          deprecated: true
+        seeker_display_name:
+          type: string
+          nullable: true
+
+    InstructionPackResponse:
+      type: object
+      required: [user_id, pack_id, delivery_instructions, source]
+      properties:
+        user_id:
+          type: string
+        pack_id:
+          type: string
+        delivery_instructions:
+          type: string
+        generated_at:
+          type: string
+          format: date-time
+        source:
+          type: string
+          enum: [orchestration, fallback, fallback_error]
+
+    CreateOrderIntentRequest:
+      type: object
+      required: [pack_id]
+      properties:
+        pack_id:
+          type: string
+        status:
+          type: string
+          enum: [instructions_copied, created]
+        has_reference_photo:
+          type: boolean
+        reference_photo_artifact_id:
+          type: string
+        reference_photo_view_url:
+          type: string
+        reference_photo_thumbnail_url:
+          type: string
+        verbal_handover_notes:
+          type: string
+        presets_snapshot:
+          type: array
+          items:
+            $ref: "#/components/schemas/PresetSnapshotItem"
+        selected_preset:
+          $ref: "#/components/schemas/PresetSnapshotItem"
+        lat:
+          type: number
+        lng:
+          type: number
+        location_label:
+          type: string
+
+    OrderIntent:
+      type: object
+      properties:
+        order_intent_id:
+          type: string
+        order_code:
+          type: string
+          nullable: true
+        initiation_route:
+          type: string
+          example: direct_order
+        user_id:
+          type: string
+        pack_id:
+          type: string
+        status:
+          type: string
+        has_reference_photo:
+          type: boolean
+        reference_photo_artifact_id:
+          type: string
+        reference_photo_view_url:
+          type: string
+        reference_photo_thumbnail_url:
+          type: string
+        verbal_handover_notes:
+          type: string
+        presets_snapshot:
+          type: array
+          items:
+            $ref: "#/components/schemas/PresetSnapshotItem"
+        selected_preset:
+          nullable: true
+        location_lat:
+          type: number
+          nullable: true
+        location_lng:
+          type: number
+          nullable: true
+        location_label:
+          type: string
+        locality_key:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+        delivered_at:
+          type: string
+          format: date-time
+          nullable: true
+        distance_m:
+          type: integer
+          nullable: true
+        payment_status:
+          type: string
+        delivery_status:
+          type: string
+        initiator_email:
+          type: string
+          nullable: true
+          description: Coordinator dashboard only
+        donor_email:
+          type: string
+          nullable: true
+          deprecated: true
+          description: Deprecated alias for initiator_email
+
+    OrderIntentListResponse:
+      type: object
+      required: [user_id, role, dashboard, order_intents]
+      properties:
+        user_id:
+          type: string
+        role:
+          type: string
+          enum: [coordinator, initiator, donor]
+        dashboard:
+          type: string
+          enum: [coordinator, limited]
+        order_intents:
+          type: array
+          items:
+            $ref: "#/components/schemas/OrderIntent"
+        since:
+          type: string
+          example: 2h
+        neighbourhood:
+          type: object
+          additionalProperties: true
+        feed:
+          type: object
+          properties:
+            since:
+              type: string
+              nullable: true
+            window_hours:
+              type: number
+              nullable: true
+            radius_m:
+              type: number
+              nullable: true
+            location_mode:
+              type: string
+            locality_key:
+              type: string
+              nullable: true
+            max_rows:
+              type: integer
+
+    OrderIntentMutationResponse:
+      type: object
+      properties:
+        order_intent:
+          $ref: "#/components/schemas/OrderIntent"
+        created:
+          type: boolean
+
+    PatchOrderIntentRequest:
+      type: object
+      properties:
+        payment_status:
+          type: string
+          enum: [paid_externally]
+        delivery_status:
+          type: string
+          enum: [delivered]
+
+    ConnectionResponse:
+      type: object
+      required: [connection]
+      properties:
+        connection:
+          type: object
+          required: [order_code, status, initiation_route, viewer_role, safety_copy]
+          properties:
+            order_code:
+              type: string
+            status:
+              type: string
+              enum: [ready, pending_kitchen]
+            initiation_route:
+              type: string
+              enum: [eco_kitchen_self_pay, eco_kitchen_pledge]
+            viewer_role:
+              type: string
+              enum: [initiator, pledger, kitchen, coordinator]
+            safety_copy:
+              type: string
+            menu_label:
+              type: string
+            meal_units:
+              type: integer
+              nullable: true
+            price_inr:
+              type: number
+              nullable: true
+            locality_key:
+              type: string
+            seeker_demand_id:
+              type: string
+              nullable: true
+            kitchen:
+              type: object
+              nullable: true
+              properties:
+                display_name:
+                  type: string
+                login_email:
+                  type: string
+                  nullable: true
+                commitment_status:
+                  type: string
+            initiator:
+              type: object
+              nullable: true
+              properties:
+                login_email:
+                  type: string
+            counterparty_email:
+              type: string
+              nullable: true
+              description: Kitchen email for initiator/pledger viewers
+            pledgers:
+              type: array
+              items:
+                type: object
+                properties:
+                  pledged_by_user_id:
+                    type: string
+                  meal_units:
+                    type: integer
+                  login_email:
+                    type: string
+
+    UpsertDeviceTokenRequest:
+      type: object
+      required: [fcm_token]
+      properties:
+        fcm_token:
+          type: string
+        platform:
+          type: string
+          default: android
+          example: android
+
+    UpsertDeviceTokenResponse:
+      type: object
+      properties:
+        device_token:
+          type: object
+          properties:
+            user_id:
+              type: string
+            platform:
+              type: string
+            updated_at:
+              type: string
+              format: date-time

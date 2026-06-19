@@ -54,15 +54,15 @@ Direct order (vendor app)  +  Eco kitchen routes (pledge / I pay)
 |------|------|--------|
 | `sharingbridge-user-service` | Auth, presets, Postgres users | **Shipped** |
 | `sharingbridge-integration-service` | Experience API / BFF | **Shipped** |
-| `sharingbridge-mobile-app` | Payee Flutter app | **Shipped** |
-| `sharingbridge-web-app` | Coordinator + payee dashboard | **Shipped** |
+| `sharingbridge-mobile-app` | Initiator Flutter app | **Shipped** |
+| `sharingbridge-web-app` | Coordinator + initiator (limited) dashboard | **Shipped** |
 | `sharingbridge-ai-orchestration` | suggest-vendors, instruction-pack | **Shipped** (deterministic + live) |
 | `sharingbridge-photo-service` | Reference photo upload | **Shipped** (no vision/embeddings) |
 | `sharingbridge-notification-service` | FCM on kitchen commit | **Shipped** |
 | `sharingbridge-api-gateway`, `order-service`, `infra` | Scale path | **Not started** |
 | `sharingbridge-location-safety` | Geo scoring | **Archived** |
 
-Key integration routes: `suggest-vendors`, `instruction-pack`, `order-intents`, `seeker-demands`, `demand/board`, `pledges`, `vendor-bids`, `connections/:orderCode`, `device-tokens`. OpenAPI today covers **donor-setup presets + suggest-vendors** only — see [design/contracts/README.md](../design/contracts/README.md).
+Key integration routes: `suggest-vendors`, `instruction-pack`, `order-intents`, `seeker-demands`, `demand/board`, `pledges`, `vendor-bids`, `connections/:orderCode`, `device-tokens`. OpenAPI: [design/contracts/README.md](../design/contracts/README.md) (initiator handoff + marketplace + donor-setup presets).
 
 ---
 

@@ -1,0 +1,553 @@
+openapi: 3.0.3
+info:
+  title: SharingBridge Integration Service — Marketplace & eco kitchen
+  version: 0.1.0
+  description: |
+    **Eco kitchen** routes: standard menu catalog, seeker demand recording, demand board
+    (Actions tab), pledges, and kitchen commitments (`vendor-bids`).
+
+    **Auth:** Bearer JWT from user-service. Seeker demand creation requires initiator
+    (`initiator` or legacy `donor`). Pledges require initiator or coordinator
+    (`requireReporterRole`). Kitchen commit (`vendor-bids`) requires **coordinator** in MVP.
+
+servers:
+  - url: http://localhost:8080
+    description: Local integration-service
+
+tags:
+  - name: standard-offers
+  - name: seeker-demands
+  - name: demand-board
+  - name: pledges
+  - name: vendor-bids
+
+paths:
+  /v1/standard-offers:
+    get:
+      summary: List standard menu items for a postal area
+      tags: [standard-offers]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: locality_key
+          in: query
+          required: true
+          schema:
+            type: string
+            example: IN:TN:600115
+      responses:
+        "200":
+          description: Catalog for locality
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StandardOffersResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "503":
+          $ref: "#/components/responses/SchemaPending"
+
+  /v1/seeker-demands:
+    get:
+      summary: List recent seeker demands (initiator history / coordinator)
+      tags: [seeker-demands]
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Demand rows
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SeekerDemandListResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "503":
+          $ref: "#/components/responses/SchemaPending"
+    post:
+      summary: Record seeker demand (eco kitchen · I pay or open for pledging)
+      tags: [seeker-demands]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateSeekerDemandRequest"
+      responses:
+        "201":
+          description: Demand recorded
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SeekerDemandMutationResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/ForbiddenInitiator"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "503":
+          $ref: "#/components/responses/SchemaPending"
+
+  /v1/demand/board:
+    get:
+      summary: Demand board snapshot (web Actions tab)
+      tags: [demand-board]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: since
+          in: query
+          schema:
+            type: string
+            example: 24h
+        - name: near_lat
+          in: query
+          schema:
+            type: number
+        - name: near_lng
+          in: query
+          schema:
+            type: number
+        - name: locality_key
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Aggregated board
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DemandBoardSnapshot"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  /v1/pledges:
+    post:
+      summary: Pledge meal units on an active demand bucket
+      tags: [pledges]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreatePledgeRequest"
+      responses:
+        "201":
+          description: Pledge recorded
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PledgeMutationResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/ForbiddenReporter"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "503":
+          $ref: "#/components/responses/MarketplaceUnavailable"
+
+  /v1/vendor-bids:
+    post:
+      summary: Kitchen commitment on a demand line (coordinator MVP)
+      tags: [vendor-bids]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateVendorBidRequest"
+      responses:
+        "201":
+          description: Kitchen commitment recorded; may trigger connection notification
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VendorBidMutationResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          description: Coordinator role required (MVP)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorBody"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "503":
+          $ref: "#/components/responses/MarketplaceUnavailable"
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  responses:
+    Unauthorized:
+      description: Missing or invalid Bearer token
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorBody"
+    ForbiddenInitiator:
+      description: Requires initiator capability
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorBody"
+    ForbiddenReporter:
+      description: Requires initiator or coordinator
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorBody"
+    BadRequest:
+      description: Validation error
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorBody"
+    SchemaPending:
+      description: seeker_demands or related migration not applied
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorBody"
+    MarketplaceUnavailable:
+      description: Marketplace store not configured
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorBody"
+
+  schemas:
+    ErrorBody:
+      type: object
+      required: [code, message]
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+
+    StandardOffer:
+      type: object
+      properties:
+        standard_offer_id:
+          type: string
+        locality_key:
+          type: string
+        menu_label:
+          type: string
+        price_inr:
+          type: number
+          nullable: true
+        meal_units_default:
+          type: integer
+
+    StandardOffersResponse:
+      type: object
+      properties:
+        locality_key:
+          type: string
+        standard_offers:
+          type: array
+          items:
+            $ref: "#/components/schemas/StandardOffer"
+
+    CreateSeekerDemandRequest:
+      type: object
+      required: [standard_offer_id, email_share_consent]
+      properties:
+        standard_offer_id:
+          type: string
+        meal_units:
+          type: integer
+          minimum: 1
+          maximum: 50
+        verbal_notes:
+          type: string
+        initiation_route:
+          type: string
+          enum: [eco_kitchen_self_pay, eco_kitchen_pledge]
+        email_share_consent:
+          type: boolean
+          description: Must be true — login email may be shared after kitchen commit
+        lat:
+          type: number
+        lng:
+          type: number
+        location_label:
+          type: string
+
+    SeekerDemand:
+      type: object
+      properties:
+        seeker_demand_id:
+          type: string
+        order_code:
+          type: string
+          nullable: true
+        initiation_route:
+          type: string
+        reported_by_user_id:
+          type: string
+        status:
+          type: string
+        meal_units:
+          type: integer
+        standard_offer_id:
+          type: string
+        menu_label:
+          type: string
+        price_inr:
+          type: number
+          nullable: true
+        need_description:
+          type: string
+        verbal_notes:
+          type: string
+        location_lat:
+          type: number
+          nullable: true
+        location_lng:
+          type: number
+          nullable: true
+        location_label:
+          type: string
+        locality_key:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    SeekerDemandListResponse:
+      type: object
+      properties:
+        seeker_demands:
+          type: array
+          items:
+            $ref: "#/components/schemas/SeekerDemand"
+
+    SeekerDemandMutationResponse:
+      type: object
+      properties:
+        seeker_demand:
+          $ref: "#/components/schemas/SeekerDemand"
+
+    DemandWindow:
+      type: object
+      properties:
+        bucket_key:
+          type: string
+        locality_key:
+          type: string
+        standard_offer_id:
+          type: string
+          nullable: true
+        menu_label:
+          type: string
+        price_inr:
+          type: number
+          nullable: true
+        demand_count:
+          type: integer
+        meal_units_total:
+          type: integer
+        pledged_units:
+          type: integer
+        committed_portions:
+          type: integer
+        latest_at:
+          type: string
+          format: date-time
+
+    Pledge:
+      type: object
+      properties:
+        pledge_id:
+          type: string
+        pledged_by_user_id:
+          type: string
+        locality_key:
+          type: string
+        standard_offer_id:
+          type: string
+        menu_label:
+          type: string
+        meal_units:
+          type: integer
+        status:
+          type: string
+        email_share_consent_at:
+          type: string
+          format: date-time
+          nullable: true
+        matches_demand_bucket:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+
+    VendorBid:
+      type: object
+      properties:
+        vendor_bid_id:
+          type: string
+        submitted_by_user_id:
+          type: string
+        locality_key:
+          type: string
+        standard_offer_id:
+          type: string
+        menu_label:
+          type: string
+        vendor_name:
+          type: string
+        portions:
+          type: integer
+        notes:
+          type: string
+        status:
+          type: string
+        commitment_status:
+          type: string
+        seeker_demand_id:
+          type: string
+          nullable: true
+        order_code:
+          type: string
+          nullable: true
+        email_share_consent_at:
+          type: string
+          format: date-time
+          nullable: true
+        matches_demand_bucket:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+
+    DemandBoardSnapshot:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [live_seeker_demands, schema_pending]
+        role:
+          type: string
+          nullable: true
+        message:
+          type: string
+        standard_offers:
+          type: array
+          items:
+            $ref: "#/components/schemas/StandardOffer"
+        demand_windows:
+          type: array
+          items:
+            $ref: "#/components/schemas/DemandWindow"
+        active_offer_buckets:
+          type: array
+          items:
+            type: object
+            additionalProperties: true
+        seeker_demands:
+          type: array
+          items:
+            $ref: "#/components/schemas/SeekerDemand"
+        pledges:
+          type: array
+          items:
+            $ref: "#/components/schemas/Pledge"
+        vendor_bids:
+          type: array
+          items:
+            $ref: "#/components/schemas/VendorBid"
+        orphan_pledges:
+          type: array
+          items:
+            $ref: "#/components/schemas/Pledge"
+        orphan_vendor_bids:
+          type: array
+          items:
+            $ref: "#/components/schemas/VendorBid"
+        generated_at:
+          type: string
+          format: date-time
+
+    CreatePledgeRequest:
+      type: object
+      required: [locality_key, standard_offer_id, email_share_consent]
+      properties:
+        locality_key:
+          type: string
+        standard_offer_id:
+          type: string
+        meal_units:
+          type: integer
+          minimum: 1
+          maximum: 50
+        menu_label:
+          type: string
+        demand_window_id:
+          type: string
+        email_share_consent:
+          type: boolean
+
+    PledgeMutationResponse:
+      type: object
+      properties:
+        pledge:
+          $ref: "#/components/schemas/Pledge"
+
+    CreateVendorBidRequest:
+      type: object
+      required:
+        - locality_key
+        - standard_offer_id
+        - vendor_name
+        - portions
+        - email_share_consent
+      properties:
+        locality_key:
+          type: string
+        standard_offer_id:
+          type: string
+        vendor_name:
+          type: string
+        portions:
+          type: integer
+          minimum: 1
+          maximum: 500
+        notes:
+          type: string
+        menu_label:
+          type: string
+        seeker_demand_id:
+          type: string
+        order_code:
+          type: string
+        demand_window_id:
+          type: string
+        email_share_consent:
+          type: boolean
+
+    VendorBidMutationResponse:
+      type: object
+      properties:
+        vendor_bid:
+          $ref: "#/components/schemas/VendorBid"

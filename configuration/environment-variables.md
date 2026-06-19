@@ -202,7 +202,7 @@ No `.env` file — pass at **`flutter run`** / release build (compile time). Re-
 | `USER_SERVICE_BASE_URL` | `http://10.0.2.2:8081` or `http://<PC-LAN-IP>:8081` | `https://<user-host>.onrender.com` |
 | `WEB_DASHBOARD_URL` | `http://10.0.2.2:5173` (emulator) or `http://<PC-LAN-IP>:5173` (phone) | `https://<static-site>.onrender.com` — **required** for home-screen **Neighbourhood dashboard (web)** link |
 
-`WEB_DASHBOARD_URL` is the deployed **sharingbridge-web-app** origin (same URL you open in the browser for the payee/coordinator dashboard). Without it, the home tile is visible but disabled. See [mobile-client.md](./mobile-client.md).
+`WEB_DASHBOARD_URL` is the deployed **sharingbridge-web-app** origin (same URL you open in the browser for the coordinator/initiator dashboard). Without it, the home tile is visible but disabled. See [mobile-client.md](./mobile-client.md).
 
 Emulator: use `10.0.2.2` instead of `localhost`. Physical phone: PC Wi‑Fi IPv4. See [mobile-client.md](./mobile-client.md).
 
@@ -210,12 +210,12 @@ Emulator: use `10.0.2.2` instead of `localhost`. Physical phone: PC Wi‑Fi IPv4
 
 ## Web dashboard roles (no extra env flags)
 
-| JWT `role` | Web UI | integration `GET /v1/donor-seeker/order-intents` |
-|------------|--------|--------------------------------------------------|
-| `coordinator` | Full dashboard — payee **email + id** per intent (from Postgres `users`), all reference photos; optional list filters `since`, `near_lat`/`near_lng`, `locality_key` (no default time cap) | `dashboard: "coordinator"` — includes `donor_email` when known |
-| `payee` | Limited dashboard — list capped to **`since=Nh`** (`DONOR_NEIGHBOURHOOD_WINDOW_HOURS`, default 2); optional `near_lat`/`near_lng`; no other payees’ ids or emails; photos only within that window | `dashboard: "limited"` — response includes `since`, `feed`; no `donor_email`; photo URLs redacted outside window |
+| JWT `role` | Web UI | integration `GET /v1/order-intents` |
+|------------|--------|-------------------------------------|
+| `coordinator` | Full dashboard — initiator **email + id** per intent (from Postgres `users`), all reference photos; optional list filters `since`, `near_lat`/`near_lng`, `locality_key` (no default time cap) | `dashboard: "coordinator"` — includes `initiator_email` (and deprecated `donor_email`) when known |
+| `initiator` | Limited dashboard — list capped to **`since=Nh`** (`DONOR_NEIGHBOURHOOD_WINDOW_HOURS`, default 2); optional `near_lat`/`near_lng`; no other initiators’ ids or emails; photos only within that window | `dashboard: "limited"` — response includes `since`, `feed`; no initiator email on others’ rows; photo URLs redacted outside window |
 
-Google sign-in on web works for any account with `payee` and/or `coordinator` in `user_roles`. Users with both roles get `coordinator` on web and `payee` on mobile.
+Google sign-in on web works for any account with `donor`/`initiator` and/or `coordinator` in `user_roles`. Users with both roles get `coordinator` on web and `initiator` on mobile.
 
 ## Local stack defaults (copy-paste)
 

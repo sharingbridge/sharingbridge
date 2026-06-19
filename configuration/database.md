@@ -1,6 +1,6 @@
 # Database configuration (Supabase PostgreSQL)
 
-SharingBridge stores **users, roles, payee presets, and order intents** in **PostgreSQL**. For production we use **[Supabase](https://supabase.com)** (hosted Postgres). **Render** hosts only the **APIs** (user-service, integration-service); they connect to Supabase via **`DATABASE_URL`**.
+SharingBridge stores **users, roles, initiator vendor presets, and order intents** in **PostgreSQL**. For production we use **[Supabase](https://supabase.com)** (hosted Postgres). **Render** hosts only the **APIs** (user-service, integration-service); they connect to Supabase via **`DATABASE_URL`**.
 
 There is **no** runtime fallback to JSON files after cutover — import once, then the database is the only source of truth.
 
@@ -63,7 +63,6 @@ Follow **[database-setup-sequence.md](./database-setup-sequence.md)**:
 
 1. Run [schema.sql](./schema.sql).
 2. Run **M1 → M5** and [coordinator-seed.sql](./coordinator-seed.sql) after sign-in.
-3. Deploy notification-service per [notification-service-local.md](./notification-service-local.md).
 
 Skipped-step symptoms: [database-setup-sequence.md](./database-setup-sequence.md) § **If a step was skipped**.
 
@@ -286,15 +285,15 @@ Set **`DATABASE_URL`** on user-service, integration-service, and photo-service (
 | Table | Replaces (file mode) |
 |-------|----------------------|
 | `users` | `user-service-store.json` users |
-| `user_roles` | coordinator / payee roles (SQL seed) |
-| `donor_presets` | payee presets in user-service store |
+| `user_roles` | `donor` / `initiator` / `coordinator` (SQL seed) |
+| `donor_presets` | initiator vendor presets in user-service store |
 | `order_intents` | `order-intents.json` |
 
 `order_intents.payload` (JSONB) holds `verbal_handover_notes`, `presets_snapshot`, `has_reference_photo`, and optional **`location_lat`**, **`location_lng`**, **`location_label`**, **`locality_key`** (set on `POST` when the client sends coordinates).
 
 | Column | Purpose |
 |--------|---------|
-| `created_at` | **Order intent taken** time (payee registered intent — not a vendor order). |
+| `created_at` | **Order intent taken** time (initiator registered intent — not a vendor order). |
 | `delivered_at` | Nullable; **Delivered at** on dashboard ([schema-delivered-at-migration.sql](./schema-delivered-at-migration.sql) on older DBs). Populated when delivery-partner flow exists. |
 | `location` / `locality_key` | PostGIS neighbourhood filters; list may return computed **`distance_m`** (metres, not stored). |
 
@@ -309,7 +308,7 @@ Primary keys and `UNIQUE` constraints create indexes automatically; [schema.sql]
 | Index | Type | Why |
 |-------|------|-----|
 | `PRIMARY KEY` / `UNIQUE` | Automatic | Upsert by `order_intent_id`; one row per `(user_id, pack_id)` |
-| `idx_order_intents_user_updated` | Manual | Payee list: `WHERE user_id` + `ORDER BY updated_at DESC` |
+| `idx_order_intents_user_updated` | Manual | Initiator list: `WHERE user_id` + `ORDER BY updated_at DESC` |
 | `idx_order_intents_updated` | Manual | Time-ordered lists |
 | `idx_order_intents_location` | GiST | `ST_DWithin` neighbourhood / map queries |
 | `idx_order_intents_locality_key` | Partial btree | `locality_key = $key` filters |

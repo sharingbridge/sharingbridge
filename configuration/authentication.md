@@ -4,6 +4,8 @@ SharingBridge uses **Google Sign-In** for production-style identity, plus **Shar
 
 **Configure in order:** [e2e-deployment-sequence.md](./e2e-deployment-sequence.md).
 
+**Vocabulary:** Signed-in mobile users are **initiators** (who register intents/demands). Legacy DB/API identifiers still use `donor` in places — see [PRODUCT_MODEL.md](../development/PRODUCT_MODEL.md). There is **no** separate `payee` JWT role today; initiator and payer are the same person for shipped flows.
+
 ## Google Sign-In (identity proof)
 
 | | |
@@ -23,26 +25,26 @@ SharingBridge uses **Google Sign-In** for production-style identity, plus **Shar
 
 Roles are read from Postgres **`user_roles`** only — [database.md](./database.md) · [coordinator-seed.sql](./coordinator-seed.sql). There is no email allowlist in `.env` or JSON at runtime.
 
-Every Google user gets **`payee`** ensured at sign-in. **`coordinator`** is granted via SQL ([coordinator-seed.sql](./coordinator-seed.sql)). A user may have **both** rows in `user_roles`.
+Every Google user gets legacy **`donor`** ensured at sign-in (`INSERT … ON CONFLICT DO NOTHING`). Brownfield DBs may also have an **`initiator`** row from [schema-initiator-role-migration.sql](./schema-initiator-role-migration.sql). **`coordinator`** is granted via SQL ([coordinator-seed.sql](./coordinator-seed.sql)). A user may have **multiple** rows in `user_roles`.
 
 **Client rules (which hat for this JWT)**
 
 | `client_type` | Requires in `user_roles` | JWT `role` minted |
 |---------------|--------------------------|-------------------|
-| `web` | `payee` and/or `coordinator` | `coordinator` if present, else `payee` |
-| `android` / `ios` / `mobile` | `payee` | `payee` (even if they also have `coordinator`) |
+| `web` | `donor` and/or `initiator` and/or `coordinator` | `coordinator` if present, else `initiator` |
+| `android` / `ios` / `mobile` | `donor` and/or `initiator` | `initiator` (even if they also have `coordinator`) |
 
-JWT also includes `roles` (full array). Integration-service formats list responses by minted `role` (coordinator = full dashboard; payee = limited photos).
+JWT also includes `roles` (full array). Integration-service formats list responses by minted `role` (coordinator = full dashboard; initiator = limited dashboard with photo redaction).
 
-Wrong combination → HTTP **403** `wrong_client_role` (e.g. `no_app_role` on web with no roles, or mobile without `payee`).
+Wrong combination → HTTP **403** `wrong_client_role` (e.g. `no_app_role` on web with no roles, or mobile with `no_initiator_role`).
 
 ---
 
-## Payee JWT (`AUTH_TOKEN_SECRET`)
+## SharingBridge JWT (`AUTH_TOKEN_SECRET`)
 
 | | |
 |--|--|
-| **Purpose** | Authorize API calls to integration-service (and user-service donor-presets) |
+| **Purpose** | Authorize API calls to integration-service (and user-service preset APIs) |
 | **Set on** | `sharingbridge-user-service`, `sharingbridge-integration-service` |
 | **Same value on both** | Yes |
 | **Claims** | `sub`, `role` (active session role), `roles` (array, DB mode), `iss`, `aud`, `exp` — see [database.md](./database.md) § JWT |
@@ -51,7 +53,7 @@ Wrong combination → HTTP **403** `wrong_client_role` (e.g. `no_app_role` on we
 
 ---
 
-## Payee preferences (user-service authority)
+## Initiator vendor presets (user-service authority)
 
 Migration from integration file store is **complete**. Presets live in Postgres only:
 
@@ -60,9 +62,10 @@ Mobile / Web  →  integration-service  →  user-service  →  donor_presets
 ```
 
 - Integration requires `USER_SERVICE_BASE_URL` and forwards preset CRUD to user-service.
+- Clients may call `/v1/initiator-setup/preferences` (alias for `/v1/donor-setup/preferences`).
 - `LocalPreferencesRepository` in integration-service is **tests only**.
 
-**Clear presets in dev:** app **Clear all**, `DELETE /v1/donor-setup/preferences` with Bearer token, or SQL `UPDATE donor_presets SET presets_json = '[]'::jsonb WHERE user_id = '…'`.
+**Clear presets in dev:** app **Clear all**, `DELETE /v1/initiator-setup/preferences` with Bearer token, or SQL `UPDATE donor_presets SET presets_json = '[]'::jsonb WHERE user_id = '…'`.
 
 OpenAPI: [donor_setup_preferences.openapi.yaml](../design/contracts/donor_setup_preferences.openapi.yaml), [user_service_donor_presets.openapi.yaml](../design/contracts/user_service_donor_presets.openapi.yaml).
 
@@ -70,18 +73,20 @@ OpenAPI: [donor_setup_preferences.openapi.yaml](../design/contracts/donor_setup_
 
 ## Authorization (what each role can do)
 
-| Action | Payee (mobile) | Coordinator (web) |
-|--------|----------------|-------------------|
+| Action | Initiator (mobile) | Coordinator (web) |
+|--------|-------------------|-------------------|
 | Vendor preset setup / presets | Yes | No |
 | Instruction pack + register order intent | Yes | No |
 | List own order intents | Yes | No |
 | List **all** order intents | No | Yes |
+| Record seeker demand / pledge | Yes | Yes (pledge) |
+| Kitchen commit (`vendor-bids`) | No | Yes (MVP) |
 
-integration-service reads `role` from the JWT. Coordinators receive every payee’s intents on `GET /v1/donor-seeker/order-intents` (optional `?user_id=` filter).
+integration-service reads `role` from the JWT. JWT `role` `donor` is treated as initiator capability. Coordinators receive every initiator’s intents on `GET /v1/order-intents` (alias for `/v1/donor-seeker/order-intents`; optional `?user_id=` filter).
 
 **Sign in without Google (local only)**
 
-**Dev-only JWT** (scripts, mobile `--dart-define=AUTH_TOKEN`): sign locally with the same `AUTH_TOKEN_SECRET` — `node scripts/mint-dev-jwt.mjs <user_id> [role]` in user-service. There is no HTTP “mint token without Google” endpoint.
+**Dev-only JWT** (scripts, mobile `--dart-define=AUTH_TOKEN`): sign locally with the same `AUTH_TOKEN_SECRET` — `node scripts/mint-dev-jwt.mjs <user_id> [initiator|coordinator]` in user-service. Legacy `donor` is accepted and normalized to `initiator`. There is no HTTP “mint token without Google” endpoint.
 
 ---
 

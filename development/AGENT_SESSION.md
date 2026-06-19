@@ -4,7 +4,7 @@
 
 ## Goal
 
-MVP **donor-setup → donor-seeker interaction → vendor redirect → delivery confirmation**, plus **eco kitchen** routes (Actions, Connection, FCM). **`sharingbridge-integration-service`** is the Experience API (BFF). SharingBridge is never the system of record for money.
+MVP **initiator vendor presets → Help a seeker / eco kitchen initiation → vendor redirect → delivery confirmation**, plus **eco kitchen** routes (Actions, Connection, FCM). Legacy code paths still use `donor_*` module names. **`sharingbridge-integration-service`** is the Experience API (BFF). SharingBridge is never the system of record for money.
 
 ## Locked approach
 

@@ -7,7 +7,7 @@
 
 | Testing | Need this service? |
 |---------|-------------------|
-| Web dashboard, mobile payee, Postgres presets, order intents | **No** — only user-service (`8081`) + integration-service (`8080`) |
+| Web dashboard, mobile initiator, Postgres presets, order intents | **No** — only user-service (`8081`) + integration-service (`8080`) |
 | Query-ranked **Suggest Vendors** or live **instruction-pack** text | **Yes** — integration-service calls this service on port **8091** |
 
 Without it, integration-service uses built-in mocks (`AI_*_ENABLED` off or orchestration unreachable).

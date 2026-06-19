@@ -48,7 +48,7 @@ web-app               npm test && npm run dev    → :5173
 mobile                flutter test && flutter run (see mobile-client.md)
 ```
 
-Google sign-in and emulator URLs: [configuration/mobile-client.md](../configuration/mobile-client.md). Dev JWT: `node scripts/mint-dev-jwt.mjs demo-user payee` in user-service.
+Google sign-in and emulator URLs: [configuration/mobile-client.md](../configuration/mobile-client.md). Dev JWT: `node scripts/mint-dev-jwt.mjs demo-user initiator` in user-service.
 
 ---
 

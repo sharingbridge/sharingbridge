@@ -114,8 +114,8 @@ The backend/infrastructure phases below run in parallel with explicit frontend t
 - Permission strategy (camera, location, notifications) with graceful fallback paths
 
 **Weeks 3-6 (Core Flow):**
-- Vendor preset setup screens with AI-assisted local vendor/menu suggestions (fixed prompt + structured JSON, payee confirm/edit before save)
-- Payee-seeker interaction flow per **AI interactions — payee–seeker field slice** (below): locality safety gate, reference photo + geo capture, instruction-pack from API, copy + preset deep links
+- Vendor preset setup screens with AI-assisted local vendor/menu suggestions (fixed prompt + structured JSON, initiator confirm/edit before save)
+- Initiator–beneficiary interaction flow per **AI interactions — initiator–beneficiary field slice** (below): locality safety gate, reference photo + geo capture, instruction-pack from API, copy + preset deep links
 - External payment/deep-link redirect flow and return-state recovery
 
 **Weeks 7-10 (Reliability):**
@@ -128,32 +128,32 @@ The backend/infrastructure phases below run in parallel with explicit frontend t
 - Beta distribution (TestFlight / internal Android track)
 - MVP release checklist and rollout playbook
 
-### AI interactions — payee–seeker field slice (planned)
+### AI interactions — initiator–beneficiary field slice (planned)
 
-Maps BRD steps **3–11** to AI-related capabilities. **Shipped today (mobile):** **Quick guidance** (fixed copy, BRD step 4) → optional reference photo + verbal notes → instruction-pack API (integration → ai-orchestration; local stub fallback) → copy + open saved preset **http/https** URLs. **Not yet wired:** cloud photo upload, delivery acknowledgement, payee↔delivery photo match. **Deferred:** rule-based locality safety API (`sharingbridge-location-safety` archived — payee judgment only).
+Maps BRD steps **3–11** to AI-related capabilities. **Shipped today (mobile):** **Quick guidance** (fixed copy, BRD step 4) → optional reference photo + verbal notes → instruction-pack API (integration → ai-orchestration; local stub fallback) → copy + open saved preset **http/https** URLs. **Not yet wired:** cloud photo upload, delivery acknowledgement, initiator↔delivery photo match. **Deferred:** rule-based locality safety API (`sharingbridge-location-safety` archived — initiator judgment only).
 
 **Service ownership**
 
 | Capability | Primary repo | Notes |
 |------------|--------------|--------|
 | Handover guidance (BRD step 4) | `sharingbridge-mobile-app` | Fixed in-app copy; **no** geo safety score in MVP |
-| Reference + delivery photos, embeddings, match | `sharingbridge-photo-service` | Upload, face detection, payee↔delivery verification |
+| Reference + delivery photos, embeddings, match | `sharingbridge-photo-service` | Upload, face detection, initiator↔delivery verification |
 | Instruction-pack assembly + secure links | `sharingbridge-integration-service` | Owns final vendor-facing text and TTL links |
 | Order intent, guidance acknowledged, acknowledgement | `sharingbridge-order-service` | Persists interaction context and timeline |
 | Field UX | `sharingbridge-mobile-app` | Stopovers, permissions, copy/deep-link handoff |
 
 **Target mobile stopover sequence (Offer food help)**
 
-1. **Guidance** — Fixed copy: consent, surroundings, visibility, photo policy, payee judgment (shipped step 1).
+1. **Guidance** — Fixed copy: consent, surroundings, visibility, photo policy, initiator judgment (shipped step 1).
 2. **Reference capture** — Camera/gallery → upload (planned) → store `seeker_photo_url`, photo-capture coordinates, and human-readable “photo taken at” label.
 3. **Instruction generation** — Call integration instruction-pack API (shipped; stub fallback when API down).
 4. **Vendor handoff** — Review pack → copy → enable **Open …** on saved preset deep links (shipped step 3).
-5. **Delivery acknowledgement** (delivery role / secure link, post-order) — Delivery photo in-app or gallery → mark completed; triggers match job and payee notification.
+5. **Delivery acknowledgement** (delivery role / secure link, post-order) — Delivery photo in-app or gallery → mark completed; triggers match job and initiator notification.
 
 **1) Handover guidance (BRD step 4 — shipped)**
 
 - **Implementation:** `sharingbridge-mobile-app` — **Offer food help** step 1 **Quick guidance** (bullets + Continue).
-- **Product:** Informational only; payee always chooses whether to continue. No `safety_score`, no pass/fail gate.
+- **Product:** Informational only; initiator always chooses whether to continue. No `safety_score`, no pass/fail gate.
 - **Deferred:** `sharingbridge-location-safety` rule-based scoring (repo archived; see Technical Architecture §3.3 as reference only).
 
 **2) Capturing deep links**
@@ -161,7 +161,7 @@ Maps BRD steps **3–11** to AI-related capabilities. **Shipped today (mobile):*
 - **Pre-field (shipped):** Vendor preset setup saves preset `order_url` values (http/https) per vendor/restaurant.
 - **Field use:** Offer food help loads presets via `GET …/preferences`; after copy, `launchUrl` opens the chosen preset.
 - **Growth:** Integration-service builds vendor-specific deep links with embedded secure instruction reference (`ExternalVendorService` / architecture §3.5); vendor OAuth/deep-link skeleton not shipped — see [Future_Extensions.md](../design/Future_Extensions.md).
-- **Acceptance:** Payee completes vendor payment outside SharingBridge; no in-app checkout.
+- **Acceptance:** Payer completes vendor payment outside SharingBridge; no in-app checkout.
 
 **3) Delivery instruction pack (AI-generated)**
 
@@ -169,37 +169,37 @@ Integration-service assembles a structured payload and a single **copy-paste blo
 
 | Field | Source |
 |-------|--------|
-| `beneficiary_description` | AI from photo + payee verbal notes (dignity-filtered) |
+| `beneficiary_description` | AI from photo + initiator verbal notes (dignity-filtered) |
 | `faceprint_detail` | Redacted descriptor or secure reference — **not** raw embedding in vendor-visible text; legal/privacy review before wording |
-| `photo_capture_location_label` | Reverse-geocode or payee-confirmed label at capture time |
+| `photo_capture_location_label` | Reverse-geocode or initiator-confirmed label at capture time |
 | `geo_coordinates` | Lat/lng at photo capture |
 | `secure_photo_url` | Time-limited cloud URL (`sharingbridge-photo-service` + TTL per secure-link policy) |
-| `payee_display_name`, `seeker_display_name` | Payee-entered, AI-sensitized where needed |
+| `donor_display_name` (legacy), `seeker_display_name` | Initiator-entered, AI-sensitized where needed |
 | `delivery_instructions` | Full preformatted narrative (template below) |
 | `order_template` | Lines from saved presets (restaurant, app, menu summary) |
 
 **Preformatted narrative template (policy-owned; integration-service renders):**
 
 ```
-This order is placed by a payee for a food seeker via SharingBridge (<website_url>).
+This order is placed by an initiator for a beneficiary via SharingBridge (<website_url>).
 
 Reference photo (time-limited): <secure_photo_url>
 Seeker identification detail: <faceprint_detail_or_redacted_descriptor>
 Geolocation: <lat>, <lng> (<photo_capture_location_label>)
 
-Payee notes (AI-sensitized): <manual_instruction>
+Initiator notes (AI-sensitized): <manual_instruction>
 
-Delivery instruction: Please proceed to <geo_coordinates>. Identify the seeker using the notes above and, where permitted, the reference photo at the secure link. Tell the seeker that <payee_name> placed this order for <seeker_name> and hand over the package. Request consent before taking a delivery photo. Complete acknowledgement in SharingBridge (in-app or gallery upload) and mark delivery as completed.
+Delivery instruction: Please proceed to <geo_coordinates>. Identify the seeker using the notes above and, where permitted, the reference photo at the secure link. Tell the seeker that <initiator_name> arranged this meal for <seeker_name> and hand over the package. Request consent before taking a delivery photo. Complete acknowledgement in SharingBridge (in-app or gallery upload) and mark delivery as completed.
 ```
 
 **API (proposed):** `POST /v1/donor-seeker/instruction-pack` — inputs: order intent id, photo artifact id, coordinates, verbal notes, preset ids; outputs: fields above + `delivery_instructions` string. Mobile replaces stub when contract is stable.
 
-**4) Match payee reference photo and delivery acknowledgement photo**
+**4) Match initiator reference photo and delivery acknowledgement photo**
 
 - **Distinct from** beneficiary **assistance history** matching (informational, non-blocking, ~2h window) in architecture §3.3.
-- **New pipeline:** On delivery acknowledgement upload, `sharingbridge-photo-service` compares embedding from payee reference vs delivery photo; persist `match_score`, `match_passed`, optional `needs_review` on order timeline.
+- **New pipeline:** On delivery acknowledgement upload, `sharingbridge-photo-service` compares embedding from initiator reference vs delivery photo; persist `match_score`, `match_passed`, optional `needs_review` on order timeline.
 - **APIs:** `POST /v1/photos/upload` (typed: `seeker_reference` | `delivery_acknowledgement`); `POST /v1/orders/:id/verify-delivery-match` or async job via order events.
-- **Acceptance:** Payee notification (step 11) includes completion status; web ops can see match outcome without exposing raw biometric payloads in notifications.
+- **Acceptance:** Initiator notification (step 11) includes completion status; web ops can see match outcome without exposing raw biometric payloads in notifications.
 
 **Phased delivery plan**
 
@@ -218,7 +218,7 @@ Delivery instruction: Please proceed to <geo_coordinates>. Identify the seeker u
 | **F — Beneficiary + initiator** | Beneficiary profile (no login); demand initiator role; recurring plans | user-service, integration-service, mobile, web |
 | **G — Fulfilment bids** | Prep capacity commits; self-pickup vs delivery choice | integration-service, web (fulfiller UI) |
 | **H — Transport bids** | Route/capacity bids; geo match vendor → beneficiaries | integration-service, web |
-| **I — Allocation** | Window aggregation; payee notify; fulfiller → transporter pay instructions | integration-service, notification-service |
+| **I — Allocation** | Window aggregation; payer notify; fulfiller → transporter pay instructions | integration-service, notification-service |
 
 **Progress map (all workstreams):** § **Where we are** in [STATUS.md](./STATUS.md).
 
@@ -226,7 +226,7 @@ Delivery instruction: Please proceed to <geo_coordinates>. Identify the seeker u
 
 - Consent required before reference photo; offer verbal-only path.
 - Minimize biometric data in paste text; prefer secure link for photo access.
-- TTL: secure links active until delivery completion + 30 minutes (architecture default); **Cloudinary / payee reference photos:** target **1–2 hour** distribution window for neighbourhood dashboards (see [Future_Extensions.md](../design/Future_Extensions.md) Phase A.2 payee photo rule).
+- TTL: secure links active until delivery completion + 30 minutes (architecture default); **Cloudinary / initiator reference photos:** target **1–2 hour** distribution window for neighbourhood dashboards (see [Future_Extensions.md](../design/Future_Extensions.md) Phase A.2 initiator photo rule).
 - Align “faceprint” language with counsel; store embeddings server-side only (not raw photos in Postgres when regulatory mode applies).
 
 Repo-level checklists: [AI_AS_BUILT.md](./AI_AS_BUILT.md) (as-built wiring); **product vocabulary:** [PRODUCT_MODEL.md](./PRODUCT_MODEL.md); order-ops backlog: [Future_Extensions.md](../design/Future_Extensions.md).
@@ -252,7 +252,7 @@ Repo-level checklists: [AI_AS_BUILT.md](./AI_AS_BUILT.md) (as-built wiring); **p
 
 **Weeks 11-12 (Validation):**
 - Browser compatibility and responsive behavior checks
-- Accessibility pass for critical payee/admin actions
+- Accessibility pass for critical initiator/admin actions
 - Production deployment checklist and runbook
 
 ## Phase 1: Foundation (Months 1-2) - Free Tier
@@ -464,7 +464,7 @@ await redis.publish('order-created', JSON.stringify({ orderId: '123' }));
 // Option 2: Redis Streams (replay + consumer groups)
 await redis.xadd('events:order-created', '*', {
   orderId: '123',
-  payeeId: 'payee456'
+  initiatorId: 'user456'
 });
 ```
 
@@ -494,7 +494,7 @@ const resend = new Resend('re_your_api_key');
 
 await resend.emails.send({
   from: 'sharingbridge@yourdomain.com',
-  to: 'payee@example.com',
+  to: 'initiator@example.com',
   subject: 'Order Confirmation',
   html: '<p>Your payment was successful!</p>'
 });
@@ -658,7 +658,7 @@ class ExternalVendorService {
       secureLink
     );
     
-    // 3. Return link for payee to complete order with vendor
+    // 3. Return link for payer to complete order with vendor
     return { paymentLink, vendor: 'swiggy', secureLink };
   }
   
@@ -764,7 +764,7 @@ docker-compose up
 **Testing Checklist:**
 ```markdown
 ### Functionality Testing
-- [ ] End-to-end order flow (payee → delivery → seeker)
+- [ ] End-to-end order flow (initiator/payer → delivery → beneficiary)
 - [ ] Beneficiary assistance history working with test images
 - [ ] Safety scoring calculations accurate
 - [ ] Push notifications received on iOS/Android

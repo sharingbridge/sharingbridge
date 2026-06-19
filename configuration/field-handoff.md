@@ -8,7 +8,7 @@ Mobile: **Help a seeker** (`sharingbridge-mobile-app`; home hub label).
 
 Handover suitability is **fixed in-app guidance**, not a backend geo score.
 
-- Implemented in mobile step 1: **Quick guidance** (consent, surroundings, visibility, photos, payee judgment).
+- Implemented in mobile step 1: **Quick guidance** (consent, surroundings, visibility, photos, initiator judgment).
 - `sharingbridge-location-safety` is **archived**; do not deploy a scoring service for MVP.
 
 ## Mobile steps (shipped)
@@ -21,7 +21,7 @@ Handover suitability is **fixed in-app guidance**, not a backend geo score.
 
 ## Order intent (shipped on integration-service)
 
-When the payee taps the step 3 button, the app:
+When the initiator taps the step 3 button, the app:
 
 1. Copies `delivery_instructions` to the clipboard.
 2. Calls `POST /v1/donor-seeker/order-intents` on **integration-service** (Bearer JWT).
@@ -42,7 +42,7 @@ Stored fields include `pack_id`, preset snapshot, reference-photo flag, and verb
 | Mobile **Order initiation history** (home hub, after Help a seeker) | **Shipped** — list + detail |
 | Web **Order initiation history** | **Shipped** (`sharingbridge-web-app`) — [web-client.md](./web-client.md) |
 
-**Coordinator web wiring:** same payee `user_id` on sign-in as on mobile, and the same integration base URL (`VITE_API_BASE_URL` = mobile `API_BASE_URL`). Local vs Render stores are separate.
+**Coordinator web wiring:** same initiator `user_id` on sign-in as on mobile, and the same integration base URL (`VITE_API_BASE_URL` = mobile `API_BASE_URL`). Local vs Render stores are separate.
 
 ## Backend services
 
@@ -64,13 +64,13 @@ Stored fields include `pack_id`, preset snapshot, reference-photo flag, and verb
 | Mobile `PHOTO_SERVICE_BASE_URL` | `--dart-define` (default `http://localhost:8092`) |
 | Coordinator thumbnail + link | Web dashboard reads `reference_photo_view_url` / `reference_photo_thumbnail_url` on order intents |
 
-Flow: payee picks camera or gallery → upload on **Get AI delivery instructions** → `reference_photo_artifact_id` + Cloudinary URLs stored on order intent.
+Flow: initiator picks camera or gallery → upload on **Get AI delivery instructions** → `reference_photo_artifact_id` + Cloudinary URLs stored on order intent.
 
 Local: configure `CLOUDINARY_*` (or `CLOUDINARY_URL`) in photo-service `.env`. Run `photo_artifacts` DDL from [schema.sql](./schema.sql) (or let photo-service create the table on startup).
 
 ## Planned (Track B+)
 
-- Delivery acknowledgement upload and payee↔delivery photo match
+- Delivery acknowledgement upload and initiator reference↔delivery photo match
 - Local image processing hooks in photo-service
 - Live LLM (`AI_LLM_MODE=openai`)
 
@@ -86,7 +86,7 @@ Separate from **Help a seeker** (direct order / `order_intents`). **For pledging
 |-------|--------|
 | Mobile hub | **Start initiation** → **For pledging** → `RecordSeekerDemandPage` |
 | API | `POST /v1/seeker-demands` on **integration-service** (Bearer JWT) |
-| Who can record | **Payee** or **coordinator** (`requireReporterRole`) |
+| Who can record | **Initiator** or **coordinator** (`requireReporterRole`) |
 | Stored as | Postgres `seeker_demands` — [database-setup-sequence.md](./database-setup-sequence.md) |
 | Response field | `seeker_demand.seeker_demand_id` (`sd-…` prefix); reporter = `reported_by_user_id` |
 | Web | `GET /v1/demand/board` — **Actions** tab (pledges, kitchen commitments) |

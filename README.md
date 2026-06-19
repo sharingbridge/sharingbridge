@@ -10,7 +10,7 @@ SharingBridge is a mobile/web application that helps people **arrange and pay fo
 
 ## Contributor notes (read this first)
 
-Product-level assumptions: [SharingBridge_Business_Requirement.md](requirements/SharingBridge_Business_Requirement.md) § Operating Constraints. **Inclusive language** (payee, beneficiary, meal arrangement — not alms/donation framing): [PRODUCT_MODEL.md](development/PRODUCT_MODEL.md) § Documentation verbiage.
+Product-level assumptions: [SharingBridge_Business_Requirement.md](requirements/SharingBridge_Business_Requirement.md) § Operating Constraints. **Inclusive language** (initiator, payer, beneficiary, meal arrangement — not alms/donation framing): [PRODUCT_MODEL.md](development/PRODUCT_MODEL.md) § Documentation verbiage.
 
 **AI-assisted development:** Code and docs are produced in AI-assisted sessions. **Progress vs plan:** [STATUS.md](development/STATUS.md). **How to run:** [configuration/README.md](configuration/README.md).
 
@@ -27,7 +27,7 @@ New here or unsure which file to open? Use this section. It defines **reading or
 | **Engineering plan (long-term)** | [development/ENGINEERING_PLAN.md](development/ENGINEERING_PLAN.md) |
 | **Agent session (next tasks)** | [development/AGENT_SESSION.md](development/AGENT_SESSION.md) |
 | **Product vocabulary, verbiage & marketplace** | [development/PRODUCT_MODEL.md](development/PRODUCT_MODEL.md) § Documentation verbiage |
-| **Configurator, unified initiation, payee** | [design/Configurator_Role_and_Unified_Initiation.md](design/Configurator_Role_and_Unified_Initiation.md) |
+| **Configurator, unified initiation, payer** | [design/Configurator_Role_and_Unified_Initiation.md](design/Configurator_Role_and_Unified_Initiation.md) |
 | **Eco kitchens — three routes, connection, payment boundaries** | [design/Eco_Kitchen_Initiation_Flow.md](design/Eco_Kitchen_Initiation_Flow.md) |
 | **How we build (phases, repos, AI)** | [development/ENGINEERING_PLAN.md](development/ENGINEERING_PLAN.md) |
 | **BRD steps 1–12 with diagrams** | [design/SharingBridge_End_to_End_Workflow.md](design/SharingBridge_End_to_End_Workflow.md) |
@@ -97,7 +97,7 @@ AGENT_SESSION.md                  ← Agent next tasks
 
 ## Key Features
 
-- 🤝 **Dignity-first** — Respectful process for payees, initiators, and people receiving meals
+- 🤝 **Dignity-first** — Respectful process for initiators, payers, and people receiving meals
 - 🔒 **Handover guidance** - Fixed in-app copy for consent and surroundings (BRD step 4); geo safety service deferred
 - 📱 **Multi-Platform** - iOS, Android, and Web applications
 - 🛡️ **Facilitator-only money** - Payments and authoritative financial records stay with vendors/providers; see BRD *Operating Constraints*
@@ -140,12 +140,12 @@ Each repository evolves independently. Coordination happens here through GitHub 
 
 ## Problem Statement
 
-Cash is ambiguous; **meals are concrete**. SharingBridge helps payees and initiators turn “this person needs food” (or “my parent needs lunch”) into a **tracked meal arrangement**—standard items, vendor payment, optional neighbourhood coordination—without the platform holding money.
+Cash is ambiguous; **meals are concrete**. SharingBridge helps initiators and payers turn “this person needs food” (or “my parent needs lunch”) into a **tracked meal arrangement**—standard items, vendor payment, optional neighbourhood coordination—without the platform holding money.
 
 ## Solution
 
 A facilitator platform that:
-1. Connects **payees and demand initiators** with **people who need meals** (beneficiaries)
+1. Connects **initiators and payers** with **people who need meals** (beneficiaries)
 2. Shows handover guidance so the supporter can judge consent and surroundings (mobile; no geo safety score in MVP)
 3. Creates orders through established food delivery platforms (or future direct-vendor flows)
 4. Redirects payment to vendor or licensed provider systems (SharingBridge does not own financial tracking responsibility)

@@ -33,7 +33,7 @@ Phase 3   Render: static web app (VITE_* build env)
     ↓
 Phase 4   Add live site URL to Google origins + WEB_CORS_ORIGINS on both backends
     ↓
-Phase 5   Verify hosted coordinator dashboard + payee flow on same API host
+Phase 5   Verify hosted coordinator dashboard + initiator flow on same API host
 ```
 
 Optional branches (any time after Phase 1):

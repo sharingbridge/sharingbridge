@@ -50,7 +50,7 @@ flowchart TB
 
   subgraph delivery["Delivery & closure"]
     S10["10 Deliver & verify\nHandover + delivery photo"]
-    S11["11 Confirm to payee\nStatus + verification"]
+    S11["11 Confirm to initiator\nStatus + verification"]
     S12["12 History\nPast / nearby outcomes"]
   end
 
@@ -76,7 +76,7 @@ Legend: ✅ shipped (partial or full) · 🟡 in progress / stub · ⬜ planned
 | 7 Secure store | ⬜ | `sharingbridge-photo-service` planned |
 | 8–9 Vendor order + pay | 🟡 | Copy + open preset URL; OAuth/deep-link builder ⬜ |
 | 10 Deliver + photo | ⬜ | Delivery acknowledgement + match planned — [Future_Extensions](Future_Extensions.md) Phase B |
-| 11 Payee confirm | ⬜ | `sharingbridge-notification-service`; payee **mark payment done** — Phase A |
+| 11 Initiator confirm | ⬜ | `sharingbridge-notification-service`; initiator **mark payment done** — Phase A |
 | 12 History | 🟡 | Mobile + coordinator web initiation history; full order ops — Phase A in [Future_Extensions](Future_Extensions.md) |
 
 ---
@@ -85,7 +85,7 @@ Legend: ✅ shipped (partial or full) · 🟡 in progress / stub · ⬜ planned
 
 **Today (3 mobile steps):** guidance → optional photo + verbal notes + instruction **stub** → copy + open saved vendor link.
 
-**Target (6 stopovers):** per [ENGINEERING_PLAN — AI interactions](../development/ENGINEERING_PLAN.md) (section *AI interactions — payee–seeker field slice*).
+**Target (6 stopovers):** per [ENGINEERING_PLAN — AI interactions](../development/ENGINEERING_PLAN.md) (section *AI interactions — initiator–beneficiary field slice*).
 
 ```mermaid
 flowchart LR
@@ -116,7 +116,7 @@ High-level message flow for the **external vendor** path (MVP manual copy-paste)
 ```mermaid
 sequenceDiagram
   autonumber
-  participant D as Payee
+  participant D as Initiator
   participant M as Mobile app
   participant I as Integration service
   participant P as Photo / AI services
@@ -139,7 +139,7 @@ sequenceDiagram
 
   Note over C,M: Delivery (steps 10–11, planned)
   C->>M: Delivery acknowledgement photo
-  M->>P: Match payee vs delivery photo
+  M->>P: Match initiator reference vs delivery photo
   M-->>D: Completion notification
 ```
 

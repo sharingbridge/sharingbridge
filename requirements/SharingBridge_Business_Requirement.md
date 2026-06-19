@@ -4,21 +4,21 @@
 People often want to help with **food**—for someone they meet, a parent, a senior neighbour, or themselves—but **cash is ambiguous** and **meal logistics are fragmented** (which vendor, what to order, how to pay, how to confirm handover). There is no lightweight way to turn “they need a meal” into a **standard item, vendor payment, and tracked handover** without the platform holding money.
 
 ## **Solution**
-SharingBridge is a mobile/web application that helps **payees and demand initiators** arrange meals for **beneficiaries** through standard menus and third-party delivery or local vendors—maintaining dignity and convenience. **The platform acts as a facilitator only; all payments are processed directly through the vendor's payment system.**
+SharingBridge is a mobile/web application that helps **initiators and payers** arrange meals for **beneficiaries** through standard menus and third-party delivery or local vendors—maintaining dignity and convenience. **The platform acts as a facilitator only; all payments are processed directly through the vendor's payment system.**
 
 ### **Core Workflow:**
 1. **Vendor preset setup (before field use)** — Signed-in user saves preferred vendors and menu deep links via an AI-assisted flow (fixed prompt + structured output).
-2. **Real-world trigger** — Someone needs a meal (in person, remotely, or on behalf of family); the initiator or payee opens the app.
-3. **Initial Conversation and Consent** - Payee confirms food help intent and gets consent to capture beneficiary details/photo for delivery identification.
-4. **Quick Guidance (Early)** - During this initial interaction, the app shows short, fixed guidance on consent, handover conditions, and surroundings. The payee decides whether to continue; SharingBridge does not certify that a location is safe.
-5. **Create Order Intent** - Payee captures beneficiary context and chooses a prepared order option.
-6. **Generate Delivery Instruction Pack** - App uses AI to create clean, non-offensive delivery instructions from payee input (for example: visible appearance cues, current geolocation, order summary, and secure photo reference). Payee can copy-paste this text into the delivery app instruction field.
+2. **Real-world trigger** — Someone needs a meal (in person, remotely, or on behalf of family); the **initiator** opens the app.
+3. **Initial Conversation and Consent** — Initiator confirms food-help intent and gets consent to capture beneficiary details/photo for delivery identification.
+4. **Quick Guidance (Early)** — During this initial interaction, the app shows short, fixed guidance on consent, handover conditions, and surroundings. The **initiator** decides whether to continue; SharingBridge does not certify that a location is safe.
+5. **Create Order Intent** — Initiator captures beneficiary context and chooses a prepared order option.
+6. **Generate Delivery Instruction Pack** — App uses AI to create clean, non-offensive delivery instructions from initiator input (for example: visible appearance cues, current geolocation, order summary, and secure photo reference). Initiator can copy-paste this text into the delivery app instruction field.
 7. **Store Photo + Instruction Securely** - App stores the beneficiary photo and generated instruction text in a secure external repository and includes only the required reference/link in delivery instructions.
 8. **Place Order** - Order is created through external food delivery platforms (or through the direct-vendor flow once that flow is fully implemented).
-9. **Pay Externally** - Payee completes payment in vendor or licensed provider systems.
+9. **Pay Externally** — **Payer** (usually the same person as the initiator in MVP) completes payment in vendor or licensed provider systems.
 10. **Deliver and Verify** - Delivery personnel identify the beneficiary and complete handover; delivery photo/evidence is captured.
-11. **Confirm to Payee** - Payee receives completion status and verification details.
-12. **View History** - Payees/admins can see nearby and past order outcomes.
+11. **Confirm to initiator** — Initiator/payer receives completion status and verification details.
+12. **View History** - Initiators and coordinators can see nearby and past order outcomes.
 
 ## **Operating Constraints & Assumptions**
 
@@ -32,7 +32,7 @@ This section defines product constraints for volunteer-led, agile delivery.
 
 ## **Key Benefits**
 
-**For payees and initiators:**
+**For initiators and payers:**
 - Turns intent to help with food into a concrete meal arrangement (standard items where configured)
 - Provides delivery confirmation with photo proof
 - Secure payment through trusted vendor platforms (Zomato, Swiggy, etc.)
@@ -76,15 +76,15 @@ This section defines product constraints for volunteer-led, agile delivery.
 - Order history and transaction logs
 
 **3. Field handover guidance (mobile — BRD step 4)**
-- **Fixed in-app guidance** in plain language (consent, surroundings, visibility, photo policy, payee judgment)
+- **Fixed in-app guidance** in plain language (consent, surroundings, visibility, photo policy, initiator judgment)
 - **Not** a backend safety score or pass/fail gate for MVP
 - Optional future: post-delivery feedback for ops analytics only (non-certifying); see coordination docs
 
 **3b. Photo & Verification Module** (`sharingbridge-photo-service`)
-- Encrypted photo storage (reference at payee interaction; delivery acknowledgement)
+- Encrypted photo storage (reference at initiator interaction; delivery acknowledgement)
 - Face embeddings and computer-vision pipelines (not LLM):
-  - **Assistance history review** (informational, non-blocking): compare photo + location to recent help within configurable time/proximity; inform payee only — never block the meal arrangement
-  - **Payee ↔ delivery photo match** at handover verification
+  - **Assistance history review** (informational, non-blocking): compare photo + location to recent help within configurable time/proximity; inform initiator only — never block the meal arrangement
+  - **Initiator reference ↔ delivery photo match** at handover verification
 - Optional privacy controls (e.g. blur) where supported
 
 **4. Integration Layer**
@@ -130,10 +130,10 @@ This section defines product constraints for volunteer-led, agile delivery.
 ## **Future Extensions**
 
 #### **1. Pledge Pool System**
-Payees can pledge money in advance for future seekers they have not met yet.
+Payers can pledge money in advance for future beneficiaries they have not met yet.
 - **How it works:**
-  - Payees pledge amount (₹100, ₹500, ₹1000, etc.) to a common pool
-  - When any payee meets a seeker, they can use pledged funds instead of paying directly
+  - Payers pledge amount (₹100, ₹500, ₹1000, etc.) to a common pool
+  - When any initiator meets a beneficiary in need, they can draw on pledged funds instead of paying directly
   - Pledges can be earmarked (location-based, time-based, or general)
   - Real-time dashboard shows pledge utilization
 - **Benefits:** Enables giving even when not physically present, creates community fund
@@ -159,7 +159,7 @@ Enable multiple people to contribute to a single order when one person cannot af
   - Person spots seeker but cannot afford full meal
   - Creates a "request for help" with seeker photo and location
   - Request shared with nearby SharingBridge users
-  - Multiple payees contribute small amounts (₹20, ₹50, etc.)
+  - Multiple payers contribute small amounts (₹20, ₹50, etc.)
   - Order placed once threshold reached
   - All contributors notified of delivery
 - **Benefits:** Lower barrier to giving, community participation, no one turned away
@@ -174,4 +174,4 @@ Enable multiple people to contribute to a single order when one person cannot af
 
 ---
 
-*This platform coordinates affordable meals with accountability and dignity—for beneficiaries, payees, initiators, and vendors—while leveraging existing delivery infrastructure.*
+*This platform coordinates affordable meals with accountability and dignity—for beneficiaries, initiators, payers, and vendors—while leveraging existing delivery infrastructure.*

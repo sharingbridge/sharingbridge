@@ -33,8 +33,9 @@ SharingBridge serves **anyone who needs affordable meals**—people on the stree
 | Prefer in docs | Avoid in docs | Legacy in code/API (unchanged until rename) |
 |----------------|---------------|---------------------------------------------|
 | **Community meal coordination platform** | Digital alms platform | — |
-| **Initiator** (registers order intent or demand) | Donor (legacy docs) | JWT `donor` still accepted; DB `user_roles.donor` |
-| **Payee / payer** (who pays the vendor) | Donor as generic helper | — |
+| **Initiator** (registers order intent or demand) | Donor (legacy docs) | JWT `initiator` (legacy `donor` accepted); DB `user_roles.donor` |
+| **Payer** (who pays the vendor) | **Payee** for the paying person (wrong — payee = payment recipient) | — |
+| **Payee** (accounting only) | Using payee for mobile user or payer | Vendor/kitchen **receives** payment |
 | **API routes** | `/v1/donor-*` only | Prefer `/v1/initiator-setup/*`, `/v1/order-intents`, `/v1/instruction-pack` |
 | **JSON fields** | `donor_email` only | Prefer `initiator_email` (both returned for coordinators) |
 | **Env** | `DONOR_NEIGHBOURHOOD_*` only | Prefer `INITIATOR_NEIGHBOURHOOD_*` (legacy still read) |
@@ -42,9 +43,19 @@ SharingBridge serves **anyone who needs affordable meals**—people on the stree
 | **Meal arrangement / order intent** | Donation, order intent | — |
 | **Intent to help with food / meal support** | Intent to help with food, meal support | — |
 | **Vendor preset setup** | Vendor preset setup (prose only) | `/v1/donor-setup/*`, table `donor_presets` |
-| **Neighbourhood feed radius** | Payee neighbourhood (prose) | env `DONOR_NEIGHBOURHOOD_*` |
+| **Neighbourhood feed radius** | Initiator neighbourhood (prose) | env `DONOR_NEIGHBOURHOOD_*` |
 
-When documenting APIs or SQL, show the **legacy identifier** in backticks. Use **initiator** for who registered an intent/demand; use **payee** only for who pays the vendor.
+When documenting APIs or SQL, show the **legacy identifier** in backticks.
+
+**Three-way rule (do not conflate):**
+
+| Term | Use for |
+|------|---------|
+| **Initiator** | Who registered an order intent or seeker demand (signed-in mobile user in MVP) |
+| **Payer** | Who pays the meal vendor off-platform (often the same person as initiator today) |
+| **Payee** | Who **receives** payment — vendor, eco kitchen, transport bidder settlement — not the helper |
+
+Never use **payee** for the mobile app user, JWT role, or “person who pays Swiggy.”
 
 ---
 
@@ -52,8 +63,8 @@ When documenting APIs or SQL, show the **legacy identifier** in backticks. Use *
 
 | Term | Meaning |
 |------|---------|
-| **Order intent** | Payee- or initiator-registered handover signal after copying instructions (`instructions_copied`). **Not** a placed or paid order in a vendor app. |
-| **Order intent taken** | Dashboard label for **`created_at`** — when the payee or initiator registered the intent. Do not use “order taken” or “order placed.” |
+| **Order intent** | Initiator-registered handover signal after copying instructions (`instructions_copied`). **Not** a placed or paid order in a vendor app. |
+| **Order intent taken** | Dashboard label for **`created_at`** — when the initiator registered the intent. Do not use “order taken” or “order placed.” |
 | **Delivered at** | **`delivered_at`** — handover/delivery completion time when set. Often empty until delivery-partner flow (Phase B) populates it. |
 | **Elapsed (freshness)** | `now − created_at`. Shown near **Order intent taken**; **do not** derive elapsed from `delivered_at`. |
 | **Distance (m)** | **`distance_m`** — metres from viewer `near_lat` / `near_lng` to intent location (API-computed). |
@@ -65,19 +76,19 @@ When documenting APIs or SQL, show the **legacy identifier** in backticks. Use *
 | **Email share consent** | Explicit opt-in before pledging or opening eco-kitchen routes; login email revealed in-app after kitchen commit — [Eco_Kitchen_Initiation_Flow.md](../design/Eco_Kitchen_Initiation_Flow.md) §7.5. |
 | **Kitchen commitment** | Eco kitchen accepts a line (portions, price, ETA). Product term; legacy table `vendor_bids` during migration. |
 | **Beneficiary / seeker** | Person who receives food. **No app login** — linked on records (address, notes, optional photo) with consent captured by an initiator. |
-| **Demand initiator** | Signed-in user who arranges meals **for** a beneficiary (e.g. adult child for a parent, or anyone they meet). May be one-off or **recurring**. Today overlaps payee role and **Record seeker demand**. Target: single **meal initiation** flow. |
-| **Configurator** | **One-time** geographic actor: menus, `locality_key` tiers, optional zone setup. **Not** full-time ops — renames local **coordinator** for config-only work. Runtime ops → payees, fulfillers, automation. See [Configurator_Role_and_Unified_Initiation.md](../design/Configurator_Role_and_Unified_Initiation.md). |
-| **Payee / payer** | User who pays the meal vendor directly (relative, neighbour, self, initiator). **Preferred product term.** API role `payee` is legacy; alias `payee` planned. |
-| **Prepaid order intent** | Planned unified record: standard menu + location + payee commitment; merges **Help a seeker** and **seeker demand** paths. Fulfillment: **bidder board** or **direct vendor** per initiation. |
+| **Demand initiator** | Signed-in user who arranges meals **for** a beneficiary (e.g. adult child for a parent, or anyone they meet). May be one-off or **recurring**. Today overlaps **initiator** mobile flows and **Record seeker demand**. Target: single **meal initiation** flow. |
+| **Configurator** | **One-time** geographic actor: menus, `locality_key` tiers, optional zone setup. **Not** full-time ops — renames local **coordinator** for config-only work. Runtime ops → payers, fulfillers, automation. See [Configurator_Role_and_Unified_Initiation.md](../design/Configurator_Role_and_Unified_Initiation.md). |
+| **Payer** | User who pays the meal vendor directly (relative, neighbour, self, or initiator on their behalf). **Preferred term** for the paying side. Future: payer may differ from initiator. |
+| **Payee** | Party who **receives** payment (meal vendor, eco kitchen, transport bidder). **Not** the initiator or payer. |
+| **Prepaid order intent** | Planned unified record: standard menu + location + payer commitment; merges **Help a seeker** and **seeker demand** paths. Fulfillment: **bidder board** or **direct vendor** per initiation. |
 | **Demand fulfiller** | Signed-in kitchen/vendor who **commits prep capacity** (portions per window). Future role. |
-| **Transport bidder** | Signed-in courier who **commits delivery capacity** between prep points and beneficiary locations. Paid by **meal vendor**, not payee. Future role. |
+| **Transport bidder** | Signed-in courier who **commits delivery capacity** between prep points and beneficiary locations. Paid by **meal vendor**, not the payer. Future role. |
 
 ### App actors (who signs in)
 
 | Actor | Signs in | Notes |
 |-------|----------|--------|
-| **Payee / supporter** | Yes (mobile) | Field handover or remote arrangement; pays vendor directly. API role `payee` today. |
-| **Demand initiator** | Yes | Plans meals for a beneficiary; sets pickup vs delivery. |
+| **Initiator** | Yes (mobile) | Registers intents/demands; captures beneficiary context. In shipped flows usually also the **payer**. JWT `initiator` (legacy `donor` in DB). |
 | **Coordinator** | Yes (web) | **Transitioning:** **Actions** tab (pledges, kitchen commitments). Long-term **configurator** = menu/zone setup only. |
 | **Configurator** | Yes (web, future) | One-time menus and geography per `locality_key`; not daily operations. |
 | **Demand fulfiller** | Yes | Prep bids; may self-deliver or hire transport. |
@@ -111,7 +122,7 @@ Authoritative step-by-step flows: [Eco_Kitchen_Initiation_Flow.md](../design/Eco
 
 ## Marketplace — fulfillment paths & payments (future, authoritative)
 
-**Bulk default:** Prep and transport are **aggregated per window/locality** to reduce cost. **Payee funding** stays **direct one-time** payment to the meal vendor (no platform wallet — per BRD).
+**Bulk default:** Prep and transport are **aggregated per window/locality** to reduce cost. **Payer funding** stays **direct one-time** payment to the meal vendor (no platform wallet — per BRD).
 
 ### Fulfillment path (per beneficiary / plan)
 
@@ -123,14 +134,14 @@ Chosen by **demand initiator** (or coordinator on their behalf); beneficiary has
 | **Vendor delivers** | Fulfiller’s own delivery | Fulfiller |
 | **Vendor + transport bidder** | Transporter: vendor location → beneficiaries | Transporter (with vendor handoff event) |
 
-If not self-pickup, the **meal vendor owns delivery** — own fleet **or** selects a **transport bidder** for that area. **Transport is paid by the meal vendor**, not the payee.
+If not self-pickup, the **meal vendor owns delivery** — own fleet **or** selects a **transport bidder** for that area. **Transport is paid by the meal vendor**, not the payer.
 
 ### Payment rhythms
 
 | Flow | Who pays whom | When |
 |------|---------------|------|
-| **Payee / pledge → meal vendor** | Payee | Direct, one-time, per funded meals |
-| **Meal vendor → transport bidder** | Fulfiller | Bulk settlement for assigned routes/windows |
+| **Payer / pledge → meal vendor** | Payer or pledger | Direct, one-time, per funded meals |
+| **Meal vendor → transport bidder** | Fulfiller (vendor is payee of payer funds) | Bulk settlement for assigned routes/windows |
 | **Initiator / family → vendor** | Demand initiator or beneficiary (via initiator) | Recurring plans — same direct-payment principle |
 
 ### Matching (location-driven)
@@ -146,7 +157,7 @@ If not self-pickup, the **meal vendor owns delivery** — own fleet **or** selec
 
 ## June 4 — Neighbourhood dashboard (authoritative)
 
-### List columns (web payee + coordinator when neighbourhood applies)
+### List columns (web initiator limited view + coordinator when neighbourhood applies)
 
 | Column | Source | Notes |
 |--------|--------|--------|
@@ -164,16 +175,16 @@ If not self-pickup, the **meal vendor owns delivery** — own fleet **or** selec
 
 ### Neighbourhood reference photos
 
-- Payees see **beneficiary reference photo thumbnails** in the **neighbourhood** feed for intents inside `DONOR_NEIGHBOURHOOD_WINDOW_HOURS` (same window as photo URL redaction; env name legacy).
-- **Coordinator-only:** payee email (`donor_email` in API) and unrestricted history — not “all photos coordinator-only.”
+- Initiators on the **limited** dashboard see **beneficiary reference photo thumbnails** in the **neighbourhood** feed for intents inside `DONOR_NEIGHBOURHOOD_WINDOW_HOURS` (same window as photo URL redaction; env name legacy).
+- **Coordinator-only:** initiator email (`initiator_email` / legacy `donor_email` in API) and unrestricted history — not “all photos coordinator-only.”
 
 ### Mobile → web
 
-- Link to open the **payee web dashboard** in the browser; native in-app dashboard deferred.
+- Link to open the **web dashboard** in the browser; native in-app dashboard deferred.
 
 ### Voice memo themes (June 4, cleaned)
 
-1. Return **distance in metres**; show on dashboard; sort nearest first; payees see neighbourhood **photos**.
+1. Return **distance in metres**; show on dashboard; sort nearest first; initiators see neighbourhood **photos**.
 2. Configurable **list limit** (~100 rows).
 3. Show **order intent taken**, **delivered at**, and **distance** on dashboard; freshness from **intent created** time.
 4. Max rows env for gateway payload size.
@@ -193,7 +204,7 @@ If not self-pickup, the **meal vendor owns delivery** — own fleet **or** selec
 
 | Theme | Notes |
 |-------|--------|
-| Web roles | Payee dashboard access; **emails** coordinator-only. |
+| Web roles | Initiator limited dashboard + coordinator full view; **emails** coordinator-only. |
 | Pledges | Order intents → pledge / crowdsourcing extension. |
 | Marketplace | Demand initiator, fulfiller, transport bidder; self-pickup vs delivery; bulk prep/transport — see **Marketplace** section above. |
 | Photos / AI | Embeddings, descriptions, drone narrative; optional store embeddings not raw photos. |
@@ -210,7 +221,7 @@ Delivery detail: [ENGINEERING_PLAN.md](./ENGINEERING_PLAN.md). Order-ops phases 
 2. **integration-service:** `distance_m`, `ORDER BY distance_m ASC`, `ORDER_INTENT_LIST_MAX_ROWS`, expose `created_at` / `delivered_at`.
 3. **web-app:** Columns **Order intent taken**, **Delivered at**, **Distance (m)**; elapsed from `created_at`.
 4. **mobile-app:** “Open web dashboard” URL from config.
-5. Payee neighbourhood photos (confirm web + mobile within window).
+5. Initiator neighbourhood photos (confirm web + mobile within window).
 
 **Later:**
 

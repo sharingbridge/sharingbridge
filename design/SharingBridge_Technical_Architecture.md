@@ -14,7 +14,7 @@ For product-level assumptions, use [SharingBridge_Business_Requirement.md](../re
 
 If this architecture document conflicts with that BRD section (for example in proposed pledge or ledger schemas), follow the BRD.
 
-**Product language (2026):** Docs use **payee**, **beneficiary**, and **meal arrangement** — not alms/donation/donor in prose. Legacy schema and API names below (e.g. `donation_type`, `/donor-setup`) are unchanged until code migration; see [PRODUCT_MODEL.md](../development/PRODUCT_MODEL.md) § Documentation verbiage.
+**Product language (2026):** Docs use **initiator**, **payer**, **beneficiary**, and **meal arrangement** — not alms/donation/donor in prose. Reserve **payee** for payment **recipients** (vendor/kitchen). Legacy schema and API names below (e.g. `donation_type`, `/donor-setup`) are unchanged until code migration; see [PRODUCT_MODEL.md](../development/PRODUCT_MODEL.md) § Documentation verbiage.
 
 ## MVP Implementation Decisions
 
@@ -39,11 +39,11 @@ This section describes what is **running in code and on Render today**. It overr
 | Label | How SharingBridge uses it |
 |-------|---------------------------|
 | **Microservices / polyrepo** | Independent repos per service; coordination in master `sharingbridge` docs repo |
-| **Experience API** | `sharingbridge-integration-service` — payee/coordinator **journey-shaped** HTTP surface (`/v1/donor-setup/*`, `/v1/donor-seeker/*`) |
+| **Experience API** | `sharingbridge-integration-service` — initiator/coordinator **journey-shaped** HTTP surface (`/v1/initiator-setup/*`, `/v1/order-intents`, legacy `/v1/donor-*`) |
 | **Shared BFF** | One experience layer for **Flutter mobile** and **Vite/React web** (not separate mobile/web BFFs yet) |
 | **API composition / bridge** | Integration validates auth, calls ai-orchestration and user-service, applies fallbacks (`mock`, `deterministic`, `fallback`) |
 | **Process APIs** | `sharingbridge-ai-orchestration` (LLM pipelines), `sharingbridge-photo-service` (upload + signed URLs) |
-| **System APIs** | `sharingbridge-user-service` (JWT mint, payee presets in Postgres) |
+| **System APIs** | `sharingbridge-user-service` (JWT mint, initiator vendor presets in Postgres `donor_presets`) |
 | **Facilitator platform** | Deep links to vendor apps; no platform-owned payment ledger |
 
 **Not deployed for MVP:** `sharingbridge-api-gateway`, `sharingbridge-order-service`, `sharingbridge-notification-service`, `sharingbridge-location-safety` (archived).
@@ -87,9 +87,9 @@ Clients **never** call user-service, ai-orchestration, or model providers direct
 
 | Concern | Owner | Notes |
 |---------|-------|-------|
-| Payee-facing REST contracts | **Integration** | OpenAPI in `design/contracts/` |
-| JWT validation, payee role, CORS | **Integration** | Shared with user-service signing secret |
-| Payee presets CRUD | **Delegates** → user-service | `PreferencesRepository` forwards bearer token |
+| Initiator-facing REST contracts | **Integration** | OpenAPI in `design/contracts/` |
+| JWT validation, initiator role, CORS | **Integration** | Shared with user-service signing secret |
+| Initiator vendor presets CRUD | **Delegates** → user-service | `PreferencesRepository` forwards bearer token |
 | Suggest vendors, instruction-pack | **Orchestrates** → ai-orchestration | Mock/template fallback on failure |
 | Order intents, neighbourhood feed | **Integration** | Postgres via `PostgresOrderIntentStore` |
 | Coordinator list views | **Integration** | Role-based formatting on order intents |
@@ -101,7 +101,7 @@ This is an **Experience API**, not a pure reverse proxy: it **shapes responses f
 
 | Component | Repo | Runtime / framework |
 |-----------|------|---------------------|
-| Mobile payee UI | `sharingbridge-mobile-app` | **Flutter** (feature folders: data / domain / application / presentation) |
+| Mobile initiator UI | `sharingbridge-mobile-app` | **Flutter** (feature folders: data / domain / application / presentation) |
 | Web coordinator dashboard | `sharingbridge-web-app` | **Vite + React 19**, Vitest |
 | Experience API | `sharingbridge-integration-service` | **Node.js 20** (`node:http`, no NestJS) |
 | User / auth API | `sharingbridge-user-service` | **Node.js 20**, Google Sign-In, JWT HS256 |
@@ -121,7 +121,7 @@ Setup: [configuration/ai-setup-handhold.md](../configuration/ai-setup-handhold.m
 
 ### Mobile internal pattern
 
-Within Flutter, payee flows use **ports-and-adapters / clean architecture**: repository interfaces, use cases, HTTP adapters, DTOs. That is **client-side layering**, separate from the backend Experience API pattern.
+Within Flutter, initiator flows use **ports-and-adapters / clean architecture**: repository interfaces, use cases, HTTP adapters, DTOs. That is **client-side layering**, separate from the backend Experience API pattern.
 
 ---
 
@@ -377,7 +377,7 @@ This section defines frontend ownership and contracts for:
 
 **Repo Responsibilities:**
 - **Mobile app (`sharingbridge-mobile-app`)**
-  - Payee field workflow: setup (including AI-assisted vendor/menu onboarding), donor-seeker interaction flow, consent capture, safety check trigger, instruction-pack generation/copy
+  - Initiator field workflow: setup (including AI-assisted vendor/menu onboarding), donor-seeker interaction flow, consent capture, safety check trigger, instruction-pack generation/copy
   - Device capabilities: camera, geolocation, deep-link launch, push notification handling
   - Field reliability: offline draft state, retry queue for unstable networks, clear user recovery paths
 - **Web app (`sharingbridge-web-app`)**
@@ -395,7 +395,7 @@ This section defines frontend ownership and contracts for:
 - **Mobile:** permission prompts at point-of-use, graceful fallback for denied permissions, app-state recovery after deep-link return.
 - **Web:** responsive layout for low-end devices, accessible controls for key payee/admin actions, safe session timeout handling.
 - **Both:** structured client telemetry for critical flow stages (setup, safety check, instruction generation, order redirect, confirmation).
-- **AI setup guardrail:** client must present AI suggestions as editable drafts; nothing is auto-saved without explicit payee confirmation.
+- **AI setup guardrail:** client must present AI suggestions as editable drafts; nothing is auto-saved without explicit initiator confirmation.
 
 ### 3.1 User Service
 
@@ -730,15 +730,15 @@ class ShadowfaxAdapter implements LogisticsAdapter { ... }
 12. Secure link remains active until delivery completion, then expires after a 30-minute look-back window
 
 **Interim Manual Flow (MVP - No API Access):**
-1. Payee captures beneficiary photo in SharingBridge app
-2. App surfaces payee's pre-stored preferred deep-link order options and generates secure beneficiary instruction text
+1. Initiator captures beneficiary photo in SharingBridge app
+2. App surfaces initiator's pre-stored preferred deep-link order options and generates secure beneficiary instruction text
 3. App provides copy-paste functionality for instructions
-4. Payee selects the ready-made deep-link option and pastes instructions into vendor's delivery notes field, without typing during the seeker interaction
+4. Initiator selects the ready-made deep-link option and pastes instructions into vendor's delivery notes field, without typing during the seeker interaction
 5. Vendor processes order with embedded secure access instructions
 6. Delivery follows the same secure token-based access process as above
 
 **Logistics Flow (Pledged Vendors - Direct Orders):**
-1. Payee pays via vendor-hosted or licensed-provider-hosted payment link
+1. Payer pays via vendor-hosted or licensed-provider-hosted payment link
 2. Order sent to pledged vendor (restaurant/home kitchen)
 3. Vendor prepares food and marks order as READY
 4. SharingBridge automatically triggers logistics partner API (Dunzo/Porter/Shadowfax)

@@ -16,7 +16,7 @@ There is **no** runtime fallback to JSON files after cutover — import once, th
 |------|----------------|--------|
 | Users, Google mapping | `users` | user-service |
 | Roles | `user_roles` | [coordinator-seed.sql](./coordinator-seed.sql) |
-| Payee presets | `donor_presets` | integration → user-service |
+| Initiator vendor presets | `donor_presets` | integration → user-service |
 | Order intents | `order_intents` | integration-service |
 | Seeker demands | `seeker_demands` | mobile eco kitchen / pledging routes |
 | Marketplace | `standard_offers`, `meal_pledges`, `vendor_bids` | SQL **M1–M3** |
@@ -317,7 +317,7 @@ Primary keys and `UNIQUE` constraints create indexes automatically; [schema.sql]
 
 ## Coordinator seeding
 
-1. Ensure a row exists in `users` (e.g. one Google sign-in on mobile as payee).
+1. Ensure a row exists in `users` (e.g. one Google sign-in on mobile as initiator).
 2. Run [coordinator-seed.sql](./coordinator-seed.sql) in psql, pgAdmin, or Supabase **SQL Editor** (edit the email in that file first).
 3. Sign in on the **web dashboard** with that Gmail — JWT will include `role: coordinator`.
 
@@ -365,7 +365,7 @@ user-service reads **`user_roles`** and mints `role` (active) + `roles` (array).
 | **Storage** | JSONB `payload` (client fields) **plus** denormalized `locality_key` and `location geography(POINT, 4326)` on upsert. |
 | **List query** | `PostgresOrderIntentStore.listForDashboard()` — SQL `WHERE` with `updated_at`, `ST_DWithin`, or `locality_key`. Service **fails at startup** if PostGIS / `location` column is missing. |
 | **Tests** | File `OrderIntentStore` mirrors list rules in memory (no Postgres); not used in production. |
-| **Payee** | Default time window from `DONOR_NEIGHBOURHOOD_WINDOW_HOURS`; without browser location → own rows only in that window. |
+| **Initiator** (limited dashboard) | Default time window from `DONOR_NEIGHBOURHOOD_WINDOW_HOURS`; without browser location → own rows only in that window. |
 | **Coordinator** | Full history by default; optional `?since=…`, `?near_lat=&near_lng=`, `?locality_key=` hit the same SQL predicates. |
 
 ### Existing databases (created before PostGIS in schema.sql)

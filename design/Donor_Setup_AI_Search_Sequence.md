@@ -14,7 +14,7 @@ This sequence defines the MVP flow for AI-assisted vendor preset setup:
 ```mermaid
 sequenceDiagram
     autonumber
-    participant U as Payee
+    participant U as Initiator
     participant A as Flutter App
     participant G as API Gateway
     participant I as Integration API

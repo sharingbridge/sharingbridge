@@ -2,7 +2,7 @@
 
 ## 🌟 Project Overview
 
-**SharingBridge** is an open-source, AI-driven initiative to transform meal support by creating a transparent, dignified platform that connects payees with people who need meals through verified food delivery services. We ensure cash handouts reach their intended purpose - providing food and essentials rather than cash that could be misused.
+**SharingBridge** is an open-source, AI-driven initiative to transform meal support by creating a transparent, dignified platform that connects initiators and payers with people who need meals through verified food delivery services.
 
 **Our Mission:** Make affordable meals easier to arrange and pay for—while maintaining dignity for everyone involved.
 
@@ -27,7 +27,7 @@ Every day, people meet those needing a meal and face a difficult choice - help w
 
 - ✅ Turning payment into **meals and essentials**, not ambiguous cash
 - ✅ Providing delivery confirmation with photo proof
-- ✅ Maintaining dignity for payees, initiators, and people receiving meals
+- ✅ Maintaining dignity for initiators, payers, and people receiving meals
 - ✅ Leveraging existing delivery infrastructure
 - ✅ Creating community solidarity through pledge pools and crowdfunding
 
@@ -198,7 +198,7 @@ The easiest way to contribute is through **GitHub Discussions**:
 
 ### ⚖️ Legal & Compliance Advisors ⚠️ **HIGH PRIORITY**
 
-**Why You're Critical:** Your legal guidance protects both vulnerable seekers and well-intentioned payees. Without proper compliance, this platform cannot launch.
+**Why You're Critical:** Your legal guidance protects both vulnerable seekers and well-intentioned payers. Without proper compliance, this platform cannot launch.
 
 **What We Need:**
 - **Privacy Law Experts**
@@ -243,7 +243,7 @@ The easiest way to contribute is through **GitHub Discussions**:
 - Web application design
 - Accessibility-first design for diverse users
 - Multi-language support design (especially Tamil and regional languages)
-- User journey mapping for payees, seekers, vendors
+- User journey mapping for payers, seekers, vendors
 
 **Special Considerations:**
 - Design for users with varying literacy levels
@@ -266,7 +266,7 @@ The easiest way to contribute is through **GitHub Discussions**:
 
 **Responsibilities:**
 - Coordinate between technical and non-technical teams
-- Gather requirements from payees, seekers, vendors
+- Gather requirements from payers, seekers, vendors
 - Define success criteria and track impact
 
 ---
@@ -314,7 +314,7 @@ The easiest way to contribute is through **GitHub Discussions**:
 
 **What We Need:**
 - **Beta Testers** - Test the app in real-world scenarios (when ready)
-- **Community Outreach** - Educate potential users (payees, seekers, vendors)
+- **Community Outreach** - Educate potential users (payers, seekers, vendors)
 - **Local Coordinators** - Organize regional pilots and gather feedback
 - **Translators** - Localize app to regional languages (Tamil, Hindi, Telugu, etc.)
 - **Content Creators** - Document impact stories, create user guides
@@ -526,7 +526,7 @@ Each repository evolves independently through direct contributions and discussio
 This project emerged from a simple question: *"How can I help someone in need without worrying about misuse?"*
 
 Millions share this concern. Together, we can build a platform that makes meal support:
-- **Safe** for payees
+- **Safe** for payers
 - **Dignified** for seekers  
 - **Transparent** for everyone
 - **Impactful** for society

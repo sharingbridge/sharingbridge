@@ -16,7 +16,7 @@
 | Do | Don't |
 |----|--------|
 | One-time (or rare) **geographic configuration** | Distributed volunteers acting as daily operators |
-| **Self-service** for payees, vendors, demand initiators | Coordinator clicks on every pledge, bid, or payment |
+| **Self-service** for payers, initiators, vendors | Coordinator clicks on every pledge, bid, or payment |
 | **Automation** for matching, timeouts, aggregation | Manual reconciliation as the default path |
 | **Exception queues** for platform admin | Implied SLA on local volunteers |
 
@@ -32,13 +32,14 @@
 |----------|----------|--------|
 | **Coordinator** (local) | **Configurator** | Geographic/menu setup; optional zone nomination |
 | **Coordinator** (central disputes) | **Platform admin** | Overlap appeals, abuse, rare corrections |
-| **Payee** (funding) | **Payee** / **payer** | Anyone paying vendor directly (relative, payee, initiator) |
+| **Payer** (funding) | **Payer** | Anyone paying vendor directly (relative, neighbour, initiator on behalf of beneficiary). **Payee** = vendor/kitchen receiving funds. |
 
 JWT/API role `coordinator` remains during migration. Target:
 
 - `configurator` — can edit `standard_offers` and `locality_zones` for assigned keys only
 - `admin` — global exceptions
-- `payee` — alias or successor to `payee` for marketplace funding (see payee primary/backup below)
+- `initiator` — registers intents/demands (mobile JWT today)
+- `payer` — future explicit role when payer ≠ initiator; **`primary_payer_user_id` / `backup_payer_user_id`** on allocation records
 
 ### Phased rename (avoid big-bang)
 
@@ -61,9 +62,9 @@ Configurator appears only in **configuration** rows. Everything else needs a dif
 | Aggregate demand | **System** | Never manual |
 | Prep capacity | **Demand fulfiller** (vendor kitchen) | Self-service bid |
 | Transport capacity | **Transport bidder** | Self-service bid |
-| Fund meals | **Payee** (primary + backup) | Pay vendor app; mark paid |
+| Fund meals | **Payer** (primary + backup) | Pay vendor app; mark paid |
 | Match supply to demand | **Allocation engine** | Exceptions only |
-| Payment / delivery proof | **Payee** + vendor / transporter | Status + optional photo |
+| Payment / delivery proof | **Payer** + vendor / transporter | Status + optional photo |
 | Unpaid primary → backup | **System** (timeout + notify) | Admin if both fail |
 | Disputes, overlap appeals | **Platform admin** | Rare |
 
@@ -128,18 +129,18 @@ flowchart TB
 
 ### `prepaid order intent` (conceptual record)
 
-Extends today’s **order intent** — still **not** platform escrow; “prepaid” means **payee commits to pay vendor** before or as part of initiation (primary + backup payee later).
+Extends today’s **order intent** — still **not** platform escrow; “prepaid” means **payer commits to pay vendor** before or as part of initiation (primary + backup payer later).
 
 | Field (conceptual) | Notes |
 |--------------------|--------|
 | `order_intent_id` | Stable id (merge seeker_demand id or link 1:1) |
-| `initiator_user_id` | Demand initiator / payee / field reporter |
+| `initiator_user_id` | Demand initiator / field reporter |
 | `locality_key` | `IN:TN:600045` |
 | `standard_offer_id` | Catalog line |
 | `meal_units` | Count |
 | `fulfillment_mode` | `marketplace_bid` \| `direct_vendor` \| `self_pickup` |
-| `payment_intent` | `prepaid_commitment` (payee will pay vendor) |
-| `primary_payee_user_id` / `backup_payee_user_id` | Future allocation |
+| `payment_intent` | `prepaid_commitment` (payer will pay vendor) |
+| `primary_payer_user_id` / `backup_payer_user_id` | Future allocation (legacy sketch: `primary_payee_user_id`) |
 | Beneficiary context | Photo, notes, verbal (from Help a seeker today) |
 | Instruction pack | Optional AI text when direct vendor path |
 
@@ -147,7 +148,7 @@ Extends today’s **order intent** — still **not** platform escrow; “prepaid
 
 ### Why merge
 
-- One history list for initiators and payees
+- One history list for initiators and payers
 - One aggregation pipeline for marketplace
 - Same standard menu picker everywhere
 - BRD “order intent” remains the handover signal; marketplace demand is not a second species
@@ -160,7 +161,7 @@ Chosen **per initiation** (not configurator):
 
 | Mode | When | Flow |
 |------|------|------|
-| **Marketplace / bidder board** | Bulk window, best price, community lunch | Intent joins demand window → fulfiller bids → transport bids if needed → allocation → notify payees |
+| **Marketplace / bidder board** | Bulk window, best price, community lunch | Intent joins demand window → fulfiller bids → transport bids if needed → allocation → notify payers |
 | **Direct vendor (one-time)** | Initiator already knows the kitchen | Pick vendor from preset / search → instruction pack → pay in vendor app → track on same order intent |
 | **Self pickup** | Beneficiary collects | Skip transport; vendor proof at pickup |
 
@@ -173,7 +174,7 @@ flowchart LR
     VB[Fulfiller bids]
     TB[Transport bids optional]
     AL[Auto allocate]
-    P[Payee pays assigned vendor]
+    P[Payer pays assigned vendor]
   end
   subgraph direct [Direct vendor path]
     V[Choose vendor once]
@@ -194,7 +195,7 @@ flowchart LR
 | Record seeker demand in field | **No** — demand initiator |
 | Enter vendor bid manually | **No** — temporary MVP only; remove |
 | Choose marketplace vs direct vendor | **No** — initiator at initiation time |
-| Assign primary/backup payee | **No** — system or initiator invite |
+| Assign primary/backup payer | **No** — system or initiator invite |
 
 ---
 
@@ -206,7 +207,7 @@ flowchart LR
 | **Next** | `locality_key` as `IN:TN:POSTAL`; hierarchical menu resolve |
 | **Then** | Mobile: single **Arrange a meal** flow; standard item + optional instruction pack |
 | **Then** | `order_intents` carry `standard_offer_id`, `fulfillment_mode`; retire separate `seeker_demands` POST for mobile |
-| **Then** | Payee primary/backup on allocation; rename UI configurator |
+| **Then** | Payer primary/backup on allocation; rename UI configurator |
 | **Later** | Configurator self-service UI (menus/zones); fulfiller self-service bids |
 
 ---
@@ -214,8 +215,8 @@ flowchart LR
 ## 9. Open questions (for later analysis)
 
 - Exact UX label: **Arrange a meal** vs **Help a seeker** vs **Meal initiation**
-- Whether **prepaid** requires payee confirmation up front or soft commitment until allocation
-- Per-row vs per-bucket primary/backup payee
+- Whether **prepaid** requires payer confirmation up front or soft commitment until allocation
+- Per-row vs per-bucket primary/backup payer
 - Recurring plans (demand initiator month-long) — same intent type with `recurrence` metadata
 - Migration of existing `seeker_demands` rows into order intents
 
@@ -224,6 +225,6 @@ flowchart LR
 ## 10. Guardrail checklist (use in PRs)
 
 - [ ] Does this require a configurator on every successful path?
-- [ ] Is there a self-service actor (payee, fulfiller, initiator)?
+- [ ] Is there a self-service actor (payer, fulfiller, initiator)?
 - [ ] Is manual coordinator UI marked **MVP temporary** with named successor owner?
-- [ ] Does copy say **configurator** / **payee** where appropriate?
+- [ ] Does copy say **configurator** / **payer** / **initiator** where appropriate?

@@ -4,7 +4,7 @@ SharingBridge uses **Google Sign-In** for production-style identity, plus **Shar
 
 **Configure in order:** [e2e-deployment-sequence.md](./e2e-deployment-sequence.md).
 
-**Vocabulary:** Signed-in mobile users are **initiators** (who register intents/demands). Legacy DB/API identifiers still use `donor` in places — see [PRODUCT_MODEL.md](../development/PRODUCT_MODEL.md). There is **no** `payee` JWT role. Use **initiator** for registration and **payer** for who pays the vendor; **payee** means payment recipient (vendor/kitchen) only — see [PRODUCT_MODEL.md](../development/PRODUCT_MODEL.md). Shipped MVP: initiator and payer are usually the same person.
+**Vocabulary:** Signed-in mobile users are **initiators** (who register intents/demands). Legacy DB/API identifiers still use `donor` in places — see [PRODUCT_MODEL.md](../development/PRODUCT_MODEL.md). There is **no** `payee` JWT role. Use **initiator** for registration and **payer** for who pays off-platform. Name payment recipients (**meal vendor**, **eco kitchen**, **transport vendor**) — avoid abstract “payee” in product prose. See [PRODUCT_MODEL.md](../development/PRODUCT_MODEL.md).
 
 ## Google Sign-In (identity proof)
 

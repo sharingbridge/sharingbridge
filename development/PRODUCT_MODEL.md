@@ -34,8 +34,8 @@ SharingBridge serves **anyone who needs affordable meals**—people on the stree
 |----------------|---------------|---------------------------------------------|
 | **Community meal coordination platform** | Digital alms platform | — |
 | **Initiator** (registers order intent or demand) | Donor (legacy docs) | JWT `initiator` (legacy `donor` accepted); DB `user_roles.donor` |
-| **Payer** (who pays the vendor) | **Payee** for the paying person (wrong — payee = payment recipient) | — |
-| **Payee** (accounting only) | Using payee for mobile user or payer | Vendor/kitchen **receives** payment |
+| **Payer** (who pays off-platform) | **Payee** for the paying person; generic “payee” in product prose | — |
+| **Payment recipient** | Abstract “payee” | Name the party: **meal vendor**, **eco kitchen**, **transport vendor** |
 | **API routes** | `/v1/donor-*` only | Prefer `/v1/initiator-setup/*`, `/v1/order-intents`, `/v1/instruction-pack` |
 | **JSON fields** | `donor_email` only | Prefer `initiator_email` (both returned for coordinators) |
 | **Env** | `DONOR_NEIGHBOURHOOD_*` only | Prefer `INITIATOR_NEIGHBOURHOOD_*` (legacy still read) |
@@ -52,10 +52,12 @@ When documenting APIs or SQL, show the **legacy identifier** in backticks.
 | Term | Use for |
 |------|---------|
 | **Initiator** | Who registered an order intent or seeker demand (signed-in mobile user in MVP) |
-| **Payer** | Who pays the meal vendor off-platform (often the same person as initiator today) |
-| **Payee** | Who **receives** payment — vendor, eco kitchen, transport bidder settlement — not the helper |
+| **Payer** | Who pays **off-platform** (Swiggy/Zomato, eco kitchen, etc.). Often the same person as initiator today. |
+| **Payment recipient** | Who gets paid — always name them: **meal vendor** (app order), **eco kitchen** (prep commit), **transport vendor** / **transport bidder** (delivery leg, paid by kitchen not payer) |
 
-Never use **payee** for the mobile app user, JWT role, or “person who pays Swiggy.”
+SharingBridge **never** holds money. Avoid abstract **payee** in product docs — it confuses people with the payer. Use **payee** only in legal/accounting footnotes if a lawyer asks for standard payment language.
+
+Never use **payee** for the mobile app user, JWT role, or initiator/payer.
 
 ---
 
@@ -78,8 +80,10 @@ Never use **payee** for the mobile app user, JWT role, or “person who pays Swi
 | **Beneficiary / seeker** | Person who receives food. **No app login** — linked on records (address, notes, optional photo) with consent captured by an initiator. |
 | **Demand initiator** | Signed-in user who arranges meals **for** a beneficiary (e.g. adult child for a parent, or anyone they meet). May be one-off or **recurring**. Today overlaps **initiator** mobile flows and **Record seeker demand**. Target: single **meal initiation** flow. |
 | **Configurator** | **One-time** geographic actor: menus, `locality_key` tiers, optional zone setup. **Not** full-time ops — renames local **coordinator** for config-only work. Runtime ops → payers, fulfillers, automation. See [Configurator_Role_and_Unified_Initiation.md](../design/Configurator_Role_and_Unified_Initiation.md). |
-| **Payer** | User who pays the meal vendor directly (relative, neighbour, self, or initiator on their behalf). **Preferred term** for the paying side. Future: payer may differ from initiator. |
-| **Payee** | Party who **receives** payment (meal vendor, eco kitchen, transport bidder). **Not** the initiator or payer. |
+| **Payer** | Signed-in user (or pledger) who pays **off-platform**. Direct order → **meal vendor** app. Eco kitchen → **eco kitchen** after Connection. Future: payer may differ from initiator. |
+| **Meal vendor** | Restaurant / cloud kitchen in Swiggy, Zomato, etc. Receives payer funds **outside SB**. Direct-order route only. |
+| **Eco kitchen** | Network kitchen that **commits** prep (standard menu, portions, ETA). Receives payer/pledger funds **outside SB** after Connection. Legacy table `vendor_bids`. |
+| **Transport vendor / transport bidder** | Courier who commits a delivery leg. Paid by **eco kitchen / meal vendor**, not by payer. Future role. |
 | **Prepaid order intent** | Planned unified record: standard menu + location + payer commitment; merges **Help a seeker** and **seeker demand** paths. Fulfillment: **bidder board** or **direct vendor** per initiation. |
 | **Demand fulfiller** | Signed-in kitchen/vendor who **commits prep capacity** (portions per window). Future role. |
 | **Transport bidder** | Signed-in courier who **commits delivery capacity** between prep points and beneficiary locations. Paid by **meal vendor**, not the payer. Future role. |
@@ -141,7 +145,7 @@ If not self-pickup, the **meal vendor owns delivery** — own fleet **or** selec
 | Flow | Who pays whom | When |
 |------|---------------|------|
 | **Payer / pledge → meal vendor** | Payer or pledger | Direct, one-time, per funded meals |
-| **Meal vendor → transport bidder** | Fulfiller (vendor is payee of payer funds) | Bulk settlement for assigned routes/windows |
+| **Meal vendor → transport vendor** | Eco kitchen or fulfiller | Bulk settlement for assigned routes/windows (off-platform) |
 | **Initiator / family → vendor** | Demand initiator or beneficiary (via initiator) | Recurring plans — same direct-payment principle |
 
 ### Matching (location-driven)

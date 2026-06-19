@@ -8,11 +8,11 @@
 
 | Also read | For |
 |-----------|-----|
-| [PRODUCT_ROADMAP.md](../development/PRODUCT_ROADMAP.md) | Glossary, actors, verbiage |
+| [PRODUCT_MODEL.md](../development/PRODUCT_MODEL.md) | Glossary, actors, verbiage |
 | [Configurator_Role_and_Unified_Initiation.md](./Configurator_Role_and_Unified_Initiation.md) | Configurator vs runtime ops (no daily coordinator desk) |
 | [Future_Extensions.md](./Future_Extensions.md) | Direct-order payment-done + delivery proof (Phase A–B) |
 | [field-handoff.md](../configuration/field-handoff.md) | Shipped **Direct order** capture (Help a seeker) |
-| [PROGRESS.md](../development/PROGRESS.md) | What is live in code today |
+| [STATUS.md](../development/STATUS.md) | What is live in code today |
 
 **Supersedes (for initiation routes & eco payment):** older “vendor bidding marketplace” and “pledge route” wording in scattered docs. Internal API table `vendor_bids` remains during migration; product language is **kitchen commitment**, not auction.
 
@@ -252,7 +252,7 @@ Legacy code names (`OperationsPage`, `supply-*` CSS, `vendor_bids` table) are en
 
 When connection or eco routes ship, update:
 
-- [AGENT_HANDOFF.md](../development/AGENT_HANDOFF.md)
+- [AGENT_SESSION.md](../development/AGENT_SESSION.md)
 - [SharingBridge_End_to_End_Workflow.md](./SharingBridge_End_to_End_Workflow.md) status table
 - [MANUAL_TESTING_GUIDE.md](../testing/MANUAL_TESTING_GUIDE.md)
 - [web-client.md](../configuration/web-client.md) / [mobile-client.md](../configuration/mobile-client.md)

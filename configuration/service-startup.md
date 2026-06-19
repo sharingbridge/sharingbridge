@@ -1,6 +1,6 @@
 # Service startup — FastAPI (ai-orchestration) and Node (integration / user-service)
 
-SharingBridge MVP backends use **FastAPI + Uvicorn** (Python) and **plain Node.js HTTP** servers — not NestJS in production today. NestJS is a scale target only ([AGENT_HANDOFF.md](../development/AGENT_HANDOFF.md)).
+SharingBridge MVP backends use **FastAPI + Uvicorn** (Python) and **plain Node.js HTTP** servers — not NestJS in production today. NestJS is a scale target only ([AGENT_SESSION.md](../development/AGENT_SESSION.md)).
 
 ---
 

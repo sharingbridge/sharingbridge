@@ -49,9 +49,22 @@ Wrong combination → HTTP **403** `wrong_client_role` (e.g. `no_app_role` on we
 
 **Service env keys:** [environment-variables.md](./environment-variables.md) (JWT, Google client IDs, `WEB_CORS_ORIGINS`, `DATABASE_URL`). Postgres setup: [database.md](./database.md).
 
-**Sign in without Google (local only)**
+---
 
-**Dev-only JWT** (scripts, mobile `--dart-define=AUTH_TOKEN`): sign locally with the same `AUTH_TOKEN_SECRET` — `node scripts/mint-dev-jwt.mjs <user_id> [role]` in user-service. There is no HTTP “mint token without Google” endpoint.
+## Payee preferences (user-service authority)
+
+Migration from integration file store is **complete**. Presets live in Postgres only:
+
+```text
+Mobile / Web  →  integration-service  →  user-service  →  donor_presets
+```
+
+- Integration requires `USER_SERVICE_BASE_URL` and forwards preset CRUD to user-service.
+- `LocalPreferencesRepository` in integration-service is **tests only**.
+
+**Clear presets in dev:** app **Clear all**, `DELETE /v1/donor-setup/preferences` with Bearer token, or SQL `UPDATE donor_presets SET presets_json = '[]'::jsonb WHERE user_id = '…'`.
+
+OpenAPI: [donor_setup_preferences.openapi.yaml](../design/contracts/donor_setup_preferences.openapi.yaml), [user_service_donor_presets.openapi.yaml](../design/contracts/user_service_donor_presets.openapi.yaml).
 
 ---
 
@@ -65,6 +78,10 @@ Wrong combination → HTTP **403** `wrong_client_role` (e.g. `no_app_role` on we
 | List **all** order intents | No | Yes |
 
 integration-service reads `role` from the JWT. Coordinators receive every payee’s intents on `GET /v1/donor-seeker/order-intents` (optional `?user_id=` filter).
+
+**Sign in without Google (local only)**
+
+**Dev-only JWT** (scripts, mobile `--dart-define=AUTH_TOKEN`): sign locally with the same `AUTH_TOKEN_SECRET` — `node scripts/mint-dev-jwt.mjs <user_id> [role]` in user-service. There is no HTTP “mint token without Google” endpoint.
 
 ---
 

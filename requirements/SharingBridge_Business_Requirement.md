@@ -122,7 +122,7 @@ This section defines product constraints for volunteer-led, agile delivery.
 - **Backend:** Node.js / Python (Django/FastAPI)
 - **Field guidance:** `sharingbridge-mobile-app` — BRD step 4; `sharingbridge-location-safety` **deferred/archived** (see repo README)
 - **Photo / face pipelines:** `sharingbridge-photo-service` — embeddings (e.g. FaceNet/DeepFace class models) for assistance-history hints and delivery match
-- **LLM orchestration:** `sharingbridge-ai-orchestration` — instruction pack and donor-setup suggestions (see coordination `AI_PLATFORM_INTEGRATION.md`)
+- **LLM orchestration:** `sharingbridge-ai-orchestration` — instruction pack and donor-setup suggestions (see coordination `AI_AS_BUILT.md`)
 - **Database:** PostgreSQL with PostGIS for location data
 - **Cloud:** AWS/Azure/GCP
 - **APIs:** Food delivery platform APIs, Logistics partner APIs (Dunzo/Porter/Shadowfax)

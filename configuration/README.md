@@ -60,9 +60,9 @@ Optional branches (any time after Phase 1):
 | **Web dashboard (Vite, CORS)** | [web-client.md](./web-client.md) |
 | **Mobile URLs (emulator, phone, Wi‑Fi)** | [mobile-client.md](./mobile-client.md) |
 | **Manual test scripts** | [MANUAL_TESTING_GUIDE.md](../testing/MANUAL_TESTING_GUIDE.md) — **§4d–4g** (Actions, Connection, FCM) |
-| **Product roadmap (authoritative)** | [PRODUCT_ROADMAP.md](../development/PRODUCT_ROADMAP.md) |
+| **Product model (authoritative)** | [PRODUCT_MODEL.md](../development/PRODUCT_MODEL.md) |
 | **Order-ops supplement (A–B)** | [Future_Extensions.md](../design/Future_Extensions.md) |
-| **Agent / development docs** | [README.md](../README.md#documentation-guide) · [AGENT_HANDOFF.md](../development/AGENT_HANDOFF.md) |
+| **Agent / development docs** | [README.md](../README.md#documentation-guide) · [AGENT_SESSION.md](../development/AGENT_SESSION.md) |
 
 ---
 

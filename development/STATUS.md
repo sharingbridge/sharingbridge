@@ -1,14 +1,14 @@
-# SharingBridge — progress vs plan
+# SharingBridge — status vs plan
 
-**Purpose:** Single **where we are** doc, measured against [IMPLEMENTATION_APPROACH.md](./IMPLEMENTATION_APPROACH.md) (engineering plan) and [PRODUCT_ROADMAP.md](./PRODUCT_ROADMAP.md) (product vocabulary).
+**Purpose:** Single **where we are** doc, measured against [ENGINEERING_PLAN.md](./ENGINEERING_PLAN.md) (engineering plan) and [PRODUCT_MODEL.md](./PRODUCT_MODEL.md) (product vocabulary).
 
 **Update this file** when a workstream ships or a milestone closes. Do not duplicate this table in other development docs.
 
 | Also read | For |
 |-----------|-----|
-| [IMPLEMENTATION_APPROACH.md](./IMPLEMENTATION_APPROACH.md) | Long-term plan, phases E–I, free-tier stack |
-| [PRODUCT_ROADMAP.md](./PRODUCT_ROADMAP.md) | Glossary, actors, initiation routes |
-| [AGENT_HANDOFF.md](./AGENT_HANDOFF.md) | Agent session: next tasks, runbook, recent commits |
+| [ENGINEERING_PLAN.md](./ENGINEERING_PLAN.md) | Long-term plan, phases E–I, free-tier stack |
+| [PRODUCT_MODEL.md](./PRODUCT_MODEL.md) | Glossary, actors, initiation routes |
+| [AGENT_SESSION.md](./AGENT_SESSION.md) | Agent session: next tasks, runbook, recent commits |
 | [database-setup-sequence.md](../configuration/database-setup-sequence.md) | SQL **1 → M1–M5** and **Where you are** on each environment |
 
 **Last updated:** June 2026
@@ -39,8 +39,8 @@ Direct order (vendor app)  +  Eco kitchen routes (pledge / I pay)
 | **Marketplace E** | IMPLEMENTATION § E | **Shipped** | Actions board, pledges, kitchen commit, web Updates banner |
 | **Connection notify** | Eco Kitchen phase 4 + M5 | **Code shipped** | FCM + notification-service; wire per env |
 | **Marketplace F–I** | IMPLEMENTATION § F–I | **Not started** | Beneficiary profile, transport, allocation |
-| **AI bridge** | AI_IMPLEMENTATION_PLAN | **Shipped** | integration → ai-orchestration; flags on by default in `env.example` |
-| **AI live models** | AI_IMPLEMENTATION_PLAN | **Shipped** | `AI_LLM_MODE=live` + Groq/Gemini keys — [ai-setup-handhold.md](../configuration/ai-setup-handhold.md) |
+| **AI bridge** | AI_PLAN | **Shipped** | integration → ai-orchestration; flags on by default in `env.example` |
+| **AI live models** | AI_PLAN | **Shipped** | `AI_LLM_MODE=live` + Groq/Gemini keys — [ai-setup-handhold.md](../configuration/ai-setup-handhold.md) |
 | **AI delivery match** | IMPLEMENTATION phase D | **Not started** | No face embeddings / delivery verification |
 | **Order ops A–B** | Future_Extensions | **Partial** | Payment-done on web; delivery proof open |
 | **Transactional email** | notification-service | **Not started** | FCM only; email copy exists in webhook payload |
@@ -78,7 +78,7 @@ Key integration routes: `suggest-vendors`, `instruction-pack`, `order-intents`, 
 | Vision in instruction chain | **Yes** when live | Gemini analyzes photo URL; Groq composes text |
 | Face match / delivery verify | **No** | Future phase D |
 
-Setup: [ai-orchestration-local.md](../configuration/ai-orchestration-local.md) · [ai-setup-handhold.md](../configuration/ai-setup-handhold.md) · [AI_IMPLEMENTATION_PLAN.md](./AI_IMPLEMENTATION_PLAN.md) (future phases).
+Setup: [ai-orchestration-local.md](../configuration/ai-orchestration-local.md) · [ai-setup-handhold.md](../configuration/ai-setup-handhold.md) · [AI_PLAN.md](./AI_PLAN.md) (future phases).
 
 ---
 
@@ -105,7 +105,7 @@ Detail: [database-setup-sequence.md](../configuration/database-setup-sequence.md
 3. **Marketplace F** — beneficiary profile and initiator role hardening.
 4. **Mobile Connection panel** — in-app order-code lookup.
 
-Session backlog and commit log: [AGENT_HANDOFF.md](./AGENT_HANDOFF.md).
+Session backlog and commit log: [AGENT_SESSION.md](./AGENT_SESSION.md).
 
 ---
 

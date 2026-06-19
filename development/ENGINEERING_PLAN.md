@@ -1,13 +1,13 @@
-# SharingBridge - Implementation Approach
+# SharingBridge — engineering plan
 
 **Version:** 2.2  
 **Date:** June 2026  
 **Status:** Long-term engineering plan (free-tier MVP + production scale track).
 
 > **Doc map:** [README.md § Documentation guide](../README.md#documentation-guide)  
-> **Product vocabulary:** [PRODUCT_ROADMAP.md](./PRODUCT_ROADMAP.md)  
-> **Progress vs this plan:** [PROGRESS.md](./PROGRESS.md) — **update PROGRESS, not this file**, when milestones ship.  
-> **Agent sessions:** [AGENT_HANDOFF.md](./AGENT_HANDOFF.md) (next tasks, runbook).  
+> **Product vocabulary:** [PRODUCT_MODEL.md](./PRODUCT_MODEL.md)  
+> **Progress vs this plan:** [STATUS.md](./STATUS.md) — **update STATUS, not this file**, when milestones ship.  
+> **Agent sessions:** [AGENT_SESSION.md](./AGENT_SESSION.md) (next tasks, runbook).  
 > **SQL / deploy:** [database-setup-sequence.md](../configuration/database-setup-sequence.md).
 
 ---
@@ -57,7 +57,7 @@ Develop and test all SharingBridge components using free-tier platforms with nea
 | **Version Control** | GitHub | Unlimited private repos | Keep GitHub |
 | **API Gateway** | Self-hosted Kong (Docker) | Manual setup | Keep or move to AWS |
 
-**How this relates to code today:** The table below describes the **target free-tier stack**. As-built status: [PROGRESS.md](./PROGRESS.md). SQL order: [database-setup-sequence.md](../configuration/database-setup-sequence.md).
+**How this relates to code today:** The table below describes the **target free-tier stack**. As-built status: [STATUS.md](./STATUS.md). SQL order: [database-setup-sequence.md](../configuration/database-setup-sequence.md).
 
 ---
 
@@ -210,7 +210,7 @@ Delivery instruction: Please proceed to <geo_coordinates>. Identify the seeker u
 | **C — Handoff** | Copy + preset deep links (enhance text from API) | mobile (mostly done) |
 | **D — Verification** | Delivery acknowledgement UX, match job, notifications | photo-service, order-service, notification-service, web-app |
 
-**Marketplace phases** (product spec: [PRODUCT_ROADMAP.md](./PRODUCT_ROADMAP.md) § Marketplace)
+**Marketplace phases** (product spec: [PRODUCT_MODEL.md](./PRODUCT_MODEL.md) § Marketplace)
 
 | Phase | Scope | Repos |
 |-------|--------|-------|
@@ -220,7 +220,7 @@ Delivery instruction: Please proceed to <geo_coordinates>. Identify the seeker u
 | **H — Transport bids** | Route/capacity bids; geo match vendor → beneficiaries | integration-service, web |
 | **I — Allocation** | Window aggregation; payee notify; fulfiller → transporter pay instructions | integration-service, notification-service |
 
-**Progress map (all workstreams):** § **Where we are** in [PROGRESS.md](./PROGRESS.md).
+**Progress map (all workstreams):** § **Where we are** in [STATUS.md](./STATUS.md).
 
 **Privacy checkpoints (before production copy in vendor apps)**
 
@@ -229,9 +229,9 @@ Delivery instruction: Please proceed to <geo_coordinates>. Identify the seeker u
 - TTL: secure links active until delivery completion + 30 minutes (architecture default); **Cloudinary / payee reference photos:** target **1–2 hour** distribution window for neighbourhood dashboards (see [Future_Extensions.md](../design/Future_Extensions.md) Phase A.2 payee photo rule).
 - Align “faceprint” language with counsel; store embeddings server-side only (not raw photos in Postgres when regulatory mode applies).
 
-Repo-level checklists: [AI_PLATFORM_INTEGRATION.md](./AI_PLATFORM_INTEGRATION.md) (as-built wiring); **product vocabulary:** [PRODUCT_ROADMAP.md](./PRODUCT_ROADMAP.md); order-ops backlog: [Future_Extensions.md](../design/Future_Extensions.md).
+Repo-level checklists: [AI_AS_BUILT.md](./AI_AS_BUILT.md) (as-built wiring); **product vocabulary:** [PRODUCT_MODEL.md](./PRODUCT_MODEL.md); order-ops backlog: [Future_Extensions.md](../design/Future_Extensions.md).
 
-**LLM hosting:** Shipped in `sharingbridge-ai-orchestration` (direct Groq/Gemini — no LangChain). Setup: [AI_PLATFORM_INTEGRATION.md](./AI_PLATFORM_INTEGRATION.md), [ai-setup-handhold.md](../configuration/ai-setup-handhold.md). Clients call integration-service only.
+**LLM hosting:** Shipped in `sharingbridge-ai-orchestration` (direct Groq/Gemini — no LangChain). Setup: [AI_AS_BUILT.md](./AI_AS_BUILT.md), [ai-setup-handhold.md](../configuration/ai-setup-handhold.md). Clients call integration-service only.
 
 ### Web App Workstream (`sharingbridge-web-app`)
 
@@ -243,7 +243,7 @@ Repo-level checklists: [AI_PLATFORM_INTEGRATION.md](./AI_PLATFORM_INTEGRATION.md
 - Admin/coordinator dashboard: active orders, statuses, and exception views
 - Vendor/coordinator support views for order follow-up and issue handling
 - Search/filter panels for order timeline and beneficiary-assistance context
-- **Product roadmap:** [PRODUCT_ROADMAP.md](./PRODUCT_ROADMAP.md) — glossary, actors, marketplace fulfillment paths; order-ops detail in [Future_Extensions.md](../design/Future_Extensions.md) Phase A–B
+- **Product model:** [PRODUCT_MODEL.md](./PRODUCT_MODEL.md) — glossary, actors, marketplace fulfillment paths; order-ops detail in [Future_Extensions.md](../design/Future_Extensions.md) Phase A–B
 
 **Weeks 7-10 (Monitoring + Governance):**
 - Operational analytics views (trend, success/failure reasons, regional status)

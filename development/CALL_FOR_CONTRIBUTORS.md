@@ -15,7 +15,7 @@
 - ✨ **You don't need to be a coding expert** to contribute meaningfully
 - 💬 **Contribution happens through GitHub Discussions** - describing what you need in natural language
 - 🤝 **Diverse expertise matters more than technical skills** - we need humanitarian perspectives, legal guidance, and community insights
-- 📋 **Live coordination** - the next set of recommended tasks for the AI-assisted track lives in [development/AGENT_HANDOFF.md](AGENT_HANDOFF.md)
+- 📋 **Live coordination** - the next set of recommended tasks for the AI-assisted track lives in [development/AGENT_SESSION.md](AGENT_SESSION.md)
 
 **This changes everything.** Whether you're a social worker, lawyer, community organizer, or concerned citizen - your domain knowledge is just as valuable as coding skills.
 
@@ -359,7 +359,7 @@ The easiest way to contribute is through **GitHub Discussions**:
 
 **Independent Evolution. Coordinated Progress.**
 
-SharingBridge uses a **multi-repo architecture** where each stream evolves independently. Development is largely AI-assisted; the live coordination doc is [development/AGENT_HANDOFF.md](AGENT_HANDOFF.md).
+SharingBridge uses a **multi-repo architecture** where each stream evolves independently. Development is largely AI-assisted; the live coordination doc is [development/AGENT_SESSION.md](AGENT_SESSION.md).
 
 ### Master Repository (This Repo)
 - **Purpose:** Overall coordination, documentation, requirements
@@ -417,7 +417,7 @@ Each repository contains:
 **Step 3: Your Input Becomes Implementation**
 - Community members translate discussions into actionable requirements
 - AI-assisted coding sessions implement those requirements directly in the relevant repos
-- Outcomes and next-step queues are tracked in `development/AGENT_HANDOFF.md`
+- Outcomes and next-step queues are tracked in `development/AGENT_SESSION.md`
 
 ### For Technical Contributors
 
@@ -436,7 +436,7 @@ Each repository contains:
 **Step 3: Start Contributing**
 - Fork the specific repository you want to work on
 - Browse issues in that repo
-- Read `development/AGENT_HANDOFF.md` (in the master repo) for the current task queue
+- Read `development/AGENT_SESSION.md` (in the master repo) for the current task queue
 - Create a feature branch
 - Submit pull requests
 - Each repo evolves at its own pace

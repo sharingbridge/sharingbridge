@@ -9,7 +9,7 @@ This guide walks through how to verify the donor-setup modules and the
 All commands assume **PowerShell on Windows**. Translate to bash as
 needed.
 
-**Path note:** GitHub repository slugs use the `sharingbridge-*` prefix. Examples assume sibling service clones live under one parent folder, e.g. `D:\kannan\sharingbridge\sharingbridge-mobile-app` (coordination docs often live in `D:\kannan\sharingbridge\sharingbridge`). Adjust drive and parent path for your machine; slug table in `development/AGENT_HANDOFF.md` § GitHub.
+**Path note:** GitHub repository slugs use the `sharingbridge-*` prefix. Examples assume sibling service clones live under one parent folder, e.g. `D:\kannan\sharingbridge\sharingbridge-mobile-app` (coordination docs often live in `D:\kannan\sharingbridge\sharingbridge`). Adjust drive and parent path for your machine; slug table in `development/AGENT_SESSION.md` § GitHub.
 
 ## Modules in scope
 
@@ -86,7 +86,7 @@ Both **`sharingbridge-user-service`** and **`sharingbridge-integration-service`*
 
 ### Auth signing secret (`AUTH_TOKEN_SECRET`)
 
-This guide describes the **donor-setup MVP** path: symmetric HS256 tokens and a shared `AUTH_TOKEN_SECRET` between user-service and integration-service. Production is expected to use **managed secrets**, **rotation**, and later **stronger patterns** (e.g. asymmetric signing)—see `development/AGENT_HANDOFF.md` follow-ups.
+This guide describes the **donor-setup MVP** path: symmetric HS256 tokens and a shared `AUTH_TOKEN_SECRET` between user-service and integration-service. Production is expected to use **managed secrets**, **rotation**, and later **stronger patterns** (e.g. asymmetric signing)—see `development/AGENT_SESSION.md` follow-ups.
 
 Tokens are signed and verified with that **symmetric** secret (`AUTH_TOKEN_SECRET`).
 

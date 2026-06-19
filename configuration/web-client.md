@@ -36,7 +36,7 @@ Repository: `sharingbridge-web-app` (Vite + React).
 | **By day** | Coordinator + payee | Sections per calendar day (newest first) |
 | **By area** | Coordinator + payee | Sections per `locality_key` / `location_label`; rows without location under **No location on record** |
 
-### List columns (planned — [PRODUCT_ROADMAP.md](../development/PRODUCT_ROADMAP.md))
+### List columns (planned — [PRODUCT_MODEL.md](../development/PRODUCT_MODEL.md))
 
 | Column | Field | Notes |
 |--------|-------|--------|

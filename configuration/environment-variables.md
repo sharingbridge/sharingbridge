@@ -16,7 +16,7 @@ Tables are sorted **A–Z by variable name** to match Render’s environment UI.
 
 **Must match across services:** `DATABASE_URL` (Postgres), `AUTH_TOKEN_SECRET` (+ issuer/audience), `WEB_CORS_ORIGINS` (user-service **and** integration-service, same string), integration `API_BASE_URL` = web `VITE_API_BASE_URL` = mobile `API_BASE_URL`, web static site URL = mobile `WEB_DASHBOARD_URL`.
 
-**Payee feed window and radius:** set only on **integration-service** (`DONOR_NEIGHBOURHOOD_WINDOW_HOURS`, `DONOR_NEIGHBOURHOOD_RADIUS_M` in **metres**). Web and mobile read `feed.radius_m` / `neighbourhood.radius_m` from the list API. Per-row distance on the dashboard is **`distance_m`** (metres). See [PRODUCT_ROADMAP.md](../development/PRODUCT_ROADMAP.md).
+**Payee feed window and radius:** set only on **integration-service** (`DONOR_NEIGHBOURHOOD_WINDOW_HOURS`, `DONOR_NEIGHBOURHOOD_RADIUS_M` in **metres**). Web and mobile read `feed.radius_m` / `neighbourhood.radius_m` from the list API. Per-row distance on the dashboard is **`distance_m`** (metres). See [PRODUCT_MODEL.md](../development/PRODUCT_MODEL.md).
 
 Render deploy details: [backend-render.md](./backend-render.md). Auth secrets: [authentication.md](./authentication.md). DB: [database.md](./database.md).
 
@@ -167,7 +167,7 @@ See [photo-service-local.md](./photo-service-local.md).
 
 `deterministic` = template/mock (not live AI). See [ai-setup-handhold.md](./ai-setup-handhold.md).
 
-Provider split: [AI_IMPLEMENTATION_PLAN.md](../development/AI_IMPLEMENTATION_PLAN.md) § *Provider split*.
+Provider split: [AI_PLAN.md](../development/AI_PLAN.md) § *Provider split*.
 
 See [ai-orchestration-local.md](./ai-orchestration-local.md) and [ai-setup-handhold.md](./ai-setup-handhold.md).
 

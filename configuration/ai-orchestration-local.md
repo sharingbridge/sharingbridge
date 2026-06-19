@@ -91,4 +91,4 @@ Full step-by-step (accounts, Render, verify `source`): **[ai-setup-handhold.md](
 ## See also
 
 - [sharingbridge-ai-orchestration README](https://github.com/sharingbridge/sharingbridge-ai-orchestration/blob/main/README.md)
-- [AI_PLATFORM_INTEGRATION.md](../development/AI_PLATFORM_INTEGRATION.md)
+- [AI_AS_BUILT.md](../development/AI_AS_BUILT.md)

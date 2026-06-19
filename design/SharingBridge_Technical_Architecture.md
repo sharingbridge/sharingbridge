@@ -14,7 +14,7 @@ For product-level assumptions, use [SharingBridge_Business_Requirement.md](../re
 
 If this architecture document conflicts with that BRD section (for example in proposed pledge or ledger schemas), follow the BRD.
 
-**Product language (2026):** Docs use **payee**, **beneficiary**, and **meal arrangement** — not alms/donation/donor in prose. Legacy schema and API names below (e.g. `donation_type`, `/donor-setup`) are unchanged until code migration; see [PRODUCT_ROADMAP.md](../development/PRODUCT_ROADMAP.md) § Documentation verbiage.
+**Product language (2026):** Docs use **payee**, **beneficiary**, and **meal arrangement** — not alms/donation/donor in prose. Legacy schema and API names below (e.g. `donation_type`, `/donor-setup`) are unchanged until code migration; see [PRODUCT_MODEL.md](../development/PRODUCT_MODEL.md) § Documentation verbiage.
 
 ## MVP Implementation Decisions
 
@@ -26,7 +26,7 @@ Original build targets (some superseded — see **As-built** below):
 
 Notes:
 - Mentions of NestJS, Next.js, React Native, Kong, EKS, and LangChain elsewhere in this document are **target or scale options**, not the active Render MVP unless stated in [As-built architecture](#as-built-architecture-june-2026).
-- **Deploy truth:** `configuration/backend-render.md`, `development/AGENT_HANDOFF.md`.
+- **Deploy truth:** `configuration/backend-render.md`, `development/AGENT_SESSION.md`.
 
 ---
 
@@ -2439,7 +2439,7 @@ Threshold: >= 0.65 for approval
 **LLM orchestration (`sharingbridge-ai-orchestration`) — separate from location safety:**
 - Remote (and optional on-device) LLMs generate structured delivery instructions and dignity-filtered beneficiary descriptions.
 - Structured payloads include `delivery_instructions`, `beneficiary_description`, `order_template`, `privacy_notes`, `delivery_notes`.
-- See `development/AI_PLATFORM_INTEGRATION.md`.
+- See `development/AI_AS_BUILT.md`.
 
 **Photo / CV (`sharingbridge-photo-service`) — separate from location safety and LLM:**
 - Face embeddings for assistance-history hints and payee↔delivery match; not LangChain.

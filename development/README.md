@@ -2,23 +2,27 @@
 
 **Start:** [README.md § Documentation guide](../README.md#documentation-guide)
 
-## Two-doc model (no duplicate “where we are”)
+## Naming (what each file means)
 
-| Document | Role | Update when |
-|----------|------|-------------|
-| **[IMPLEMENTATION_APPROACH.md](./IMPLEMENTATION_APPROACH.md)** | **Plan** — phases, free-tier stack, long-term scale | Strategy or phase definitions change |
-| **[PROGRESS.md](./PROGRESS.md)** | **Progress** — shipped vs plan, repos, AI snapshot, SQL gaps | A milestone ships or env checklist changes |
-| **[PRODUCT_ROADMAP.md](./PRODUCT_ROADMAP.md)** | **Product** — glossary, actors, routes (not progress) | Vocabulary or marketplace model changes |
-| **[AGENT_HANDOFF.md](./AGENT_HANDOFF.md)** | **Agent sessions** — next tasks, runbook, recent commits | Each coding session |
+| File | Means | Not |
+|------|--------|-----|
+| [ENGINEERING_PLAN.md](./ENGINEERING_PLAN.md) | Long-term **build strategy** — phases, stack, scale path | Current sprint status |
+| [STATUS.md](./STATUS.md) | **Shipped vs plan** — update when milestones land | Product vocabulary |
+| [PRODUCT_MODEL.md](./PRODUCT_MODEL.md) | **Domain model** — actors, terms, initiation routes, marketplace concepts | Timeline or deploy steps |
+| [AGENT_SESSION.md](./AGENT_SESSION.md) | **Coding session** notes — next tasks, runbook | Full API reference |
+| [AI_AS_BUILT.md](./AI_AS_BUILT.md) | How AI is **wired today** | Future AI phases |
+| [AI_PLAN.md](./AI_PLAN.md) | AI **future** phases (delivery match, etc.) | Env setup (see `configuration/ai-setup-handhold.md`) |
 
-## Other development docs
+**Why not “roadmap”?** In this repo, *roadmap* sounded like a schedule. **PRODUCT_MODEL** is vocabulary and actors; **ENGINEERING_PLAN** is how we build; **STATUS** is where we are.
 
-| Document | Role |
-|----------|------|
-| [AI_PLATFORM_INTEGRATION.md](./AI_PLATFORM_INTEGRATION.md) | AI **as-built** wiring (integration → orchestration → Groq/Gemini) |
-| [AI_IMPLEMENTATION_PLAN.md](./AI_IMPLEMENTATION_PLAN.md) | AI **future** phases and provider split |
-| [USER_SERVICE_PREFERENCES_MIGRATION.md](./USER_SERVICE_PREFERENCES_MIGRATION.md) | Preferences migration (**complete**) |
-| [CALL_FOR_CONTRIBUTORS.md](./CALL_FOR_CONTRIBUTORS.md) | Contributing |
+**Former names (June 2026 rename):** `PRODUCT_ROADMAP` → `PRODUCT_MODEL`, `IMPLEMENTATION_APPROACH` → `ENGINEERING_PLAN`, `PROGRESS` → `STATUS`, `AGENT_HANDOFF` → `AGENT_SESSION`, `AI_PLATFORM_INTEGRATION` → `AI_AS_BUILT`, `AI_IMPLEMENTATION_PLAN` → `AI_PLAN`. Removed `USER_SERVICE_PREFERENCES_MIGRATION.md` (complete — see [authentication.md](../configuration/authentication.md) § Preferences).
+
+## Read order
+
+1. [PRODUCT_MODEL.md](./PRODUCT_MODEL.md) — terms and actors  
+2. [STATUS.md](./STATUS.md) — what is shipped  
+3. [ENGINEERING_PLAN.md](./ENGINEERING_PLAN.md) — planned phases (when planning ahead)  
+4. [AGENT_SESSION.md](./AGENT_SESSION.md) — if you are continuing an AI coding session  
 
 ## Design (product + architecture)
 

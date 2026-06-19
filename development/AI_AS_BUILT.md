@@ -1,6 +1,6 @@
-# AI platform integration — as-built
+# AI — as-built wiring
 
-**Purpose:** How AI is **wired today** (not a future plan). Phased roadmap and provider split: [AI_IMPLEMENTATION_PLAN.md](./AI_IMPLEMENTATION_PLAN.md). Progress snapshot: [PROGRESS.md](./PROGRESS.md) § AI.
+**Purpose:** How AI is **wired today** (not a future plan). Phased roadmap and provider split: [AI_PLAN.md](./AI_PLAN.md). Progress snapshot: [STATUS.md](./STATUS.md) § AI.
 
 **Last updated:** June 2026
 
@@ -85,7 +85,7 @@ Step-by-step keys and Render: [ai-setup-handhold.md](../configuration/ai-setup-h
 | LangChain / LangServe | Not used; direct SDK |
 | LangSmith tracing | Optional, not required for MVP |
 
-Future phases: [AI_IMPLEMENTATION_PLAN.md](./AI_IMPLEMENTATION_PLAN.md).
+Future phases: [AI_PLAN.md](./AI_PLAN.md).
 
 ---
 
@@ -93,7 +93,7 @@ Future phases: [AI_IMPLEMENTATION_PLAN.md](./AI_IMPLEMENTATION_PLAN.md).
 
 | Doc | Use |
 |-----|-----|
-| [AI_IMPLEMENTATION_PLAN.md](./AI_IMPLEMENTATION_PLAN.md) | Provider split, future phases |
+| [AI_PLAN.md](./AI_PLAN.md) | Provider split, future phases |
 | [Donor_Setup_AI_Search_Sequence.md](../design/Donor_Setup_AI_Search_Sequence.md) | suggest-vendors sequence |
 | [field-handoff.md](../configuration/field-handoff.md) | Help a seeker flow |
 | [MANUAL_TESTING_GUIDE.md](../testing/MANUAL_TESTING_GUIDE.md) | §2a orchestration smoke |

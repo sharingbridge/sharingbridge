@@ -1,4 +1,4 @@
-# SharingBridge — Product roadmap
+# SharingBridge — product model
 
 **Purpose:** **Authoritative product vocabulary**, actors, marketplace model, and neighbourhood dashboard spec (June 2026).
 
@@ -6,14 +6,14 @@
 
 | Also read | For |
 |-----------|-----|
-| [PROGRESS.md](./PROGRESS.md) | **Progress vs plan** — update when milestones ship |
-| [AGENT_HANDOFF.md](./AGENT_HANDOFF.md) | Agent session: next tasks, runbook |
-| [IMPLEMENTATION_APPROACH.md](./IMPLEMENTATION_APPROACH.md) | Engineering plan (phases **E–I**) |
+| [STATUS.md](./STATUS.md) | **Progress vs plan** — update when milestones ship |
+| [AGENT_SESSION.md](./AGENT_SESSION.md) | Agent session: next tasks, runbook |
+| [ENGINEERING_PLAN.md](./ENGINEERING_PLAN.md) | Engineering plan (phases **E–I**) |
 | [Configurator_Role_and_Unified_Initiation.md](../design/Configurator_Role_and_Unified_Initiation.md) | Configurator vs daily ops |
 | [Eco_Kitchen_Initiation_Flow.md](../design/Eco_Kitchen_Initiation_Flow.md) | Three routes, connection, payment boundaries |
 | [Future_Extensions.md](../design/Future_Extensions.md) | Order-ops supplement only (payment-done, delivery proof) |
 
-**Do not** spin up parallel roadmap docs — extend **this file** for product themes.
+**Do not** spin up parallel product-model docs — extend **this file** for vocabulary and actors.
 
 **Transcripts (local Whisper — not quoted verbatim in docs; summaries below are corrected):**
 
@@ -140,7 +140,7 @@ If not self-pickup, the **meal vendor owns delivery** — own fleet **or** selec
 3. For non–self-pickup rows: require fulfiller delivery capacity **or** matched **transport bid** (vendor lat → beneficiary cluster).
 4. Self-pickup rows skip transport; vendor runs pickup proof workflow.
 
-**Implementation phases:** see [IMPLEMENTATION_APPROACH.md](./IMPLEMENTATION_APPROACH.md) § Marketplace phases. Order-ops detail (payment-done, delivery photo): [Future_Extensions.md](../design/Future_Extensions.md) Phase A–B (legacy pointer).
+**Implementation phases:** see [ENGINEERING_PLAN.md](./ENGINEERING_PLAN.md) § Marketplace phases. Order-ops detail (payment-done, delivery photo): [Future_Extensions.md](../design/Future_Extensions.md) Phase A–B (legacy pointer).
 
 ---
 
@@ -200,7 +200,7 @@ If not self-pickup, the **meal vendor owns delivery** — own fleet **or** selec
 | GIS | Neighbourhood feeds; PostGIS lists **shipped**; map UI **shipped** on web. |
 | Cloudinary | Short-lived distribution window (1–2 h). |
 
-Delivery detail: [IMPLEMENTATION_APPROACH.md](./IMPLEMENTATION_APPROACH.md). Order-ops phases A–B: [Future_Extensions.md](../design/Future_Extensions.md).
+Delivery detail: [ENGINEERING_PLAN.md](./ENGINEERING_PLAN.md). Order-ops phases A–B: [Future_Extensions.md](../design/Future_Extensions.md).
 
 ---
 
@@ -215,15 +215,15 @@ Delivery detail: [IMPLEMENTATION_APPROACH.md](./IMPLEMENTATION_APPROACH.md). Ord
 **Later:**
 
 - Delivery-partner flow **populates** `delivered_at` ([Future_Extensions.md](../design/Future_Extensions.md) § B).
-- Marketplace roles, allocation, pickup proof ([IMPLEMENTATION_APPROACH.md](./IMPLEMENTATION_APPROACH.md) § Marketplace phases).
+- Marketplace roles, allocation, pickup proof ([ENGINEERING_PLAN.md](./ENGINEERING_PLAN.md) § Marketplace phases).
 
 ---
 
 ## Related docs
 
 - [README.md § Documentation guide](../README.md#documentation-guide) — master index
-- [IMPLEMENTATION_APPROACH.md](./IMPLEMENTATION_APPROACH.md) — phased delivery, repos
-- [PROGRESS.md](./PROGRESS.md) — progress snapshot
+- [ENGINEERING_PLAN.md](./ENGINEERING_PLAN.md) — phased delivery, repos
+- [STATUS.md](./STATUS.md) — progress snapshot
 - [database-setup-sequence.md](../configuration/database-setup-sequence.md) — SQL order for marketplace
 - [web-client.md](../configuration/web-client.md)
 - [environment-variables.md](../configuration/environment-variables.md)

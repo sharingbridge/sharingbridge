@@ -269,7 +269,7 @@ Same `DATABASE_URL` shape as Option A (`localhost` and the published port).
 
 Only if you **do not** want Supabase: Render → **New +** → **PostgreSQL**, copy **Internal Database URL**, set as `DATABASE_URL` on both Node services. Apply [schema.sql](./schema.sql) via SQL or Render’s psql.
 
-**Recommended default for this project:** **Supabase** (aligned with [IMPLEMENTATION_APPROACH.md](../development/IMPLEMENTATION_APPROACH.md)). Render Postgres is optional.
+**Recommended default for this project:** **Supabase** (aligned with [ENGINEERING_PLAN.md](../development/ENGINEERING_PLAN.md)). Render Postgres is optional.
 
 ---
 
@@ -298,7 +298,7 @@ Set **`DATABASE_URL`** on user-service, integration-service, and photo-service (
 | `delivered_at` | Nullable; **Delivered at** on dashboard ([schema-delivered-at-migration.sql](./schema-delivered-at-migration.sql) on older DBs). Populated when delivery-partner flow exists. |
 | `location` / `locality_key` | PostGIS neighbourhood filters; list may return computed **`distance_m`** (metres, not stored). |
 
-Dashboard spec: [PRODUCT_ROADMAP.md](../development/PRODUCT_ROADMAP.md).
+Dashboard spec: [PRODUCT_MODEL.md](../development/PRODUCT_MODEL.md).
 
 Primary keys and `UNIQUE` constraints create indexes automatically; [schema.sql](./schema.sql) adds two indexes on `order_intents` for list queries (time-ordered lists, not geo).
 

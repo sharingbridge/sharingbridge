@@ -6,9 +6,9 @@
 
 | Topic | Authoritative doc |
 |-------|-------------------|
-| Glossary, actors, marketplace, dashboard UX | [PRODUCT_ROADMAP.md](../development/PRODUCT_ROADMAP.md) |
+| Glossary, actors, marketplace, dashboard UX | [PRODUCT_MODEL.md](../development/PRODUCT_MODEL.md) |
 | Configurator, payee, unified initiation | [Configurator_Role_and_Unified_Initiation.md](./Configurator_Role_and_Unified_Initiation.md) |
-| Engineering phases E–I, repos, AI timeline | [IMPLEMENTATION_APPROACH.md](../development/IMPLEMENTATION_APPROACH.md) § Marketplace phases |
+| Engineering phases E–I, repos, AI timeline | [ENGINEERING_PLAN.md](../development/ENGINEERING_PLAN.md) § Marketplace phases |
 | SQL run order | [database-setup-sequence.md](../configuration/database-setup-sequence.md) |
 
 **Related:** [SharingBridge_End_to_End_Workflow.md](./SharingBridge_End_to_End_Workflow.md) · [database.md](../configuration/database.md) · [authentication.md](../configuration/authentication.md)
@@ -25,7 +25,7 @@
 | Geo on order intent (`location_lat/lng`, `locality_key`); payee neighbourhood feed; PostGIS `ST_DWithin` list queries | Shipped — [database.md](../configuration/database.md) |
 | Payment / delivery lifecycle, coordinator **map** UI (bbox / clustering) | **Not shipped** |
 | Delivery photo proof, delivery-partner role | **Planned** |
-| Locality demand + eco kitchen commitments | [Eco_Kitchen_Initiation_Flow.md](./Eco_Kitchen_Initiation_Flow.md); engineering phases E–I in [IMPLEMENTATION_APPROACH.md](../development/IMPLEMENTATION_APPROACH.md) |
+| Locality demand + eco kitchen commitments | [Eco_Kitchen_Initiation_Flow.md](./Eco_Kitchen_Initiation_Flow.md); engineering phases E–I in [ENGINEERING_PLAN.md](../development/ENGINEERING_PLAN.md) |
 
 Payments for food still happen in **vendor apps** (Swiggy, Zomato, etc.). SharingBridge tracks **intent and status**, not card charges, unless a later scope explicitly adds audited payment references.
 
@@ -58,7 +58,7 @@ After the payee places and pays in the **vendor app**, they open **order history
 
 ### A.2 Coordinator / payee dashboards (next slice)
 
-**Goal:** Payees see **neighbourhood activity** (default window from `DONOR_NEIGHBOURHOOD_WINDOW_HOURS`) on mobile and web; coordinators retain full ops view. **Dashboard list columns** (planned — [PRODUCT_ROADMAP.md](../development/PRODUCT_ROADMAP.md)): **Order intent taken** (`created_at`), **Delivered at** (`delivered_at`, often empty), **Distance (m)** (`distance_m`); list sorted by **`distance_m` ascending** when viewer sends `near_lat` / `near_lng`; elapsed freshness from **`created_at`** only.
+**Goal:** Payees see **neighbourhood activity** (default window from `DONOR_NEIGHBOURHOOD_WINDOW_HOURS`) on mobile and web; coordinators retain full ops view. **Dashboard list columns** (planned — [PRODUCT_MODEL.md](../development/PRODUCT_MODEL.md)): **Order intent taken** (`created_at`), **Delivered at** (`delivered_at`, often empty), **Distance (m)** (`distance_m`); list sorted by **`distance_m` ascending** when viewer sends `near_lat` / `near_lng`; elapsed freshness from **`created_at`** only.
 
 | Viewer | List | PII / photos |
 |--------|------|----------------|
@@ -147,9 +147,9 @@ sequenceDiagram
 Eco kitchen pledging, kitchen commitments, allocation, and configurator model:
 
 - [Eco_Kitchen_Initiation_Flow.md](./Eco_Kitchen_Initiation_Flow.md) — **authoritative** initiation routes and connection
-- [PRODUCT_ROADMAP.md](../development/PRODUCT_ROADMAP.md) — glossary, actors
+- [PRODUCT_MODEL.md](../development/PRODUCT_MODEL.md) — glossary, actors
 - [Configurator_Role_and_Unified_Initiation.md](./Configurator_Role_and_Unified_Initiation.md) — configurator vs automation
-- [IMPLEMENTATION_APPROACH.md](../development/IMPLEMENTATION_APPROACH.md) — marketplace phases **E–I**
+- [ENGINEERING_PLAN.md](../development/ENGINEERING_PLAN.md) — marketplace phases **E–I**
 - [database-setup-sequence.md](../configuration/database-setup-sequence.md) — SQL for marketplace tables
 
 ---
@@ -161,7 +161,7 @@ Eco kitchen pledging, kitchen commitments, allocation, and configurator model:
 | **Today** | Register initiation, own list | Web list (coordinator role) | External app only | External |
 | **A** | Mark payment done on record | Filters, neighbourhood columns | — | Status fields only |
 | **B** | See delivery proof | Monitor | — | Photo + complete |
-| **Marketplace** | See PRODUCT_ROADMAP | Configurator (setup only) | Self-service bids | See IMPLEMENTATION_APPROACH E–I |
+| **Marketplace** | See PRODUCT_MODEL | Configurator (setup only) | Self-service bids | See ENGINEERING_PLAN E–I |
 
 ---
 
@@ -172,6 +172,6 @@ When Phase A ships, update:
 - [SharingBridge_End_to_End_Workflow.md](./SharingBridge_End_to_End_Workflow.md) status table (steps 8–11).
 - [database.md](../configuration/database.md) schema section.
 - [MANUAL_TESTING_GUIDE.md](../testing/MANUAL_TESTING_GUIDE.md) new flows.
-- [AGENT_HANDOFF.md](../development/AGENT_HANDOFF.md) “Next Recommended Tasks”.
+- [AGENT_SESSION.md](../development/AGENT_SESSION.md) “Next Recommended Tasks”.
 
 **Last updated:** 2026-06 — marketplace content removed (see README § Documentation guide).

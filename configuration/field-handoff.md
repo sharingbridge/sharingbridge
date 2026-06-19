@@ -32,7 +32,7 @@ Repeated taps for the **same instruction pack** (`pack_id`) update the existing 
 
 Stored fields include `pack_id`, preset snapshot, reference-photo flag, and verbal notes. Persisted in Postgres `order_intents` (integration-service requires `DATABASE_URL`).
 
-**Verify (local or Render):** after the first copy, the app shows **Order intent registered** with a reference id (mobile copy). The web dashboard will label the same timestamp **Order intent taken** (`created_at`) — see [PRODUCT_ROADMAP.md](../development/PRODUCT_ROADMAP.md). A second tap on the same pack updates that intent (SnackBar **Order intent updated**, same reference id). On API failure, clipboard copy still succeeds and an error SnackBar is shown.
+**Verify (local or Render):** after the first copy, the app shows **Order intent registered** with a reference id (mobile copy). The web dashboard will label the same timestamp **Order intent taken** (`created_at`) — see [PRODUCT_MODEL.md](../development/PRODUCT_MODEL.md). A second tap on the same pack updates that intent (SnackBar **Order intent updated**, same reference id). On API failure, clipboard copy still succeeds and an error SnackBar is shown.
 
 ## Order intent dashboard
 
@@ -74,7 +74,7 @@ Local: configure `CLOUDINARY_*` (or `CLOUDINARY_URL`) in photo-service `.env`. R
 - Local image processing hooks in photo-service
 - Live LLM (`AI_LLM_MODE=openai`)
 
-See [IMPLEMENTATION_APPROACH.md](../development/IMPLEMENTATION_APPROACH.md).
+See [ENGINEERING_PLAN.md](../development/ENGINEERING_PLAN.md).
 
 ---
 

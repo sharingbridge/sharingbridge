@@ -1,8 +1,8 @@
-# AI implementation plan
+# AI — future plan
 
 **Status:** Active plan (June 2026)  
-**As-built wiring:** [AI_PLATFORM_INTEGRATION.md](./AI_PLATFORM_INTEGRATION.md)  
-**Progress:** [PROGRESS.md](./PROGRESS.md) § AI  
+**As-built wiring:** [AI_AS_BUILT.md](./AI_AS_BUILT.md)  
+**Progress:** [STATUS.md](./STATUS.md) § AI  
 **Setup keys:** [ai-setup-handhold.md](../configuration/ai-setup-handhold.md)
 
 This document is the **full phased plan** for SharingBridge AI: preset collection, image/location descriptions, and seeker identification. It also answers **LangChain vs direct LLM** for this codebase.
@@ -11,7 +11,7 @@ This document is the **full phased plan** for SharingBridge AI: preset collectio
 
 ## What is shipped today
 
-See [PROGRESS.md](./PROGRESS.md) § AI and [AI_PLATFORM_INTEGRATION.md](./AI_PLATFORM_INTEGRATION.md). Summary:
+See [STATUS.md](./STATUS.md) § AI and [AI_AS_BUILT.md](./AI_AS_BUILT.md). Summary:
 
 | Piece | State |
 |-------|--------|
@@ -327,6 +327,6 @@ See [SharingBridge_Technical_Architecture.md](../design/SharingBridge_Technical_
 | Document | Role |
 |----------|------|
 | **This file** | Full AI phases, schemas, LangChain decision |
-| [AI_PLATFORM_INTEGRATION.md](./AI_PLATFORM_INTEGRATION.md) | Service topology, sequences, env hosting |
+| [AI_AS_BUILT.md](./AI_AS_BUILT.md) | Service topology, sequences, env hosting |
 | [ai-orchestration-local.md](../configuration/ai-orchestration-local.md) | Local three-service stack |
-| [AGENT_HANDOFF.md](./AGENT_HANDOFF.md) | Shipped vs next tasks |
+| [AGENT_SESSION.md](./AGENT_SESSION.md) | Shipped vs next tasks |

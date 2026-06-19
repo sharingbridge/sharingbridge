@@ -27,9 +27,11 @@ needed.
 | 9 | Mobile home hub + **Offer food help** (3 steps: guidance → optional reference photo + **Get AI delivery instructions** (API with local fallback) → copy + vendor deep links) | `sharingbridge-mobile-app/lib/presentation/app_home_page.dart`, `lib/features/donor_seeker_interaction/**` |
 | 10 | Web **Order initiation history** (coordinator dashboard) | `sharingbridge-web-app` — see **§4** |
 | 11 | Reference photo upload (Cloudinary) | `sharingbridge-photo-service` — see **§1e**, **§2b**, **§3f**; [photo-service-local.md](../configuration/photo-service-local.md) |
-| 12 | **Record seeker demand** + standard menu picker | `sharingbridge-mobile-app/lib/features/seeker_demand/**` → `GET /v1/standard-offers`, `POST /v1/seeker-demands` |
-| 13 | Web **Demand** board (pledges, vendor bids) | `sharingbridge-web-app` → `GET /v1/demand/board`; requires marketplace SQL **M1–M3** |
-| 14 | Web **data boundaries** banner + coordinator **scope** (time / area) | `sharingbridge-web-app` — List, Map, and Demand share scope; integration `feed` on list + demand |
+| 12 | **Record seeker demand** + eco kitchen routes (pledge / I pay) | `sharingbridge-mobile-app/lib/features/seeker_demand/**` → `GET /v1/standard-offers`, `POST /v1/seeker-demands` |
+| 13 | Web **Actions** tab (pledges, kitchen commits) | `sharingbridge-web-app` → `GET /v1/demand/board`; requires SQL **M1–M4** |
+| 14 | Web **Connection** panel (order code handoff) | `ConnectionLookupPanel` → `GET /v1/connections/:orderCode`; requires **M4** + kitchen commit |
+| 15 | **Notification-service** (optional FCM push) | `sharingbridge-notification-service` → webhook from integration; requires **M5** + Firebase — [notification-service-local.md](../configuration/notification-service-local.md) |
+| 16 | Web **data boundaries** banner + coordinator **scope** (time / area) | `sharingbridge-web-app` — Initiations, Actions, Map share scope; integration `feed` on list + demand |
 
 ## Prerequisites
 
@@ -47,6 +49,10 @@ needed.
   - `D:\kannan\sharingbridge\sharingbridge-photo-service`
   - **Python 3.10+** (3.13 works) — project venv inside that repo only; see **§1e**
   - Port **8092** free locally
+- Notification service (optional — connection-ready **FCM push**):
+  - `D:\kannan\sharingbridge\sharingbridge-notification-service`
+  - Port **8093** free locally (photo-service uses 8092)
+  - Requires SQL **M5**, Firebase Admin JSON, mobile `google-services.json` — [notification-service-local.md](../configuration/notification-service-local.md)
 - For **§4** (web): Google Web client + [coordinator-seed.sql](../configuration/coordinator-seed.sql) — [configuration/e2e-deployment-sequence.md](../configuration/e2e-deployment-sequence.md) **Phase 0–1**.
 - For **§3-auth** (mobile Google): Android OAuth client + SHA-1 on user-service — [configuration/google-auth-setup.md](../configuration/google-auth-setup.md) §2.2.
 - Port `8080` free locally (integration-service).
@@ -64,7 +70,7 @@ Both **`sharingbridge-user-service`** and **`sharingbridge-integration-service`*
 | 3 | Run [local-postgres-grants.sql](../configuration/local-postgres-grants.sql) as `postgres` (fixes `permission denied for table users`) |
 | 4 | Copy `env.example` → `.env` in **both** Node repos; set the same `DATABASE_URL` (match your port, e.g. `5433`) |
 | 5 | Coordinator: `coordinator` row in `user_roles` ([coordinator-seed.sql](../configuration/coordinator-seed.sql)) after the user exists in `users` |
-| 6 | Marketplace (Demand tab, standard menu picker): run **M1 → M2 → M3** in [database-setup-sequence.md](../configuration/database-setup-sequence.md); set `NOMINATIM_USER_AGENT` on integration-service |
+| 6 | Marketplace + eco kitchen: run **M1 → M2 → M3 → M4** in [database-setup-sequence.md](../configuration/database-setup-sequence.md); **M5** if testing FCM push; `NOMINATIM_USER_AGENT` on **integration-service** (separate from ai-orchestration) |
 
 **Verify DB before starting apps (psql or pgAdmin on `sharingbridge`):**
 
@@ -226,7 +232,32 @@ Expected output footer:
 # fail 0
 ```
 
-### 1e. Web app (Vitest)
+### 1f. Notification service (Node.js, optional)
+
+Only when testing **§4g** FCM push. Requires SQL **M5** and Firebase credentials.
+
+```powershell
+cd D:\kannan\sharingbridge\sharingbridge-notification-service
+copy env.example .env
+# DATABASE_URL (same as integration); WEBHOOK_SECRET; FIREBASE_SERVICE_ACCOUNT_PATH or JSON
+npm install
+npm test
+npm start
+# listens on http://localhost:8093
+```
+
+Confirm: `Invoke-RestMethod http://localhost:8093/health`
+
+Wire integration-service `.env`:
+
+```env
+CONNECTION_NOTIFY_WEBHOOK_URL=http://localhost:8093/internal/connection-ready
+CONNECTION_NOTIFY_WEBHOOK_SECRET=<same as notification WEBHOOK_SECRET>
+```
+
+Detail: [notification-service-local.md](../configuration/notification-service-local.md).
+
+### 1g. Web app (Vitest)
 
 ```powershell
 cd D:\kannan\sharingbridge\sharingbridge-web-app
@@ -804,7 +835,7 @@ npm run dev
 ### 4c-b. Data boundaries banner (coordinator + payee)
 
 1. Sign in as **coordinator** or **payee** (limited dashboard).
-2. Below the hero (and coordinator scope toolbar when applicable), confirm **Data boundaries — List** (or **Map** / **Demand** when you switch tabs).
+2. Below the hero (and coordinator scope toolbar when applicable), confirm **Data boundaries** on **Initiations**, **Actions**, or **Map**.
 3. Expect four lines: **Time**, **Area**, **Sort**, **Limit** — they should match what the API is actually applying (not decorative).
 4. **Payee:** default is usually the last **2 hours** and **your initiations only** until you tap **By area** and allow location; then **Area** should mention distance from your position.
 5. **Coordinator:** default **Time** = **All time**, **Area** = **All areas**, **Limit** = up to the server max rows (typically 100).
@@ -815,18 +846,44 @@ Requires **coordinator** role and integration-service with demand-board query su
 
 1. Set **Time window** to **Last 24 hours** and **Area** to **All areas** → **Apply scope**.
 2. **Data boundaries** banner updates; List row count should drop if you have older test intents.
-3. Switch to **Demand** — banner still shows the same time/area; demand lines and pledges respect the scope (no endless **Loading…** flicker after load completes).
-4. Set **Area** to **Postal area key** `IN:TN:600001` (or a key from your seed data) → **Apply scope** — List and Demand should only show rows for that postal grid (and sub-areas).
+3. Switch to **Actions** — banner still shows the same time/area; demand lines and pledges respect the scope (no endless **Loading…** flicker after load completes).
+4. Set **Area** to **Postal area key** `IN:TN:600115` (or a key from your seed data) → **Apply scope** — Initiations and Actions should only show rows for that postal grid.
 5. Set **Area** to **Near my location** → **Apply scope** — allow browser location when prompted; **Area** in the banner should mention distance from your location.
 6. **Reset** clears the form; click **Apply scope** again to return to all time / all areas.
 7. Header **Refresh** on List/Map should keep the last applied scope (not revert to defaults).
 
-### 4d. Demand board (coordinator)
+### 4d. Actions tab (coordinator)
 
-1. Open the **Demand** tab after marketplace SQL **M1–M3** is applied and at least one seeker demand exists (mobile **Record seeker demand** or API).
-2. Confirm **Demand & vendor bids** loads once (brief **Loading…**, then content — not a continuous spinner).
-3. Use **Pick this for pledge** / **Pick this for vendor bid** — forms below pre-select the line; submit separately.
-4. **Refresh demand** (panel) or header **Refresh** reloads the board; with **§4c-c** scope applied, counts match the filtered boundaries banner.
+Requires SQL **M1–M4** and at least one seeker demand (mobile **Start initiation** → eco kitchen route, or API).
+
+1. Open the **Actions** tab (not Initiations).
+2. Confirm pledges and demand lines load once (brief **Loading…**, then content).
+3. **Pledge** on a demand line (email-share consent checkbox required).
+4. As coordinator, **Kitchen commit** on a line (legacy API: `POST /v1/vendor-bids`) — enter kitchen name and portions.
+5. **Refresh** reloads the board; with **§4c-c** scope applied, counts match the boundaries banner.
+
+### 4f. Connection panel (order code)
+
+Requires **M4** and a kitchen commit on a matching demand line (**§4d** step 4).
+
+1. On **Actions**, scroll to **Connection** (or `ConnectionLookupPanel`).
+2. Enter the order code shown on mobile after recording a seeker demand (`SB-…`).
+3. As **initiator** (payee who recorded the demand) or **coordinator**, confirm kitchen display name and login emails appear in-app.
+4. Unrelated users receive **403** from `GET /v1/connections/:orderCode`.
+
+Works without notification-service — this is the in-app source of truth per [Eco_Kitchen_Initiation_Flow.md](../design/Eco_Kitchen_Initiation_Flow.md).
+
+### 4g. FCM push (optional)
+
+Requires **M5**, notification-service deployed, integration `CONNECTION_NOTIFY_WEBHOOK_*`, mobile rebuilt with `google-services.json` + Firebase SHA fingerprints.
+
+1. Start notification-service (**§1f**) or use Render host.
+2. Sign in on mobile (hosted or local) — confirm a row in `device_tokens` after sign-in.
+3. Coordinator **Kitchen commit** (**§4d**) on the matching demand line.
+4. Initiator/pledger device should receive a push; tap opens app (data payload includes `order_code`).
+5. If push fails, **§4f** Connection panel should still work — push is additive.
+
+Setup: [notification-service-local.md](../configuration/notification-service-local.md).
 
 ### 4e. Empty list / mismatch
 
@@ -846,7 +903,7 @@ See [configuration/google-auth-setup.md](../configuration/google-auth-setup.md) 
 
 To wipe persisted payee presets, use **§3e** (app **Clear all**, user-service `PUT { presets: [] }`, or SQL on `donor_presets`). Presets live in **Postgres**, not integration-service `data/`.
 
-To reset marketplace / seeker demand rows (dev only): [reset-marketplace-data.sql](../configuration/reset-marketplace-data.sql) then re-run M3 seed.
+To reset marketplace / seeker demand rows (dev only): [reset-marketplace-data.sql](../configuration/reset-marketplace-data.sql) then re-run **M3** seed. SQL pick-up guide: [database-setup-sequence.md](../configuration/database-setup-sequence.md) § Where you are.
 
 To reset the mobile client's local fallback cache, use the
 platform-specific shared preferences clear (e.g. uninstall and
@@ -859,14 +916,15 @@ Earlier MVP builds stored a field draft under `sharingbridge_field_interaction_d
 
 ## 6. Hosted backend smoke (Render)
 
-Use this after deploying per **[configuration/backend-render.md](../configuration/backend-render.md)** (Track A).
+Use this after deploying per **[configuration/backend-render.md](../configuration/backend-render.md)**.
 
-1. Confirm all three `/health` endpoints return `ok: true` (allow 30–60s on cold start).
+1. Confirm `/health` on user-service, integration-service, photo-service, and (if deployed) notification-service return `ok: true` (allow 30–60s on cold start).
 2. Mint a token locally: `node scripts/mint-dev-jwt.mjs demo-user payee` in user-service (with hosted `AUTH_TOKEN_SECRET` in env if backfilling Render data).
 3. Call **hosted** integration `POST …/v1/donor-setup/suggest-vendors` and `POST …/v1/donor-seeker/instruction-pack` with `Authorization: Bearer <token>`.
 4. `POST …/v1/donor-seeker/order-intents` with the same Bearer token (see [configuration/backend-render.md](../configuration/backend-render.md) smoke script). First call returns HTTP **201** and `created: true`. Repeat the **same** `pack_id` — expect HTTP **200**, `created: false`, and the **same** `order_intent_id`.
-5. Run the mobile app (see [configuration/mobile-client.md](../configuration/mobile-client.md) — `cd` first, then mint token, then `flutter run`). In **§3f** step 4, repeat the copy button and confirm **Order intent updated** with an unchanged reference id.
-6. (Optional) Deploy `sharingbridge-web-app` as a Render static site per [configuration/e2e-deployment-sequence.md](../configuration/e2e-deployment-sequence.md) Phases 3–5; **Sign in with Google** on the live URL and **Refresh** — **§4**.
+5. Run the mobile app (see [configuration/mobile-client.md](../configuration/mobile-client.md)). Walk **§3f** and eco kitchen initiation routes; confirm **§4f** Connection on web after kitchen commit.
+6. (Optional) **§4g** FCM — notification-service + `CONNECTION_NOTIFY_WEBHOOK_*` + rebuilt APK.
+7. Deploy `sharingbridge-web-app` static site per [configuration/e2e-deployment-sequence.md](../configuration/e2e-deployment-sequence.md) Phases 3–5; **Sign in with Google** on the live URL and **Refresh** — **§4**.
 
 If suggest-vendors or instruction-pack fail, verify `AI_ORCHESTRATION_BASE_URL`, `AI_*_ENABLED=true`, and matching `AI_ORCHESTRATION_INTERNAL_API_KEY` on integration and ai-orchestration.
 
@@ -893,5 +951,7 @@ If suggest-vendors or instruction-pack fail, verify `AI_ORCHESTRATION_BASE_URL`,
 - Step **2i** returns a non-empty `delivery_instructions` string when orchestration is enabled.
 - Step **3f** walks **Help a seeker** (guidance → optional photo upload to photo-service + instruction-pack → copy + vendor links; repeat copy updates the same order initiation).
 - Step **4c** shows the coordinator web dashboard listing payee order intents (including payee `user_id` and reference photo thumbnail when uploaded) after mobile **§3f** on the same integration host.
-- Step **4c-b** shows the **Data boundaries** banner on List / Map / Demand with sensible Time / Area / Limit copy.
-- Step **4c-c** lets coordinators **Apply scope** (time + area) and see List, Map, and Demand stay aligned; Demand tab does not spin forever on **Loading…**.
+- Step **4c-b** shows the **Data boundaries** banner on Initiations / Actions / Map with sensible Time / Area / Limit copy.
+- Step **4c-c** lets coordinators **Apply scope** (time + area) and see Initiations, Map, and Actions stay aligned.
+- Step **4d** / **4f**: Actions tab pledge + kitchen commit; Connection panel shows emails after commit (**M4**).
+- Step **4g** (optional): FCM push after kitchen commit when notification-service is wired (**M5**).

@@ -18,8 +18,12 @@ There is **no** runtime fallback to JSON files after cutover — import once, th
 | Roles | `user_roles` | [coordinator-seed.sql](./coordinator-seed.sql) |
 | Payee presets | `donor_presets` | integration → user-service |
 | Order intents | `order_intents` | integration-service |
-| Seeker demands | `seeker_demands` | mobile **Record seeker demand** |
-| Marketplace | `standard_offers`, `meal_pledges`, `vendor_bids` | SQL M1–M3 — [database-setup-sequence.md](./database-setup-sequence.md) |
+| Seeker demands | `seeker_demands` | mobile eco kitchen / pledging routes |
+| Marketplace | `standard_offers`, `meal_pledges`, `vendor_bids` | SQL **M1–M3** |
+| Eco kitchen phase 3 | `order_code`, `initiation_route` columns | SQL **M4** |
+| FCM device tokens | `device_tokens` | SQL **M5** — [notification-service-local.md](./notification-service-local.md) |
+
+Full order: [database-setup-sequence.md](./database-setup-sequence.md).
 
 **Code note:** Both Node services **require** **`DATABASE_URL`** at startup and read/write Postgres only (no JSON file fallback). Run [schema.sql](./schema.sql) before starting services.
 
@@ -58,7 +62,7 @@ There is **no** runtime fallback to JSON files after cutover — import once, th
 Follow **[database-setup-sequence.md](./database-setup-sequence.md)** § Greenfield:
 
 1. Run [schema.sql](./schema.sql) (core tables).
-2. For marketplace / Demand tab: run M1–M3 in setup sequence (marketplace migration, wire migration, seed).
+2. For marketplace / Actions tab / eco kitchen: run **M1–M4** in [database-setup-sequence.md](./database-setup-sequence.md); **M5** if using FCM push.
 3. After first Google sign-in: [coordinator-seed.sql](./coordinator-seed.sql) — see [§ Coordinator seeding](#coordinator-seeding).
 
 **Verify:** **Table Editor** → tables listed in [§ Tables](#tables).

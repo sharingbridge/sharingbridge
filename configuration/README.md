@@ -60,7 +60,7 @@ Optional branches (any time after Phase 1):
 | **Google Console clicks** | [google-auth-setup.md](./google-auth-setup.md) |
 | **Web dashboard (Vite, CORS)** | [web-client.md](./web-client.md) |
 | **Mobile URLs (emulator, phone, Wi‑Fi)** | [mobile-client.md](./mobile-client.md) |
-| **Manual test scripts** | [MANUAL_TESTING_GUIDE.md](../testing/MANUAL_TESTING_GUIDE.md) |
+| **Manual test scripts** | [MANUAL_TESTING_GUIDE.md](../testing/MANUAL_TESTING_GUIDE.md) — includes Actions, Connection, optional FCM (**§4d–4g**) |
 | **Product roadmap (authoritative)** | [PRODUCT_ROADMAP.md](../development/PRODUCT_ROADMAP.md) |
 | **Order-ops supplement (A–B)** | [Future_Extensions.md](../design/Future_Extensions.md) |
 | **Agent / development docs** | [README.md](../README.md#documentation-guide) · [AGENT_HANDOFF.md](../development/AGENT_HANDOFF.md) |
@@ -86,4 +86,4 @@ Follow [e2e-deployment-sequence.md](./e2e-deployment-sequence.md) Phases 2–5.
 5. `WEB_CORS_ORIGINS` on **both** backends = static site `https://…onrender.com`
 6. Mobile uses **same** integration host as `VITE_API_BASE_URL`; rebuild APK for FCM — [mobile-client.md](./mobile-client.md)
 
-**Testing:** [MANUAL_TESTING_GUIDE.md](../testing/MANUAL_TESTING_GUIDE.md) — mobile **§3**, web **§4**.
+**Testing:** [MANUAL_TESTING_GUIDE.md](../testing/MANUAL_TESTING_GUIDE.md) — mobile **§3**, web **§4**, optional notification **§4g**.

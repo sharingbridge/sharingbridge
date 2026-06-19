@@ -62,7 +62,7 @@ Direct order (vendor app)  +  Eco kitchen routes (pledge / I pay)
 | `sharingbridge-api-gateway`, `order-service`, `infra` | Scale path | **Not started** |
 | `sharingbridge-location-safety` | Geo scoring | **Archived** |
 
-Key integration routes: `suggest-vendors`, `instruction-pack`, `order-intents`, `seeker-demands`, `demand/board`, `pledges`, `vendor-bids`, `connections/:orderCode`, `device-tokens`. OpenAPI under `design/contracts/`.
+Key integration routes: `suggest-vendors`, `instruction-pack`, `order-intents`, `seeker-demands`, `demand/board`, `pledges`, `vendor-bids`, `connections/:orderCode`, `device-tokens`. OpenAPI today covers **donor-setup presets + suggest-vendors** only — see [design/contracts/README.md](../design/contracts/README.md).
 
 ---
 

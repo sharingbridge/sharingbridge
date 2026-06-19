@@ -29,7 +29,7 @@ system without reading code.
 ## Related
 
 - Implementation status & runbook: [`../development/AGENT_SESSION.md`](../development/AGENT_SESSION.md)
-- API contracts: [`../design/contracts/donor_setup_suggest_vendors.openapi.yaml`](../design/contracts/donor_setup_suggest_vendors.openapi.yaml) (suggest-vendors)
+- API contracts: [`../design/contracts/README.md`](../design/contracts/README.md) (donor-setup OpenAPI; marketplace/handoff not yet spec'd)
 - AI platform: [`../development/AI_AS_BUILT.md`](../development/AI_AS_BUILT.md)
 - End-to-end product workflow (diagrams): [`../design/SharingBridge_End_to_End_Workflow.md`](../design/SharingBridge_End_to_End_Workflow.md)
 - Vendor preset setup sequence: [`../design/Donor_Setup_AI_Search_Sequence.md`](../design/Donor_Setup_AI_Search_Sequence.md)

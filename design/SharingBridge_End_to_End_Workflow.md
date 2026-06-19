@@ -14,10 +14,11 @@
 | **This doc** | End-to-end journey + **diagrams**; shipped vs planned | Yes (Mermaid) |
 | **[Technical Architecture](SharingBridge_Technical_Architecture.md)** | Services, APIs, deep-link privacy, order states, safety/photo algorithms | Some ASCII blocks |
 | **[Implementation Approach](../development/IMPLEMENTATION_APPROACH.md)** | Build phases, free tier, **AI interactions** slice (safety, instruction pack, match) | Tables; links here |
-| **[AI Platform Integration](../development/AI_PLATFORM_INTEGRATION.md)** | **LangChain / LLM hosting**, orchestration service, bridges mobile → integration → AI → model APIs | Architecture + sequence diagrams |
+| **[AI Platform Integration](../development/AI_PLATFORM_INTEGRATION.md)** | AI **as-built** — orchestration, Groq/Gemini, integration bridge | Architecture |
 | **[Vendor preset setup AI Search Sequence](Donor_Setup_AI_Search_Sequence.md)** | Vendor preset setup only (suggest → save presets) | Sequence diagram |
 | **[Manual Testing Guide](../testing/MANUAL_TESTING_GUIDE.md)** | How to **verify** shipped slices on a device | Commands, not product flow |
-| **[Agent Handoff](../development/AGENT_HANDOFF.md)** | What is **live in code today** and next tasks | Status bullets |
+| **[Progress](../development/PROGRESS.md)** | Shipped vs plan | Status table |
+| **[Agent Handoff](../development/AGENT_HANDOFF.md)** | Agent next tasks and runbook | Session bullets |
 | **[Eco Kitchen initiation flow](Eco_Kitchen_Initiation_Flow.md)** | Three routes, eco kitchens, connection, payment boundaries | Yes (Mermaid) |
 | **[Future Extensions](Future_Extensions.md)** | Direct-order payment/delivery tracking, delivery proof | Roadmap; Mermaid |
 
@@ -171,7 +172,7 @@ Exact state names may evolve in `sharingbridge-order-service`; treat this as the
 
 - **Vendor preset setup only:** [Donor_Setup_AI_Search_Sequence.md](Donor_Setup_AI_Search_Sequence.md)
 - **Deep link + secure beneficiary data:** Technical Architecture §3.5 and Strategy 2 (external vendors)
-- **Build status and backlog:** [AGENT_HANDOFF.md](../development/AGENT_HANDOFF.md), [Future_Extensions.md](./Future_Extensions.md), [IMPLEMENTATION_APPROACH.md](../development/IMPLEMENTATION_APPROACH.md)
+- **Build status and backlog:** [PROGRESS.md](../development/PROGRESS.md), [Future_Extensions.md](./Future_Extensions.md), [IMPLEMENTATION_APPROACH.md](../development/IMPLEMENTATION_APPROACH.md)
 
 ---
 

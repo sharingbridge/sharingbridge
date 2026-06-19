@@ -12,7 +12,7 @@
 | [Configurator_Role_and_Unified_Initiation.md](./Configurator_Role_and_Unified_Initiation.md) | Configurator vs runtime ops (no daily coordinator desk) |
 | [Future_Extensions.md](./Future_Extensions.md) | Direct-order payment-done + delivery proof (Phase A–B) |
 | [field-handoff.md](../configuration/field-handoff.md) | Shipped **Direct order** capture (Help a seeker) |
-| [AGENT_HANDOFF.md](../development/AGENT_HANDOFF.md) | What is live in code today |
+| [PROGRESS.md](../development/PROGRESS.md) | What is live in code today |
 
 **Supersedes (for initiation routes & eco payment):** older “vendor bidding marketplace” and “pledge route” wording in scattered docs. Internal API table `vendor_bids` remains during migration; product language is **kitchen commitment**, not auction.
 

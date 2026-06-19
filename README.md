@@ -12,7 +12,7 @@ SharingBridge is a mobile/web application that helps people **arrange and pay fo
 
 Product-level assumptions: [SharingBridge_Business_Requirement.md](requirements/SharingBridge_Business_Requirement.md) § Operating Constraints. **Inclusive language** (payee, beneficiary, meal arrangement — not alms/donation framing): [PRODUCT_ROADMAP.md](development/PRODUCT_ROADMAP.md) § Documentation verbiage.
 
-**AI-assisted development:** Code and docs are produced in AI-assisted sessions. **What is shipped today:** [AGENT_HANDOFF.md](development/AGENT_HANDOFF.md). **How to run the stack:** [configuration/README.md](configuration/README.md).
+**AI-assisted development:** Code and docs are produced in AI-assisted sessions. **Progress vs plan:** [PROGRESS.md](development/PROGRESS.md). **How to run:** [configuration/README.md](configuration/README.md).
 
 ## Documentation guide
 
@@ -23,12 +23,13 @@ New here or unsure which file to open? Use this section. It defines **reading or
 | I want to… | Read in order |
 |------------|----------------|
 | **Run the stack from scratch** | [configuration/README.md](configuration/README.md) → [e2e-deployment-sequence.md](configuration/e2e-deployment-sequence.md) → [database-setup-sequence.md](configuration/database-setup-sequence.md) |
-| **Understand what is shipped today** | [development/AGENT_HANDOFF.md](development/AGENT_HANDOFF.md) |
-| **Overall progress vs target model** | [development/IMPLEMENTATION_APPROACH.md](development/IMPLEMENTATION_APPROACH.md) § **Where we are** |
+| **Understand what is shipped vs plan** | [development/PROGRESS.md](development/PROGRESS.md) |
+| **Engineering plan (long-term)** | [development/IMPLEMENTATION_APPROACH.md](development/IMPLEMENTATION_APPROACH.md) |
+| **Agent session (next tasks)** | [development/AGENT_HANDOFF.md](development/AGENT_HANDOFF.md) |
 | **Product vocabulary, verbiage & marketplace** | [development/PRODUCT_ROADMAP.md](development/PRODUCT_ROADMAP.md) § Documentation verbiage |
 | **Configurator, unified initiation, payee** | [design/Configurator_Role_and_Unified_Initiation.md](design/Configurator_Role_and_Unified_Initiation.md) |
 | **Eco kitchens — three routes, connection, payment boundaries** | [design/Eco_Kitchen_Initiation_Flow.md](design/Eco_Kitchen_Initiation_Flow.md) |
-| **How we build (phases, repos, AI)** | [development/IMPLEMENTATION_APPROACH.md](development/IMPLEMENTATION_APPROACH.md) — **§ Where we are** for overall progress |
+| **How we build (phases, repos, AI)** | [development/IMPLEMENTATION_APPROACH.md](development/IMPLEMENTATION_APPROACH.md) |
 | **BRD steps 1–12 with diagrams** | [design/SharingBridge_End_to_End_Workflow.md](design/SharingBridge_End_to_End_Workflow.md) |
 | **Order payment / delivery proof** | [design/Future_Extensions.md](design/Future_Extensions.md) § Phase A–B only |
 | **Manual test on device** | [testing/MANUAL_TESTING_GUIDE.md](testing/MANUAL_TESTING_GUIDE.md) |
@@ -43,11 +44,12 @@ When two docs conflict, **higher row wins** for that topic.
 | **2 — Product** | [development/PRODUCT_ROADMAP.md](development/PRODUCT_ROADMAP.md) | Glossary, **verbiage**, actors, initiation routes |
 | **3 — Initiation flows** | [design/Eco_Kitchen_Initiation_Flow.md](design/Eco_Kitchen_Initiation_Flow.md) | Three routes, eco kitchens, connection + payment boundaries |
 | **4 — Ops model** | [design/Configurator_Role_and_Unified_Initiation.md](design/Configurator_Role_and_Unified_Initiation.md) | Configurator vs runtime owners |
-| **5 — Engineering** | [development/IMPLEMENTATION_APPROACH.md](development/IMPLEMENTATION_APPROACH.md) | Build phases, marketplace **E–I**, **§ Where we are** progress map |
+| **5 — Engineering** | [development/IMPLEMENTATION_APPROACH.md](development/IMPLEMENTATION_APPROACH.md) | Build phases, marketplace **E–I**, free-tier + scale tracks |
 | **6 — Architecture** | [design/SharingBridge_Technical_Architecture.md](design/SharingBridge_Technical_Architecture.md) | Services, APIs, as-built MVP |
-| **7 — Live status** | [development/AGENT_HANDOFF.md](development/AGENT_HANDOFF.md) | Shipped snapshot, next tasks |
-| **8 — Run & configure** | [configuration/](configuration/) | Deploy, env, auth, SQL sequence |
-| **9 — Supplement** | [design/Future_Extensions.md](design/Future_Extensions.md) | Direct-order ops Phase A–B only |
+| **7 — Progress** | [development/PROGRESS.md](development/PROGRESS.md) | Shipped vs plan — **update when milestones land** |
+| **8 — Agent sessions** | [development/AGENT_HANDOFF.md](development/AGENT_HANDOFF.md) | Next tasks, runbook, recent commits |
+| **9 — Run & configure** | [configuration/](configuration/) | Deploy, env, auth, SQL sequence |
+| **10 — Supplement** | [design/Future_Extensions.md](design/Future_Extensions.md) | Direct-order ops Phase A–B only |
 
 Do not create parallel roadmap files. Extend **PRODUCT_ROADMAP.md** (product), **Eco_Kitchen_Initiation_Flow.md** (initiation routes), or **IMPLEMENTATION_APPROACH.md** (engineering).
 
@@ -58,11 +60,12 @@ Do not create parallel roadmap files. Extend **PRODUCT_ROADMAP.md** (product), *
 2. development/PRODUCT_ROADMAP.md                       — terms, actors, routes
 3. design/Eco_Kitchen_Initiation_Flow.md                — three initiation routes (authoritative)
 4. design/Configurator_Role_and_Unified_Initiation.md   — configurator, no daily ops desk
-5. development/AGENT_HANDOFF.md                         — shipped today
-6. design/SharingBridge_End_to_End_Workflow.md          — journey diagrams
-7. configuration/e2e-deployment-sequence.md            — deploy
-8. configuration/database-setup-sequence.md            — SQL order
-9. Deep dives as needed (field-handoff, auth, testing)
+5. development/PROGRESS.md                              — shipped vs plan
+6. development/AGENT_HANDOFF.md                         — agent sessions (optional)
+7. design/SharingBridge_End_to_End_Workflow.md          — journey diagrams
+8. configuration/e2e-deployment-sequence.md            — deploy
+9. configuration/database-setup-sequence.md            — SQL order
+10. Deep dives as needed (field-handoff, auth, testing)
 ```
 
 ### Roadmap docs — how they relate
@@ -74,7 +77,9 @@ PRODUCT_ROADMAP.md              ← WHAT (vocabulary, initiation routes)
         └── IMPLEMENTATION…     ← HOW / WHEN (phases E–I, repos)
 
 Future_Extensions.md            ← Direct-order ops A–B supplement only
-AGENT_HANDOFF.md                ← Shipped vs planned
+IMPLEMENTATION_APPROACH.md        ← Plan (phases, stack)
+PROGRESS.md                       ← Shipped vs plan
+AGENT_HANDOFF.md                  ← Agent next tasks
 ```
 
 **Phase naming:** Future_Extensions **A–B** = order payment/delivery proof. IMPLEMENTATION_APPROACH **A–D** = AI/photo workstreams. IMPLEMENTATION_APPROACH **E–I** = marketplace engineering. (Future_Extensions Phase C is deprecated — use PRODUCT_ROADMAP § Marketplace.)

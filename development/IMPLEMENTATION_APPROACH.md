@@ -1,71 +1,14 @@
 # SharingBridge - Implementation Approach
 
-**Version:** 2.1  
+**Version:** 2.2  
 **Date:** June 2026  
-**Status:** Free-tier MVP in active development — see **§ Where we are** below.
+**Status:** Long-term engineering plan (free-tier MVP + production scale track).
 
-> **Doc map:** [README.md § Documentation guide](../README.md#documentation-guide) — start here for reading order.  
-> **Product truth:** [PRODUCT_ROADMAP.md](./PRODUCT_ROADMAP.md) (vocabulary, marketplace).  
-> **This file:** engineering strategy, free-tier stack, build phases — **not** duplicate product glossary.  
-> **Live repo snapshot:** [AGENT_HANDOFF.md](./AGENT_HANDOFF.md) (APIs and per-service detail).  
-> **SQL / deploy steps:** [database-setup-sequence.md](../configuration/database-setup-sequence.md) (**1 → M1–M5**).
-
----
-
-## Where we are (progress snapshot)
-
-**Last updated:** June 2026. This section is the **overall target-model progress** map. Per-repo APIs and “recently shipped” bullets stay in [AGENT_HANDOFF.md](./AGENT_HANDOFF.md). Your **database/deploy position** (e.g. last SQL file run): [database-setup-sequence.md](../configuration/database-setup-sequence.md) § **Where you are**.
-
-### Target model (what we are building toward)
-
-```text
-Direct order (vendor app)  +  Eco kitchen routes (pledge / I pay)
-        ↓                              ↓
-   Order intents                  Demand board → kitchen commit
-        ↓                              ↓
-   Payment off-platform         Connection (order code) + notify
-        ↓                              ↓
-   Delivery proof (Phase B)      Full marketplace F–I (future)
-```
-
-### Progress by workstream
-
-| Workstream | Target | Status (June 2026) | Detail |
-|------------|--------|-------------------|--------|
-| **Foundation** | Supabase Postgres, Render APIs, Google auth, Flutter + Vite | **Shipped** | [AGENT_HANDOFF.md](./AGENT_HANDOFF.md) § Persistence |
-| **Direct order** | Help a seeker → instruction-pack → vendor deep links | **Shipped** | [field-handoff.md](../configuration/field-handoff.md) |
-| **Eco kitchen product** | Three routes, consent, connection, off-platform pay | **Phases 1–6 shipped** | [Eco_Kitchen_Initiation_Flow.md](../design/Eco_Kitchen_Initiation_Flow.md) |
-| **Marketplace E** | Seeker demands, Actions board, pledges, kitchen commit | **Shipped** | SQL **M1–M4**; web **Updates** banner + Connection panel |
-| **Connection notify** | FCM on kitchen commit; `device_tokens` | **Code shipped** — wire on deploy | SQL **M5** + [notification-service-local.md](../configuration/notification-service-local.md) |
-| **Marketplace F–I** | Beneficiary profile, fulfilment/transport bids, allocation | **Not started** | [PRODUCT_ROADMAP.md](./PRODUCT_ROADMAP.md) § Marketplace |
-| **AI field slice A–C** | Photo, instruction-pack API, handoff copy | **Mostly shipped** (template/mock fallback) | § AI interactions below; live LLM optional |
-| **AI / delivery D** | Delivery match, verification notifications | **Not started** | § Phased delivery plan Phase D |
-| **Order ops A–B** | Payment-done, delivery proof (direct order) | **Partial** (payment status on web; proof Phase B open) | [Future_Extensions.md](../design/Future_Extensions.md) |
-| **Transactional email** | Connection-ready email | **Not implemented** (copy exists; FCM only) | [AGENT_HANDOFF.md](./AGENT_HANDOFF.md) § Next tasks |
-| **Mobile Connection UI** | In-app order-code lookup | **Not shipped** (web Connection + FCM nudge) | [MANUAL_TESTING_GUIDE.md](../testing/MANUAL_TESTING_GUIDE.md) §4f |
-
-### SQL migrations (configuration progress)
-
-Code assumes the full marketplace + eco + push schema when deployed. Run in order on each environment:
-
-| Step | Enables | Code ready? |
-|------|---------|-------------|
-| **1** `schema.sql` | Core tables | Yes |
-| **M1–M3** | Actions, menu picker | Yes |
-| **M4** | Order codes `SB-…`, Connection API | Yes |
-| **M5** | FCM `device_tokens` | Yes |
-| **Deploy** | notification-service + webhook + Firebase | Yes |
-
-**If a step was skipped:** [database-setup-sequence.md](../configuration/database-setup-sequence.md) § **If a step was skipped**.
-
-### What to read next
-
-| Need | Doc |
-|------|-----|
-| APIs / repos shipped today | [AGENT_HANDOFF.md](./AGENT_HANDOFF.md) |
-| Eco kitchen phase checklist | [Eco_Kitchen_Initiation_Flow.md](../design/Eco_Kitchen_Initiation_Flow.md) § 10 |
-| Manual verification | [MANUAL_TESTING_GUIDE.md](../testing/MANUAL_TESTING_GUIDE.md) |
-| BRD journey ✅ / 🟡 / ⬜ | [SharingBridge_End_to_End_Workflow.md](../design/SharingBridge_End_to_End_Workflow.md) |
+> **Doc map:** [README.md § Documentation guide](../README.md#documentation-guide)  
+> **Product vocabulary:** [PRODUCT_ROADMAP.md](./PRODUCT_ROADMAP.md)  
+> **Progress vs this plan:** [PROGRESS.md](./PROGRESS.md) — **update PROGRESS, not this file**, when milestones ship.  
+> **Agent sessions:** [AGENT_HANDOFF.md](./AGENT_HANDOFF.md) (next tasks, runbook).  
+> **SQL / deploy:** [database-setup-sequence.md](../configuration/database-setup-sequence.md).
 
 ---
 
@@ -114,7 +57,7 @@ Develop and test all SharingBridge components using free-tier platforms with nea
 | **Version Control** | GitHub | Unlimited private repos | Keep GitHub |
 | **API Gateway** | Self-hosted Kong (Docker) | Manual setup | Keep or move to AWS |
 
-**How this relates to code today:** The table and diagrams below describe the **target free-tier stack**. **Shipped MVP** already uses **Supabase Postgres** for users, presets, order intents, seeker demands, and marketplace tables — both Node services require **`DATABASE_URL`** at startup. Integration-service forwards presets to user-service (`donor_presets`); there is no production JSON preset store and no in-memory marketplace catalog in `src/`. SQL order: [database-setup-sequence.md](../configuration/database-setup-sequence.md). Live snapshot: `development/AGENT_HANDOFF.md` § **Persistence model (current)**.
+**How this relates to code today:** The table below describes the **target free-tier stack**. As-built status: [PROGRESS.md](./PROGRESS.md). SQL order: [database-setup-sequence.md](../configuration/database-setup-sequence.md).
 
 ---
 
@@ -277,7 +220,7 @@ Delivery instruction: Please proceed to <geo_coordinates>. Identify the seeker u
 | **H — Transport bids** | Route/capacity bids; geo match vendor → beneficiaries | integration-service, web |
 | **I — Allocation** | Window aggregation; payee notify; fulfiller → transporter pay instructions | integration-service, notification-service |
 
-**Progress map (all workstreams):** § **Where we are** (top of this doc).
+**Progress map (all workstreams):** § **Where we are** in [PROGRESS.md](./PROGRESS.md).
 
 **Privacy checkpoints (before production copy in vendor apps)**
 
@@ -286,9 +229,9 @@ Delivery instruction: Please proceed to <geo_coordinates>. Identify the seeker u
 - TTL: secure links active until delivery completion + 30 minutes (architecture default); **Cloudinary / payee reference photos:** target **1–2 hour** distribution window for neighbourhood dashboards (see [Future_Extensions.md](../design/Future_Extensions.md) Phase A.2 payee photo rule).
 - Align “faceprint” language with counsel; store embeddings server-side only (not raw photos in Postgres when regulatory mode applies).
 
-Repo-level checklists: [AI_PLATFORM_INTEGRATION.md](./AI_PLATFORM_INTEGRATION.md); **product vocabulary and marketplace model:** [PRODUCT_ROADMAP.md](./PRODUCT_ROADMAP.md); order-ops backlog detail: [Future_Extensions.md](../design/Future_Extensions.md).
+Repo-level checklists: [AI_PLATFORM_INTEGRATION.md](./AI_PLATFORM_INTEGRATION.md) (as-built wiring); **product vocabulary:** [PRODUCT_ROADMAP.md](./PRODUCT_ROADMAP.md); order-ops backlog: [Future_Extensions.md](../design/Future_Extensions.md).
 
-**LLM hosting and bridges (LangChain, model APIs, mobile ↔ backend):** Not implemented in code today. Planning, env vars, sequences, and bootstrap checklist live in **`development/AI_PLATFORM_INTEGRATION.md`**. Rule: clients call integration-service (or gateway) only; orchestration service holds API keys and LangChain chains.
+**LLM hosting:** Shipped in `sharingbridge-ai-orchestration` (direct Groq/Gemini — no LangChain). Setup: [AI_PLATFORM_INTEGRATION.md](./AI_PLATFORM_INTEGRATION.md), [ai-setup-handhold.md](../configuration/ai-setup-handhold.md). Clients call integration-service only.
 
 ### Web App Workstream (`sharingbridge-web-app`)
 

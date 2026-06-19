@@ -6,8 +6,9 @@
 
 | Also read | For |
 |-----------|-----|
-| [AGENT_HANDOFF.md](./AGENT_HANDOFF.md) | What is shipped **today** (per-repo APIs) |
-| [IMPLEMENTATION_APPROACH.md](./IMPLEMENTATION_APPROACH.md) | Engineering phases **E–I**; **§ Where we are** = overall progress map |
+| [PROGRESS.md](./PROGRESS.md) | **Progress vs plan** — update when milestones ship |
+| [AGENT_HANDOFF.md](./AGENT_HANDOFF.md) | Agent session: next tasks, runbook |
+| [IMPLEMENTATION_APPROACH.md](./IMPLEMENTATION_APPROACH.md) | Engineering plan (phases **E–I**) |
 | [Configurator_Role_and_Unified_Initiation.md](../design/Configurator_Role_and_Unified_Initiation.md) | Configurator vs daily ops |
 | [Eco_Kitchen_Initiation_Flow.md](../design/Eco_Kitchen_Initiation_Flow.md) | Three routes, connection, payment boundaries |
 | [Future_Extensions.md](../design/Future_Extensions.md) | Order-ops supplement only (payment-done, delivery proof) |
@@ -222,7 +223,7 @@ Delivery detail: [IMPLEMENTATION_APPROACH.md](./IMPLEMENTATION_APPROACH.md). Ord
 
 - [README.md § Documentation guide](../README.md#documentation-guide) — master index
 - [IMPLEMENTATION_APPROACH.md](./IMPLEMENTATION_APPROACH.md) — phased delivery, repos
-- [AGENT_HANDOFF.md](./AGENT_HANDOFF.md) — shipped snapshot
+- [PROGRESS.md](./PROGRESS.md) — progress snapshot
 - [database-setup-sequence.md](../configuration/database-setup-sequence.md) — SQL order for marketplace
 - [web-client.md](../configuration/web-client.md)
 - [environment-variables.md](../configuration/environment-variables.md)

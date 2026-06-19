@@ -1,8 +1,9 @@
 # AI implementation plan
 
 **Status:** Active plan (June 2026)  
-**Audience:** Engineering and product  
-**Related:** [AI_PLATFORM_INTEGRATION.md](./AI_PLATFORM_INTEGRATION.md) (hosting, env, bridges), [Donor_Setup_AI_Search_Sequence.md](../design/Donor_Setup_AI_Search_Sequence.md), [field-handoff.md](../configuration/field-handoff.md)
+**As-built wiring:** [AI_PLATFORM_INTEGRATION.md](./AI_PLATFORM_INTEGRATION.md)  
+**Progress:** [PROGRESS.md](./PROGRESS.md) § AI  
+**Setup keys:** [ai-setup-handhold.md](../configuration/ai-setup-handhold.md)
 
 This document is the **full phased plan** for SharingBridge AI: preset collection, image/location descriptions, and seeker identification. It also answers **LangChain vs direct LLM** for this codebase.
 
@@ -10,14 +11,15 @@ This document is the **full phased plan** for SharingBridge AI: preset collectio
 
 ## What is shipped today
 
+See [PROGRESS.md](./PROGRESS.md) § AI and [AI_PLATFORM_INTEGRATION.md](./AI_PLATFORM_INTEGRATION.md). Summary:
+
 | Piece | State |
 |-------|--------|
-| `sharingbridge-ai-orchestration` | FastAPI service; **`AI_LLM_MODE=deterministic`** (no live model) |
-| Integration flags | `AI_SUGGEST_VENDORS_ENABLED`, `AI_INSTRUCTION_PACK_ENABLED` + `AI_ORCHESTRATION_BASE_URL` |
-| Mobile **Vendor presets** | `POST /v1/donor-setup/suggest-vendors` → orchestration or mock fallback |
-| Mobile **Help a seeker** | Photo upload → `POST /v1/donor-seeker/instruction-pack`; **GPS captured before instruction-pack** (not only on copy) |
-| `sharingbridge-photo-service` | Reference photo upload + JWT; **no vision/embeddings yet** |
-| Live LLM (Gemini + Groq) | **Wired** when `AI_LLM_MODE=live` + API keys; falls back to deterministic on error |
+| `sharingbridge-ai-orchestration` | FastAPI; **`AI_LLM_MODE=deterministic`** (CI) or **`live`** (Groq + Gemini) |
+| Integration bridge | `AI_SUGGEST_VENDORS_ENABLED`, `AI_INSTRUCTION_PACK_ENABLED`, `AI_ORCHESTRATION_BASE_URL` |
+| Mobile flows | suggest-vendors; Help a seeker → photo upload → instruction-pack |
+| `sharingbridge-photo-service` | Reference upload; **no** face embeddings yet |
+| Delivery vision match | **Not built** (future phase D) |
 
 ---
 

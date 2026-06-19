@@ -45,7 +45,7 @@ Expect `llm_mode: live`, `gemini_vision_model: gemini-2.5-flash`, `groq_configur
 
 - No Nest modules, no dependency-injection container.
 - AI orchestration is **not** called at boot — only on `POST /v1/donor-setup/suggest-vendors` and `POST /v1/donor-seeker/instruction-pack`.
-- Marketplace and seeker-demand routes use Postgres only when `DATABASE_URL` is set and tables exist — no in-memory catalog in production. See [field-handoff.md](./field-handoff.md) and [database-setup-sequence.md](./database-setup-sequence.md) (M1–M3).
+- Marketplace and seeker-demand routes use Postgres only when `DATABASE_URL` is set and tables exist — no in-memory catalog in production. See [field-handoff.md](./field-handoff.md) and [database-setup-sequence.md](./database-setup-sequence.md) (**M1–M5**).
 
 ### Operator checks after deploy
 

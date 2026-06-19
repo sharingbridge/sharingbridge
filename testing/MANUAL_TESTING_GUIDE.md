@@ -181,7 +181,7 @@ uvicorn app.main:app --host 0.0.0.0 --port 8092
 
 Confirm: `Invoke-RestMethod http://127.0.0.1:8092/health`
 
-### 1b. Mobile app (Flutter, currently 53 tests)
+### 1b. Mobile app (Flutter)
 
 ```powershell
 cd D:\kannan\sharingbridge\sharingbridge-mobile-app
@@ -275,7 +275,7 @@ npm test
 | `src/format.test.ts` | list/detail formatting helpers |
 | `src/feedScope.test.ts` | dashboard boundaries banner copy; coordinator vs payee `feed` parsing |
 
-Expected: **27 passed** (Vitest). End-to-end browser checks are in **§4**.
+Expected: **34 passed** (Vitest). End-to-end browser checks are in **§4**.
 
 ## 2. Manual API smoke tests
 
@@ -942,10 +942,10 @@ If suggest-vendors or instruction-pack fail, verify `AI_ORCHESTRATION_BASE_URL`,
 ## 7. What "good" looks like (acceptance summary)
 
 - `python -m pytest -q` in `sharingbridge-ai-orchestration` reports `6 passed`.
-- `npm test` in `sharingbridge-integration-service` reports `# pass 46 / # fail 0`.
-- `npm test` in `sharingbridge-user-service` reports `# pass 40 / # fail 0`.
-- `npm test` in `sharingbridge-web-app` (Vitest) reports **27 passed**.
-- `flutter test` in `sharingbridge-mobile-app` ends with `All tests passed!` (**53 tests**, including auth payload guards on order-intent and instruction-pack HTTP clients).
+- `npm test` in `sharingbridge-integration-service` reports `# pass 152 / # fail 0` (approximate — run locally to confirm).
+- `npm test` in `sharingbridge-user-service` reports `# pass 49 / # fail 0` (approximate).
+- `npm test` in `sharingbridge-web-app` (Vitest) reports **34 passed** (approximate).
+- `flutter test` in `sharingbridge-mobile-app` ends with `All tests passed!` (**66 tests** approximate).
 - `Invoke-RestMethod http://localhost:8080/health` returns `ok=True`.
 - Step 2c returns HTTP 200 with `saved_count=1`; step 2d echoes the
   same preset back.

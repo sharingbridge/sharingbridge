@@ -6,8 +6,8 @@
 
 | Also read | For |
 |-----------|-----|
-| [AGENT_HANDOFF.md](./AGENT_HANDOFF.md) | What is shipped **today** |
-| [IMPLEMENTATION_APPROACH.md](./IMPLEMENTATION_APPROACH.md) | Engineering phases, repos, timelines (marketplace **E–I**) |
+| [AGENT_HANDOFF.md](./AGENT_HANDOFF.md) | What is shipped **today** (per-repo APIs) |
+| [IMPLEMENTATION_APPROACH.md](./IMPLEMENTATION_APPROACH.md) | Engineering phases **E–I**; **§ Where we are** = overall progress map |
 | [Configurator_Role_and_Unified_Initiation.md](../design/Configurator_Role_and_Unified_Initiation.md) | Configurator vs daily ops |
 | [Eco_Kitchen_Initiation_Flow.md](../design/Eco_Kitchen_Initiation_Flow.md) | Three routes, connection, payment boundaries |
 | [Future_Extensions.md](../design/Future_Extensions.md) | Order-ops supplement only (payment-done, delivery proof) |

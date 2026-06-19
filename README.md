@@ -24,10 +24,11 @@ New here or unsure which file to open? Use this section. It defines **reading or
 |------------|----------------|
 | **Run the stack from scratch** | [configuration/README.md](configuration/README.md) → [e2e-deployment-sequence.md](configuration/e2e-deployment-sequence.md) → [database-setup-sequence.md](configuration/database-setup-sequence.md) |
 | **Understand what is shipped today** | [development/AGENT_HANDOFF.md](development/AGENT_HANDOFF.md) |
+| **Overall progress vs target model** | [development/IMPLEMENTATION_APPROACH.md](development/IMPLEMENTATION_APPROACH.md) § **Where we are** |
 | **Product vocabulary, verbiage & marketplace** | [development/PRODUCT_ROADMAP.md](development/PRODUCT_ROADMAP.md) § Documentation verbiage |
 | **Configurator, unified initiation, payee** | [design/Configurator_Role_and_Unified_Initiation.md](design/Configurator_Role_and_Unified_Initiation.md) |
 | **Eco kitchens — three routes, connection, payment boundaries** | [design/Eco_Kitchen_Initiation_Flow.md](design/Eco_Kitchen_Initiation_Flow.md) |
-| **How we build (phases, repos, AI)** | [development/IMPLEMENTATION_APPROACH.md](development/IMPLEMENTATION_APPROACH.md) |
+| **How we build (phases, repos, AI)** | [development/IMPLEMENTATION_APPROACH.md](development/IMPLEMENTATION_APPROACH.md) — **§ Where we are** for overall progress |
 | **BRD steps 1–12 with diagrams** | [design/SharingBridge_End_to_End_Workflow.md](design/SharingBridge_End_to_End_Workflow.md) |
 | **Order payment / delivery proof** | [design/Future_Extensions.md](design/Future_Extensions.md) § Phase A–B only |
 | **Manual test on device** | [testing/MANUAL_TESTING_GUIDE.md](testing/MANUAL_TESTING_GUIDE.md) |
@@ -42,7 +43,7 @@ When two docs conflict, **higher row wins** for that topic.
 | **2 — Product** | [development/PRODUCT_ROADMAP.md](development/PRODUCT_ROADMAP.md) | Glossary, **verbiage**, actors, initiation routes |
 | **3 — Initiation flows** | [design/Eco_Kitchen_Initiation_Flow.md](design/Eco_Kitchen_Initiation_Flow.md) | Three routes, eco kitchens, connection + payment boundaries |
 | **4 — Ops model** | [design/Configurator_Role_and_Unified_Initiation.md](design/Configurator_Role_and_Unified_Initiation.md) | Configurator vs runtime owners |
-| **5 — Engineering** | [development/IMPLEMENTATION_APPROACH.md](development/IMPLEMENTATION_APPROACH.md) | Build phases, marketplace **E–I**, AI/photo timelines |
+| **5 — Engineering** | [development/IMPLEMENTATION_APPROACH.md](development/IMPLEMENTATION_APPROACH.md) | Build phases, marketplace **E–I**, **§ Where we are** progress map |
 | **6 — Architecture** | [design/SharingBridge_Technical_Architecture.md](design/SharingBridge_Technical_Architecture.md) | Services, APIs, as-built MVP |
 | **7 — Live status** | [development/AGENT_HANDOFF.md](development/AGENT_HANDOFF.md) | Shipped snapshot, next tasks |
 | **8 — Run & configure** | [configuration/](configuration/) | Deploy, env, auth, SQL sequence |

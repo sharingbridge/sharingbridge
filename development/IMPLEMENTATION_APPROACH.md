@@ -1,13 +1,71 @@
 # SharingBridge - Implementation Approach
 
-**Version:** 2.0  
-**Date:** January 7, 2026  
-**Status:** Dual-Track Implementation Roadmap
+**Version:** 2.1  
+**Date:** June 2026  
+**Status:** Free-tier MVP in active development — see **§ Where we are** below.
 
 > **Doc map:** [README.md § Documentation guide](../README.md#documentation-guide) — start here for reading order.  
 > **Product truth:** [PRODUCT_ROADMAP.md](./PRODUCT_ROADMAP.md) (vocabulary, marketplace).  
 > **This file:** engineering strategy, free-tier stack, build phases — **not** duplicate product glossary.  
-> **SQL order:** [database-setup-sequence.md](../configuration/database-setup-sequence.md).
+> **Live repo snapshot:** [AGENT_HANDOFF.md](./AGENT_HANDOFF.md) (APIs and per-service detail).  
+> **SQL / deploy steps:** [database-setup-sequence.md](../configuration/database-setup-sequence.md) (**1 → M1–M5**).
+
+---
+
+## Where we are (progress snapshot)
+
+**Last updated:** June 2026. This section is the **overall target-model progress** map. Per-repo APIs and “recently shipped” bullets stay in [AGENT_HANDOFF.md](./AGENT_HANDOFF.md). Your **database/deploy position** (e.g. last SQL file run): [database-setup-sequence.md](../configuration/database-setup-sequence.md) § **Where you are**.
+
+### Target model (what we are building toward)
+
+```text
+Direct order (vendor app)  +  Eco kitchen routes (pledge / I pay)
+        ↓                              ↓
+   Order intents                  Demand board → kitchen commit
+        ↓                              ↓
+   Payment off-platform         Connection (order code) + notify
+        ↓                              ↓
+   Delivery proof (Phase B)      Full marketplace F–I (future)
+```
+
+### Progress by workstream
+
+| Workstream | Target | Status (June 2026) | Detail |
+|------------|--------|-------------------|--------|
+| **Foundation** | Supabase Postgres, Render APIs, Google auth, Flutter + Vite | **Shipped** | [AGENT_HANDOFF.md](./AGENT_HANDOFF.md) § Persistence |
+| **Direct order** | Help a seeker → instruction-pack → vendor deep links | **Shipped** | [field-handoff.md](../configuration/field-handoff.md) |
+| **Eco kitchen product** | Three routes, consent, connection, off-platform pay | **Phases 1–6 shipped** | [Eco_Kitchen_Initiation_Flow.md](../design/Eco_Kitchen_Initiation_Flow.md) |
+| **Marketplace E** | Seeker demands, Actions board, pledges, kitchen commit | **Shipped** | SQL **M1–M4**; web **Updates** banner + Connection panel |
+| **Connection notify** | FCM on kitchen commit; `device_tokens` | **Code shipped** — wire on deploy | SQL **M5** + [notification-service-local.md](../configuration/notification-service-local.md) |
+| **Marketplace F–I** | Beneficiary profile, fulfilment/transport bids, allocation | **Not started** | [PRODUCT_ROADMAP.md](./PRODUCT_ROADMAP.md) § Marketplace |
+| **AI field slice A–C** | Photo, instruction-pack API, handoff copy | **Mostly shipped** (template/mock fallback) | § AI interactions below; live LLM optional |
+| **AI / delivery D** | Delivery match, verification notifications | **Not started** | § Phased delivery plan Phase D |
+| **Order ops A–B** | Payment-done, delivery proof (direct order) | **Partial** (payment status on web; proof Phase B open) | [Future_Extensions.md](../design/Future_Extensions.md) |
+| **Transactional email** | Connection-ready email | **Not implemented** (copy exists; FCM only) | [AGENT_HANDOFF.md](./AGENT_HANDOFF.md) § Next tasks |
+| **Mobile Connection UI** | In-app order-code lookup | **Not shipped** (web Connection + FCM nudge) | [MANUAL_TESTING_GUIDE.md](../testing/MANUAL_TESTING_GUIDE.md) §4f |
+
+### SQL migrations (configuration progress)
+
+Code assumes the full marketplace + eco + push schema when deployed. Run in order on each environment:
+
+| Step | Enables | Code ready? |
+|------|---------|-------------|
+| **1** `schema.sql` | Core tables | Yes |
+| **M1–M3** | Actions, menu picker | Yes |
+| **M4** | Order codes `SB-…`, Connection API | Yes |
+| **M5** | FCM `device_tokens` | Yes |
+| **Deploy** | notification-service + webhook + Firebase | Yes |
+
+**If a step was skipped:** [database-setup-sequence.md](../configuration/database-setup-sequence.md) § **If a step was skipped**.
+
+### What to read next
+
+| Need | Doc |
+|------|-----|
+| APIs / repos shipped today | [AGENT_HANDOFF.md](./AGENT_HANDOFF.md) |
+| Eco kitchen phase checklist | [Eco_Kitchen_Initiation_Flow.md](../design/Eco_Kitchen_Initiation_Flow.md) § 10 |
+| Manual verification | [MANUAL_TESTING_GUIDE.md](../testing/MANUAL_TESTING_GUIDE.md) |
+| BRD journey ✅ / 🟡 / ⬜ | [SharingBridge_End_to_End_Workflow.md](../design/SharingBridge_End_to_End_Workflow.md) |
 
 ---
 
@@ -213,11 +271,13 @@ Delivery instruction: Please proceed to <geo_coordinates>. Identify the seeker u
 
 | Phase | Scope | Repos |
 |-------|--------|-------|
-| **E — Demand board** | `seeker_demands` + coordinator read ( **shipped** ) | integration-service, web-app, mobile |
+| **E — Demand board** | `seeker_demands` + coordinator read; eco kitchen commit + Connection (**shipped** ) | integration-service, web-app, mobile, notification-service |
 | **F — Beneficiary + initiator** | Beneficiary profile (no login); demand initiator role; recurring plans | user-service, integration-service, mobile, web |
 | **G — Fulfilment bids** | Prep capacity commits; self-pickup vs delivery choice | integration-service, web (fulfiller UI) |
 | **H — Transport bids** | Route/capacity bids; geo match vendor → beneficiaries | integration-service, web |
 | **I — Allocation** | Window aggregation; payee notify; fulfiller → transporter pay instructions | integration-service, notification-service |
+
+**Progress map (all workstreams):** § **Where we are** (top of this doc).
 
 **Privacy checkpoints (before production copy in vendor apps)**
 

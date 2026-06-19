@@ -8,7 +8,7 @@
 |----------|------|
 | [AGENT_HANDOFF.md](./AGENT_HANDOFF.md) | **Live status** — shipped features, next tasks |
 | [PRODUCT_ROADMAP.md](./PRODUCT_ROADMAP.md) | **Product authority** — glossary, actors, initiation routes |
-| [IMPLEMENTATION_APPROACH.md](./IMPLEMENTATION_APPROACH.md) | **Engineering plan** — phases, repos, free-tier stack |
+| [IMPLEMENTATION_APPROACH.md](./IMPLEMENTATION_APPROACH.md) | **Engineering plan** — phases, repos, free-tier stack; **§ Where we are** = overall progress map |
 | [AI_IMPLEMENTATION_PLAN.md](./AI_IMPLEMENTATION_PLAN.md) | AI presets, descriptions, seeker ID |
 | [AI_PLATFORM_INTEGRATION.md](./AI_PLATFORM_INTEGRATION.md) | Orchestration hosting and bridges |
 | [USER_SERVICE_PREFERENCES_MIGRATION.md](./USER_SERVICE_PREFERENCES_MIGRATION.md) | Preferences via user-service Postgres |

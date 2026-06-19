@@ -30,6 +30,7 @@ needed.
 | 12 | **Record seeker demand** + eco kitchen routes (pledge / I pay) | `sharingbridge-mobile-app/lib/features/seeker_demand/**` → `GET /v1/standard-offers`, `POST /v1/seeker-demands` |
 | 13 | Web **Actions** tab (pledges, kitchen commits) | `sharingbridge-web-app` → `GET /v1/demand/board`; requires SQL **M1–M4** |
 | 14 | Web **Connection** panel (order code handoff) | `ConnectionLookupPanel` → `GET /v1/connections/:orderCode`; **M4** + kitchen commit |
+| 14b | Web **Updates** banner (connection-ready) | `DashboardNotificationsBanner` — demand board on sign-in / **Refresh**; **§4d-b** |
 | 15 | **Notification-service** (FCM push) | `sharingbridge-notification-service`; **M5** + Firebase — [notification-service-local.md](../configuration/notification-service-local.md) |
 | 16 | Web **data boundaries** banner + coordinator **scope** (time / area) | `sharingbridge-web-app` — Initiations, Actions, Map share scope |
 
@@ -864,6 +865,14 @@ Requires SQL **M1–M4** and at least one seeker demand (mobile **Start initiati
 4. As coordinator, **Kitchen commit** on a line (legacy API: `POST /v1/vendor-bids`) — enter kitchen name and portions.
 5. **Refresh** reloads the board; with **§4c-c** scope applied, counts match the boundaries banner.
 
+### 4d-b. Updates banner (web)
+
+Requires **M4** and at least one **kitchen commit** in the current demand-board scope (**§4d** step 4). Not realtime — loads on **sign-in** and header **Refresh** only.
+
+1. After a kitchen commit, sign in (or click **Refresh** on the dashboard header).
+2. Below the hero, confirm **Updates (n)** lists the order code (`SB-…`) with a role badge (Coordinator / Your order / Your pledge / Your kitchen commit).
+3. Click **Open Connection** — dashboard switches to **Actions** and loads that order in the Connection panel (**§4f**).
+
 ### 4f. Connection panel (order code)
 
 Requires **M4** and a kitchen commit on a matching demand line (**§4d** step 4).
@@ -953,4 +962,4 @@ If suggest-vendors or instruction-pack fail, verify `AI_ORCHESTRATION_BASE_URL`,
 - Step **4c** shows the coordinator web dashboard listing payee order intents (including payee `user_id` and reference photo thumbnail when uploaded) after mobile **§3f** on the same integration host.
 - Step **4c-b** shows the **Data boundaries** banner on Initiations / Actions / Map with sensible Time / Area / Limit copy.
 - Step **4c-c** lets coordinators **Apply scope** (time + area) and see Initiations, Map, and Actions stay aligned.
-- Step **4d** / **4f** / **4g**: Actions pledge + kitchen commit; Connection emails on web; FCM push on mobile (**M4** + **M5** + notification deploy).
+- Step **4d** / **4d-b** / **4f** / **4g**: Actions pledge + kitchen commit; **Updates** banner on sign-in/refresh; Connection emails on web; FCM push on mobile (**M4** + **M5** + notification deploy).

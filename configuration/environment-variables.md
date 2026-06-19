@@ -6,13 +6,13 @@ Tables are sorted **A–Z by variable name** to match Render’s environment UI.
 
 | Service | Config file | Load when |
 |---------|-------------|-----------|
-| user-service | `sharingbridge-user-service/.env` | `npm start` (dotenv) |
+| ai-orchestration | `sharingbridge-ai-orchestration/.env` | `uvicorn` |
 | integration-service | `sharingbridge-integration-service/.env` | `npm start` |
+| mobile-app | `--dart-define=…` on `flutter run` | compile time (no `.env` in repo) |
 | notification-service | `sharingbridge-notification-service/.env` | `npm start` |
 | photo-service | `sharingbridge-photo-service/.env` | `uvicorn` / pytest |
-| ai-orchestration | `sharingbridge-ai-orchestration/.env` | `uvicorn` |
+| user-service | `sharingbridge-user-service/.env` | `npm start` (dotenv) |
 | web-app | `sharingbridge-web-app/.env` | `npm run dev` / **build** (`VITE_*` baked into `dist/`) |
-| mobile-app | `--dart-define=…` on `flutter run` | compile time (no `.env` in repo) |
 
 **Must match across services:** `DATABASE_URL` (Postgres), `AUTH_TOKEN_SECRET` (+ issuer/audience), `WEB_CORS_ORIGINS` (user-service **and** integration-service, same string), integration `API_BASE_URL` = web `VITE_API_BASE_URL` = mobile `API_BASE_URL`, web static site URL = mobile `WEB_DASHBOARD_URL`.
 
@@ -28,11 +28,11 @@ Set the **same value** on all five Render Web Services if you want consistent ve
 
 | Service | Supports `LOG_LEVEL` |
 |---------|----------------------|
-| `sharingbridge-user-service` | Yes |
+| `sharingbridge-ai-orchestration` | Yes |
 | `sharingbridge-integration-service` | Yes |
 | `sharingbridge-notification-service` | Yes |
-| `sharingbridge-ai-orchestration` | Yes |
 | `sharingbridge-photo-service` | Yes |
+| `sharingbridge-user-service` | Yes |
 | web-app, mobile-app | No (no server runtime logs) |
 
 | Value | What you see in Render logs |
@@ -80,27 +80,27 @@ Set the **same value** on all five Render Web Services if you want consistent ve
 | Variable | Local example | Render production |
 |----------|---------------|-------------------|
 | `AI_INSTRUCTION_PACK_ENABLED` | `true` | `true` |
-| `AI_ORCHESTRATION_BASE_URL` | `http://localhost:8091` | `https://<ai-host>.onrender.com` |
-| `AI_ORCHESTRATION_INTERNAL_API_KEY` | shared with ai-orchestration | same |
-| `AI_ORCHESTRATION_SUGGEST_VENDORS_TIMEOUT_MS` | `15000` | `15000` — suggest-vendors only |
-| `AI_ORCHESTRATION_INSTRUCTION_PACK_TIMEOUT_MS` | `60000` | `60000` — instruction-pack only (Nominatim + Gemini vision + Groq) |
-| `AI_ORCHESTRATION_RETRY_MAX_ATTEMPTS` | `5` | default retries on 429/502/503 for all orchestration routes |
-| `AI_ORCHESTRATION_SUGGEST_VENDORS_RETRY_MAX_ATTEMPTS` | — | overrides default for suggest-vendors only |
-| `AI_ORCHESTRATION_INSTRUCTION_PACK_RETRY_MAX_ATTEMPTS` | `5` | overrides default for instruction-pack only |
-| `AI_ORCHESTRATION_RETRY_BASE_DELAY_MS` | `8000` | backoff step for instruction-pack retries |
-| `AI_ORCHESTRATION_RETRY_MAX_DELAY_MS` | `45000` | max wait between retries |
-| `AI_SUGGEST_VENDORS_ENABLED` | `true` | `true` |
 | `AI_MOCK_FALLBACK_ENABLED` | `true` (local dev) | **unset** — production returns HTTP 503 when orchestration fails |
+| `AI_ORCHESTRATION_BASE_URL` | `http://localhost:8091` | `https://<ai-host>.onrender.com` |
+| `AI_ORCHESTRATION_INSTRUCTION_PACK_RETRY_MAX_ATTEMPTS` | `5` | overrides default for instruction-pack only |
+| `AI_ORCHESTRATION_INSTRUCTION_PACK_TIMEOUT_MS` | `60000` | `60000` — instruction-pack only (Nominatim + Gemini vision + Groq) |
+| `AI_ORCHESTRATION_INTERNAL_API_KEY` | shared with ai-orchestration | same |
+| `AI_ORCHESTRATION_RETRY_BASE_DELAY_MS` | `8000` | backoff step for instruction-pack retries |
+| `AI_ORCHESTRATION_RETRY_MAX_ATTEMPTS` | `5` | default retries on 429/502/503 for all orchestration routes |
+| `AI_ORCHESTRATION_RETRY_MAX_DELAY_MS` | `45000` | max wait between retries |
+| `AI_ORCHESTRATION_SUGGEST_VENDORS_RETRY_MAX_ATTEMPTS` | — | overrides default for suggest-vendors only |
+| `AI_ORCHESTRATION_SUGGEST_VENDORS_TIMEOUT_MS` | `15000` | `15000` — suggest-vendors only |
+| `AI_SUGGEST_VENDORS_ENABLED` | `true` | `true` |
 | `AUTH_TOKEN_AUDIENCE` | `sharingbridge-clients` | same |
 | `AUTH_TOKEN_ISSUER` | `sharingbridge-user-service` | same |
 | `AUTH_TOKEN_SECRET` | **same** as user-service | same |
+| `CONNECTION_NOTIFY_WEBHOOK_SECRET` | *(unset)* | Shared secret sent as `X-Webhook-Secret` — must match notification-service `WEBHOOK_SECRET` |
+| `CONNECTION_NOTIFY_WEBHOOK_URL` | *(unset)* | Optional — POST JSON when eco kitchen commits (`connection_ready`); for notification-service or mailer |
 | `DATABASE_URL` | **same** as user-service | same |
 | `INITIATOR_NEIGHBOURHOOD_RADIUS_M` | `5000` | `5000` (`near_lat` / `near_lng` filter radius in **metres**; capped at 50000 server-side) |
 | `INITIATOR_NEIGHBOURHOOD_WINDOW_HOURS` | `2` | `2` (initiator list `since`, photo redaction; 1–72) |
-| `NOMINATIM_USER_AGENT` | `SharingBridge-Integration-Service/1.0` | same — GPS → postal `locality_key` (`IN:TN:600115`) via reverse geocode |
-| `CONNECTION_NOTIFY_WEBHOOK_URL` | *(unset)* | Optional — POST JSON when eco kitchen commits (`connection_ready`); for notification-service or mailer |
-| `CONNECTION_NOTIFY_WEBHOOK_SECRET` | *(unset)* | Shared secret sent as `X-Webhook-Secret` — must match notification-service `WEBHOOK_SECRET` |
 | `LOG_LEVEL` | `warn` | `error`, `warn`, `info`, or `debug` — see [LOG_LEVEL](#log_level-all-backend-apis) |
+| `NOMINATIM_USER_AGENT` | `SharingBridge-Integration-Service/1.0` | same — GPS → postal `locality_key` (`IN:TN:600115`) via reverse geocode |
 | `ORDER_INTENT_LIST_MAX_ROWS` | `100` | `100` (max rows per dashboard list) |
 | `PORT` | `8080` | injected by Render — do not set |
 | `USER_SERVICE_BASE_URL` | `http://localhost:8081` (required) | `https://<user-host>.onrender.com` — payee presets in Postgres |
@@ -113,10 +113,11 @@ Set the **same value** on all five Render Web Services if you want consistent ve
 | Variable | Local example | Render production |
 |----------|---------------|-------------------|
 | `DATABASE_URL` | **same** as integration-service | same — reads `device_tokens` |
-| `WEBHOOK_SECRET` | **same** as integration `CONNECTION_NOTIFY_WEBHOOK_SECRET` | same |
-| `FIREBASE_SERVICE_ACCOUNT_PATH` | path to `firebase-adminsdk.json` | Render secret file mount |
 | `FIREBASE_SERVICE_ACCOUNT_JSON` | — | inline JSON alternative to path |
+| `FIREBASE_SERVICE_ACCOUNT_PATH` | path to `firebase-adminsdk.json` | Render secret file mount |
+| `LOG_LEVEL` | `warn` | `error`, `warn`, `info`, or `debug` — see [LOG_LEVEL](#log_level-all-backend-apis) |
 | `PORT` | `8093` (local — photo-service uses 8092) | injected by Render |
+| `WEBHOOK_SECRET` | **same** as integration `CONNECTION_NOTIFY_WEBHOOK_SECRET` | same |
 
 Webhook route: `POST /internal/connection-ready` — set integration `CONNECTION_NOTIFY_WEBHOOK_URL` to this URL.
 
@@ -146,14 +147,14 @@ See [photo-service-local.md](./photo-service-local.md).
 |----------|---------------|----------|
 | `AI_LLM_MODE` | `deterministic` or `live` | `deterministic` = template/mock output; `live` = real Groq + Gemini calls |
 | `AI_ORCHESTRATION_INTERNAL_API_KEY` | same as integration-service | Internal service-to-service auth header (`X-Internal-Api-Key`) |
-| `GROQ_API_KEY` | `gsk_...` | Groq text generation for `suggest-vendors` (vendor preset suggestions) and instruction-pack composition |
-| `GROQ_MODEL` | `llama-3.3-70b-versatile` | Groq model for text paths above |
 | `GEMINI_API_KEY` | `AIza...` | Gemini vision for `image_description` + `seeker_appearance_hints` |
 | `GEMINI_VISION_MODEL` | `gemini-2.5-flash` | Gemini model for image analysis (`gemini-2.0-flash` shut down June 2026) |
-| `PHOTO_SERVICE_BASE_URL` | `https://<photo-host>.onrender.com` | Source of signed image URLs that Gemini can fetch |
-| `NOMINATIM_USER_AGENT` | `SharingBridge/1.0 (ops@yourdomain.org)` | OSM reverse geocode identification (no API key needed) |
-| `SHARINGBRIDGE_WEBSITE_URL` | `pending` | Courier instruction text reference only (not an API endpoint) |
+| `GROQ_API_KEY` | `gsk_...` | Groq text generation for `suggest-vendors` (vendor preset suggestions) and instruction-pack composition |
+| `GROQ_MODEL` | `llama-3.3-70b-versatile` | Groq model for text paths above |
 | `LOG_LEVEL` | `warn` | `error`, `warn`, `info`, or `debug` — see [LOG_LEVEL](#log_level-all-backend-apis) |
+| `NOMINATIM_USER_AGENT` | `SharingBridge/1.0 (ops@yourdomain.org)` | OSM reverse geocode identification (no API key needed) |
+| `PHOTO_SERVICE_BASE_URL` | `https://<photo-host>.onrender.com` | Source of signed image URLs that Gemini can fetch |
+| `SHARINGBRIDGE_WEBSITE_URL` | `pending` | Courier instruction text reference only (not an API endpoint) |
 
 `deterministic` = template/mock (not live AI). See [ai-setup-handhold.md](./ai-setup-handhold.md).
 
@@ -171,8 +172,8 @@ Build-time only (`VITE_*` in `.env` before `npm run build` or `npm run dev`).
 |----------|---------------|-------------------|
 | `VITE_API_BASE_URL` | `http://localhost:8080` | `https://<integration-host>.onrender.com` |
 | `VITE_GOOGLE_CLIENT_ID` | Web OAuth client ID | same as `GOOGLE_CLIENT_ID_WEB` |
-| `VITE_USER_SERVICE_BASE_URL` | `http://localhost:8081` | `https://<user-host>.onrender.com` |
 | `VITE_GOOGLE_MAPS_API_KEY` | optional — Maps JavaScript API | same — enables **Map** tab on dashboard |
+| `VITE_USER_SERVICE_BASE_URL` | `http://localhost:8081` | `https://<user-host>.onrender.com` |
 
 CORS is **not** set here — set `WEB_CORS_ORIGINS` on both Node backends. See [web-client.md](./web-client.md).
 
@@ -212,10 +213,10 @@ Google sign-in on web works for any account with `payee` and/or `coordinator` in
 | Repo | Key vars |
 |------|----------|
 | integration-service | `AUTH_TOKEN_SECRET`, `DATABASE_URL`, `USER_SERVICE_BASE_URL=http://localhost:8081`, `WEB_CORS_ORIGINS=http://localhost:5173`, optional `CONNECTION_NOTIFY_WEBHOOK_URL=http://localhost:8093/internal/connection-ready` |
+| mobile-app | `API_BASE_URL`, `USER_SERVICE_BASE_URL`, `PHOTO_SERVICE_BASE_URL`, `GOOGLE_CLIENT_ID`, `WEB_DASHBOARD_URL=http://10.0.2.2:5173` (emulator) — all via `--dart-define` on `flutter run` |
 | notification-service | `DATABASE_URL`, `WEBHOOK_SECRET`, `FIREBASE_SERVICE_ACCOUNT_PATH` or `FIREBASE_SERVICE_ACCOUNT_JSON` — [notification-service-local.md](./notification-service-local.md) |
 | photo-service | `AUTH_TOKEN_SECRET`, `CLOUDINARY_*`, `DATABASE_URL` |
 | user-service | `AUTH_TOKEN_SECRET`, `DATABASE_URL`, `GOOGLE_CLIENT_ID_WEB`, `WEB_CORS_ORIGINS=http://localhost:5173` |
 | web-app | `VITE_API_BASE_URL`, `VITE_GOOGLE_CLIENT_ID`, `VITE_USER_SERVICE_BASE_URL` → localhost ports above |
-| mobile-app | `API_BASE_URL`, `USER_SERVICE_BASE_URL`, `PHOTO_SERVICE_BASE_URL`, `GOOGLE_CLIENT_ID`, `WEB_DASHBOARD_URL=http://10.0.2.2:5173` (emulator) — all via `--dart-define` on `flutter run` |
 
 Restart Node after `.env` changes. Restart `npm run dev` after web `VITE_*` changes. Rebuild mobile after any `--dart-define` change.

@@ -664,13 +664,13 @@ photos
 
 ### 3.5 Integration Service
 
-**Architectural role (as-built):** **Experience API** / **shared BFF** — the only backend mobile and web call for payee and coordinator journeys. Composes user-service, ai-orchestration, and Postgres order-intent data; applies auth, CORS, and degraded-mode fallbacks. See [As-built architecture](#as-built-architecture-june-2026).
+**Architectural role (as-built):** **Experience API** / **shared BFF** — the only backend mobile and web call for initiator and coordinator journeys. Composes user-service, ai-orchestration, and Postgres order-intent data; applies auth, CORS, and degraded-mode fallbacks. See [As-built architecture](#as-built-architecture-june-2026).
 
 **Shipped responsibilities (MVP):**
 - Vendor preset setup: suggest-vendors, preferences proxy to user-service
-- Payee-seeker: instruction-pack bridge to ai-orchestration, order-intent registration and listing
+- Initiator–beneficiary: instruction-pack bridge to ai-orchestration, order-intent registration and listing
 - Coordinator dashboard: order-intent list, neighbourhood feed filters
-- JWT payee-role enforcement; `WEB_CORS_ORIGINS` for browser clients
+- JWT initiator-role enforcement; `WEB_CORS_ORIGINS` for browser clients
 
 **Target responsibilities (roadmap):**
 - Vendor API abstraction (food delivery platforms)

@@ -113,11 +113,20 @@ Set the **same value** on all five Render Web Services if you want consistent ve
 | Variable | Local example | Render production |
 |----------|---------------|-------------------|
 | `DATABASE_URL` | **same** as integration-service | same — reads `device_tokens` |
-| `FIREBASE_SERVICE_ACCOUNT_JSON` | — | inline JSON alternative to path |
-| `FIREBASE_SERVICE_ACCOUNT_PATH` | path to `firebase-adminsdk.json` | Render secret file mount |
+| `FIREBASE_SERVICE_ACCOUNT_JSON` | *(optional locally if using PATH)* | **Preferred on Render** — paste full Admin SDK JSON from Firebase Console (see below) |
+| `FIREBASE_SERVICE_ACCOUNT_PATH` | `.\firebase-adminsdk.json` | **Do not use on Render** — local `.env` only; path to downloaded Admin SDK key file |
 | `LOG_LEVEL` | `warn` | `error`, `warn`, `info`, or `debug` — see [LOG_LEVEL](#log_level-all-backend-apis) |
 | `PORT` | `8093` (local — photo-service uses 8092) | injected by Render |
 | `WEBHOOK_SECRET` | **same** as integration `CONNECTION_NOTIFY_WEBHOOK_SECRET` | same |
+
+**Firebase Admin credentials — set one, not both:**
+
+| Where | Use |
+|-------|-----|
+| **Render** | `FIREBASE_SERVICE_ACCOUNT_JSON` only — paste the entire downloaded JSON into the env var |
+| **Local** | `FIREBASE_SERVICE_ACCOUNT_PATH` pointing at the file on disk, **or** `FIREBASE_SERVICE_ACCOUNT_JSON` inline |
+
+**How to get the JSON (not `google-services.json`):** Firebase Console → **Project settings** → **Service accounts** → **Firebase Admin SDK** → **Generate new private key**. That file is server-only; mobile uses separate `android/app/google-services.json` in the same Firebase project. Detail: [notification-service-local.md](./notification-service-local.md).
 
 Webhook route: `POST /internal/connection-ready` — set integration `CONNECTION_NOTIFY_WEBHOOK_URL` to this URL.
 

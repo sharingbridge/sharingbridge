@@ -29,9 +29,11 @@ needed.
 | 11 | Reference photo upload (Cloudinary) | `sharingbridge-photo-service` — see **§1e**, **§2b**, **§3f**; [photo-service-local.md](../configuration/photo-service-local.md) |
 | 12 | **Record seeker demand** + eco kitchen routes (pledge / I pay) | `sharingbridge-mobile-app/lib/features/seeker_demand/**` → `GET /v1/standard-offers`, `POST /v1/seeker-demands` |
 | 13 | Web **Actions** tab (pledges, kitchen commits) | `sharingbridge-web-app` → `GET /v1/demand/board`; requires SQL **M1–M4** |
-| 14 | Web **Connection** panel (order code handoff) | `ConnectionLookupPanel` → `GET /v1/connections/:orderCode`; requires **M4** + kitchen commit |
-| 15 | **Notification-service** (optional FCM push) | `sharingbridge-notification-service` → webhook from integration; requires **M5** + Firebase — [notification-service-local.md](../configuration/notification-service-local.md) |
-| 16 | Web **data boundaries** banner + coordinator **scope** (time / area) | `sharingbridge-web-app` — Initiations, Actions, Map share scope; integration `feed` on list + demand |
+| 14 | Web **Connection** panel (order code handoff) | `ConnectionLookupPanel` → `GET /v1/connections/:orderCode`; **M4** + kitchen commit |
+| 15 | **Notification-service** (FCM push) | `sharingbridge-notification-service`; **M5** + Firebase — [notification-service-local.md](../configuration/notification-service-local.md) |
+| 16 | Web **data boundaries** banner + coordinator **scope** (time / area) | `sharingbridge-web-app` — Initiations, Actions, Map share scope |
+
+**Setup order:** [database-setup-sequence.md](../configuration/database-setup-sequence.md) (**1 → 2 → M1–M5** → notification deploy). Skipped steps: same doc § **If a step was skipped**.
 
 ## Prerequisites
 
@@ -49,10 +51,10 @@ needed.
   - `D:\kannan\sharingbridge\sharingbridge-photo-service`
   - **Python 3.10+** (3.13 works) — project venv inside that repo only; see **§1e**
   - Port **8092** free locally
-- Notification service (optional — connection-ready **FCM push**):
+- Notification service (eco kitchen FCM — **M5** + Firebase):
   - `D:\kannan\sharingbridge\sharingbridge-notification-service`
-  - Port **8093** free locally (photo-service uses 8092)
-  - Requires SQL **M5**, Firebase Admin JSON, mobile `google-services.json` — [notification-service-local.md](../configuration/notification-service-local.md)
+  - Port **8093** (photo-service uses 8092)
+  - [notification-service-local.md](../configuration/notification-service-local.md)
 - For **§4** (web): Google Web client + [coordinator-seed.sql](../configuration/coordinator-seed.sql) — [configuration/e2e-deployment-sequence.md](../configuration/e2e-deployment-sequence.md) **Phase 0–1**.
 - For **§3-auth** (mobile Google): Android OAuth client + SHA-1 on user-service — [configuration/google-auth-setup.md](../configuration/google-auth-setup.md) §2.2.
 - Port `8080` free locally (integration-service).
@@ -70,7 +72,7 @@ Both **`sharingbridge-user-service`** and **`sharingbridge-integration-service`*
 | 3 | Run [local-postgres-grants.sql](../configuration/local-postgres-grants.sql) as `postgres` (fixes `permission denied for table users`) |
 | 4 | Copy `env.example` → `.env` in **both** Node repos; set the same `DATABASE_URL` (match your port, e.g. `5433`) |
 | 5 | Coordinator: `coordinator` row in `user_roles` ([coordinator-seed.sql](../configuration/coordinator-seed.sql)) after the user exists in `users` |
-| 6 | Marketplace + eco kitchen: run **M1 → M2 → M3 → M4** in [database-setup-sequence.md](../configuration/database-setup-sequence.md); **M5** if testing FCM push; `NOMINATIM_USER_AGENT` on **integration-service** (separate from ai-orchestration) |
+| 6 | Marketplace + eco kitchen + push: **M1 → M5** in [database-setup-sequence.md](../configuration/database-setup-sequence.md); notification deploy per [notification-service-local.md](../configuration/notification-service-local.md); `NOMINATIM_USER_AGENT` on integration-service |
 
 **Verify DB before starting apps (psql or pgAdmin on `sharingbridge`):**
 
@@ -232,9 +234,9 @@ Expected output footer:
 # fail 0
 ```
 
-### 1f. Notification service (Node.js, optional)
+### 1f. Notification service (Node.js)
 
-Only when testing **§4g** FCM push. Requires SQL **M5** and Firebase credentials.
+Requires **M5** and Firebase. Part of the eco kitchen stack after integration-service.
 
 ```powershell
 cd D:\kannan\sharingbridge\sharingbridge-notification-service
@@ -871,19 +873,18 @@ Requires **M4** and a kitchen commit on a matching demand line (**§4d** step 4)
 3. As **initiator** (payee who recorded the demand) or **coordinator**, confirm kitchen display name and login emails appear in-app.
 4. Unrelated users receive **403** from `GET /v1/connections/:orderCode`.
 
-Works without notification-service — this is the in-app source of truth per [Eco_Kitchen_Initiation_Flow.md](../design/Eco_Kitchen_Initiation_Flow.md).
+In-app source of truth per [Eco_Kitchen_Initiation_Flow.md](../design/Eco_Kitchen_Initiation_Flow.md). Connection lookup UI is on **web** today.
 
-### 4g. FCM push (optional)
+### 4g. FCM push after kitchen commit
 
-Requires **M5**, notification-service deployed, integration `CONNECTION_NOTIFY_WEBHOOK_*`, mobile rebuilt with `google-services.json` + Firebase SHA fingerprints.
+Requires **M5**, notification-service (**§1f**), integration `CONNECTION_NOTIFY_WEBHOOK_*`, mobile APK with `google-services.json`.
 
-1. Start notification-service (**§1f**) or use Render host.
-2. Sign in on mobile (hosted or local) — confirm a row in `device_tokens` after sign-in.
-3. Coordinator **Kitchen commit** (**§4d**) on the matching demand line.
-4. Initiator/pledger device should receive a push; tap opens app (data payload includes `order_code`).
-5. If push fails, **§4f** Connection panel should still work — push is additive.
+1. Sign in on mobile — confirm a `device_tokens` row.
+2. Coordinator **Kitchen commit** (**§4d** step 4) on the matching demand line.
+3. Initiator/pledger device receives push; payload includes `order_code`.
+4. Confirm emails in **§4f** Connection panel match the same order.
 
-Setup: [notification-service-local.md](../configuration/notification-service-local.md).
+Setup gaps: [database-setup-sequence.md](../configuration/database-setup-sequence.md) § **If a step was skipped** · [notification-service-local.md](../configuration/notification-service-local.md).
 
 ### 4e. Empty list / mismatch
 
@@ -918,13 +919,12 @@ Earlier MVP builds stored a field draft under `sharingbridge_field_interaction_d
 
 Use this after deploying per **[configuration/backend-render.md](../configuration/backend-render.md)**.
 
-1. Confirm `/health` on user-service, integration-service, photo-service, and (if deployed) notification-service return `ok: true` (allow 30–60s on cold start).
+1. Confirm `/health` on user-service, integration-service, photo-service, and notification-service return `ok: true` (allow 30–60s on cold start).
 2. Mint a token locally: `node scripts/mint-dev-jwt.mjs demo-user payee` in user-service (with hosted `AUTH_TOKEN_SECRET` in env if backfilling Render data).
 3. Call **hosted** integration `POST …/v1/donor-setup/suggest-vendors` and `POST …/v1/donor-seeker/instruction-pack` with `Authorization: Bearer <token>`.
 4. `POST …/v1/donor-seeker/order-intents` with the same Bearer token (see [configuration/backend-render.md](../configuration/backend-render.md) smoke script). First call returns HTTP **201** and `created: true`. Repeat the **same** `pack_id` — expect HTTP **200**, `created: false`, and the **same** `order_intent_id`.
-5. Run the mobile app (see [configuration/mobile-client.md](../configuration/mobile-client.md)). Walk **§3f** and eco kitchen initiation routes; confirm **§4f** Connection on web after kitchen commit.
-6. (Optional) **§4g** FCM — notification-service + `CONNECTION_NOTIFY_WEBHOOK_*` + rebuilt APK.
-7. Deploy `sharingbridge-web-app` static site per [configuration/e2e-deployment-sequence.md](../configuration/e2e-deployment-sequence.md) Phases 3–5; **Sign in with Google** on the live URL and **Refresh** — **§4**.
+5. Run the mobile app (see [configuration/mobile-client.md](../configuration/mobile-client.md)). Walk **§3f**, eco kitchen routes, **§4f** Connection, and **§4g** FCM after kitchen commit.
+6. Deploy `sharingbridge-web-app` static site per [configuration/e2e-deployment-sequence.md](../configuration/e2e-deployment-sequence.md) Phases 3–5; **Sign in with Google** on the live URL and **Refresh** — **§4**.
 
 If suggest-vendors or instruction-pack fail, verify `AI_ORCHESTRATION_BASE_URL`, `AI_*_ENABLED=true`, and matching `AI_ORCHESTRATION_INTERNAL_API_KEY` on integration and ai-orchestration.
 
@@ -953,5 +953,4 @@ If suggest-vendors or instruction-pack fail, verify `AI_ORCHESTRATION_BASE_URL`,
 - Step **4c** shows the coordinator web dashboard listing payee order intents (including payee `user_id` and reference photo thumbnail when uploaded) after mobile **§3f** on the same integration host.
 - Step **4c-b** shows the **Data boundaries** banner on Initiations / Actions / Map with sensible Time / Area / Limit copy.
 - Step **4c-c** lets coordinators **Apply scope** (time + area) and see Initiations, Map, and Actions stay aligned.
-- Step **4d** / **4f**: Actions tab pledge + kitchen commit; Connection panel shows emails after commit (**M4**).
-- Step **4g** (optional): FCM push after kitchen commit when notification-service is wired (**M5**).
+- Step **4d** / **4f** / **4g**: Actions pledge + kitchen commit; Connection emails on web; FCM push on mobile (**M4** + **M5** + notification deploy).

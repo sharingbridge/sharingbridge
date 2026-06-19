@@ -180,12 +180,12 @@ Vite/React web ──┘           │
                                ├──► ai-orchestration → Groq / Gemini / Nominatim
                                ├──► Postgres (order intents, marketplace, device_tokens)
                                ├──► photo-service (reference photos)
-                               └──► notification-service (optional FCM webhook on kitchen commit)
+                               └──► notification-service (FCM on kitchen commit)
                                          ↓
                               Vendor deep links (Swiggy, Zomato, …)
 ```
 
-**Optional on Render:** `sharingbridge-notification-service` (FCM push) — [configuration/backend-render.md](configuration/backend-render.md) § Notification service.
+**Eco kitchen stack:** `sharingbridge-notification-service` (FCM) — [configuration/notification-service-local.md](configuration/notification-service-local.md) · progressive setup [database-setup-sequence.md](configuration/database-setup-sequence.md).
 
 **Not on Render for MVP:** api-gateway, order-service, location-safety (archived).
 

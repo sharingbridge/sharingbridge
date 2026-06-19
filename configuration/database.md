@@ -4,7 +4,7 @@ SharingBridge stores **users, roles, payee presets, and order intents** in **Pos
 
 There is **no** runtime fallback to JSON files after cutover — import once, then the database is the only source of truth.
 
-> **SQL run order (start here for migrations):** [database-setup-sequence.md](./database-setup-sequence.md) — greenfield, brownfield, and marketplace steps in sequence.
+> **SQL run order (start here):** [database-setup-sequence.md](./database-setup-sequence.md) — progressive **1 → M5** + notification deploy.
 
 **Related:** [authentication.md](./authentication.md) · [backend-render.md](./backend-render.md) · [e2e-deployment-sequence.md](./e2e-deployment-sequence.md) · [README.md § Documentation guide](../README.md#documentation-guide)
 
@@ -53,17 +53,19 @@ Full order: [database-setup-sequence.md](./database-setup-sequence.md).
 3. Set a strong **database password** and save it (password manager). You need it for `DATABASE_URL`.
 4. Wait until the project dashboard shows the project as **ready**.
 
-**PostGIS is part of the MVP schema** ([schema.sql](./schema.sql)): `order_intents.location` (`geography`) + `locality_key`, GiST index, and **`ST_DWithin`** list queries in integration-service. No extra Supabase SKU — same Free/Pro Postgres. Existing projects created before this change: run [schema-postgis-migration.sql](./schema-postgis-migration.sql) once, then `npm run db:backfill-order-intent-geo` in integration-service.
+**PostGIS is part of the MVP schema** ([schema.sql](./schema.sql)). Existing databases from before PostGIS shipped: run [schema-postgis-migration.sql](./schema-postgis-migration.sql) once, then `npm run db:backfill-order-intent-geo` in integration-service (see [database-setup-sequence.md](./database-setup-sequence.md) § SQL file index).
 
 ---
 
 ## Step 2 — Create tables in Supabase (SQL Editor)
 
-Follow **[database-setup-sequence.md](./database-setup-sequence.md)** § Greenfield:
+Follow **[database-setup-sequence.md](./database-setup-sequence.md)**:
 
-1. Run [schema.sql](./schema.sql) (core tables).
-2. For marketplace / Actions tab / eco kitchen: run **M1–M4** in [database-setup-sequence.md](./database-setup-sequence.md); **M5** if using FCM push.
-3. After first Google sign-in: [coordinator-seed.sql](./coordinator-seed.sql) — see [§ Coordinator seeding](#coordinator-seeding).
+1. Run [schema.sql](./schema.sql).
+2. Run **M1 → M5** and [coordinator-seed.sql](./coordinator-seed.sql) after sign-in.
+3. Deploy notification-service per [notification-service-local.md](./notification-service-local.md).
+
+Skipped-step symptoms: [database-setup-sequence.md](./database-setup-sequence.md) § **If a step was skipped**.
 
 **Verify:** **Table Editor** → tables listed in [§ Tables](#tables).
 

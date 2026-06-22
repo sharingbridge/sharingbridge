@@ -357,7 +357,7 @@ user-service reads **`user_roles`** and mints `role` (active) + `roles` (array).
 | `relation does not exist` | Schema not run | Re-run **1a + 1** in SQL Editor |
 | `permission denied for table users` (42501) | Tables owned by `postgres`, app uses `sharingbridge` | Run [local-postgres-grants.sql](./local-postgres-grants.sql) as `postgres` — Step A6b |
 | Used anon key as `DATABASE_URL` | Wrong credential type | Use **database URI**, not Project API keys |
-| `403 wrong_client_role` | No `coordinator` in `user_roles` | Run coordinator seed SQL |
+| `extension "postgis" does not support SET SCHEMA` (0A000) | PostGIS 2.3+ on Supabase | Use [schema-postgis-move-to-extensions.sql](./schema-postgis-move-to-extensions.sql) (drop/recreate — not `ALTER EXTENSION`) |
 
 ---
 
@@ -459,7 +459,7 @@ Supabase lint **0014** warns when `postgis` is installed in `public`, exposing P
 
 **Greenfield:** [schema-spatial-bootstrap.sql](./schema-spatial-bootstrap.sql) installs the spatial extension into **`extensions`** and revokes `anon` / `authenticated` access; [schema.sql](./schema.sql) creates app tables with geo columns.
 
-**Existing Supabase project** (postgis already in `public`): run [schema-postgis-move-to-extensions.sql](./schema-postgis-move-to-extensions.sql) once, redeploy integration-service (needs `extensions.*` qualified SQL). If `ALTER EXTENSION … SET SCHEMA` fails, use Supabase’s drop/recreate workflow.
+**Existing Supabase project** (postgis already in `public`): run [schema-postgis-move-to-extensions.sql](./schema-postgis-move-to-extensions.sql) once, redeploy integration-service. PostGIS 2.3+ cannot use `ALTER EXTENSION … SET SCHEMA`; that script drops/recreates the extension in `extensions` and backfills from `payload` JSONB.
 
 **Exposure model:** Web/mobile talk to **integration-service** with JWT; only the server holds `DATABASE_URL`. Moving PostGIS to `extensions` + revoking REST roles from that schema keeps PostGIS off the Supabase API surface. App tables remain in **`public`** — enable RLS on those only if you query them from the Supabase client.
 

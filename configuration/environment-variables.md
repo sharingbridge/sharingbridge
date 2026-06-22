@@ -18,7 +18,7 @@ Tables are sorted **A–Z by variable name** to match Render’s environment UI.
 
 **Initiator feed window and radius:** set only on **integration-service** (`DONOR_NEIGHBOURHOOD_WINDOW_HOURS`, `DONOR_NEIGHBOURHOOD_RADIUS_M` in **metres**). Web and mobile read `feed.radius_m` / `neighbourhood.radius_m` from the list API. Per-row distance on the dashboard is **`distance_m`** (metres). See [PRODUCT_MODEL.md](../development/PRODUCT_MODEL.md).
 
-**Spatial schema (integration-service only):** optional `GIS_SCHEMA` (default `extensions`) — must match [schema-spatial-bootstrap.sql](./schema-spatial-bootstrap.sql). Omit on Render unless you use a non-default name.
+**Spatial schema (integration-service only):** **`GIS_SCHEMA`** is **required** — must match [schema-spatial-bootstrap.sql](./schema-spatial-bootstrap.sql) (use `extensions` on Supabase).
 
 Render deploy details: [backend-render.md](./backend-render.md). Auth secrets: [authentication.md](./authentication.md). DB: [database.md](./database.md).
 
@@ -104,7 +104,7 @@ Set the **same value** on all five Render Web Services if you want consistent ve
 | `LOG_LEVEL` | `warn` | `error`, `warn`, `info`, or `debug` — see [LOG_LEVEL](#log_level-all-backend-apis) |
 | `NOMINATIM_USER_AGENT` | `SharingBridge-Integration-Service/1.0` | same — GPS → postal `locality_key` (`IN:TN:600115`) via reverse geocode |
 | `ORDER_INTENT_LIST_MAX_ROWS` | `100` | `100` (max rows per dashboard list) |
-| `GIS_SCHEMA` | `extensions` | Spatial extension schema — must match [schema-spatial-bootstrap.sql](./schema-spatial-bootstrap.sql); Supabase convention for installed extensions. Omit to use default. |
+| `GIS_SCHEMA` | `extensions` | **Required.** Spatial extension schema — must match [schema-spatial-bootstrap.sql](./schema-spatial-bootstrap.sql) |
 | `PORT` | `8080` | injected by Render — do not set |
 | `USER_SERVICE_BASE_URL` | `http://localhost:8081` (required) | `https://<user-host>.onrender.com` — initiator vendor presets in Postgres |
 | `WEB_CORS_ORIGINS` | **same string** as user-service | same |
@@ -224,7 +224,7 @@ Google sign-in on web works for any account with `donor`/`initiator` and/or `coo
 
 | Repo | Key vars |
 |------|----------|
-| integration-service | `AUTH_TOKEN_SECRET`, `DATABASE_URL`, `USER_SERVICE_BASE_URL=http://localhost:8081`, `WEB_CORS_ORIGINS=http://localhost:5173`, optional `CONNECTION_NOTIFY_WEBHOOK_URL=http://localhost:8093/internal/connection-ready` |
+| integration-service | `AUTH_TOKEN_SECRET`, `DATABASE_URL`, `GIS_SCHEMA=extensions`, `USER_SERVICE_BASE_URL=http://localhost:8081`, `WEB_CORS_ORIGINS=http://localhost:5173`, optional `CONNECTION_NOTIFY_WEBHOOK_URL=http://localhost:8093/internal/connection-ready` |
 | mobile-app | `API_BASE_URL`, `USER_SERVICE_BASE_URL`, `PHOTO_SERVICE_BASE_URL`, `GOOGLE_CLIENT_ID`, `WEB_DASHBOARD_URL=http://10.0.2.2:5173` (emulator) — all via `--dart-define` on `flutter run` |
 | notification-service | `DATABASE_URL`, `WEBHOOK_SECRET`, `FIREBASE_SERVICE_ACCOUNT_PATH` or `FIREBASE_SERVICE_ACCOUNT_JSON` — [notification-service-local.md](./notification-service-local.md) |
 | photo-service | `AUTH_TOKEN_SECRET`, `CLOUDINARY_*`, `DATABASE_URL` |

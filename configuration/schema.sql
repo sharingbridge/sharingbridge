@@ -44,7 +44,7 @@ CREATE INDEX idx_order_intents_updated
 
 -- Geospatial list filters (donor neighbourhood + coordinator map queries).
 -- Spatial types live in extensions — run schema-spatial-bootstrap.sql first.
--- GIS_SCHEMA env on integration-service must match (default extensions).
+-- GIS_SCHEMA env on integration-service is required (e.g. extensions).
 
 ALTER TABLE order_intents
   ADD COLUMN IF NOT EXISTS locality_key TEXT,

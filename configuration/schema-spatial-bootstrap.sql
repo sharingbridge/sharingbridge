@@ -1,7 +1,7 @@
 -- One-time spatial extension bootstrap (greenfield step 1a).
 -- Vendor-specific extension name appears here only — not in schema.sql.
 -- Must run before schema.sql (tables reference extensions.geography).
--- Name must match integration-service GIS_SCHEMA (default extensions).
+-- Name must match integration-service GIS_SCHEMA (required env var, e.g. extensions).
 
 CREATE SCHEMA IF NOT EXISTS extensions;
 CREATE EXTENSION IF NOT EXISTS postgis WITH SCHEMA extensions;

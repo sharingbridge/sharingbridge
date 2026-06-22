@@ -375,7 +375,7 @@ user-service reads **`user_roles`** and mints `role` (active) + `roles` (array).
 
 ### Existing databases (created before spatial columns in schema.sql)
 
-Run [schema-postgis-migration.sql](./schema-postgis-migration.sql) or [schema-postgis-move-to-extensions.sql](./schema-postgis-move-to-extensions.sql) in Supabase SQL Editor, or `npm run db:backfill-order-intent-geo` from `sharingbridge-integration-service` with `DATABASE_URL` set. Integration-service will not start until `order_intents.location` exists and spatial queries work (`GIS_SCHEMA`, default `extensions`).
+Run [schema-postgis-migration.sql](./schema-postgis-migration.sql) or [schema-postgis-move-to-extensions.sql](./schema-postgis-move-to-extensions.sql) in Supabase SQL Editor, or `npm run db:backfill-order-intent-geo` from `sharingbridge-integration-service` with `DATABASE_URL` set. Integration-service will not start until `order_intents.location` exists, spatial queries work, and **`GIS_SCHEMA`** is set (e.g. `extensions`).
 
 ### How the app sees the database (security model)
 
@@ -443,7 +443,7 @@ SharingBridge’s model avoids that path: clients talk to Render APIs; only the 
 
 For build phase, the practical boundary is: **server-only `DATABASE_URL` + JWT APIs**. The `public` schema name is normal Postgres convention, not an exposure decision by itself.
 
-**Explicit schema in code:** integration-service reads optional **`GIS_SCHEMA`** (default **`extensions`**) via `geoSql.js`. If you rename the spatial schema in DDL, set the same name in env — see [environment-variables.md](./environment-variables.md).
+**Explicit schema in env:** integration-service **requires** **`GIS_SCHEMA`** (e.g. `extensions` on Supabase) — no code default; startup fails if unset. See [environment-variables.md](./environment-variables.md).
 
 ### Supabase lint: PostGIS in `public` (recommended during build)
 
@@ -451,7 +451,7 @@ Supabase lint **0014** warns when `postgis` is installed in `public`, exposing P
 
 | Name | What it is | Can you rename? |
 |------|------------|-----------------|
-| **`extensions`** | Supabase convention for installed extensions (PostGIS, etc.) | **Yes** — greenfield default (`GIS_SCHEMA`) |
+| **`extensions`** | Supabase convention for installed extensions (PostGIS, etc.) | **Yes** — set `GIS_SCHEMA=extensions` in integration-service env |
 | **`postgres`** in `DATABASE_URL` (`…/postgres`) | Default **database name** on every Supabase project | **No** on hosted Supabase — platform default |
 | **`postgres.[ref]`** in the username | Supabase **role** prefix, not your DB name | No — part of the connection URI |
 | **Project name** (e.g. `sharingbridge`) | Identifies your project in the dashboard | Yes — set when creating the project |

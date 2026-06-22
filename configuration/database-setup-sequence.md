@@ -14,7 +14,7 @@ Run each SQL file **once** in Supabase **SQL Editor** (or `psql -f`). Steps use 
 
 | Step | File | What it enables |
 |------|------|-----------------|
-| **1a** | [schema-spatial-bootstrap.sql](./schema-spatial-bootstrap.sql) | `sb_gis` schema + spatial extension (one-time; vendor name only here) |
+| **1a** | [schema-spatial-bootstrap.sql](./schema-spatial-bootstrap.sql) | `extensions` schema + spatial extension (one-time; vendor name only here) |
 | **1** | [schema.sql](./schema.sql) | Core tables: `users`, `order_intents`, `seeker_demands`, geo columns, `delivered_at` |
 | **2** | [coordinator-seed.sql](./coordinator-seed.sql) | `coordinator` role for web dashboard (after your Gmail is in `users`) |
 | **M1** | [schema-marketplace-migration.sql](./schema-marketplace-migration.sql) | `standard_offers`, `meal_pledges`, `vendor_bids`, `demand_windows` |
@@ -65,7 +65,7 @@ After SQL: redeploy integration-service; deploy notification-service; set `CONNE
 
 | After | Check |
 |-------|--------|
-| **1a** + **1** | Table Editor shows `users`, `order_intents`, `seeker_demands`; spatial extension in `sb_gis` |
+| **1a** + **1** | Table Editor shows `users`, `order_intents`, `seeker_demands`; spatial extension in `extensions` |
 | **M1–M3** | Web **Actions** loads; mobile eco kitchen route shows standard menu in seeded postal area |
 | **M4** | New seeker demands get `SB-…`; kitchen commit + **Connection** panel on web |
 | **M5** + deploy | Mobile sign-in creates `device_tokens` row; kitchen commit sends FCM push |
@@ -107,11 +107,11 @@ DONE
 | [schema-eco-kitchen-phase3-migration.sql](./schema-eco-kitchen-phase3-migration.sql) | **M4** |
 | [schema-device-tokens-migration.sql](./schema-device-tokens-migration.sql) | **M5** |
 | [coordinator-seed.sql](./coordinator-seed.sql) | **2** |
-| [schema-postgis-move-to-sb-gis.sql](./schema-postgis-move-to-sb-gis.sql) | Legacy (existing Supabase with extension in `public`) |
+| [schema-postgis-move-to-extensions.sql](./schema-postgis-move-to-extensions.sql) | Legacy (existing Supabase with extension in `public`) |
 | [schema-postgis-migration.sql](./schema-postgis-migration.sql) | Legacy (geo columns) |
 | [reset-marketplace-data.sql](./reset-marketplace-data.sql) | Dev reset |
 
-**Legacy upgrade files** (databases created before current **1a + 1** — do not run on greenfield): `schema-postgis-migration.sql`, `schema-postgis-move-to-sb-gis.sql`, `schema-delivered-at-migration.sql`, `schema-seeker-demands-migration.sql`, `schema-initiator-role-migration.sql`. Same end state as **1a + 1** + **M1–M5** when applied as needed.
+**Legacy upgrade files** (databases created before current **1a + 1** — do not run on greenfield): `schema-postgis-migration.sql`, `schema-postgis-move-to-extensions.sql`, `schema-delivered-at-migration.sql`, `schema-seeker-demands-migration.sql`, `schema-initiator-role-migration.sql`. Same end state as **1a + 1** + **M1–M5** when applied as needed.
 
 ---
 
@@ -127,7 +127,7 @@ DONE
 | No `SB-…` order codes | **M4** |
 | No `device_tokens` row after sign-in | **M5** + APK with `google-services.json` |
 | No push after commit | notification-service deploy + `CONNECTION_NOTIFY_WEBHOOK_*` + Firebase Admin JSON |
-| Integration won't start (geo) | Run **1a** then **1**; existing Supabase: [schema-postgis-move-to-sb-gis.sql](./schema-postgis-move-to-sb-gis.sql); redeploy integration-service |
+| Integration won't start (geo) | Run **1a** then **1**; existing Supabase: [schema-postgis-move-to-extensions.sql](./schema-postgis-move-to-extensions.sql); redeploy integration-service |
 
 ---
 

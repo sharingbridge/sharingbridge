@@ -38,13 +38,13 @@ Full order: [database-setup-sequence.md](./database-setup-sequence.md).
                                     ▼
                             Supabase (PostgreSQL)
                             public: users, order_intents, seeker_demands, …
-                            sb_gis: PostGIS extension only (not app tables)
+                            extensions: PostGIS extension only (not app tables)
 ```
 
 - **Supabase** = database + SQL Editor + connection strings. **Do not** put Supabase in the mobile or web app.
 - **Render** = Node APIs. Set **`DATABASE_URL`** on **both** `sharingbridge-user-service` and `sharingbridge-integration-service` to the **same** Supabase connection string.
 - **Do not** use the Supabase **anon** or **service_role** API keys as `DATABASE_URL`. Use the **database connection URI** (see below).
-- **Schemas:** App tables live in **`public`** (unqualified SQL in Node services). Spatial functions/types live in **`sb_gis`** (`GIS_SCHEMA` env). See [§ What `public` means](#what-public-means-not-public-on-the-internet) below.
+- **Schemas:** App tables live in **`public`** (unqualified SQL in Node services). Spatial functions/types live in **`extensions`** (`GIS_SCHEMA` env). See [§ What `public` means](#what-public-means-not-public-on-the-internet) below.
 
 ---
 
@@ -55,7 +55,7 @@ Full order: [database-setup-sequence.md](./database-setup-sequence.md).
 3. Set a strong **database password** and save it (password manager). You need it for `DATABASE_URL`.
 4. Wait until the project dashboard shows the project as **ready**.
 
-**Spatial extension:** greenfield runs [schema-spatial-bootstrap.sql](./schema-spatial-bootstrap.sql) then [schema.sql](./schema.sql) (see [database-setup-sequence.md](./database-setup-sequence.md)). Older databases: [schema-postgis-migration.sql](./schema-postgis-migration.sql) or [schema-postgis-move-to-sb-gis.sql](./schema-postgis-move-to-sb-gis.sql); optional `npm run db:backfill-order-intent-geo` in integration-service.
+**Spatial extension:** greenfield runs [schema-spatial-bootstrap.sql](./schema-spatial-bootstrap.sql) then [schema.sql](./schema.sql) (see [database-setup-sequence.md](./database-setup-sequence.md)). Older databases: [schema-postgis-migration.sql](./schema-postgis-migration.sql) or [schema-postgis-move-to-extensions.sql](./schema-postgis-move-to-extensions.sql); optional `npm run db:backfill-order-intent-geo` in integration-service.
 
 ---
 
@@ -124,7 +124,7 @@ SQL files (canonical — do not duplicate SQL in this doc):
 | [local-postgres-init.sql](./local-postgres-init.sql) | **Local only** Step A5a: app role |
 | [local-postgres-create-database.sql](./local-postgres-create-database.sql) | **Local only** Step A5b: database (run separately in pgAdmin) |
 | [local-postgres-grants.sql](./local-postgres-grants.sql) | **Local only** Step A6b: table permissions for `sharingbridge` user |
-| [schema-spatial-bootstrap.sql](./schema-spatial-bootstrap.sql) | **Everywhere** Step **1a**: spatial extension in `sb_gis` |
+| [schema-spatial-bootstrap.sql](./schema-spatial-bootstrap.sql) | **Everywhere** Step **1a**: spatial extension in `extensions` |
 | [schema.sql](./schema.sql) | **Everywhere** Step **1**: app tables |
 
 Replace `PORT` below with the port you chose in the installer (often **5432** or **5433** if 5432 is already in use).
@@ -367,15 +367,15 @@ user-service reads **`user_roles`** and mints `role` (active) + `roles` (array).
 
 | Layer | Behaviour |
 |-------|-----------|
-| **Storage** | JSONB `payload` (client fields) **plus** denormalized `locality_key` and `location sb_gis.geography(POINT, 4326)` on upsert. |
-| **List query** | `SqlOrderIntentStore.listForDashboard()` — SQL `WHERE` with `updated_at`, `sb_gis.ST_DWithin`, or `locality_key`. Service **fails at startup** if `location` column or spatial extension is missing. |
+| **Storage** | JSONB `payload` (client fields) **plus** denormalized `locality_key` and `location` (`extensions.geography`) on upsert. |
+| **List query** | `SqlOrderIntentStore.listForDashboard()` — SQL `WHERE` with `updated_at`, `extensions.ST_DWithin`, or `locality_key`. Service **fails at startup** if `location` column or spatial extension is missing. |
 | **Tests** | File `OrderIntentStore` mirrors list rules in memory (no database); not used in production. |
 | **Initiator** (limited dashboard) | Default time window from `DONOR_NEIGHBOURHOOD_WINDOW_HOURS`; without browser location → own rows only in that window. |
 | **Coordinator** | Full history by default; optional `?since=…`, `?near_lat=&near_lng=`, `?locality_key=` hit the same SQL predicates. |
 
 ### Existing databases (created before spatial columns in schema.sql)
 
-Run [schema-postgis-migration.sql](./schema-postgis-migration.sql) or [schema-postgis-move-to-sb-gis.sql](./schema-postgis-move-to-sb-gis.sql) in Supabase SQL Editor, or `npm run db:backfill-order-intent-geo` from `sharingbridge-integration-service` with `DATABASE_URL` set. Integration-service will not start until `order_intents.location` exists and spatial queries work (`GIS_SCHEMA`, default `sb_gis`).
+Run [schema-postgis-migration.sql](./schema-postgis-migration.sql) or [schema-postgis-move-to-extensions.sql](./schema-postgis-move-to-extensions.sql) in Supabase SQL Editor, or `npm run db:backfill-order-intent-geo` from `sharingbridge-integration-service` with `DATABASE_URL` set. Integration-service will not start until `order_intents.location` exists and spatial queries work (`GIS_SCHEMA`, default `extensions`).
 
 ### How the app sees the database (security model)
 
@@ -387,7 +387,7 @@ Run [schema-postgis-migration.sql](./schema-postgis-migration.sql) or [schema-po
 
 **RLS is not the current security layer.** Row-level security on `public` tables only matters if you expose those tables through Supabase’s auto-generated API (PostgREST) with anon/authenticated keys. We do not: clients never hold database credentials or Supabase API keys for data access.
 
-**What fixes Supabase lint 0014:** move the PostGIS **extension** out of `public` into **`sb_gis`**, then `REVOKE` that schema from `anon` and `authenticated`. That removes PostGIS functions from the REST API surface. It is **not** RLS — it is schema isolation for extension objects.
+**What fixes Supabase lint 0014:** move the PostGIS **extension** out of `public` into **`extensions`**, then `REVOKE` that schema from `anon` and `authenticated`. That removes PostGIS functions from the REST API surface. It is **not** RLS — it is schema isolation for extension objects.
 
 **If you later add Supabase client reads** on `public.order_intents`, enable RLS there separately. Until then, protecting app data means keeping `DATABASE_URL` server-only and not publishing anon keys against those tables.
 
@@ -402,11 +402,11 @@ In PostgreSQL, **`public` is a schema name** — a namespace for tables, like a 
   user-service / integration-service
         │  DATABASE_URL (server secret)
         │  SQL:  SELECT … FROM order_intents     ──► resolves to public.order_intents
-        │        SELECT … sb_gis.ST_DWithin(…)   ──► spatial functions in sb_gis
+        │        SELECT … extensions.ST_DWithin(…)   ──► spatial functions in extensions
         ▼
   PostgreSQL
         ├── public          ← users, order_intents, seeker_demands, …
-        └── sb_gis          ← spatial extension objects only (not your rows)
+        └── extensions          ← spatial extension objects only (not your rows)
 ```
 
 **How table names resolve in app code**
@@ -415,8 +415,8 @@ In PostgreSQL, **`public` is a schema name** — a namespace for tables, like a 
 |-------------|----------------|
 | `FROM order_intents` | `public.order_intents` |
 | `FROM users` | `public.users` |
-| `sb_gis.ST_DWithin(…)` | function in `sb_gis` (via `GIS_SCHEMA` / `geoSql.js`) |
-| `location` column type | `sb_gis.geography` (defined in DDL) |
+| `extensions.ST_DWithin(…)` | function in `extensions` (via `GIS_SCHEMA` / `geoSql.js`) |
+| `location` column type | `extensions.geography` (defined in DDL) |
 
 No `search_path` trick — table schema is implicit Postgres default; spatial schema is explicit in code.
 
@@ -443,7 +443,7 @@ SharingBridge’s model avoids that path: clients talk to Render APIs; only the 
 
 For build phase, the practical boundary is: **server-only `DATABASE_URL` + JWT APIs**. The `public` schema name is normal Postgres convention, not an exposure decision by itself.
 
-**Explicit schema in code:** integration-service reads optional **`GIS_SCHEMA`** (default **`sb_gis`**) via `geoSql.js`. If you rename the spatial schema in DDL, set the same name in env — see [environment-variables.md](./environment-variables.md).
+**Explicit schema in code:** integration-service reads optional **`GIS_SCHEMA`** (default **`extensions`**) via `geoSql.js`. If you rename the spatial schema in DDL, set the same name in env — see [environment-variables.md](./environment-variables.md).
 
 ### Supabase lint: PostGIS in `public` (recommended during build)
 
@@ -451,17 +451,17 @@ Supabase lint **0014** warns when `postgis` is installed in `public`, exposing P
 
 | Name | What it is | Can you rename? |
 |------|------------|-----------------|
-| **`extensions`** | Supabase’s *example* schema name in their docs — not required | Yes — we use **`sb_gis`** instead |
+| **`extensions`** | Supabase convention for installed extensions (PostGIS, etc.) | **Yes** — greenfield default (`GIS_SCHEMA`) |
 | **`postgres`** in `DATABASE_URL` (`…/postgres`) | Default **database name** on every Supabase project | **No** on hosted Supabase — platform default |
 | **`postgres.[ref]`** in the username | Supabase **role** prefix, not your DB name | No — part of the connection URI |
 | **Project name** (e.g. `sharingbridge`) | Identifies your project in the dashboard | Yes — set when creating the project |
 | **Local dev DB** | [local-postgres-create-database.sql](./local-postgres-create-database.sql) | Already **`sharingbridge`** — good |
 
-**Greenfield:** [schema-spatial-bootstrap.sql](./schema-spatial-bootstrap.sql) installs the spatial extension into **`sb_gis`** and revokes `anon` / `authenticated` access; [schema.sql](./schema.sql) creates app tables with geo columns.
+**Greenfield:** [schema-spatial-bootstrap.sql](./schema-spatial-bootstrap.sql) installs the spatial extension into **`extensions`** and revokes `anon` / `authenticated` access; [schema.sql](./schema.sql) creates app tables with geo columns.
 
-**Existing Supabase project** (postgis already in `public`): run [schema-postgis-move-to-sb-gis.sql](./schema-postgis-move-to-sb-gis.sql) once, redeploy integration-service (needs `sb_gis.*` qualified SQL). If `ALTER EXTENSION … SET SCHEMA` fails, use Supabase’s drop/recreate workflow.
+**Existing Supabase project** (postgis already in `public`): run [schema-postgis-move-to-extensions.sql](./schema-postgis-move-to-extensions.sql) once, redeploy integration-service (needs `extensions.*` qualified SQL). If `ALTER EXTENSION … SET SCHEMA` fails, use Supabase’s drop/recreate workflow.
 
-**Exposure model:** Web/mobile talk to **integration-service** with JWT; only the server holds `DATABASE_URL`. Moving PostGIS to `sb_gis` + revoking REST roles from that schema keeps PostGIS off the Supabase API surface. App tables remain in **`public`** — enable RLS on those only if you query them from the Supabase client.
+**Exposure model:** Web/mobile talk to **integration-service** with JWT; only the server holds `DATABASE_URL`. Moving PostGIS to `extensions` + revoking REST roles from that schema keeps PostGIS off the Supabase API surface. App tables remain in **`public`** — enable RLS on those only if you query them from the Supabase client.
 
 ### Coordinator map UI (later)
 

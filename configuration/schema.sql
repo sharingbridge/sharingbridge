@@ -43,12 +43,12 @@ CREATE INDEX idx_order_intents_updated
   ON order_intents (updated_at DESC);
 
 -- Geospatial list filters (donor neighbourhood + coordinator map queries).
--- Spatial types live in sb_gis — run schema-spatial-bootstrap.sql first.
--- GIS_SCHEMA env on integration-service must match (default sb_gis).
+-- Spatial types live in extensions — run schema-spatial-bootstrap.sql first.
+-- GIS_SCHEMA env on integration-service must match (default extensions).
 
 ALTER TABLE order_intents
   ADD COLUMN IF NOT EXISTS locality_key TEXT,
-  ADD COLUMN IF NOT EXISTS location sb_gis.geography(POINT, 4326),
+  ADD COLUMN IF NOT EXISTS location extensions.geography(POINT, 4326),
   ADD COLUMN IF NOT EXISTS delivered_at TIMESTAMPTZ;
 
 CREATE INDEX IF NOT EXISTS idx_order_intents_location
@@ -81,7 +81,7 @@ CREATE TABLE seeker_demands (
   meal_units           INTEGER NOT NULL DEFAULT 1 CHECK (meal_units >= 1 AND meal_units <= 50),
   payload              JSONB NOT NULL,
   locality_key         TEXT,
-  location             sb_gis.geography(POINT, 4326),
+  location             extensions.geography(POINT, 4326),
   created_at           TIMESTAMPTZ NOT NULL,
   updated_at           TIMESTAMPTZ NOT NULL
 );

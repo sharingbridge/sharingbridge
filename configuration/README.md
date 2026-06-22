@@ -53,7 +53,7 @@ Optional branches (any time after Phase 1):
 | **All env vars by service** | [environment-variables.md](./environment-variables.md) |
 | **Render deploy (blueprint, CORS)** | [backend-render.md](./backend-render.md) |
 | **FCM / notification-service** | [notification-service-local.md](./notification-service-local.md) |
-| **Supabase / Postgres / schema** | [database-setup-sequence.md](./database-setup-sequence.md) · [database.md](./database.md) · [schema.sql](./schema.sql) |
+| **Supabase / Postgres / schema** | [database-setup-sequence.md](./database-setup-sequence.md) · [database.md](./database.md) · [schema-spatial-bootstrap.sql](./schema-spatial-bootstrap.sql) · [schema.sql](./schema.sql) |
 | **Auth, JWT, roles, 403 errors** | [authentication.md](./authentication.md) |
 | **All environment variables** | [environment-variables.md](./environment-variables.md) |
 | **Google Console clicks** | [google-auth-setup.md](./google-auth-setup.md) |

@@ -69,7 +69,7 @@ Both **`sharingbridge-user-service`** and **`sharingbridge-integration-service`*
 | Step | Action |
 |------|--------|
 | 1 | Postgres running; database **`sharingbridge`** created |
-| 2 | Run [schema.sql](../configuration/schema.sql) as `postgres` |
+| 2 | Run [schema-spatial-bootstrap.sql](../configuration/schema-spatial-bootstrap.sql) then [schema.sql](../configuration/schema.sql) as `postgres` |
 | 3 | Run [local-postgres-grants.sql](../configuration/local-postgres-grants.sql) as `postgres` (fixes `permission denied for table users`) |
 | 4 | Copy `env.example` → `.env` in **both** Node repos; set the same `DATABASE_URL` (match your port, e.g. `5433`) |
 | 5 | Coordinator: `coordinator` row in `user_roles` ([coordinator-seed.sql](../configuration/coordinator-seed.sql)) after the user exists in `users` |

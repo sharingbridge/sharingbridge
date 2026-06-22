@@ -24,7 +24,7 @@ Run each SQL file **once** in Supabase **SQL Editor** (or `psql -f`). Steps use 
 | **M5** | [schema-device-tokens-migration.sql](./schema-device-tokens-migration.sql) | `device_tokens` for FCM registration |
 | **Deploy** | notification-service + `CONNECTION_NOTIFY_WEBHOOK_*` + Firebase | Mobile **connection-ready** push after kitchen commit — [notification-service-local.md](./notification-service-local.md) |
 
-**Local Postgres prep** (skip for Supabase): [local-postgres-init.sql](./local-postgres-init.sql) → [local-postgres-create-database.sql](./local-postgres-create-database.sql) → **step 1** → [local-postgres-grants.sql](./local-postgres-grants.sql).
+**Local Postgres prep** (skip for Supabase): [local-postgres-init.sql](./local-postgres-init.sql) → [local-postgres-create-database.sql](./local-postgres-create-database.sql) → **1a** + **1** → [local-postgres-grants.sql](./local-postgres-grants.sql).
 
 **App env (integration-service):** `DATABASE_URL` (same as user-service); `NOMINATIM_USER_AGENT` for GPS → postal `locality_key`.
 
@@ -50,7 +50,7 @@ Run each SQL file **once** in Supabase **SQL Editor** (or `psql -f`). Steps use 
 
 | Last file you ran | Run next |
 |-------------------|----------|
-| `schema.sql` only | **M1** → **M2** → **M3** → **M4** → **M5** |
+| **1a** + **1** only | **M1** → **M2** → **M3** → **M4** → **M5** |
 | **M1** | **M2** → **M3** → **M4** → **M5** |
 | **M2** standard-offers wire | **M3** → **M4** → **M5** |
 | **M3** seed | **M4** → **M5** |
@@ -65,7 +65,7 @@ After SQL: redeploy integration-service; deploy notification-service; set `CONNE
 
 | After | Check |
 |-------|--------|
-| **1** | Table Editor shows `users`, `order_intents`, `seeker_demands`; PostGIS enabled |
+| **1a** + **1** | Table Editor shows `users`, `order_intents`, `seeker_demands`; spatial extension in `sb_gis` |
 | **M1–M3** | Web **Actions** loads; mobile eco kitchen route shows standard menu in seeded postal area |
 | **M4** | New seeker demands get `SB-…`; kitchen commit + **Connection** panel on web |
 | **M5** + deploy | Mobile sign-in creates `device_tokens` row; kitchen commit sends FCM push |
@@ -107,9 +107,11 @@ DONE
 | [schema-eco-kitchen-phase3-migration.sql](./schema-eco-kitchen-phase3-migration.sql) | **M4** |
 | [schema-device-tokens-migration.sql](./schema-device-tokens-migration.sql) | **M5** |
 | [coordinator-seed.sql](./coordinator-seed.sql) | **2** |
+| [schema-postgis-move-to-sb-gis.sql](./schema-postgis-move-to-sb-gis.sql) | Legacy (existing Supabase with extension in `public`) |
+| [schema-postgis-migration.sql](./schema-postgis-migration.sql) | Legacy (geo columns) |
 | [reset-marketplace-data.sql](./reset-marketplace-data.sql) | Dev reset |
 
-**Legacy upgrade files** (databases created before current `schema.sql` — do not run on greenfield): `schema-postgis-migration.sql`, `schema-delivered-at-migration.sql`, `schema-seeker-demands-migration.sql`, `schema-initiator-role-migration.sql`. Same end state as **1** + **M1–M5** when applied as needed.
+**Legacy upgrade files** (databases created before current **1a + 1** — do not run on greenfield): `schema-postgis-migration.sql`, `schema-postgis-move-to-sb-gis.sql`, `schema-delivered-at-migration.sql`, `schema-seeker-demands-migration.sql`, `schema-initiator-role-migration.sql`. Same end state as **1a + 1** + **M1–M5** when applied as needed.
 
 ---
 
@@ -125,8 +127,8 @@ DONE
 | No `SB-…` order codes | **M4** |
 | No `device_tokens` row after sign-in | **M5** + APK with `google-services.json` |
 | No push after commit | notification-service deploy + `CONNECTION_NOTIFY_WEBHOOK_*` + Firebase Admin JSON |
-| Integration won't start (geo) | PostGIS in **step 1** |
+| Integration won't start (geo) | Run **1a** then **1**; existing Supabase: [schema-postgis-move-to-sb-gis.sql](./schema-postgis-move-to-sb-gis.sql); redeploy integration-service |
 
 ---
 
-**Last updated:** 2026-06 — progressive **1 → 2 → M1–M5 → notification deploy**.
+**Last updated:** 2026-06 — progressive **1a → 1 → 2 → M1–M5 → notification deploy**.

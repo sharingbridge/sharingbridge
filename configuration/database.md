@@ -25,7 +25,7 @@ There is **no** runtime fallback to JSON files after cutover — import once, th
 
 Full order: [database-setup-sequence.md](./database-setup-sequence.md).
 
-**Code note:** Both Node services **require** **`DATABASE_URL`** at startup and read/write Postgres only (no JSON file fallback). Run [schema.sql](./schema.sql) before starting services.
+**Code note:** Both Node services **require** **`DATABASE_URL`** at startup and read/write the database only (no JSON file fallback). Run [schema-spatial-bootstrap.sql](./schema-spatial-bootstrap.sql) then [schema.sql](./schema.sql) before starting services.
 
 ---
 
@@ -55,7 +55,7 @@ Full order: [database-setup-sequence.md](./database-setup-sequence.md).
 3. Set a strong **database password** and save it (password manager). You need it for `DATABASE_URL`.
 4. Wait until the project dashboard shows the project as **ready**.
 
-**PostGIS is part of the MVP schema** ([schema.sql](./schema.sql)). Existing databases from before PostGIS shipped: run [schema-postgis-migration.sql](./schema-postgis-migration.sql) once, then `npm run db:backfill-order-intent-geo` in integration-service (see [database-setup-sequence.md](./database-setup-sequence.md) § SQL file index).
+**Spatial extension:** greenfield runs [schema-spatial-bootstrap.sql](./schema-spatial-bootstrap.sql) then [schema.sql](./schema.sql) (see [database-setup-sequence.md](./database-setup-sequence.md)). Older databases: [schema-postgis-migration.sql](./schema-postgis-migration.sql) or [schema-postgis-move-to-sb-gis.sql](./schema-postgis-move-to-sb-gis.sql); optional `npm run db:backfill-order-intent-geo` in integration-service.
 
 ---
 
@@ -124,7 +124,8 @@ SQL files (canonical — do not duplicate SQL in this doc):
 | [local-postgres-init.sql](./local-postgres-init.sql) | **Local only** Step A5a: app role |
 | [local-postgres-create-database.sql](./local-postgres-create-database.sql) | **Local only** Step A5b: database (run separately in pgAdmin) |
 | [local-postgres-grants.sql](./local-postgres-grants.sql) | **Local only** Step A6b: table permissions for `sharingbridge` user |
-| [schema.sql](./schema.sql) | **Everywhere** (Supabase, local, Docker): tables |
+| [schema-spatial-bootstrap.sql](./schema-spatial-bootstrap.sql) | **Everywhere** Step **1a**: spatial extension in `sb_gis` |
+| [schema.sql](./schema.sql) | **Everywhere** Step **1**: app tables |
 
 Replace `PORT` below with the port you chose in the installer (often **5432** or **5433** if 5432 is already in use).
 
@@ -191,16 +192,17 @@ Pick **one**:
 
 If the database already exists, skip to Step A6.
 
-**Not used for Supabase or Docker** — those paths only need [schema.sql](./schema.sql).
+**Not used for Supabase or Docker** — those paths need **1a + 1** ([schema-spatial-bootstrap.sql](./schema-spatial-bootstrap.sql), then [schema.sql](./schema.sql)).
 
 #### Step A6 — Create tables
 
-In pgAdmin, connect to database **sharingbridge** → **Query Tool** → open [schema.sql](./schema.sql) → **Execute**.
+In pgAdmin, connect to database **sharingbridge** → **Query Tool** → run [schema-spatial-bootstrap.sql](./schema-spatial-bootstrap.sql), then [schema.sql](./schema.sql) → **Execute** each file.
 
 Or from a terminal (set `PORT` and path to your clone):
 
 ```text
 set PGPASSWORD=sharingbridge
+psql -U sharingbridge -h localhost -p PORT -d sharingbridge -f path/to/sharingbridge/configuration/schema-spatial-bootstrap.sql
 psql -U sharingbridge -h localhost -p PORT -d sharingbridge -f path/to/sharingbridge/configuration/schema.sql
 ```
 
@@ -245,7 +247,7 @@ Coordinator access is **not** configured in `.env`. Grant `coordinator` with [co
 ### Option B — Supabase dev project (no local Postgres)
 
 1. Create a project at [supabase.com](https://supabase.com) (e.g. `sharingbridge-dev`).
-2. **SQL Editor** → run [schema.sql](./schema.sql).
+2. **SQL Editor** → run [schema-spatial-bootstrap.sql](./schema-spatial-bootstrap.sql), then [schema.sql](./schema.sql).
 3. **Settings → Database** → copy the **connection URI** into both services’ `DATABASE_URL`.
 
 ---
@@ -259,6 +261,7 @@ docker run -d --name sharingbridge-pg -e POSTGRES_USER=sharingbridge -e POSTGRES
 Load schema from your repo clone:
 
 ```text
+docker exec -i sharingbridge-pg psql -U sharingbridge -d sharingbridge < path/to/sharingbridge/configuration/schema-spatial-bootstrap.sql
 docker exec -i sharingbridge-pg psql -U sharingbridge -d sharingbridge < path/to/sharingbridge/configuration/schema.sql
 ```
 
@@ -268,7 +271,7 @@ Same `DATABASE_URL` shape as Option A (`localhost` and the published port).
 
 ## Optional: Render PostgreSQL instead of Supabase
 
-Only if you **do not** want Supabase: Render → **New +** → **PostgreSQL**, copy **Internal Database URL**, set as `DATABASE_URL` on both Node services. Apply [schema.sql](./schema.sql) via SQL or Render’s psql.
+Only if you **do not** want Supabase: Render → **New +** → **PostgreSQL**, copy **Internal Database URL**, set as `DATABASE_URL` on both Node services. Apply **1a + 1** via SQL or Render’s psql.
 
 **Recommended default for this project:** **Supabase** (aligned with [ENGINEERING_PLAN.md](../development/ENGINEERING_PLAN.md)). Render Postgres is optional.
 
@@ -282,7 +285,7 @@ Set **`DATABASE_URL`** on user-service, integration-service, and photo-service (
 
 ## Tables
 
-**Canonical DDL:** [schema.sql](./schema.sql) — run once in Supabase **SQL Editor** (Step 2), local pgAdmin/psql (Option A Step A6), or Docker (Option C). Do not maintain a second copy of the SQL in this doc.
+**Canonical DDL:** [schema-spatial-bootstrap.sql](./schema-spatial-bootstrap.sql) + [schema.sql](./schema.sql) — run in Supabase **SQL Editor** (Step 2), local pgAdmin/psql (Option A Step A6), or Docker (Option C). Do not maintain a second copy of the SQL in this doc.
 
 | Table | Replaces (file mode) |
 |-------|----------------------|
@@ -334,7 +337,7 @@ user-service reads **`user_roles`** and mints `role` (active) + `roles` (array).
 ## Cutover checklist
 
 - [ ] Supabase project created
-- [ ] [schema.sql](./schema.sql) run in **SQL Editor** (tables + PostGIS on `order_intents`)
+- [ ] [schema-spatial-bootstrap.sql](./schema-spatial-bootstrap.sql) + [schema.sql](./schema.sql) run in **SQL Editor**
 - [ ] `DATABASE_URL` set on **both** Render Node services (Supabase URI, not anon key)
 - [ ] Both services redeployed
 - [ ] Coordinator row in `user_roles`
@@ -351,7 +354,7 @@ user-service reads **`user_roles`** and mints `role` (active) + `roles` (array).
 | Local install stuck / messy | Old Postgres on 5432, partial install | Uninstall from Apps; pick a free port (e.g. 5433); one Postgres version; see Option A Step A3 |
 | `connection refused` (local) | Wrong port in `DATABASE_URL` | Match installer port (`5432` vs `5433`) |
 | `connection refused` | Wrong `DATABASE_URL` or password | Re-copy URI from Supabase **Database** settings; redeploy Render |
-| `relation does not exist` | Schema not run | Re-run [schema.sql](./schema.sql) in SQL Editor |
+| `relation does not exist` | Schema not run | Re-run **1a + 1** in SQL Editor |
 | `permission denied for table users` (42501) | Tables owned by `postgres`, app uses `sharingbridge` | Run [local-postgres-grants.sql](./local-postgres-grants.sql) as `postgres` — Step A6b |
 | Used anon key as `DATABASE_URL` | Wrong credential type | Use **database URI**, not Project API keys |
 | `403 wrong_client_role` | No `coordinator` in `user_roles` | Run coordinator seed SQL |
@@ -365,14 +368,14 @@ user-service reads **`user_roles`** and mints `role` (active) + `roles` (array).
 | Layer | Behaviour |
 |-------|-----------|
 | **Storage** | JSONB `payload` (client fields) **plus** denormalized `locality_key` and `location sb_gis.geography(POINT, 4326)` on upsert. |
-| **List query** | `PostgresOrderIntentStore.listForDashboard()` — SQL `WHERE` with `updated_at`, `sb_gis.ST_DWithin`, or `locality_key`. Service **fails at startup** if PostGIS / `location` column is missing. |
-| **Tests** | File `OrderIntentStore` mirrors list rules in memory (no Postgres); not used in production. |
+| **List query** | `SqlOrderIntentStore.listForDashboard()` — SQL `WHERE` with `updated_at`, `sb_gis.ST_DWithin`, or `locality_key`. Service **fails at startup** if `location` column or spatial extension is missing. |
+| **Tests** | File `OrderIntentStore` mirrors list rules in memory (no database); not used in production. |
 | **Initiator** (limited dashboard) | Default time window from `DONOR_NEIGHBOURHOOD_WINDOW_HOURS`; without browser location → own rows only in that window. |
 | **Coordinator** | Full history by default; optional `?since=…`, `?near_lat=&near_lng=`, `?locality_key=` hit the same SQL predicates. |
 
-### Existing databases (created before PostGIS in schema.sql)
+### Existing databases (created before spatial columns in schema.sql)
 
-Run [schema-postgis-migration.sql](./schema-postgis-migration.sql) in Supabase SQL Editor, or `npm run db:backfill-order-intent-geo` from `sharingbridge-integration-service` with `DATABASE_URL` set. Integration-service will not start until `order_intents.location` exists and PostGIS answers `sb_gis.ST_DWithin`.
+Run [schema-postgis-migration.sql](./schema-postgis-migration.sql) or [schema-postgis-move-to-sb-gis.sql](./schema-postgis-move-to-sb-gis.sql) in Supabase SQL Editor, or `npm run db:backfill-order-intent-geo` from `sharingbridge-integration-service` with `DATABASE_URL` set. Integration-service will not start until `order_intents.location` exists and spatial queries work (`GIS_SCHEMA`, default `sb_gis`).
 
 ### How the app sees the database (security model)
 
@@ -454,7 +457,7 @@ Supabase lint **0014** warns when `postgis` is installed in `public`, exposing P
 | **Project name** (e.g. `sharingbridge`) | Identifies your project in the dashboard | Yes — set when creating the project |
 | **Local dev DB** | [local-postgres-create-database.sql](./local-postgres-create-database.sql) | Already **`sharingbridge`** — good |
 
-**Greenfield:** [schema.sql](./schema.sql) installs PostGIS into **`sb_gis`** and revokes `anon` / `authenticated` access to that schema.
+**Greenfield:** [schema-spatial-bootstrap.sql](./schema-spatial-bootstrap.sql) installs the spatial extension into **`sb_gis`** and revokes `anon` / `authenticated` access; [schema.sql](./schema.sql) creates app tables with geo columns.
 
 **Existing Supabase project** (postgis already in `public`): run [schema-postgis-move-to-sb-gis.sql](./schema-postgis-move-to-sb-gis.sql) once, redeploy integration-service (needs `sb_gis.*` qualified SQL). If `ALTER EXTENSION … SET SCHEMA` fails, use Supabase’s drop/recreate workflow.
 

@@ -91,7 +91,7 @@ Clients **never** call user-service, ai-orchestration, or model providers direct
 | JWT validation, initiator role, CORS | **Integration** | Shared with user-service signing secret |
 | Initiator vendor presets CRUD | **Delegates** → user-service | `PreferencesRepository` forwards bearer token |
 | Suggest vendors, instruction-pack | **Orchestrates** → ai-orchestration | Mock/template fallback on failure |
-| Order intents, neighbourhood feed | **Integration** | Postgres via `PostgresOrderIntentStore` |
+| Order intents, neighbourhood feed | **Integration** | SQL via `SqlOrderIntentStore` (`GIS_SCHEMA` / `geoSql.js`) |
 | Coordinator list views | **Integration** | Role-based formatting on order intents |
 | Vendor Swiggy/Zomato API adapters | **Future** | Deep links today; §3.5 target |
 

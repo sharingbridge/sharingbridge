@@ -35,7 +35,7 @@ Expect `llm_mode: live`, `gemini_vision_model: gemini-2.5-flash`, `groq_configur
 ### Boot sequence
 
 1. **`npm start`** → `node src/server.js` with `import "dotenv/config"` (local `.env` only).
-2. **Module load** — imports routes, stores, auth; constructs `AiOrchestrationClient`, `PostgresOrderIntentStore`, `PostgresSeekerDemandStore` and `PostgresMarketplaceStore` (when `DATABASE_URL` set), `UserServicePreferencesRepository` (requires `USER_SERVICE_BASE_URL`).
+2. **Module load** — imports routes, stores, auth; constructs `AiOrchestrationClient`, `SqlOrderIntentStore`, `SqlSeekerDemandStore` and `SqlMarketplaceStore` (when `DATABASE_URL` set), `UserServicePreferencesRepository` (requires `USER_SERVICE_BASE_URL`).
 3. **Postgres guard** (integration) — `assertOrderIntentGeoSchema()` may fail fast if geo columns missing. Marketplace startup probes `meal_pledges`, `vendor_bids`, and `standard_offer_id` columns — missing M2 shape fails boot with the Postgres error (no schema bypass). Missing marketplace tables disable marketplace routes (503) until [schema-marketplace-migration.sql](./schema-marketplace-migration.sql) is applied.
 4. **HTTP listen** — `createServer` callback handles routes; on listen:
    - `logListenMessage()` — port + service name.

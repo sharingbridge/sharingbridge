@@ -1,5 +1,5 @@
 -- SharingBridge MVP schema — canonical DDL (Supabase SQL Editor, local Postgres, Docker).
--- Run order: configuration/database-setup-sequence.md (greenfield step 1).
+-- Run order: configuration/database-setup-sequence.md (greenfield: step 1a then 1).
 -- Deep dive: database.md § Tables. Marketplace: M1–M3 in setup sequence.
 
 CREATE TABLE users (

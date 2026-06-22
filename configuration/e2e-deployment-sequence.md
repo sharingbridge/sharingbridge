@@ -224,16 +224,16 @@ Same env index § web-app: [environment-variables.md](./environment-variables.md
 ### Phase 2b — Database (required)
 
 **Local:** [database.md](./database.md) Option A (Postgres on your machine).  
-**Production:** Supabase — same `schema.sql` in SQL Editor.
+**Production:** Supabase — run `configuration/schema-spatial-bootstrap.sql` then `configuration/schema.sql` in SQL Editor.
 
-1. Create database and run `configuration/schema.sql`.
+1. Create database and run **1a + 1** (`schema-spatial-bootstrap.sql`, then `schema.sql`).
 2. **Local only:** run `configuration/local-postgres-grants.sql` as `postgres` if the app user is `sharingbridge`.
 3. Run **M1 → M5** in [database-setup-sequence.md](./database-setup-sequence.md).
 4. Set **`DATABASE_URL`** in each service’s `.env` (local) or Render env (hosted).
 
 If a step was skipped: [database-setup-sequence.md](./database-setup-sequence.md) § **If a step was skipped**.
 
-**Supabase (Render):** create project → SQL Editor → `schema.sql` → copy database URI → `DATABASE_URL` on both Node services → redeploy.
+**Supabase (Render):** create project → SQL Editor → **1a + 1** → copy database URI → `DATABASE_URL` on both Node services → redeploy.
 
 Deploy in order — [backend-render.md](./backend-render.md). Each repo’s **`render.yaml`** enables **auto-deploy on push to `main`** when connected via Render Blueprint (or enable **On Commit** in the dashboard).
 

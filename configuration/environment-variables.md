@@ -18,6 +18,8 @@ Tables are sorted **A–Z by variable name** to match Render’s environment UI.
 
 **Initiator feed window and radius:** set only on **integration-service** (`DONOR_NEIGHBOURHOOD_WINDOW_HOURS`, `DONOR_NEIGHBOURHOOD_RADIUS_M` in **metres**). Web and mobile read `feed.radius_m` / `neighbourhood.radius_m` from the list API. Per-row distance on the dashboard is **`distance_m`** (metres). See [PRODUCT_MODEL.md](../development/PRODUCT_MODEL.md).
 
+**Spatial schema (integration-service only):** optional `GIS_SCHEMA` (default `sb_gis`) — must match [schema-spatial-bootstrap.sql](./schema-spatial-bootstrap.sql). Omit on Render unless you use a non-default name.
+
 Render deploy details: [backend-render.md](./backend-render.md). Auth secrets: [authentication.md](./authentication.md). DB: [database.md](./database.md).
 
 ---
@@ -102,7 +104,7 @@ Set the **same value** on all five Render Web Services if you want consistent ve
 | `LOG_LEVEL` | `warn` | `error`, `warn`, `info`, or `debug` — see [LOG_LEVEL](#log_level-all-backend-apis) |
 | `NOMINATIM_USER_AGENT` | `SharingBridge-Integration-Service/1.0` | same — GPS → postal `locality_key` (`IN:TN:600115`) via reverse geocode |
 | `ORDER_INTENT_LIST_MAX_ROWS` | `100` | `100` (max rows per dashboard list) |
-| `GIS_SCHEMA` | `sb_gis` | Schema for spatial extension functions/types — must match [schema.sql](./schema.sql); on Postgres/Supabase this is typically where PostGIS is installed |
+| `GIS_SCHEMA` | `sb_gis` | Spatial extension schema — must match [schema-spatial-bootstrap.sql](./schema-spatial-bootstrap.sql); on Postgres/Supabase this is typically where PostGIS is installed. Omit to use default. |
 | `PORT` | `8080` | injected by Render — do not set |
 | `USER_SERVICE_BASE_URL` | `http://localhost:8081` (required) | `https://<user-host>.onrender.com` — initiator vendor presets in Postgres |
 | `WEB_CORS_ORIGINS` | **same string** as user-service | same |

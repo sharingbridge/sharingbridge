@@ -44,7 +44,7 @@ Direct order (vendor app)  +  Eco kitchen routes (pledge / I pay)
 | **AI delivery match** | IMPLEMENTATION phase D | **Not started** | No face embeddings / delivery verification |
 | **Order ops A–B** | Future_Extensions | **Partial** | Payment-done on web; delivery proof open |
 | **Transactional email** | notification-service | **Not started** | FCM only; email copy exists in webhook payload |
-| **Mobile Connection UI** | Eco Kitchen | **Not started** | Web Connection + FCM nudge |
+| **Mobile Connection UI** | Eco Kitchen | **Shipped** | In-app Order contacts lookup; web Actions panel remains coordinator-focused |
 
 ---
 
@@ -102,11 +102,12 @@ Detail: [database-setup-sequence.md](../configuration/database-setup-sequence.md
 
 1. **UX redesign first** (web + mobile): route/view split, less scrolling, clearer role language.
 2. **Terminology cleanup** in visible UI: donor-oriented labels -> initiator vocabulary where appropriate.
-3. **Mobile Connection panel** — in-app order-code lookup.
+3. **Mobile Connection panel** — in-app order-code lookup. **Shipped** (Order contacts on home + initiation detail).
 4. **Transactional email** in notification-service (Resend/SendGrid).
 5. **Order ops + delivery proof** — [Future_Extensions.md](../design/Future_Extensions.md) Phase B.
-6. **Kitchen/supplier onboarding + mentor tools** (transparency artifacts, policy acknowledgements, training materials).
-7. **Demand forecasting**: lightweight portion trend first, detailed BOM forecast later.
+6. **UX redesign** — web hash routes shipped; mobile step wizards remain.
+7. **Kitchen/supplier onboarding + mentor tools** (transparency artifacts, policy acknowledgements, training materials).
+8. **Demand forecasting**: lightweight portion trend first, detailed BOM forecast later.
 
 Session backlog and commit log: [AGENT_SESSION.md](./AGENT_SESSION.md).
 

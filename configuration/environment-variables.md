@@ -102,6 +102,7 @@ Set the **same value** on all five Render Web Services if you want consistent ve
 | `LOG_LEVEL` | `warn` | `error`, `warn`, `info`, or `debug` — see [LOG_LEVEL](#log_level-all-backend-apis) |
 | `NOMINATIM_USER_AGENT` | `SharingBridge-Integration-Service/1.0` | same — GPS → postal `locality_key` (`IN:TN:600115`) via reverse geocode |
 | `ORDER_INTENT_LIST_MAX_ROWS` | `100` | `100` (max rows per dashboard list) |
+| `GIS_SCHEMA` | `sb_gis` | Schema for spatial extension functions/types — must match [schema.sql](./schema.sql); on Postgres/Supabase this is typically where PostGIS is installed |
 | `PORT` | `8080` | injected by Render — do not set |
 | `USER_SERVICE_BASE_URL` | `http://localhost:8081` (required) | `https://<user-host>.onrender.com` — initiator vendor presets in Postgres |
 | `WEB_CORS_ORIGINS` | **same string** as user-service | same |

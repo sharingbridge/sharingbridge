@@ -43,12 +43,12 @@ CREATE INDEX idx_order_intents_updated
   ON order_intents (updated_at DESC);
 
 -- Geospatial list filters (donor neighbourhood + coordinator map queries).
--- Included in MVP schema; no extra Supabase charge beyond normal Postgres usage.
-CREATE EXTENSION IF NOT EXISTS postgis;
+-- Spatial types live in sb_gis — run schema-spatial-bootstrap.sql first.
+-- GIS_SCHEMA env on integration-service must match (default sb_gis).
 
 ALTER TABLE order_intents
   ADD COLUMN IF NOT EXISTS locality_key TEXT,
-  ADD COLUMN IF NOT EXISTS location geography(POINT, 4326),
+  ADD COLUMN IF NOT EXISTS location sb_gis.geography(POINT, 4326),
   ADD COLUMN IF NOT EXISTS delivered_at TIMESTAMPTZ;
 
 CREATE INDEX IF NOT EXISTS idx_order_intents_location
@@ -81,7 +81,7 @@ CREATE TABLE seeker_demands (
   meal_units           INTEGER NOT NULL DEFAULT 1 CHECK (meal_units >= 1 AND meal_units <= 50),
   payload              JSONB NOT NULL,
   locality_key         TEXT,
-  location             geography(POINT, 4326),
+  location             sb_gis.geography(POINT, 4326),
   created_at           TIMESTAMPTZ NOT NULL,
   updated_at           TIMESTAMPTZ NOT NULL
 );
@@ -98,3 +98,5 @@ CREATE INDEX idx_seeker_demands_locality_key
 
 CREATE INDEX idx_seeker_demands_location
   ON seeker_demands USING GIST (location);
+
+-- Keep spatial extension internals off Supabase REST roles (see schema-spatial-bootstrap.sql).

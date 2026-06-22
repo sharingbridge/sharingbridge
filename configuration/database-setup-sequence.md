@@ -14,7 +14,8 @@ Run each SQL file **once** in Supabase **SQL Editor** (or `psql -f`). Steps use 
 
 | Step | File | What it enables |
 |------|------|-----------------|
-| **1** | [schema.sql](./schema.sql) | Core tables: `users`, `order_intents`, `seeker_demands`, PostGIS, `delivered_at` |
+| **1a** | [schema-spatial-bootstrap.sql](./schema-spatial-bootstrap.sql) | `sb_gis` schema + spatial extension (one-time; vendor name only here) |
+| **1** | [schema.sql](./schema.sql) | Core tables: `users`, `order_intents`, `seeker_demands`, geo columns, `delivered_at` |
 | **2** | [coordinator-seed.sql](./coordinator-seed.sql) | `coordinator` role for web dashboard (after your Gmail is in `users`) |
 | **M1** | [schema-marketplace-migration.sql](./schema-marketplace-migration.sql) | `standard_offers`, `meal_pledges`, `vendor_bids`, `demand_windows` |
 | **M2** | [schema-standard-offers-wire-migration.sql](./schema-standard-offers-wire-migration.sql) | `standard_offer_id` on pledges and vendor bids |
@@ -33,7 +34,7 @@ Run each SQL file **once** in Supabase **SQL Editor** (or `psql -f`). Steps use 
 
 | Skipped | What breaks or is missing |
 |---------|---------------------------|
-| **1** `schema.sql` | Node services fail at startup; missing core tables |
+| **1a** + **1** `schema-spatial-bootstrap.sql` then `schema.sql` | Node services fail at startup; missing core tables |
 | **2** `coordinator-seed.sql` | Web dashboard `403` / no coordinator Actions tab |
 | **M1** | Actions tab `schema_pending`; marketplace APIs 503 |
 | **M2** | SQL errors on pledges (`standard_offer_id` missing) |
@@ -76,6 +77,8 @@ After SQL: redeploy integration-service; deploy notification-service; set `CONNE
 ## Sequence diagram
 
 ```text
+schema-spatial-bootstrap.sql
+    ↓
 schema.sql
     ↓
 coordinator-seed.sql (after sign-in)
@@ -93,6 +96,7 @@ DONE
 
 | File | Step |
 |------|------|
+| [schema-spatial-bootstrap.sql](./schema-spatial-bootstrap.sql) | **1a** |
 | [schema.sql](./schema.sql) | **1** |
 | [local-postgres-init.sql](./local-postgres-init.sql) | Local only |
 | [local-postgres-create-database.sql](./local-postgres-create-database.sql) | Local only |

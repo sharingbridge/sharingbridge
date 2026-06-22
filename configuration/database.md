@@ -37,12 +37,14 @@ Full order: [database-setup-sequence.md](./database-setup-sequence.md).
                                     │  DATABASE_URL (Postgres wire protocol)
                                     ▼
                             Supabase (PostgreSQL)
-                            tables: users, user_roles, donor_presets, order_intents, seeker_demands
+                            public: users, order_intents, seeker_demands, …
+                            sb_gis: PostGIS extension only (not app tables)
 ```
 
 - **Supabase** = database + SQL Editor + connection strings. **Do not** put Supabase in the mobile or web app.
 - **Render** = Node APIs. Set **`DATABASE_URL`** on **both** `sharingbridge-user-service` and `sharingbridge-integration-service` to the **same** Supabase connection string.
 - **Do not** use the Supabase **anon** or **service_role** API keys as `DATABASE_URL`. Use the **database connection URI** (see below).
+- **Schemas:** App tables live in **`public`** (unqualified SQL in Node services). Spatial functions/types live in **`sb_gis`** (`GIS_SCHEMA` env). See [§ What `public` means](#what-public-means-not-public-on-the-internet) below.
 
 ---
 
@@ -61,7 +63,7 @@ Full order: [database-setup-sequence.md](./database-setup-sequence.md).
 
 Follow **[database-setup-sequence.md](./database-setup-sequence.md)**:
 
-1. Run [schema.sql](./schema.sql).
+1. Run [schema-spatial-bootstrap.sql](./schema-spatial-bootstrap.sql), then [schema.sql](./schema.sql).
 2. Run **M1 → M5** and [coordinator-seed.sql](./coordinator-seed.sql) after sign-in.
 
 Skipped-step symptoms: [database-setup-sequence.md](./database-setup-sequence.md) § **If a step was skipped**.
@@ -362,15 +364,101 @@ user-service reads **`user_roles`** and mints `role` (active) + `roles` (array).
 
 | Layer | Behaviour |
 |-------|-----------|
-| **Storage** | JSONB `payload` (client fields) **plus** denormalized `locality_key` and `location geography(POINT, 4326)` on upsert. |
-| **List query** | `PostgresOrderIntentStore.listForDashboard()` — SQL `WHERE` with `updated_at`, `ST_DWithin`, or `locality_key`. Service **fails at startup** if PostGIS / `location` column is missing. |
+| **Storage** | JSONB `payload` (client fields) **plus** denormalized `locality_key` and `location sb_gis.geography(POINT, 4326)` on upsert. |
+| **List query** | `PostgresOrderIntentStore.listForDashboard()` — SQL `WHERE` with `updated_at`, `sb_gis.ST_DWithin`, or `locality_key`. Service **fails at startup** if PostGIS / `location` column is missing. |
 | **Tests** | File `OrderIntentStore` mirrors list rules in memory (no Postgres); not used in production. |
 | **Initiator** (limited dashboard) | Default time window from `DONOR_NEIGHBOURHOOD_WINDOW_HOURS`; without browser location → own rows only in that window. |
 | **Coordinator** | Full history by default; optional `?since=…`, `?near_lat=&near_lng=`, `?locality_key=` hit the same SQL predicates. |
 
 ### Existing databases (created before PostGIS in schema.sql)
 
-Run [schema-postgis-migration.sql](./schema-postgis-migration.sql) in Supabase SQL Editor, or `npm run db:backfill-order-intent-geo` from `sharingbridge-integration-service` with `DATABASE_URL` set. Integration-service will not start until `order_intents.location` exists and PostGIS answers `ST_DWithin`.
+Run [schema-postgis-migration.sql](./schema-postgis-migration.sql) in Supabase SQL Editor, or `npm run db:backfill-order-intent-geo` from `sharingbridge-integration-service` with `DATABASE_URL` set. Integration-service will not start until `order_intents.location` exists and PostGIS answers `sb_gis.ST_DWithin`.
+
+### How the app sees the database (security model)
+
+| Client | DB access? | Enforcement |
+|--------|------------|-------------|
+| Web / mobile | **No** — HTTPS to user-service / integration-service only | JWT + route handlers in Node |
+| integration-service / user-service | **Yes** — `pg` pool via `DATABASE_URL` | Server-side SQL; coordinator vs initiator filters in application code |
+| Supabase REST (anon / authenticated) | **Not used** by SharingBridge apps today | N/A |
+
+**RLS is not the current security layer.** Row-level security on `public` tables only matters if you expose those tables through Supabase’s auto-generated API (PostgREST) with anon/authenticated keys. We do not: clients never hold database credentials or Supabase API keys for data access.
+
+**What fixes Supabase lint 0014:** move the PostGIS **extension** out of `public` into **`sb_gis`**, then `REVOKE` that schema from `anon` and `authenticated`. That removes PostGIS functions from the REST API surface. It is **not** RLS — it is schema isolation for extension objects.
+
+**If you later add Supabase client reads** on `public.order_intents`, enable RLS there separately. Until then, protecting app data means keeping `DATABASE_URL` server-only and not publishing anon keys against those tables.
+
+### What `public` means (not “public on the internet”)
+
+In PostgreSQL, **`public` is a schema name** — a namespace for tables, like a folder. It is the default place new tables go if you do not specify another schema. It does **not** mean “anyone on the internet can read your data.”
+
+```text
+  End user (browser / app)
+        │  HTTPS + JWT only
+        ▼
+  user-service / integration-service
+        │  DATABASE_URL (server secret)
+        │  SQL:  SELECT … FROM order_intents     ──► resolves to public.order_intents
+        │        SELECT … sb_gis.ST_DWithin(…)   ──► spatial functions in sb_gis
+        ▼
+  PostgreSQL
+        ├── public          ← users, order_intents, seeker_demands, …
+        └── sb_gis          ← spatial extension objects only (not your rows)
+```
+
+**How table names resolve in app code**
+
+| SQL in Node | Actual object |
+|-------------|----------------|
+| `FROM order_intents` | `public.order_intents` |
+| `FROM users` | `public.users` |
+| `sb_gis.ST_DWithin(…)` | function in `sb_gis` (via `GIS_SCHEMA` / `geoSql.js`) |
+| `location` column type | `sb_gis.geography` (defined in DDL) |
+
+No `search_path` trick — table schema is implicit Postgres default; spatial schema is explicit in code.
+
+**Who can reach `public` tables**
+
+| Actor | Can query `public.order_intents`? | Today |
+|-------|-----------------------------------|--------|
+| Mobile / web client | **No** | No DB credentials; calls APIs only |
+| integration-service / user-service | **Yes** | Holds `DATABASE_URL`; runs all SQL |
+| Supabase REST (`anon` / `authenticated` keys) | **Could**, if you used those keys | **We do not** — apps never ship anon key for data |
+| Random internet user | **No** | No route to Postgres without `DATABASE_URL` |
+
+**Why “public” can still feel worrying on Supabase**
+
+Supabase’s hosted product **can** auto-expose tables in the `public` schema through its REST API when someone uses the anon key. That is a **Supabase product behaviour**, not Postgres making your data world-readable.
+
+SharingBridge’s model avoids that path: clients talk to Render APIs; only the server has `DATABASE_URL`. Row filtering (initiator sees own rows + neighbourhood; coordinator sees scoped lists) happens in **application SQL**, not RLS.
+
+**Optional hardening later** (not required for current architecture):
+
+- Move app tables from `public` to e.g. `sb_app` and qualify SQL — cosmetic + slightly clearer separation
+- `REVOKE ALL ON ALL TABLES IN SCHEMA public FROM anon, authenticated` on Supabase
+- Enable **RLS** on `public` tables if you ever add Supabase client reads
+
+For build phase, the practical boundary is: **server-only `DATABASE_URL` + JWT APIs**. The `public` schema name is normal Postgres convention, not an exposure decision by itself.
+
+**Explicit schema in code:** integration-service reads optional **`GIS_SCHEMA`** (default **`sb_gis`**) via `geoSql.js`. If you rename the spatial schema in DDL, set the same name in env — see [environment-variables.md](./environment-variables.md).
+
+### Supabase lint: PostGIS in `public` (recommended during build)
+
+Supabase lint **0014** warns when `postgis` is installed in `public`, exposing PostGIS functions on the auto-generated REST API. **Fix properly now** (build phase), not by ignoring the lint:
+
+| Name | What it is | Can you rename? |
+|------|------------|-----------------|
+| **`extensions`** | Supabase’s *example* schema name in their docs — not required | Yes — we use **`sb_gis`** instead |
+| **`postgres`** in `DATABASE_URL` (`…/postgres`) | Default **database name** on every Supabase project | **No** on hosted Supabase — platform default |
+| **`postgres.[ref]`** in the username | Supabase **role** prefix, not your DB name | No — part of the connection URI |
+| **Project name** (e.g. `sharingbridge`) | Identifies your project in the dashboard | Yes — set when creating the project |
+| **Local dev DB** | [local-postgres-create-database.sql](./local-postgres-create-database.sql) | Already **`sharingbridge`** — good |
+
+**Greenfield:** [schema.sql](./schema.sql) installs PostGIS into **`sb_gis`** and revokes `anon` / `authenticated` access to that schema.
+
+**Existing Supabase project** (postgis already in `public`): run [schema-postgis-move-to-sb-gis.sql](./schema-postgis-move-to-sb-gis.sql) once, redeploy integration-service (needs `sb_gis.*` qualified SQL). If `ALTER EXTENSION … SET SCHEMA` fails, use Supabase’s drop/recreate workflow.
+
+**Exposure model:** Web/mobile talk to **integration-service** with JWT; only the server holds `DATABASE_URL`. Moving PostGIS to `sb_gis` + revoking REST roles from that schema keeps PostGIS off the Supabase API surface. App tables remain in **`public`** — enable RLS on those only if you query them from the Supabase client.
 
 ### Coordinator map UI (later)
 

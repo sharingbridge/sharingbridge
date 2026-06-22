@@ -100,12 +100,17 @@ Detail: [database-setup-sequence.md](../configuration/database-setup-sequence.md
 
 ## Next priorities
 
-1. **Transactional email** in notification-service (Resend/SendGrid).
-2. **Order ops + delivery proof** — [Future_Extensions.md](../design/Future_Extensions.md) Phase B.
-3. **Marketplace F** — beneficiary profile and initiator role hardening.
-4. **Mobile Connection panel** — in-app order-code lookup.
+1. **UX redesign first** (web + mobile): route/view split, less scrolling, clearer role language.
+2. **Terminology cleanup** in visible UI: donor-oriented labels -> initiator vocabulary where appropriate.
+3. **Mobile Connection panel** — in-app order-code lookup.
+4. **Transactional email** in notification-service (Resend/SendGrid).
+5. **Order ops + delivery proof** — [Future_Extensions.md](../design/Future_Extensions.md) Phase B.
+6. **Kitchen/supplier onboarding + mentor tools** (transparency artifacts, policy acknowledgements, training materials).
+7. **Demand forecasting**: lightweight portion trend first, detailed BOM forecast later.
 
 Session backlog and commit log: [AGENT_SESSION.md](./AGENT_SESSION.md).
+
+Roadmap details: [Experience_Redesign_and_Onboarding_Roadmap.md](../design/Experience_Redesign_and_Onboarding_Roadmap.md).
 
 ---
 

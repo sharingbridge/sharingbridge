@@ -180,9 +180,10 @@ GPS is **not** derived from the label. The standard menu and **Postal area** lin
 |---------|------------------|----------------|---------------|
 | **Allow location & load menu** (first tap) | Yes — device GPS | No | Yes |
 | **Refresh GPS** on confirm card | Yes — device GPS | No — keeps typed text | **Yes — automatic** |
-| **Reload menu for area** (top button) | No — uses coords on card | No | Yes — uses confirmed/edited coords |
-| Manual edit of lat/lng on card | Yes | No | No — tap **Reload menu for area** if postal area may have changed |
-| Manual edit of label field | No | Yes | No |
+| Manual edit of lat/lng on card | Yes | No | **Clears menu** — **Reload menu for updated coordinates** appears; menu item, units, notes, photo, and submit stay disabled until reload |
+| Manual edit of label only | No | Yes | No |
+
+The separate reload control is **only shown** when coordinates have been edited by hand and no longer match the menu that was loaded. After **Refresh GPS**, the app reloads the menu automatically and hides the reload button again.
 
 ### Refresh GPS behaviour (Help a seeker)
 

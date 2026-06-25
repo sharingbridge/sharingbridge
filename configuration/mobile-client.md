@@ -172,15 +172,25 @@ On `POST /v1/seeker-demands` or `POST …/order-intents`, integration-service:
 2. Derives **`locality_key`** (postal bucket) from coordinates — mobile shows this as **Postal area**.
 3. For **Help a seeker**, instruction-pack / AI may also produce **`location_description`** (reverse geocode + optional LLM polish) for courier text — that is generated server-side from lat/lng/label; the initiator does not edit it in the app.
 
-### Refresh GPS behaviour
+### Refresh GPS and menu reload (eco kitchen flows)
+
+GPS is **not** derived from the label. The standard menu and **Postal area** line use **latitude/longitude only** (`GET /v1/standard-offers?location_lat=…&location_lng=…`); the server reverse-geocodes coordinates to `locality_key`.
+
+| Control | Updates lat/lng? | Updates label? | Reloads menu? |
+|---------|------------------|----------------|---------------|
+| **Allow location & load menu** (first tap) | Yes — device GPS | No | Yes |
+| **Refresh GPS** on confirm card | Yes — device GPS | No — keeps typed text | **Yes — automatic** |
+| **Reload menu for area** (top button) | No — uses coords on card | No | Yes — uses confirmed/edited coords |
+| Manual edit of lat/lng on card | Yes | No | No — tap **Reload menu for area** if postal area may have changed |
+| Manual edit of label field | No | Yes | No |
+
+### Refresh GPS behaviour (Help a seeker)
 
 | Control | Updates lat/lng? | Updates label? |
 |---------|------------------|----------------|
 | **Refresh GPS** / **Recapture handover location** | Yes — new device position | **No** — keeps text you already typed |
 | Manual edit of lat/lng fields | Yes | No |
 | Manual edit of label field | No | Yes |
-
-Reload menu (**eco kitchen** flows) uses the current coordinates; changing GPS after menu load does not auto-reload offers until you tap **Reload menu for area**.
 
 ## FCM push (connection-ready)
 

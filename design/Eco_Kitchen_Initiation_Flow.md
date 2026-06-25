@@ -58,7 +58,7 @@ flowchart TB
   Start --> R3[Eco kitchen · open for pledging]
 
   subgraph shared [Shared capture — all routes]
-    S[Location + optional photo + handover notes]
+    S[GPS + label + optional photo + handover notes]
   end
 
   R1 --> S
@@ -110,7 +110,7 @@ See [field-handoff.md](../configuration/field-handoff.md), [Future_Extensions.md
 | Step | Actor | Action |
 |------|--------|--------|
 | 1 | Initiator | Chooses **Eco kitchen · I pay** |
-| 2 | Initiator | Shared capture + standard menu item / units / area |
+| 2 | Initiator | Shared capture + standard menu item / units / area ([location fields](./../configuration/mobile-client.md#handover-location--label-coordinates-postal-area)) |
 | 3 | SB | Records initiation → order code → **Open** |
 | 4 | Eco kitchens | Review pool → **commit** (portions, price, ETA, menu line) |
 | 5 | SB | Status **Kitchen committed**; initiator = **payer** |
@@ -126,7 +126,7 @@ See [field-handoff.md](../configuration/field-handoff.md), [Future_Extensions.md
 | Step | Actor | Action |
 |------|--------|--------|
 | 1 | Initiator | Chooses **Eco kitchen · open for pledging** |
-| 2 | Initiator | Shared capture + menu / units / area |
+| 2 | Initiator | Shared capture + menu / units / area ([location fields](./../configuration/mobile-client.md#handover-location--label-coordinates-postal-area)) |
 | 3 | SB | Records initiation → order code → **Open for pledging** |
 | 4 | Pledgers | Pledge units on dashboard (**Actions** tab) — commitment, not money in SB |
 | 5 | SB | When coverage rules met → **ready for kitchen** |

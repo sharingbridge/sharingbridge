@@ -148,6 +148,40 @@ Rebuild or `flutter run` after pulling; an older APK will not show Home.
 
 Initiation routes: [Eco_Kitchen_Initiation_Flow.md](../design/Eco_Kitchen_Initiation_Flow.md).
 
+## Handover location — label, coordinates, postal area
+
+All initiation routes share a **Confirm handover location** step on mobile (eco kitchen record flow and **Help a seeker**). There is **one** free-text field for humans plus GPS coordinates — not a separate structured address form.
+
+| What you enter | API field | Who sets it | Used for |
+|----------------|-----------|-------------|----------|
+| **Delivery area / address label** | `location_label` | Initiator (required, ≥3 characters) | Shown to coordinators, pledgers, kitchens, and in AI/courier copy as a short handover hint |
+| **Latitude / longitude** | `location_lat`, `location_lng` | Device GPS by default; initiator may edit | PostGIS point, distance sorting on web dashboard, menu lookup (`standard-offers`), instruction-pack input |
+| **Postal area** (read-only, e.g. `IN:TN`) | `locality_key` | **Server** reverse-geocodes from lat/lng | Groups demand on **Actions** tab; not typed by the user |
+
+### Label vs “address”
+
+- **Label** = one line the initiator writes so others know *where to meet* — landmark, gate name, flat block, or a short street snippet (`North gate`, `12 Temple St, Block B`). This is **`location_label`** end-to-end.
+- **Not** the Swiggy/Zomato delivery address. On **Direct order**, the initiator still sets the vendor app address themselves; SB stores handover context (GPS + label + notes) for coordination and AI instructions.
+- **Handover notes** (`verbal_handover_notes`) are separate — appearance, gate codes, dietary notes, etc.
+
+### What the server does with it
+
+On `POST /v1/seeker-demands` or `POST …/order-intents`, integration-service:
+
+1. Stores `location_lat`, `location_lng`, `location_label` from the client.
+2. Derives **`locality_key`** (postal bucket) from coordinates — mobile shows this as **Postal area**.
+3. For **Help a seeker**, instruction-pack / AI may also produce **`location_description`** (reverse geocode + optional LLM polish) for courier text — that is generated server-side from lat/lng/label; the initiator does not edit it in the app.
+
+### Refresh GPS behaviour
+
+| Control | Updates lat/lng? | Updates label? |
+|---------|------------------|----------------|
+| **Refresh GPS** / **Recapture handover location** | Yes — new device position | **No** — keeps text you already typed |
+| Manual edit of lat/lng fields | Yes | No |
+| Manual edit of label field | No | Yes |
+
+Reload menu (**eco kitchen** flows) uses the current coordinates; changing GPS after menu load does not auto-reload offers until you tap **Reload menu for area**.
+
 ## FCM push (connection-ready)
 
 **Optional** — requires notification-service on Render and Firebase setup.

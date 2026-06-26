@@ -148,29 +148,31 @@ Rebuild or `flutter run` after pulling; an older APK will not show Home.
 
 Initiation routes: [Eco_Kitchen_Initiation_Flow.md](../design/Eco_Kitchen_Initiation_Flow.md).
 
-## Handover location — label, coordinates, postal area
+## Handover location — map picker, address, pickup note
 
-All initiation routes share a **Confirm handover location** step on mobile (eco kitchen record flow and **Help a seeker**). There is **one** free-text field for humans plus GPS coordinates — not a separate structured address form.
+All initiation routes share **`HandoverLocationPicker`** on mobile (eco kitchen + **Help a seeker**). Full design: [Handover_Location_Map_Picker.md](../design/Handover_Location_Map_Picker.md).
 
-| What you enter | API field | Who sets it | Used for |
-|----------------|-----------|-------------|----------|
-| **Delivery area / address label** | `location_label` | Initiator (required, ≥3 characters) | Shown to coordinators, pledgers, kitchens, and in AI/courier copy as a short handover hint |
-| **Latitude / longitude** | `location_lat`, `location_lng` | Device GPS by default; initiator may edit | PostGIS point, distance sorting on web dashboard, menu lookup (`standard-offers`), instruction-pack input |
-| **Postal area** (read-only, e.g. `IN:TN`) | `locality_key` | **Server** reverse-geocodes from lat/lng | Groups demand on **Actions** tab; not typed by the user |
+When **`GOOGLE_MAPS_API_KEY`** is set at build time (and in `android/local.properties` for the native map), the initiator sees a **cab-style map** (pan map, fixed pin). Otherwise the app falls back to editable coordinate fields.
 
-### Label vs “address”
+| Field on screen | API field | Source |
+|-----------------|-----------|--------|
+| **Address** | (display; not stored separately today) | `GET /v1/geocode/reverse` → Nominatim on integration-service |
+| **Pickup note** (landmark / gate) | `location_label` | User (required, ≥3 characters) |
+| **Postal area** | `locality_key` | Server reverse-geocode from map pin |
+| Coordinates | `location_lat`, `location_lng` | Map pin centre / GPS |
 
-- **Label** = one line the initiator writes so others know *where to meet* — landmark, gate name, flat block, or a short street snippet (`North gate`, `12 Temple St, Block B`). This is **`location_label`** end-to-end.
-- **Not** the Swiggy/Zomato delivery address. On **Direct order**, the initiator still sets the vendor app address themselves; SB stores handover context (GPS + label + notes) for coordination and AI instructions.
-- **Handover notes** (`verbal_handover_notes`) are separate — appearance, gate codes, dietary notes, etc.
+### Google Maps setup (Android)
 
-### What the server does with it
+1. Enable **Maps SDK for Android** in Google Cloud; create an API key restricted to `app.sharingbridge`.
+2. `android/local.properties`: `GOOGLE_MAPS_API_KEY=AIza…` (see `local.properties.example`).
+3. Pass the same key to Flutter: `--dart-define=GOOGLE_MAPS_API_KEY=AIza…`
 
-On `POST /v1/seeker-demands` or `POST …/order-intents`, integration-service:
+Maps tiles use Google; **address and postal area** use integration-service (same Nominatim path as menu resolution) — no Google Geocoding API required for v1.
 
-1. Stores `location_lat`, `location_lng`, `location_label` from the client.
-2. Derives **`locality_key`** (postal bucket) from coordinates — mobile shows this as **Postal area**.
-3. For **Help a seeker**, instruction-pack / AI may also produce **`location_description`** (reverse geocode + optional LLM polish) for courier text — that is generated server-side from lat/lng/label; the initiator does not edit it in the app.
+### Label vs vendor delivery address
+
+- **Pickup note** = where to meet (`location_label`) — not the Swiggy/Zomato checkout address.
+- **Handover notes** (`verbal_handover_notes`) = appearance, dietary, gate codes, etc.
 
 ### Refresh GPS and menu reload (eco kitchen flows)
 

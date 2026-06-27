@@ -150,6 +150,8 @@ Initiation routes: [Eco_Kitchen_Initiation_Flow.md](../design/Eco_Kitchen_Initia
 
 ## Handover location — map picker, address, pickup note
 
+**Reading sequence:** [README.md § Natural reading order](../README.md#documentation-guide) — step **13** (after [field-handoff.md](./field-handoff.md), [Location_Services_Vendor_Abstraction.md](../design/Location_Services_Vendor_Abstraction.md), [Handover_Location_Map_Picker.md](../design/Handover_Location_Map_Picker.md)).
+
 All initiation routes share **`HandoverLocationPicker`** on mobile (eco kitchen + **Help a seeker**).
 
 | Doc | Purpose |

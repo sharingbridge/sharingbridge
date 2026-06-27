@@ -29,7 +29,7 @@ New here or unsure which file to open? Use this section. It defines **reading or
 | **Product vocabulary, verbiage & marketplace** | [development/PRODUCT_MODEL.md](development/PRODUCT_MODEL.md) § Documentation verbiage |
 | **Configurator, unified initiation, payer** | [design/Configurator_Role_and_Unified_Initiation.md](design/Configurator_Role_and_Unified_Initiation.md) |
 | **Eco kitchens — three routes, connection, payment boundaries** | [design/Eco_Kitchen_Initiation_Flow.md](design/Eco_Kitchen_Initiation_Flow.md) |
-| **Handover location & map vendors (one vendor, thin adapters)** | [design/Location_Services_Vendor_Abstraction.md](design/Location_Services_Vendor_Abstraction.md) · [design/Handover_Location_Map_Picker.md](design/Handover_Location_Map_Picker.md) |
+| **Handover location & map vendors** | [field-handoff.md](configuration/field-handoff.md) → [Location_Services_Vendor_Abstraction.md](design/Location_Services_Vendor_Abstraction.md) → [Handover_Location_Map_Picker.md](design/Handover_Location_Map_Picker.md) → [mobile-client.md § Handover](configuration/mobile-client.md#handover-location--map-picker-address-pickup-note) |
 | **How we build (phases, repos, AI)** | [development/ENGINEERING_PLAN.md](development/ENGINEERING_PLAN.md) |
 | **BRD steps 1–12 with diagrams** | [design/SharingBridge_End_to_End_Workflow.md](design/SharingBridge_End_to_End_Workflow.md) |
 | **Order payment / delivery proof** | [design/Future_Extensions.md](design/Future_Extensions.md) § Phase A–B only |
@@ -47,6 +47,7 @@ When two docs conflict, **higher row wins** for that topic.
 | **4 — Ops model** | [design/Configurator_Role_and_Unified_Initiation.md](design/Configurator_Role_and_Unified_Initiation.md) | Configurator vs runtime owners |
 | **5 — Engineering** | [development/ENGINEERING_PLAN.md](development/ENGINEERING_PLAN.md) | Build phases, marketplace **E–I**, free-tier + scale tracks |
 | **6 — Architecture** | [design/SharingBridge_Technical_Architecture.md](design/SharingBridge_Technical_Architecture.md) | Services, APIs, as-built MVP |
+| **6a — Location services** | [design/Location_Services_Vendor_Abstraction.md](design/Location_Services_Vendor_Abstraction.md) (+ [Handover_Location_Map_Picker.md](design/Handover_Location_Map_Picker.md) for shipped UX) | Handover map/geocode vendors, adapter seams, `GET /v1/geocode/reverse` |
 | **7 — Progress** | [development/STATUS.md](development/STATUS.md) | Shipped vs plan — **update when milestones land** |
 | **8 — Agent sessions** | [development/AGENT_SESSION.md](development/AGENT_SESSION.md) | Next tasks, runbook, recent commits |
 | **9 — Run & configure** | [configuration/](configuration/) | Deploy, env, auth, SQL sequence |
@@ -66,14 +67,24 @@ Do not create parallel product-model files. Extend **PRODUCT_MODEL.md** (vocabul
 7. design/SharingBridge_End_to_End_Workflow.md          — journey diagrams
 8. configuration/e2e-deployment-sequence.md            — deploy
 9. configuration/database-setup-sequence.md            — SQL order
-10. Deep dives as needed (field-handoff, auth, testing)
+10. configuration/field-handoff.md                     — Help a seeker: handover in the user journey
+11. design/Location_Services_Vendor_Abstraction.md      — map/geocode vendor strategy (why + seams)
+12. design/Handover_Location_Map_Picker.md             — shipped cab-style picker + API
+13. configuration/mobile-client.md § Handover location — run on device (keys, GPS vs label)
+14. Other deep dives as needed (auth, testing, web-client, environment-variables)
 ```
+
+**Handover location** spans **configuration** (journey + runbook) and **design** (strategy + shipped UX). Follow steps **10 → 13** in order — do not skip to map-picker design without field-handoff context.
 
 ### Roadmap docs — how they relate
 
 ```text
 PRODUCT_MODEL.md              ← WHAT (vocabulary, initiation routes)
         ├── Eco_Kitchen_Initiation_Flow.md  ← three routes, connection, payment boundaries
+        │         ├── field-handoff.md  ← direct order capture (step 10)
+        │         └── Location_Services_Vendor_Abstraction.md  ← map/geocode vendors (step 11)
+        │                   └── Handover_Location_Map_Picker.md  ← shipped picker (step 12)
+        │                             └── mobile-client.md § Handover  ← device setup (step 13)
         ├── Configurator_Role…  ← WHO owns ops vs config
         └── ENGINEERING_PLAN…     ← HOW / WHEN (phases E–I, repos)
 
@@ -87,6 +98,8 @@ AGENT_SESSION.md                  ← Agent next tasks
 
 ### Configuration folder
 
+Runbooks and env wiring only. **Product/design docs live under `design/`** — see [Design folder](#design-folder) below.
+
 | Doc | Purpose |
 |-----|---------|
 | [configuration/README.md](configuration/README.md) | Deploy phases 0–5 |
@@ -94,9 +107,18 @@ AGENT_SESSION.md                  ← Agent next tasks
 | [database.md](configuration/database.md) | Supabase / local Postgres |
 | [e2e-deployment-sequence.md](configuration/e2e-deployment-sequence.md) | OAuth → Render → verify |
 | [environment-variables.md](configuration/environment-variables.md) | All env keys |
-| [field-handoff.md](configuration/field-handoff.md) | Help a seeker / order intent |
-| [design/Location_Services_Vendor_Abstraction.md](design/Location_Services_Vendor_Abstraction.md) | Map/geocode vendor strategy (one vendor per capability) |
-| [design/Handover_Location_Map_Picker.md](design/Handover_Location_Map_Picker.md) | Cab-style handover map picker (shipped) |
+| [field-handoff.md](configuration/field-handoff.md) | Help a seeker / order intent — **start handover reading at step 10** |
+| [mobile-client.md](configuration/mobile-client.md) | Mobile URLs, handover runbook — **step 13** in [natural reading order](#natural-reading-order-onboarding) |
+
+### Design folder
+
+| Doc | Purpose | Reading step |
+|-----|---------|--------------|
+| [Eco_Kitchen_Initiation_Flow.md](design/Eco_Kitchen_Initiation_Flow.md) | Three initiation routes | 3 |
+| [Location_Services_Vendor_Abstraction.md](design/Location_Services_Vendor_Abstraction.md) | Map/geocode vendor strategy | 11 |
+| [Handover_Location_Map_Picker.md](design/Handover_Location_Map_Picker.md) | Cab-style handover map picker (shipped) | 12 |
+| [SharingBridge_Technical_Architecture.md](design/SharingBridge_Technical_Architecture.md) | Services, APIs, as-built MVP | after 11 for stack context |
+| [Future_Extensions.md](design/Future_Extensions.md) | Direct-order ops Phase A–B | supplement |
 
 ## Key Features
 

@@ -42,6 +42,7 @@ Optional branches (any time after Phase 1):
 - **AI suggestions:** [ai-orchestration-local.md](./ai-orchestration-local.md)
 - **Live AI keys (Groq, Gemini, Nominatim):** [ai-setup-handhold.md](./ai-setup-handhold.md)
 - **Field flow (BRD):** [field-handoff.md](./field-handoff.md)
+- **Handover location (steps 10–13):** [field-handoff.md](./field-handoff.md) → [Location_Services_Vendor_Abstraction.md](../design/Location_Services_Vendor_Abstraction.md) → [Handover_Location_Map_Picker.md](../design/Handover_Location_Map_Picker.md) → [mobile-client.md § Handover](./mobile-client.md#handover-location--map-picker-address-pickup-note) — full index: [README.md § Documentation guide](../README.md#documentation-guide)
 
 ---
 
@@ -59,7 +60,8 @@ Optional branches (any time after Phase 1):
 | **Google Console clicks** | [google-auth-setup.md](./google-auth-setup.md) |
 | **Web dashboard (Vite, CORS)** | [web-client.md](./web-client.md) |
 | **Mobile URLs (emulator, phone, Wi‑Fi)** | [mobile-client.md](./mobile-client.md) |
-| **Handover map + geocode vendors** | [Location_Services_Vendor_Abstraction.md](../design/Location_Services_Vendor_Abstraction.md) · [Handover_Location_Map_Picker.md](../design/Handover_Location_Map_Picker.md) |
+| **Handover location (read in order)** | [field-handoff.md](./field-handoff.md) → [Location_Services_Vendor_Abstraction.md](../design/Location_Services_Vendor_Abstraction.md) → [Handover_Location_Map_Picker.md](../design/Handover_Location_Map_Picker.md) → [mobile-client.md § Handover](./mobile-client.md#handover-location--map-picker-address-pickup-note) |
+| **Full doc index & reading order** | [README.md § Documentation guide](../README.md#documentation-guide) |
 | **Manual test scripts** | [MANUAL_TESTING_GUIDE.md](../testing/MANUAL_TESTING_GUIDE.md) — **§4d–4g** (Actions, Connection, FCM) |
 | **Product model (authoritative)** | [PRODUCT_MODEL.md](../development/PRODUCT_MODEL.md) |
 | **Order-ops supplement (A–B)** | [Future_Extensions.md](../design/Future_Extensions.md) |

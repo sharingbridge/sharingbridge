@@ -2,6 +2,8 @@
 
 **Status:** Shipped (June 2026) — map UI when `GOOGLE_MAPS_API_KEY` is configured; form fallback otherwise.
 
+**Reading sequence:** [README.md § Natural reading order](../README.md#documentation-guide) — step **12** (after [field-handoff.md](../configuration/field-handoff.md) step 10 and [Location_Services_Vendor_Abstraction.md](./Location_Services_Vendor_Abstraction.md) step 11). **Next:** [mobile-client.md § Handover](../configuration/mobile-client.md#handover-location--map-picker-address-pickup-note) step 13.
+
 **Doc map:** [Location_Services_Vendor_Abstraction.md](./Location_Services_Vendor_Abstraction.md) · [mobile-client.md](../configuration/mobile-client.md) · [Eco_Kitchen_Initiation_Flow.md](./Eco_Kitchen_Initiation_Flow.md)
 
 ---

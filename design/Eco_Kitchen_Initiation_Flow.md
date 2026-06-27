@@ -8,8 +8,10 @@
 
 | Also read | For |
 |-----------|-----|
-| [Location_Services_Vendor_Abstraction.md](./Location_Services_Vendor_Abstraction.md) | Map/geocode vendors — one per capability, adapter seams |
-| [Handover_Location_Map_Picker.md](./Handover_Location_Map_Picker.md) | Cab-style map picker (shipped) |
+| [field-handoff.md](../configuration/field-handoff.md) | Direct order handover capture — **reading step 10** |
+| [Location_Services_Vendor_Abstraction.md](./Location_Services_Vendor_Abstraction.md) | Map/geocode vendors — **step 11** |
+| [Handover_Location_Map_Picker.md](./Handover_Location_Map_Picker.md) | Shipped map picker — **step 12** |
+| [mobile-client.md § Handover](../configuration/mobile-client.md#handover-location--map-picker-address-pickup-note) | Device setup — **step 13** |
 | [PRODUCT_MODEL.md](../development/PRODUCT_MODEL.md) | Glossary, actors, verbiage |
 | [Configurator_Role_and_Unified_Initiation.md](./Configurator_Role_and_Unified_Initiation.md) | Configurator vs runtime ops (no daily coordinator desk) |
 | [Future_Extensions.md](./Future_Extensions.md) | Direct-order payment-done + delivery proof (Phase A–B) |

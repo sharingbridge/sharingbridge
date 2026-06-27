@@ -2,6 +2,8 @@
 
 **Status:** Approved (June 2026). **Shipped:** one vendor per capability; thin adapter boundaries documented for future swaps.
 
+**Reading sequence:** [README.md § Natural reading order](../README.md#documentation-guide) steps **10 → 13**. Read [field-handoff.md](../configuration/field-handoff.md) first (handover in the user journey), then this doc (strategy), then [Handover_Location_Map_Picker.md](./Handover_Location_Map_Picker.md) (shipped UX), then [mobile-client.md § Handover](../configuration/mobile-client.md#handover-location--map-picker-address-pickup-note) (device setup).
+
 **Doc map:** [Handover_Location_Map_Picker.md](./Handover_Location_Map_Picker.md) · [mobile-client.md](../configuration/mobile-client.md) · [environment-variables.md](../configuration/environment-variables.md)
 
 ---

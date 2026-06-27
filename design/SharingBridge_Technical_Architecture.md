@@ -125,7 +125,7 @@ Within Flutter, initiator flows use **ports-and-adapters / clean architecture**:
 
 ### Location services (as-built + vendor strategy)
 
-Handover location uses **one vendor per capability** with **thin adapter seams** (full ADR: [Location_Services_Vendor_Abstraction.md](./Location_Services_Vendor_Abstraction.md)):
+Handover location uses **one vendor per capability** with **thin adapter seams** (full ADR: [Location_Services_Vendor_Abstraction.md](./Location_Services_Vendor_Abstraction.md); reading order: [README.md § Natural reading order](../README.md#documentation-guide) steps **10 → 13**):
 
 | Capability | v1 vendor | Stable contract |
 |------------|-----------|-----------------|

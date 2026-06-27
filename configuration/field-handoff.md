@@ -1,6 +1,8 @@
 # Field handoff configuration (Help a seeker)
 
-**Doc map:** [README.md § Documentation guide](../README.md#documentation-guide) · Planned merge with seeker demand → [Configurator_Role_and_Unified_Initiation.md](../design/Configurator_Role_and_Unified_Initiation.md).
+**Doc map:** [README.md § Documentation guide](../README.md#documentation-guide) (handover path: steps **10 → 13**) · Planned merge with seeker demand → [Configurator_Role_and_Unified_Initiation.md](../design/Configurator_Role_and_Unified_Initiation.md).
+
+**Read next (handover location):** [Location_Services_Vendor_Abstraction.md](../design/Location_Services_Vendor_Abstraction.md) → [Handover_Location_Map_Picker.md](../design/Handover_Location_Map_Picker.md) → [mobile-client.md § Handover](./mobile-client.md#handover-location--map-picker-address-pickup-note).
 
 Mobile: **Help a seeker** (`sharingbridge-mobile-app`; home hub label).
 

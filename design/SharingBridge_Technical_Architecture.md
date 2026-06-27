@@ -123,6 +123,20 @@ Setup: [configuration/ai-setup-handhold.md](../configuration/ai-setup-handhold.m
 
 Within Flutter, initiator flows use **ports-and-adapters / clean architecture**: repository interfaces, use cases, HTTP adapters, DTOs. That is **client-side layering**, separate from the backend Experience API pattern.
 
+### Location services (as-built + vendor strategy)
+
+Handover location uses **one vendor per capability** with **thin adapter seams** (full ADR: [Location_Services_Vendor_Abstraction.md](./Location_Services_Vendor_Abstraction.md)):
+
+| Capability | v1 vendor | Stable contract |
+|------------|-----------|-----------------|
+| Map tiles (mobile) | Google Maps SDK when `GOOGLE_MAPS_API_KEY` set; else form fallback | `HandoverLocationPicker` |
+| Reverse geocode + `locality_key` | Nominatim on integration-service | `GET /v1/geocode/reverse` |
+| Persisted handover | — | `location_lat`, `location_lng`, `location_label` |
+
+Map picker UX: [Handover_Location_Map_Picker.md](./Handover_Location_Map_Picker.md). Mobile setup: [mobile-client.md](../configuration/mobile-client.md).
+
+Older sections below that describe a dedicated **location-safety** microservice or Google-heavy geocoding on clients are **target/legacy reference** — not the shipped MVP path.
+
 ---
 
 ## Table of Contents

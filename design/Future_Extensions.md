@@ -23,6 +23,7 @@
 | Fields: pack id, notes, preset snapshot, `instructions_copied` status | Shipped |
 | Initiator lists **own** initiations (mobile); coordinator lists **all** (web) | Shipped |
 | Geo on order intent (`location_lat/lng`, `locality_key`); initiator neighbourhood feed; PostGIS `ST_DWithin` list queries | Shipped — [database.md](../configuration/database.md) |
+| Mobile handover map picker + server reverse geocode | Shipped — [Handover_Location_Map_Picker.md](./Handover_Location_Map_Picker.md); vendor strategy [Location_Services_Vendor_Abstraction.md](./Location_Services_Vendor_Abstraction.md) |
 | Payment / delivery lifecycle, coordinator **map** UI (bbox / clustering) | **Not shipped** |
 | Delivery photo proof, delivery-partner role | **Planned** |
 | Locality demand + eco kitchen commitments | [Eco_Kitchen_Initiation_Flow.md](./Eco_Kitchen_Initiation_Flow.md); engineering phases E–I in [ENGINEERING_PLAN.md](../development/ENGINEERING_PLAN.md) |

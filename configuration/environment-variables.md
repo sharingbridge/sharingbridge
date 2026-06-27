@@ -102,7 +102,8 @@ Set the **same value** on all five Render Web Services if you want consistent ve
 | `INITIATOR_NEIGHBOURHOOD_RADIUS_M` | `5000` | `5000` (`near_lat` / `near_lng` filter radius in **metres**; capped at 50000 server-side) |
 | `INITIATOR_NEIGHBOURHOOD_WINDOW_HOURS` | `2` | `2` (initiator list `since`, photo redaction; 1–72) |
 | `LOG_LEVEL` | `warn` | `error`, `warn`, `info`, or `debug` — see [LOG_LEVEL](#log_level-all-backend-apis) |
-| `NOMINATIM_USER_AGENT` | `SharingBridge-Integration-Service/1.0` | same — GPS → postal `locality_key` (`IN:TN:600115`) via reverse geocode |
+| `GEOCODER_PROVIDER` | *(unset — implicit `nominatim`)* | **Reserved** — future switch for reverse-geocode backend; v1 always Nominatim. See [Location_Services_Vendor_Abstraction.md](../design/Location_Services_Vendor_Abstraction.md) |
+| `NOMINATIM_USER_AGENT` | `SharingBridge-Integration-Service/1.0` | same — GPS → postal `locality_key` (`IN:TN:600115`) via Nominatim reverse geocode |
 | `ORDER_INTENT_LIST_MAX_ROWS` | `100` | `100` (max rows per dashboard list) |
 | `GIS_SCHEMA` | `extensions` | **Required.** Spatial extension schema — must match [schema-spatial-bootstrap.sql](./schema-spatial-bootstrap.sql) |
 | `PORT` | `8080` | injected by Render — do not set |
@@ -200,6 +201,8 @@ No `.env` file — pass at **`flutter run`** / release build (compile time). Re-
 | `API_BASE_URL` | `http://10.0.2.2:8080` (emulator) or `http://<PC-LAN-IP>:8080` (phone) | `https://<integration-host>.onrender.com` — **must match** web `VITE_API_BASE_URL` |
 | `AUTH_TOKEN` | dev only — pre-minted JWT (`node scripts/mint-dev-jwt.mjs` in user-service) | omit — use Google Sign-In |
 | `GOOGLE_CLIENT_ID` | Android OAuth client ID from Google Cloud | same |
+| `GOOGLE_MAPS_API_KEY` | optional — enables cab-style map picker | same — also set in `android/local.properties` for native Maps SDK |
+| `MAP_TILE_PROVIDER` | *(unset — implicit `google` when key set)* | **Reserved** — future `google` \| `osm` \| `mapbox`; v1 uses Google when `GOOGLE_MAPS_API_KEY` is non-empty |
 | `PHOTO_SERVICE_BASE_URL` | `http://10.0.2.2:8092` or `http://<PC-LAN-IP>:8092` | `https://<photo-host>.onrender.com` |
 | `USER_ID` | dev only — pairs with `AUTH_TOKEN` | omit |
 | `USER_SERVICE_BASE_URL` | `http://10.0.2.2:8081` or `http://<PC-LAN-IP>:8081` | `https://<user-host>.onrender.com` |
@@ -207,7 +210,7 @@ No `.env` file — pass at **`flutter run`** / release build (compile time). Re-
 
 `WEB_DASHBOARD_URL` is the deployed **sharingbridge-web-app** origin (same URL you open in the browser for the coordinator/initiator dashboard). Without it, the home tile is visible but disabled. See [mobile-client.md](./mobile-client.md).
 
-Emulator: use `10.0.2.2` instead of `localhost`. Physical phone: PC Wi‑Fi IPv4. See [mobile-client.md](./mobile-client.md).
+Emulator: use `10.0.2.2` instead of `localhost`. Physical phone: PC Wi‑Fi IPv4. Map picker setup: [mobile-client.md § Handover location](./mobile-client.md#handover-location--map-picker-address-pickup-note). Vendor strategy: [Location_Services_Vendor_Abstraction.md](../design/Location_Services_Vendor_Abstraction.md).
 
 ---
 

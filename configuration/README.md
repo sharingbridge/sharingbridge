@@ -59,6 +59,7 @@ Optional branches (any time after Phase 1):
 | **Google Console clicks** | [google-auth-setup.md](./google-auth-setup.md) |
 | **Web dashboard (Vite, CORS)** | [web-client.md](./web-client.md) |
 | **Mobile URLs (emulator, phone, Wi‑Fi)** | [mobile-client.md](./mobile-client.md) |
+| **Handover map + geocode vendors** | [Location_Services_Vendor_Abstraction.md](../design/Location_Services_Vendor_Abstraction.md) · [Handover_Location_Map_Picker.md](../design/Handover_Location_Map_Picker.md) |
 | **Manual test scripts** | [MANUAL_TESTING_GUIDE.md](../testing/MANUAL_TESTING_GUIDE.md) — **§4d–4g** (Actions, Connection, FCM) |
 | **Product model (authoritative)** | [PRODUCT_MODEL.md](../development/PRODUCT_MODEL.md) |
 | **Order-ops supplement (A–B)** | [Future_Extensions.md](../design/Future_Extensions.md) |

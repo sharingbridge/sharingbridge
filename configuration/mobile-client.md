@@ -150,9 +150,16 @@ Initiation routes: [Eco_Kitchen_Initiation_Flow.md](../design/Eco_Kitchen_Initia
 
 ## Handover location — map picker, address, pickup note
 
-All initiation routes share **`HandoverLocationPicker`** on mobile (eco kitchen + **Help a seeker**). Full design: [Handover_Location_Map_Picker.md](../design/Handover_Location_Map_Picker.md).
+All initiation routes share **`HandoverLocationPicker`** on mobile (eco kitchen + **Help a seeker**).
 
-When **`GOOGLE_MAPS_API_KEY`** is set at build time (and in `android/local.properties` for the native map), the initiator sees a **cab-style map** (pan map, fixed pin). Otherwise the app falls back to editable coordinate fields.
+| Doc | Purpose |
+|-----|---------|
+| [Handover_Location_Map_Picker.md](../design/Handover_Location_Map_Picker.md) | Map picker UX, API, eco menu behaviour |
+| [Location_Services_Vendor_Abstraction.md](../design/Location_Services_Vendor_Abstraction.md) | **Vendor strategy** — one vendor per capability, adapter seams, env keys |
+
+**Vendor model (v1):** Google **map tiles only** when `GOOGLE_MAPS_API_KEY` is set; **address + postal area** always from integration-service (`GET /v1/geocode/reverse` → Nominatim). Initiation pages must not call map or geocode vendors directly — only `HandoverLocationPicker` and `HttpGeocodeClient`.
+
+When **`GOOGLE_MAPS_API_KEY`** is set at build time (and in `android/local.properties` for the native map), the initiator sees a **cab-style map** (pan map, fixed pin). Otherwise the app falls back to editable coordinate fields (`HandoverLocationConfirmCard`).
 
 | Field on screen | API field | Source |
 |-----------------|-----------|--------|

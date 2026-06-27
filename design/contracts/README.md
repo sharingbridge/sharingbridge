@@ -22,6 +22,7 @@ Bearer JWT from user-service. Mobile mints `role: initiator`; web mints `coordin
 
 ## Not in OpenAPI yet
 
+- `GET /v1/geocode/reverse` — reverse geocode for handover map picker; contract in [Handover_Location_Map_Picker.md](../Handover_Location_Map_Picker.md) and [Location_Services_Vendor_Abstraction.md](../Location_Services_Vendor_Abstraction.md)
 - photo-service (`POST /v1/photos/upload`) — [photo-service-local.md](../../configuration/photo-service-local.md)
 - notification-service webhook — [notification-service-local.md](../../configuration/notification-service-local.md)
 

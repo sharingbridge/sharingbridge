@@ -28,6 +28,7 @@ Full progress vs plan: **[STATUS.md](./STATUS.md)**.
 | **SQL order** | [configuration/database-setup-sequence.md](../configuration/database-setup-sequence.md) |
 | **Manual tests** | [testing/MANUAL_TESTING_GUIDE.md](../testing/MANUAL_TESTING_GUIDE.md) |
 | **Eco kitchen flows** | [design/Eco_Kitchen_Initiation_Flow.md](../design/Eco_Kitchen_Initiation_Flow.md) |
+| **Location / map vendors** | [design/Location_Services_Vendor_Abstraction.md](../design/Location_Services_Vendor_Abstraction.md) · [design/Handover_Location_Map_Picker.md](../design/Handover_Location_Map_Picker.md) |
 | **AI as-built** | [AI_AS_BUILT.md](./AI_AS_BUILT.md) |
 | **AI future phases** | [AI_PLAN.md](./AI_PLAN.md) |
 | **Full doc index** | [README.md § Documentation guide](../README.md#documentation-guide) |

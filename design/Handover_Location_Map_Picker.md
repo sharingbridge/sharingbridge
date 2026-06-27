@@ -2,7 +2,17 @@
 
 **Status:** Shipped (June 2026) — map UI when `GOOGLE_MAPS_API_KEY` is configured; form fallback otherwise.
 
-**Doc map:** [mobile-client.md](../configuration/mobile-client.md) · [Eco_Kitchen_Initiation_Flow.md](./Eco_Kitchen_Initiation_Flow.md)
+**Doc map:** [Location_Services_Vendor_Abstraction.md](./Location_Services_Vendor_Abstraction.md) · [mobile-client.md](../configuration/mobile-client.md) · [Eco_Kitchen_Initiation_Flow.md](./Eco_Kitchen_Initiation_Flow.md)
+
+---
+
+## Vendor strategy
+
+**One vendor per capability in v1** (Google map tiles + Nominatim geocode on integration-service), with **thin adapter seams** so later swaps need minimal code changes. Full decision record: [Location_Services_Vendor_Abstraction.md](./Location_Services_Vendor_Abstraction.md).
+
+- **Mobile pages** depend only on `HandoverLocationPicker` and `HttpGeocodeClient` — not on `google_maps_flutter` or Nominatim.
+- **Server** exposes stable `GET /v1/geocode/reverse`; Nominatim parsing stays in `postalGeocode.js`.
+- **One global app build**; regional provider differences are a **server/remote-config** concern when needed, not separate APKs per country by default.
 
 ---
 
@@ -101,6 +111,10 @@ Used in **Record seeker demand** (eco kitchen) and **Help a seeker** (direct ord
 
 ## Future
 
+See also [Location_Services_Vendor_Abstraction.md § Future](./Location_Services_Vendor_Abstraction.md#future-not-shipped).
+
+- `GEOCODER_PROVIDER` / `MAP_TILE_PROVIDER` env switches (adapters only; stable client contracts)
+- `GET /v1/client-config` for deployment-level map hints
 - Places autocomplete (Google Places or Mapbox)
 - iOS Maps SDK key in `AppDelegate`
 - Optional `formatted_address` persisted on `seeker_demands` / `order_intents`

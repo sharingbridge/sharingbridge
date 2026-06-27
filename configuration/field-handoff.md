@@ -19,7 +19,7 @@ Handover suitability is **fixed in-app guidance**, not a backend geo score.
 | 2 | **Capture handover location** → confirm label + coordinates → optional reference photo + verbal notes → instruction-pack (integration → ai-orchestration) |
 | 3 | Review instructions → **Copy instructions to clipboard and register order intent** → vendor preset links unlock |
 
-Handover location fields (`location_label`, `location_lat`, `location_lng`) and how they differ from vendor-app delivery address: [mobile-client.md § Handover location](./mobile-client.md#handover-location--label-coordinates-postal-area).
+Handover location fields (`location_label`, `location_lat`, `location_lng`) and how they differ from vendor-app delivery address: [mobile-client.md § Handover location](./mobile-client.md#handover-location--map-picker-address-pickup-note). Vendor strategy (one map/geocode vendor, adapter seams): [Location_Services_Vendor_Abstraction.md](../design/Location_Services_Vendor_Abstraction.md).
 
 ## Order intent (shipped on integration-service)
 

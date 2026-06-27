@@ -29,6 +29,7 @@ New here or unsure which file to open? Use this section. It defines **reading or
 | **Product vocabulary, verbiage & marketplace** | [development/PRODUCT_MODEL.md](development/PRODUCT_MODEL.md) § Documentation verbiage |
 | **Configurator, unified initiation, payer** | [design/Configurator_Role_and_Unified_Initiation.md](design/Configurator_Role_and_Unified_Initiation.md) |
 | **Eco kitchens — three routes, connection, payment boundaries** | [design/Eco_Kitchen_Initiation_Flow.md](design/Eco_Kitchen_Initiation_Flow.md) |
+| **Handover location & map vendors (one vendor, thin adapters)** | [design/Location_Services_Vendor_Abstraction.md](design/Location_Services_Vendor_Abstraction.md) · [design/Handover_Location_Map_Picker.md](design/Handover_Location_Map_Picker.md) |
 | **How we build (phases, repos, AI)** | [development/ENGINEERING_PLAN.md](development/ENGINEERING_PLAN.md) |
 | **BRD steps 1–12 with diagrams** | [design/SharingBridge_End_to_End_Workflow.md](design/SharingBridge_End_to_End_Workflow.md) |
 | **Order payment / delivery proof** | [design/Future_Extensions.md](design/Future_Extensions.md) § Phase A–B only |
@@ -94,6 +95,8 @@ AGENT_SESSION.md                  ← Agent next tasks
 | [e2e-deployment-sequence.md](configuration/e2e-deployment-sequence.md) | OAuth → Render → verify |
 | [environment-variables.md](configuration/environment-variables.md) | All env keys |
 | [field-handoff.md](configuration/field-handoff.md) | Help a seeker / order intent |
+| [design/Location_Services_Vendor_Abstraction.md](design/Location_Services_Vendor_Abstraction.md) | Map/geocode vendor strategy (one vendor per capability) |
+| [design/Handover_Location_Map_Picker.md](design/Handover_Location_Map_Picker.md) | Cab-style handover map picker (shipped) |
 
 ## Key Features
 
@@ -167,7 +170,7 @@ A facilitator platform that:
 
 ### AI/ML (MVP)
 - **LLM:** Groq (text) + Gemini (vision) via ai-orchestration; `deterministic` mode for CI/offline
-- **Geo:** Nominatim reverse geocode (live instruction-pack)
+- **Geo:** Nominatim reverse geocode on integration-service (`/v1/geocode/reverse`); Google Maps **tiles only** on mobile when configured — [Location_Services_Vendor_Abstraction.md](design/Location_Services_Vendor_Abstraction.md)
 - **Location safety service:** deferred; handover guidance in-app
 
 ### Infrastructure (MVP)

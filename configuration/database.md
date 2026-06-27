@@ -300,7 +300,7 @@ Set **`DATABASE_URL`** on user-service, integration-service, and photo-service (
 |--------|---------|
 | `created_at` | **Order intent taken** time (initiator registered intent — not a vendor order). |
 | `delivered_at` | Nullable; **Delivered at** on dashboard ([schema-delivered-at-migration.sql](./schema-delivered-at-migration.sql) on older DBs). Populated when delivery-partner flow exists. |
-| `location` / `locality_key` | PostGIS neighbourhood filters; list may return computed **`distance_m`** (metres, not stored). |
+| `location` / `locality_key` | PostGIS neighbourhood filters; list may return computed **`distance_m`** (metres, not stored). `locality_key` is derived server-side (v1: Nominatim) — vendor-agnostic on clients; see [Location_Services_Vendor_Abstraction.md](../design/Location_Services_Vendor_Abstraction.md). |
 
 Dashboard spec: [PRODUCT_MODEL.md](../development/PRODUCT_MODEL.md).
 

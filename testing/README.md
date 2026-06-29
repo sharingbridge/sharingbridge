@@ -10,7 +10,7 @@ system without reading code.
   validation of shipped modules (integration-service +
   **ai-orchestration** deterministic MVP + mobile + web dashboard): automated
   `pytest` / `npm test` / `flutter test` / Vitest; manual API smoke
-  (three-service stack); **§3** mobile E2E (**§3h** handover map); **§4** web coordinator dashboard (Google Sign-In);
+  (three-service stack); **§3** mobile E2E (**§3-build** release APK, **§3h** handover map); **§4** web coordinator dashboard (Google Sign-In);
   **§6** hosted Render smoke.
 - Handover location docs (reading order): [README.md § Documentation guide](../README.md#documentation-guide) steps **10–13**.
 - [`../configuration/e2e-deployment-sequence.md`](../configuration/e2e-deployment-sequence.md) —

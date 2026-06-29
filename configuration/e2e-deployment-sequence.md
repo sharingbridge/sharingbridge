@@ -365,9 +365,24 @@ GOOGLE_CLIENT_ID=<Android client id>
 WEB_DASHBOARD_URL=https://<your-static-site>.onrender.com
 ```
 
-Rebuild APK with `google-services.json` + Firebase SHA fingerprints — [mobile-client.md](./mobile-client.md) § FCM push · [notification-service-local.md](./notification-service-local.md).
+**Build release APK** (same defines baked in at compile time):
 
-See [mobile-client.md](./mobile-client.md).
+```powershell
+cd D:\kannan\sharingbridge\sharingbridge-mobile-app
+flutter pub get
+flutter build apk --release `
+  --dart-define=GOOGLE_CLIENT_ID=<Android OAuth client ID> `
+  --dart-define=USER_SERVICE_BASE_URL=https://<your-user-service>.onrender.com `
+  --dart-define=API_BASE_URL=https://<your-integration-service>.onrender.com `
+  --dart-define=PHOTO_SERVICE_BASE_URL=https://<your-photo-service>.onrender.com `
+  --dart-define=WEB_DASHBOARD_URL=https://<your-static-site>.onrender.com
+```
+
+Add `--dart-define=HANDOVER_MAP_ENABLED=true` when shipping the map picker (`GOOGLE_MAPS_API_KEY` in `local.properties`).
+
+Output: `build\app\outputs\flutter-apk\app-release.apk`. Optional handover map: `GOOGLE_MAPS_API_KEY` in `android/local.properties` **and** `--dart-define=HANDOVER_MAP_ENABLED=true` on the build line.
+
+Rebuild APK with `google-services.json` + Firebase SHA fingerprints — [mobile-client.md](./mobile-client.md) § FCM push · [notification-service-local.md](./notification-service-local.md). Full test steps: [MANUAL_TESTING_GUIDE.md](../testing/MANUAL_TESTING_GUIDE.md) **§3-build**.
 
 ---
 

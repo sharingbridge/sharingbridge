@@ -76,17 +76,18 @@ Authorization: Bearer <initiator JWT>
    GOOGLE_MAPS_API_KEY=AIza…
    ```
 
-4. Rebuild or `flutter run` — Gradle sets `HANDOVER_MAP_ENABLED=true` when the key is present (no duplicate `--dart-define` for the API key).
+4. Pass **`--dart-define=HANDOVER_MAP_ENABLED=true`** on `flutter run` / `flutter build apk` (map UI). Gradle may auto-add `true` when the key is set and you omit the flag; explicit `true` is recommended.
 
    ```powershell
    flutter run -d <device> `
+     --dart-define=HANDOVER_MAP_ENABLED=true `
      --dart-define=API_BASE_URL=… `
      …
    ```
 
 Optional: `--dart-define=HANDOVER_MAP_ENABLED=false` forces the form fallback.
 
-Without `GOOGLE_MAPS_API_KEY` in `local.properties`, the app uses the **form fallback** (`HandoverLocationConfirmCard`).
+Without **`HANDOVER_MAP_ENABLED=true`** (and without Gradle auto-inject), the app uses the **form fallback** (`HandoverLocationConfirmCard`) even if a key is present.
 
 ---
 
@@ -94,7 +95,7 @@ Without `GOOGLE_MAPS_API_KEY` in `local.properties`, the app uses the **form fal
 
 | Widget | When |
 |--------|------|
-| `HandoverLocationPicker` | Entry — map when `HANDOVER_MAP_ENABLED` (auto from `local.properties` key); else form |
+| `HandoverLocationPicker` | Entry — map when `HANDOVER_MAP_ENABLED=true` (+ native key for tiles); else form |
 | `HandoverLocationMapPicker` | Map + address + pickup note |
 | `HandoverLocationConfirmCard` | Fallback without map flag / without native key |
 

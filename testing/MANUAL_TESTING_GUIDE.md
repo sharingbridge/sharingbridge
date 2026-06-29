@@ -625,7 +625,39 @@ Then use **`http://127.0.0.1:8080`** (and `:8081`, `:8092`) in all three `--dart
 | `flutter run` (debug) | Allowed (cleartext only in debug/profile manifests) |
 | Release APK for testers / Play Store | Use **`https://`** Render URLs only — release builds block cleartext |
 
-See also [configuration/mobile-client.md](../configuration/mobile-client.md) § Local networking.
+See also [configuration/mobile-client.md](../configuration/mobile-client.md) § Local networking and **§ Release APK**.
+
+### 3-build. Release APK (hosted Render)
+
+**Docs:** [mobile-client.md § Release APK](../configuration/mobile-client.md#release-apk-flutter-build-apk---release) · [e2e-deployment-sequence.md](../configuration/e2e-deployment-sequence.md) § Mobile.
+
+Use this when testers need a **sideloaded APK** (no USB / no `flutter run`). Release builds require **`https://`** API URLs — use the **Hosted** row from **§3-host**.
+
+**Prerequisites:** Phases 2–5 of [e2e-deployment-sequence.md](../configuration/e2e-deployment-sequence.md) (backends + static site live); Android OAuth client with **release** SHA-1 if you sign with a release keystore (debug SHA-1 suffices while APK uses debug signing). Optional map: `GOOGLE_MAPS_API_KEY` in `android/local.properties` **and** `--dart-define=HANDOVER_MAP_ENABLED=true`; `google-services.json` for FCM.
+
+**Handover map:** two build-time settings — API key in `local.properties` (tiles) + `HANDOVER_MAP_ENABLED=true` (map UI). See [mobile-client.md § Handover map](../configuration/mobile-client.md#handover-map-picker--two-settings-not-one).
+
+```powershell
+cd D:\kannan\sharingbridge\sharingbridge-mobile-app
+flutter pub get
+flutter build apk --release `
+  --dart-define=HANDOVER_MAP_ENABLED=true `
+  --dart-define=GOOGLE_CLIENT_ID=<Android OAuth client ID> `
+  --dart-define=USER_SERVICE_BASE_URL=https://<your-user-service>.onrender.com `
+  --dart-define=API_BASE_URL=https://<your-integration-service>.onrender.com `
+  --dart-define=PHOTO_SERVICE_BASE_URL=https://<your-photo-service>.onrender.com `
+  --dart-define=WEB_DASHBOARD_URL=https://<your-static-site>.onrender.com
+```
+
+(Omit `HANDOVER_MAP_ENABLED=true` only if you rely on Gradle auto-inject when the key is in `local.properties`; explicit `true` is recommended.)
+
+**Verify:**
+
+1. APK exists at `build\app\outputs\flutter-apk\app-release.apk`.
+2. Install (`adb install -r …` or copy to phone) → **Continue with Google** → walk **§3f** / **§3h** against hosted integration (`API_BASE_URL` must match web `VITE_API_BASE_URL`).
+3. Coordinator web **Refresh** (**§4c**) shows the intent from the same integration host.
+
+**Play Store:** `flutter build appbundle --release` with the same `--dart-define` flags — see mobile-client § Release APK.
 
 ### 3-run. Start an Android emulator
 
@@ -774,8 +806,8 @@ Walk through **§3f**; step 4 must show **Order intent registered** (or **update
 **Map UI (optional):**
 
 1. Google Cloud → **Maps SDK for Android** → API key restricted to `app.sharingbridge` + debug SHA-1 ([google-auth-setup.md](../configuration/google-auth-setup.md)).
-2. `sharingbridge-mobile-app/android/local.properties`: `GOOGLE_MAPS_API_KEY=AIza…` (see `local.properties.example`). Gradle sets `HANDOVER_MAP_ENABLED=true` — **no** `--dart-define` for the API key.
-3. Rebuild: `flutter run -d <device>` with your usual `API_BASE_URL` / `USER_SERVICE_BASE_URL` defines.
+2. `sharingbridge-mobile-app/android/local.properties`: `GOOGLE_MAPS_API_KEY=AIza…` (see `local.properties.example`) — **map tiles**.
+3. `flutter run` or `flutter build apk` with **`--dart-define=HANDOVER_MAP_ENABLED=true`** (map UI) plus your usual URL defines. Gradle may also inject `true` when the key is set and you omit the flag; passing it explicitly is clearer.
 
 **Verify (Help a seeker or Start initiation → eco kitchen):**
 
@@ -963,7 +995,7 @@ Use this after deploying per **[configuration/backend-render.md](../configuratio
 2. Mint a token locally: `node scripts/mint-dev-jwt.mjs demo-user initiator` in user-service (with hosted `AUTH_TOKEN_SECRET` in env if backfilling Render data).
 3. Call **hosted** integration `POST …/v1/donor-setup/suggest-vendors` and `POST …/v1/donor-seeker/instruction-pack` with `Authorization: Bearer <token>`.
 4. `POST …/v1/donor-seeker/order-intents` with the same Bearer token (see [configuration/backend-render.md](../configuration/backend-render.md) smoke script). First call returns HTTP **201** and `created: true`. Repeat the **same** `pack_id` — expect HTTP **200**, `created: false`, and the **same** `order_intent_id`.
-5. Run the mobile app (see [configuration/mobile-client.md](../configuration/mobile-client.md)). Walk **§3f**, eco kitchen routes, **§4f** Connection, and **§4g** FCM after kitchen commit.
+5. Run the mobile app — debug: `flutter run` ([mobile-client.md](../configuration/mobile-client.md)); hosted sideload: **§3-build** release APK. Walk **§3f**, eco kitchen routes, **§4f** Connection, and **§4g** FCM after kitchen commit.
 6. Deploy `sharingbridge-web-app` static site per [configuration/e2e-deployment-sequence.md](../configuration/e2e-deployment-sequence.md) Phases 3–5; **Sign in with Google** on the live URL and **Refresh** — **§4**.
 
 If suggest-vendors or instruction-pack fail, verify `AI_ORCHESTRATION_BASE_URL`, `AI_*_ENABLED=true`, and matching `AI_ORCHESTRATION_INTERNAL_API_KEY` on integration and ai-orchestration.
@@ -985,6 +1017,7 @@ If suggest-vendors or instruction-pack fail, verify `AI_ORCHESTRATION_BASE_URL`,
   with `code=missing_auth_context`.
 - Step 2g shows alice and bob with disjoint preset lists.
 - **§3-auth** or **§3-dev** on an **Android emulator** uses `10.0.2.2` for both user-service and integration URLs (**§3-host**).
+- Step **§3-build** produces `app-release.apk` with hosted `https://` URLs; installed app registers intents visible on web **§4c**.
 - Step **§3c** shows the mobile UI loading server presets on cold start,
   saving new picks (full mock list remains after save; **Saved presets** shows server truth),
   and falling back to the local cache when the backend is offline.

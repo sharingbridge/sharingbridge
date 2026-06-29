@@ -194,14 +194,14 @@ CORS is **not** set here — set `WEB_CORS_ORIGINS` on both Node backends. See [
 
 ## `sharingbridge-mobile-app` (`--dart-define`)
 
-No `.env` file — pass at **`flutter run`** / release build (compile time). Re-run `flutter run` after changing defines (hot reload is not enough).
+No `.env` file — pass at **`flutter run`** / **`flutter build apk --release`** / **`flutter build appbundle --release`** (compile time). Re-run the build after changing defines (hot reload is not enough).
 
 | Define | Local example | Production (Render) |
 |--------|---------------|---------------------|
 | `API_BASE_URL` | `http://10.0.2.2:8080` (emulator) or `http://<PC-LAN-IP>:8080` (phone) | `https://<integration-host>.onrender.com` — **must match** web `VITE_API_BASE_URL` |
 | `AUTH_TOKEN` | dev only — pre-minted JWT (`node scripts/mint-dev-jwt.mjs` in user-service) | omit — use Google Sign-In |
 | `GOOGLE_CLIENT_ID` | Android OAuth client ID from Google Cloud | same |
-| `HANDOVER_MAP_ENABLED` | optional — `true` / `false` | Override map picker vs form; **auto `true`** when `GOOGLE_MAPS_API_KEY` is in `android/local.properties` (see below — not a `--dart-define` API key) |
+| `HANDOVER_MAP_ENABLED` | `true` / `false` | **Map screen vs coordinate form** — pass `true` when you want the cab-style picker (recommended). Gradle may auto-add `true` when `GOOGLE_MAPS_API_KEY` is in `local.properties` and you omit this flag; explicit `true` is always correct for map builds. |
 | `PHOTO_SERVICE_BASE_URL` | `http://10.0.2.2:8092` or `http://<PC-LAN-IP>:8092` | `https://<photo-host>.onrender.com` |
 | `USER_ID` | dev only — pairs with `AUTH_TOKEN` | omit |
 | `USER_SERVICE_BASE_URL` | `http://10.0.2.2:8081` or `http://<PC-LAN-IP>:8081` | `https://<user-host>.onrender.com` |
@@ -211,7 +211,9 @@ No `.env` file — pass at **`flutter run`** / release build (compile time). Re-
 
 Emulator: use `10.0.2.2` instead of `localhost`. Physical phone: PC Wi‑Fi IPv4. Map picker setup: [mobile-client.md § Handover location](./mobile-client.md#handover-location--map-picker-address-pickup-note). Vendor strategy: [Location_Services_Vendor_Abstraction.md](../design/Location_Services_Vendor_Abstraction.md).
 
-**Google Maps API key (Android only):** set `GOOGLE_MAPS_API_KEY` in `android/local.properties` — **not** in this `--dart-define` table. Gradle injects the native manifest key and sets `HANDOVER_MAP_ENABLED=true` automatically.
+**Google Maps API key (Android only):** `GOOGLE_MAPS_API_KEY` in `android/local.properties` — **not** in `--dart-define`. Controls **native map tiles** only.
+
+**Map picker UI:** `--dart-define=HANDOVER_MAP_ENABLED=true` on the same `flutter run` / `flutter build` line. You need **both** the key (tiles) and `true` (map widget). `--dart-define=HANDOVER_MAP_ENABLED=false` forces the coordinate form even when a key is present.
 
 ---
 

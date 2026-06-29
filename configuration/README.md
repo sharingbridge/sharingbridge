@@ -86,6 +86,6 @@ Follow [e2e-deployment-sequence.md](./e2e-deployment-sequence.md) Phases 2–5.
 3. Wire `CONNECTION_NOTIFY_WEBHOOK_*` on integration — [notification-service-local.md](./notification-service-local.md)
 4. Static site `VITE_*` — [web-client.md](./web-client.md)
 5. `WEB_CORS_ORIGINS` on **both** backends = static site `https://…onrender.com`
-6. Mobile uses **same** integration host as `VITE_API_BASE_URL`; rebuild APK with `google-services.json` — [mobile-client.md](./mobile-client.md). Optional handover map: `GOOGLE_MAPS_API_KEY` in `android/local.properties` ([Handover_Location_Map_Picker.md](../design/Handover_Location_Map_Picker.md)).
+6. Mobile uses **same** integration host as `VITE_API_BASE_URL`; build release APK — [mobile-client.md § Release APK](./mobile-client.md#release-apk-flutter-build-apk---release) · [MANUAL_TESTING_GUIDE.md §3-build](../testing/MANUAL_TESTING_GUIDE.md). Optional handover map: `GOOGLE_MAPS_API_KEY` in `android/local.properties` ([Handover_Location_Map_Picker.md](../design/Handover_Location_Map_Picker.md)).
 
 **Testing:** [MANUAL_TESTING_GUIDE.md](../testing/MANUAL_TESTING_GUIDE.md) — mobile **§3**, web **§4d–4g**.

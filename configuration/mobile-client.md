@@ -125,6 +125,103 @@ flutter run -d emulator-5554 `
 
 **Web dashboard (coordinator):** [web-client.md](./web-client.md) lists all initiators’ order intents when `VITE_API_BASE_URL` matches mobile `API_BASE_URL` (same integration host).
 
+## Release APK (`flutter build apk --release`)
+
+Use a **release** build for sideloading to testers, physical devices without USB debugging, or before Play Store upload. **`--dart-define` values are baked in at compile time** — same set as `flutter run`, but hosted URLs must use **`https://`** (release blocks plain `http://` to LAN IPs).
+
+### Before you build
+
+| Item | Where |
+|------|--------|
+| Flutter SDK + Android SDK | `flutter doctor` |
+| API URLs + Google client | `--dart-define` on the command below ([environment-variables.md](./environment-variables.md) § mobile) |
+| Optional handover map | `GOOGLE_MAPS_API_KEY` in `local.properties` **and** `--dart-define=HANDOVER_MAP_ENABLED=true` ([§ Handover map](#handover-map-picker--two-settings-not-one)) |
+| Optional FCM push | `android/app/google-services.json` + Firebase SHA fingerprints — [§ FCM push](#fcm-push-connection-ready) |
+| Release signing | Debug keystore today (`build.gradle.kts` TODO); configure `key.properties` before Play Store |
+
+### Hosted Render (typical)
+
+Replace placeholders with your Render URLs (must match web `VITE_API_BASE_URL` / `VITE_USER_SERVICE_BASE_URL`):
+
+```powershell
+cd D:\kannan\sharingbridge\sharingbridge-mobile-app
+flutter pub get
+flutter build apk --release `
+  --dart-define=GOOGLE_CLIENT_ID=<Android OAuth client ID> `
+  --dart-define=USER_SERVICE_BASE_URL=https://<your-user-service>.onrender.com `
+  --dart-define=API_BASE_URL=https://<your-integration-service>.onrender.com `
+  --dart-define=PHOTO_SERVICE_BASE_URL=https://<your-photo-service>.onrender.com `
+  --dart-define=WEB_DASHBOARD_URL=https://<your-static-site>.onrender.com
+```
+
+Add `--dart-define=HANDOVER_MAP_ENABLED=true` when shipping the map picker (with `GOOGLE_MAPS_API_KEY` in `local.properties`). See [§ Handover map](#handover-map-picker--two-settings-not-one).
+
+**Output:** `build\app\outputs\flutter-apk\app-release.apk`
+
+**Install on a connected phone** (USB debugging on):
+
+```powershell
+$adb = "$env:LOCALAPPDATA\Android\Sdk\platform-tools\adb.exe"
+& $adb install -r build\app\outputs\flutter-apk\app-release.apk
+```
+
+Or copy the APK to the device and open it (allow install from unknown sources if prompted).
+
+### Handover map picker — two settings, not one
+
+The map picker needs **both** of these at build time. They are **not** interchangeable:
+
+| Setting | Where | What it controls |
+|---------|--------|------------------|
+| **`GOOGLE_MAPS_API_KEY`** | `android/local.properties` only | Native Google Maps SDK (manifest) — **map tiles** |
+| **`HANDOVER_MAP_ENABLED`** | `--dart-define=HANDOVER_MAP_ENABLED=true\|false` | Dart compile-time — **map screen vs coordinate form** |
+
+`local.properties` is read by **Gradle/Android only**. Flutter/Dart does **not** see the API key, so the key alone does **not** switch the UI to the map picker.
+
+**Recommended (map picker on):** set the key **and** pass the flag on every `flutter run` / `flutter build apk` / `flutter build appbundle`:
+
+```powershell
+flutter build apk --release `
+  --dart-define=HANDOVER_MAP_ENABLED=true `
+  --dart-define=GOOGLE_CLIENT_ID=<Android OAuth client ID> `
+  --dart-define=USER_SERVICE_BASE_URL=https://<your-user-service>.onrender.com `
+  --dart-define=API_BASE_URL=https://<your-integration-service>.onrender.com `
+  --dart-define=PHOTO_SERVICE_BASE_URL=https://<your-photo-service>.onrender.com `
+  --dart-define=WEB_DASHBOARD_URL=https://<your-static-site>.onrender.com
+```
+
+(With `GOOGLE_MAPS_API_KEY=AIza…` in `android/local.properties`.)
+
+**Form only (no map UI):**
+
+```powershell
+flutter build apk --release `
+  --dart-define=HANDOVER_MAP_ENABLED=false `
+  --dart-define=GOOGLE_CLIENT_ID=... `
+  ...
+```
+
+**Gradle convenience (optional):** if `GOOGLE_MAPS_API_KEY` is non-empty in `local.properties` and you **omit** `HANDOVER_MAP_ENABLED` on the command line, `android/app/build.gradle.kts` merges `HANDOVER_MAP_ENABLED=true` into Gradle’s `dart-defines`. That can save typing on `flutter run`, but **passing `--dart-define=HANDOVER_MAP_ENABLED=true` explicitly is clearer and always correct** when you want the map.
+
+**Do not** pass `HANDOVER_MAP_ENABLED=true` without `GOOGLE_MAPS_API_KEY` in `local.properties` — the map screen may show but tiles will not load. **Never** put the Maps API key in `--dart-define`.
+
+Same rules apply to `flutter run`. See [environment-variables.md](./environment-variables.md) § mobile.
+
+### Play Store (optional)
+
+```powershell
+flutter build appbundle --release `
+  --dart-define=GOOGLE_CLIENT_ID=... `
+  --dart-define=USER_SERVICE_BASE_URL=https://... `
+  --dart-define=API_BASE_URL=https://... `
+  --dart-define=PHOTO_SERVICE_BASE_URL=https://... `
+  --dart-define=WEB_DASHBOARD_URL=https://...
+```
+
+Upload `build\app\outputs\bundle\release\app-release.aab` in Google Play Console. Configure a release keystore in `android/app/build.gradle.kts` first (not debug signing).
+
+Manual walkthrough: [MANUAL_TESTING_GUIDE.md](../testing/MANUAL_TESTING_GUIDE.md) **§3-build**. Deploy context: [e2e-deployment-sequence.md](./e2e-deployment-sequence.md) § Mobile.
+
 ## Navigation (Home)
 
 After sign-in, the app uses an inner navigator with **SharingBridge** (hub) as the root route.
@@ -159,9 +256,9 @@ All initiation routes share **`HandoverLocationPicker`** on mobile (eco kitchen 
 | [Handover_Location_Map_Picker.md](../design/Handover_Location_Map_Picker.md) | Map picker UX, API, eco menu behaviour |
 | [Location_Services_Vendor_Abstraction.md](../design/Location_Services_Vendor_Abstraction.md) | **Vendor strategy** — one vendor per capability, adapter seams, env keys |
 
-**Vendor model (v1):** Google **map tiles only** when `GOOGLE_MAPS_API_KEY` is in `android/local.properties`; Gradle sets **`HANDOVER_MAP_ENABLED=true`** automatically. **Address + postal area** always from integration-service (`GET /v1/geocode/reverse` → Nominatim).
+**Vendor model (v1):** Google **map tiles** from `GOOGLE_MAPS_API_KEY` in `android/local.properties`; **map screen vs form** from `--dart-define=HANDOVER_MAP_ENABLED=true|false` (Gradle may auto-add `true` when the key is set and the flag is omitted — see [§ Release APK § Handover map](#handover-map-picker--two-settings-not-one)). **Address + postal area** always from integration-service (`GET /v1/geocode/reverse` → Nominatim).
 
-When the key is set in `local.properties`, the initiator sees a **cab-style map** (pan map, fixed pin). Otherwise the app falls back to editable coordinate fields (`HandoverLocationConfirmCard`). Override: `--dart-define=HANDOVER_MAP_ENABLED=false`.
+When `HANDOVER_MAP_ENABLED=true` and the native key is set, the initiator sees a **cab-style map** (pan map, fixed pin). With `HANDOVER_MAP_ENABLED=false` (or unset and no Gradle auto-inject), the app uses editable coordinate fields (`HandoverLocationConfirmCard`).
 
 | Field on screen | API field | Source |
 |-----------------|-----------|--------|
@@ -173,10 +270,10 @@ When the key is set in `local.properties`, the initiator sees a **cab-style map*
 ### Google Maps setup (Android)
 
 1. Enable **Maps SDK for Android** in Google Cloud; create an API key restricted to `app.sharingbridge` + debug/release SHA-1.
-2. `android/local.properties`: `GOOGLE_MAPS_API_KEY=AIza…` (see `local.properties.example`) — **only place the API key is required**.
-3. Rebuild or `flutter run` (no need to pass the key via `--dart-define`). Gradle sets `HANDOVER_MAP_ENABLED=true` when the key is present.
+2. `android/local.properties`: `GOOGLE_MAPS_API_KEY=AIza…` (see `local.properties.example`) — **tiles only**; Dart does not read this file.
+3. Pass **`--dart-define=HANDOVER_MAP_ENABLED=true`** on `flutter run` / `flutter build apk` (or rely on Gradle auto-inject when the key is set — explicit `true` is clearer).
 
-Optional: `--dart-define=HANDOVER_MAP_ENABLED=false` to force the coordinate form while keeping the native key (debug only).
+Optional: `--dart-define=HANDOVER_MAP_ENABLED=false` to force the coordinate form.
 
 Maps tiles use Google; **address and postal area** use integration-service (same Nominatim path as menu resolution) — no Google Geocoding API required for v1.
 
@@ -217,7 +314,7 @@ The separate reload control is **only shown** when coordinates have been edited 
 | 3 | Firebase Console → Android app package `app.sharingbridge` |
 | 4 | Download `google-services.json` → `sharingbridge-mobile-app/android/app/google-services.json` (template: `google-services.json.example`) |
 | 5 | Add APK signing **SHA-1** / **SHA-256** in Firebase (debug keystore for dev; release keystore for production) |
-| 6 | Rebuild APK — after sign-in, app registers token via `PUT /v1/device-tokens` |
+| 6 | Rebuild APK — [§ Release APK](#release-apk-flutter-build-apk---release) — after sign-in, app registers token via `PUT /v1/device-tokens` |
 
 Push fires when a coordinator records a **kitchen commit** on the Actions tab and integration-service POSTs to the notification webhook. Users can still open **Connection** in the web dashboard without push.
 

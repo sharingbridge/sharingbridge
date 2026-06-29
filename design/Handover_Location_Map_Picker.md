@@ -1,6 +1,6 @@
 # Handover location map picker
 
-**Status:** Shipped (June 2026) — map UI when `GOOGLE_MAPS_API_KEY` is configured; form fallback otherwise.
+**Status:** Shipped (June 2026) — map UI when `GOOGLE_MAPS_API_KEY` is in `android/local.properties`; form fallback otherwise.
 
 **Reading sequence:** [README.md § Natural reading order](../README.md#documentation-guide) — step **12** (after [field-handoff.md](../configuration/field-handoff.md) step 10 and [Location_Services_Vendor_Abstraction.md](./Location_Services_Vendor_Abstraction.md) step 11). **Next:** [mobile-client.md § Handover](../configuration/mobile-client.md#handover-location--map-picker-address-pickup-note) step 13.
 
@@ -76,16 +76,17 @@ Authorization: Bearer <initiator JWT>
    GOOGLE_MAPS_API_KEY=AIza…
    ```
 
-4. Run with the same key for map widget gating:
+4. Rebuild or `flutter run` — Gradle sets `HANDOVER_MAP_ENABLED=true` when the key is present (no duplicate `--dart-define` for the API key).
 
    ```powershell
    flutter run -d <device> `
-     --dart-define=GOOGLE_MAPS_API_KEY=AIza… `
      --dart-define=API_BASE_URL=… `
      …
    ```
 
-Without `GOOGLE_MAPS_API_KEY`, the app uses the **form fallback** (`HandoverLocationConfirmCard`).
+Optional: `--dart-define=HANDOVER_MAP_ENABLED=false` forces the form fallback.
+
+Without `GOOGLE_MAPS_API_KEY` in `local.properties`, the app uses the **form fallback** (`HandoverLocationConfirmCard`).
 
 ---
 

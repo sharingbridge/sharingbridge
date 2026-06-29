@@ -129,7 +129,7 @@ Handover location uses **one vendor per capability** with **thin adapter seams**
 
 | Capability | v1 vendor | Stable contract |
 |------------|-----------|-----------------|
-| Map tiles (mobile) | Google Maps SDK when `GOOGLE_MAPS_API_KEY` set; else form fallback | `HandoverLocationPicker` |
+| Map tiles (mobile) | Google Maps SDK when `GOOGLE_MAPS_API_KEY` in `local.properties`; else form fallback | `HandoverLocationPicker` (`HANDOVER_MAP_ENABLED`) |
 | Reverse geocode + `locality_key` | Nominatim on integration-service | `GET /v1/geocode/reverse` |
 | Persisted handover | — | `location_lat`, `location_lng`, `location_label` |
 

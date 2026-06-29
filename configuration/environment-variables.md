@@ -201,8 +201,7 @@ No `.env` file — pass at **`flutter run`** / release build (compile time). Re-
 | `API_BASE_URL` | `http://10.0.2.2:8080` (emulator) or `http://<PC-LAN-IP>:8080` (phone) | `https://<integration-host>.onrender.com` — **must match** web `VITE_API_BASE_URL` |
 | `AUTH_TOKEN` | dev only — pre-minted JWT (`node scripts/mint-dev-jwt.mjs` in user-service) | omit — use Google Sign-In |
 | `GOOGLE_CLIENT_ID` | Android OAuth client ID from Google Cloud | same |
-| `GOOGLE_MAPS_API_KEY` | optional — enables cab-style map picker | same — also set in `android/local.properties` for native Maps SDK |
-| `MAP_TILE_PROVIDER` | *(unset — implicit `google` when key set)* | **Reserved** — future `google` \| `osm` \| `mapbox`; v1 uses Google when `GOOGLE_MAPS_API_KEY` is non-empty |
+| `HANDOVER_MAP_ENABLED` | optional — `true` / `false` | Override map picker vs form; **auto `true`** when `GOOGLE_MAPS_API_KEY` is in `android/local.properties` |
 | `PHOTO_SERVICE_BASE_URL` | `http://10.0.2.2:8092` or `http://<PC-LAN-IP>:8092` | `https://<photo-host>.onrender.com` |
 | `USER_ID` | dev only — pairs with `AUTH_TOKEN` | omit |
 | `USER_SERVICE_BASE_URL` | `http://10.0.2.2:8081` or `http://<PC-LAN-IP>:8081` | `https://<user-host>.onrender.com` |

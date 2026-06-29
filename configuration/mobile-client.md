@@ -159,9 +159,9 @@ All initiation routes share **`HandoverLocationPicker`** on mobile (eco kitchen 
 | [Handover_Location_Map_Picker.md](../design/Handover_Location_Map_Picker.md) | Map picker UX, API, eco menu behaviour |
 | [Location_Services_Vendor_Abstraction.md](../design/Location_Services_Vendor_Abstraction.md) | **Vendor strategy** — one vendor per capability, adapter seams, env keys |
 
-**Vendor model (v1):** Google **map tiles only** when `GOOGLE_MAPS_API_KEY` is set; **address + postal area** always from integration-service (`GET /v1/geocode/reverse` → Nominatim). Initiation pages must not call map or geocode vendors directly — only `HandoverLocationPicker` and `HttpGeocodeClient`.
+**Vendor model (v1):** Google **map tiles only** when `GOOGLE_MAPS_API_KEY` is in `android/local.properties`; Gradle sets **`HANDOVER_MAP_ENABLED=true`** automatically. **Address + postal area** always from integration-service (`GET /v1/geocode/reverse` → Nominatim).
 
-When **`GOOGLE_MAPS_API_KEY`** is set at build time (and in `android/local.properties` for the native map), the initiator sees a **cab-style map** (pan map, fixed pin). Otherwise the app falls back to editable coordinate fields (`HandoverLocationConfirmCard`).
+When the key is set in `local.properties`, the initiator sees a **cab-style map** (pan map, fixed pin). Otherwise the app falls back to editable coordinate fields (`HandoverLocationConfirmCard`). Override: `--dart-define=HANDOVER_MAP_ENABLED=false`.
 
 | Field on screen | API field | Source |
 |-----------------|-----------|--------|
@@ -172,9 +172,11 @@ When **`GOOGLE_MAPS_API_KEY`** is set at build time (and in `android/local.prope
 
 ### Google Maps setup (Android)
 
-1. Enable **Maps SDK for Android** in Google Cloud; create an API key restricted to `app.sharingbridge`.
-2. `android/local.properties`: `GOOGLE_MAPS_API_KEY=AIza…` (see `local.properties.example`).
-3. Pass the same key to Flutter: `--dart-define=GOOGLE_MAPS_API_KEY=AIza…`
+1. Enable **Maps SDK for Android** in Google Cloud; create an API key restricted to `app.sharingbridge` + debug/release SHA-1.
+2. `android/local.properties`: `GOOGLE_MAPS_API_KEY=AIza…` (see `local.properties.example`) — **only place the API key is required**.
+3. Rebuild or `flutter run` (no need to pass the key via `--dart-define`). Gradle sets `HANDOVER_MAP_ENABLED=true` when the key is present.
+
+Optional: `--dart-define=HANDOVER_MAP_ENABLED=false` to force the coordinate form while keeping the native key (debug only).
 
 Maps tiles use Google; **address and postal area** use integration-service (same Nominatim path as menu resolution) — no Google Geocoding API required for v1.
 

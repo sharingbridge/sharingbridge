@@ -33,6 +33,8 @@ needed.
 | 14b | Web **Updates** banner (connection-ready) | `DashboardNotificationsBanner` — demand board on sign-in / **Refresh**; **§4d-b** |
 | 15 | **Notification-service** (FCM push) | `sharingbridge-notification-service`; **M5** + Firebase — [notification-service-local.md](../configuration/notification-service-local.md) |
 | 16 | Web **data boundaries** banner + coordinator **scope** (time / area) | `sharingbridge-web-app` — Initiations, Actions, Map share scope |
+| 17 | Mobile **handover map picker** + server reverse geocode | `HandoverLocationPicker`, `GET /v1/geocode/reverse` — [Handover_Location_Map_Picker.md](../design/Handover_Location_Map_Picker.md); setup [mobile-client.md § Handover](../configuration/mobile-client.md#handover-location--map-picker-address-pickup-note) |
+| 18 | Web **Initiations** / **Actions** mobile layout | `sharingbridge-web-app` — single-column Initiations on narrow viewports; scrollable Actions supply split — **§4c-d** |
 
 **Setup order:** [database-setup-sequence.md](../configuration/database-setup-sequence.md) (**1 → 2 → M1–M5** → notification deploy). Skipped steps: same doc § **If a step was skipped**.
 
@@ -310,7 +312,7 @@ $env:PORT = "8091"
 uvicorn app.main:app --host 0.0.0.0 --port 8091
 ```
 
-Use **Python 3.10+** (`python3.13`); see [ai-orchestration-local.md](../configuration/ai-orchestration-local.md). Start integration-service in a third PowerShell window (same **`DATABASE_URL`** in `.env` as user-service):
+Use **Python 3.10+** (`python3.13`); see [ai-orchestration-local.md](../configuration/ai-orchestration-local.md). Start integration-service in a third PowerShell window (same **`DATABASE_URL`** in `.env` as user-service; **`GIS_SCHEMA=extensions`** required):
 
 ```powershell
 cd D:\kannan\sharingbridge\sharingbridge-integration-service
@@ -320,6 +322,8 @@ $env:AI_INSTRUCTION_PACK_ENABLED = "true"
 npm start
 # Integration service listening on 8080 (PostgreSQL)
 ```
+
+If startup fails with `GIS_SCHEMA is required` or `order_intents.location column is required`, run SQL **1a + 1** per [database-setup-sequence.md](../configuration/database-setup-sequence.md).
 
 #### 2a.1 Integration AI env (copy from `env.example`)
 
@@ -739,10 +743,9 @@ Pick one approach:
 Uses the same authed **`GET …/preferences`** load as Vendor preset setup (saved presets). There is **no** separate field-flow draft in `shared_preferences` for this screen. The flow is **three steps** (see the step label at the top of the screen).
 
 1. From the home hub, tap **Help a seeker**.
-2. **Step 1 — Guidance:** read dignity and **photo consent** text, then tap **Continue to photo and instructions**.
-3. **Step 2 — Photo and AI:** optionally tap **Add reference photo** (**Take photo** or **Choose from gallery**; OS permission the first time). Optionally fill **Handover notes**. Tap **Get AI delivery instructions** — if a photo is attached, the app first uploads to **photo-service** (`POST /v1/photos/upload`, **§2b**), then calls `POST /v1/donor-seeker/instruction-pack` on integration-service with `reference_photo_artifact_id`. If integration is unreachable, the app falls back to a **local stub** (upload may still fail if photo-service is down). Use the app bar **Back** arrow to return to guidance and clear the photo/notes for this session.
-4. **Step 3 — Copy instructions and place order:** review the text in the filled card, tap **Copy instructions to clipboard and register order intent**. The app copies to the clipboard and calls `POST /v1/donor-seeker/order-intents` with reference photo URLs when upload succeeded. On first success you should see **Order intent registered** with a reference id and a SnackBar saying **Order intent registered**; **Open …** rows unlock for saved presets with valid **http/https** links. Paste into the vendor app’s delivery-notes field and complete payment there.
-5. **Repeat tap (same session):** tap the same button again without regenerating instructions. The server **updates** the existing intent for that `pack_id` (same reference id, HTTP `200`, `created: false` in the API body) — it does **not** create a second row. The SnackBar should say **Order intent updated**; the reference id on screen stays the same.
+2. **Step 1 — Guidance:** read dignity and **photo consent** text, then tap **Continue**.
+3. **Step 2 — Handover location:** confirm **pickup note** (≥3 characters) and coordinates. With `GOOGLE_MAPS_API_KEY` in `android/local.properties`, you see the **cab-style map** (pan + fixed pin); otherwise editable lat/lng fields. **Address** and **Postal area** load from `GET /v1/geocode/reverse` (integration-service must be on latest code). Optionally add **reference photo** and **Handover notes**, then tap **Get AI delivery instructions** (photo uploads to photo-service when attached — **§2b**).
+4. **Step 3 — Copy instructions and place order:** review the text, tap **Copy instructions to clipboard and register order intent**. Same registration behaviour as before (**Order intent registered** / **updated**).
 
 **Photo-service troubleshooting:** SnackBar “Could not upload photo…” → start **§2b**, check `PHOTO_SERVICE_BASE_URL` (**§3-host**), and `.env` (`CLOUDINARY_*` required). Physical device: use your PC’s Wi‑Fi IP, not `localhost` or `10.0.2.2`.
 
@@ -761,6 +764,27 @@ flutter run -d emulator-5554 `
 ```
 
 Walk through **§3f**; step 4 must show **Order intent registered** (or **updated** on repeat).
+
+### 3h. Handover map picker (mobile)
+
+**Docs:** [mobile-client.md § Handover](../configuration/mobile-client.md#handover-location--map-picker-address-pickup-note) · reading steps **10–13** in [README.md § Documentation guide](../README.md#documentation-guide).
+
+**Prerequisites:** integration-service deployed with `GET /v1/geocode/reverse` (hosted or local **§2**); initiator JWT (Google or dev token).
+
+**Map UI (optional):**
+
+1. Google Cloud → **Maps SDK for Android** → API key restricted to `app.sharingbridge` + debug SHA-1 ([google-auth-setup.md](../configuration/google-auth-setup.md)).
+2. `sharingbridge-mobile-app/android/local.properties`: `GOOGLE_MAPS_API_KEY=AIza…` (see `local.properties.example`). Gradle sets `HANDOVER_MAP_ENABLED=true` — **no** `--dart-define` for the API key.
+3. Rebuild: `flutter run -d <device>` with your usual `API_BASE_URL` / `USER_SERVICE_BASE_URL` defines.
+
+**Verify (Help a seeker or Start initiation → eco kitchen):**
+
+1. On handover step, **with key:** map + centre pin + read-only **Address** + editable **Pickup note** + read-only **Postal area**.
+2. Pan map or **Refresh GPS** — address/postal lines update after debounced geocode.
+3. **Without key** (empty `local.properties` line): coordinate form fallback (`HandoverLocationConfirmCard`) — flow still completes.
+4. Hosted Render: use `https://…integration…` as `API_BASE_URL`; redeploy integration if address line stays empty (`502` → check `NOMINATIM_USER_AGENT` on Render).
+
+**Eco kitchen:** after manual lat/lng edit on form fallback, menu clears until **Reload menu for updated coordinates**; **Refresh GPS** auto-reloads menu ([Handover_Location_Map_Picker.md](../design/Handover_Location_Map_Picker.md)).
 
 ### 3g. Order initiation history (mobile dashboard)
 
@@ -854,6 +878,13 @@ Requires **coordinator** role and integration-service with demand-board query su
 5. Set **Area** to **Near my location** → **Apply scope** — allow browser location when prompted; **Area** in the banner should mention distance from your location.
 6. **Reset** clears the form; click **Apply scope** again to return to all time / all areas.
 7. Header **Refresh** on List/Map should keep the last applied scope (not revert to defaults).
+
+### 4c-d. Initiations and Actions on narrow viewports
+
+Resize the browser to phone width (or DevTools device mode) while signed in as **coordinator**.
+
+1. **Initiations** — single column only (no duplicate empty detail pane on the right).
+2. **Actions** — scroll the supply split vertically; demand lines and pledge/kitchen ledger remain reachable.
 
 ### 4d. Actions tab (coordinator)
 
@@ -958,8 +989,10 @@ If suggest-vendors or instruction-pack fail, verify `AI_ORCHESTRATION_BASE_URL`,
   saving new picks (full mock list remains after save; **Saved presets** shows server truth),
   and falling back to the local cache when the backend is offline.
 - Step **2i** returns a non-empty `delivery_instructions` string when orchestration is enabled.
-- Step **3f** walks **Help a seeker** (guidance → optional photo upload to photo-service + instruction-pack → copy + vendor links; repeat copy updates the same order initiation).
+- Step **3f** walks **Help a seeker** (guidance → handover location + optional photo/instruction-pack → copy + register).
+- Step **3h** verifies handover map picker or form fallback + server reverse geocode (**§3-host** integration on latest deploy).
 - Step **4c** shows the coordinator web dashboard listing initiator order intents (including initiator `user_id` and reference photo thumbnail when uploaded) after mobile **§3f** on the same integration host.
 - Step **4c-b** shows the **Data boundaries** banner on Initiations / Actions / Map with sensible Time / Area / Limit copy.
 - Step **4c-c** lets coordinators **Apply scope** (time + area) and see Initiations, Map, and Actions stay aligned.
+- Step **4c-d** confirms **Initiations** / **Actions** layout on narrow viewports (single column; scrollable Actions ledger).
 - Step **4d** / **4d-b** / **4f** / **4g**: Actions pledge + kitchen commit; **Updates** banner on sign-in/refresh; Connection emails on web; FCM push on mobile (**M4** + **M5** + notification deploy).

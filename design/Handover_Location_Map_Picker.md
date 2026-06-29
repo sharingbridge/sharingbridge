@@ -94,9 +94,9 @@ Without `GOOGLE_MAPS_API_KEY` in `local.properties`, the app uses the **form fal
 
 | Widget | When |
 |--------|------|
-| `HandoverLocationPicker` | Entry point — picks map vs form |
+| `HandoverLocationPicker` | Entry — map when `HANDOVER_MAP_ENABLED` (auto from `local.properties` key); else form |
 | `HandoverLocationMapPicker` | Map + address + pickup note |
-| `HandoverLocationConfirmCard` | Fallback without Maps API key |
+| `HandoverLocationConfirmCard` | Fallback without map flag / without native key |
 
 Used in **Record seeker demand** (eco kitchen) and **Help a seeker** (direct order).
 

@@ -94,5 +94,8 @@ After shipping, update [STATUS.md](./STATUS.md) workstream table.
 - `feat`: AI orchestration wired (deterministic + `AI_LLM_MODE=live` Groq/Gemini).
 - `feat`: Postgres-only persistence; user-service preferences authority.
 - `feat`: Google Sign-In; coordinator dashboard; Initiations / Actions / Map.
+- `feat` (mobile): handover map picker + `GET /v1/geocode/reverse`; `HANDOVER_MAP_ENABLED` from `local.properties`.
+- `feat` (web): Initiations / Actions mobile layout fixes.
+- `docs`: location vendor ADR; unified reading sequence steps 10–13.
 
 Older history: git log on `sharingbridge` and service repos.

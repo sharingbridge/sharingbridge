@@ -201,7 +201,7 @@ No `.env` file — pass at **`flutter run`** / release build (compile time). Re-
 | `API_BASE_URL` | `http://10.0.2.2:8080` (emulator) or `http://<PC-LAN-IP>:8080` (phone) | `https://<integration-host>.onrender.com` — **must match** web `VITE_API_BASE_URL` |
 | `AUTH_TOKEN` | dev only — pre-minted JWT (`node scripts/mint-dev-jwt.mjs` in user-service) | omit — use Google Sign-In |
 | `GOOGLE_CLIENT_ID` | Android OAuth client ID from Google Cloud | same |
-| `HANDOVER_MAP_ENABLED` | optional — `true` / `false` | Override map picker vs form; **auto `true`** when `GOOGLE_MAPS_API_KEY` is in `android/local.properties` |
+| `HANDOVER_MAP_ENABLED` | optional — `true` / `false` | Override map picker vs form; **auto `true`** when `GOOGLE_MAPS_API_KEY` is in `android/local.properties` (see below — not a `--dart-define` API key) |
 | `PHOTO_SERVICE_BASE_URL` | `http://10.0.2.2:8092` or `http://<PC-LAN-IP>:8092` | `https://<photo-host>.onrender.com` |
 | `USER_ID` | dev only — pairs with `AUTH_TOKEN` | omit |
 | `USER_SERVICE_BASE_URL` | `http://10.0.2.2:8081` or `http://<PC-LAN-IP>:8081` | `https://<user-host>.onrender.com` |
@@ -210,6 +210,8 @@ No `.env` file — pass at **`flutter run`** / release build (compile time). Re-
 `WEB_DASHBOARD_URL` is the deployed **sharingbridge-web-app** origin (same URL you open in the browser for the coordinator/initiator dashboard). Without it, the home tile is visible but disabled. See [mobile-client.md](./mobile-client.md).
 
 Emulator: use `10.0.2.2` instead of `localhost`. Physical phone: PC Wi‑Fi IPv4. Map picker setup: [mobile-client.md § Handover location](./mobile-client.md#handover-location--map-picker-address-pickup-note). Vendor strategy: [Location_Services_Vendor_Abstraction.md](../design/Location_Services_Vendor_Abstraction.md).
+
+**Google Maps API key (Android only):** set `GOOGLE_MAPS_API_KEY` in `android/local.properties` — **not** in this `--dart-define` table. Gradle injects the native manifest key and sets `HANDOVER_MAP_ENABLED=true` automatically.
 
 ---
 

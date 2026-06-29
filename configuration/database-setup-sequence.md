@@ -26,7 +26,9 @@ Run each SQL file **once** in Supabase **SQL Editor** (or `psql -f`). Steps use 
 
 **Local Postgres prep** (skip for Supabase): [local-postgres-init.sql](./local-postgres-init.sql) → [local-postgres-create-database.sql](./local-postgres-create-database.sql) → **1a** + **1** → [local-postgres-grants.sql](./local-postgres-grants.sql).
 
-**App env (integration-service):** `DATABASE_URL` (same as user-service); `NOMINATIM_USER_AGENT` for GPS → postal `locality_key`.
+**App env (integration-service):** `DATABASE_URL` (same as user-service); **`GIS_SCHEMA=extensions`** (required); `NOMINATIM_USER_AGENT` for GPS → postal `locality_key`. **`GET /v1/geocode/reverse`** is code-only — no extra SQL beyond **1a + 1** geo columns.
+
+**After pulling map-picker / geocode code:** redeploy **integration-service** on Render; set `GIS_SCHEMA` if missing. Mobile: `GOOGLE_MAPS_API_KEY` in `android/local.properties` only — [mobile-client.md § Handover](../configuration/mobile-client.md#handover-location--map-picker-address-pickup-note).
 
 ---
 

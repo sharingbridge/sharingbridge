@@ -10,7 +10,7 @@ Repository: `sharingbridge-web-app` (Vite + React).
 
 | `role` | UI |
 |--------|-----|
-| `coordinator` | Full dashboard — **Initiations** \| **Actions** \| **Map** tabs; initiator email on each intent |
+| `coordinator` | Full dashboard — **Initiations** \| **Actions** \| **Map** tabs; initiator email on each intent. On **narrow viewports**, Initiations uses a single column; Actions supply split scrolls vertically ([MANUAL_TESTING_GUIDE.md §4c-d](../testing/MANUAL_TESTING_GUIDE.md)). |
 | `initiator` | Limited dashboard — neighbourhood window from integration `feed`; no other initiators’ emails |
 
 **Map tab (coordinator):** optional `VITE_GOOGLE_MAPS_API_KEY` enables Google Maps JavaScript tiles for plotting intents. List/geo filters use integration-service coordinates and `locality_key` — not client-side geocoding. Vendor strategy (mobile + web): [Location_Services_Vendor_Abstraction.md](../design/Location_Services_Vendor_Abstraction.md).

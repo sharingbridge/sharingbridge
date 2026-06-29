@@ -38,6 +38,8 @@ Direct order (vendor app)  +  Eco kitchen routes (pledge / I pay)
 | **Eco kitchen** | Eco_Kitchen_Initiation_Flow phases 1–6 | **Shipped** | Routes, consent, order codes, Connection, mobile I pay |
 | **Marketplace E** | IMPLEMENTATION § E | **Shipped** | Actions board, pledges, kitchen commit, web Updates banner |
 | **Connection notify** | Eco Kitchen phase 4 + M5 | **Code shipped** | FCM + notification-service; wire per env |
+| **Handover map + geocode** | [Handover_Location_Map_Picker.md](../design/Handover_Location_Map_Picker.md) | **Shipped** | Map picker + `/v1/geocode/reverse`; redeploy integration-service on hosted envs |
+| **Web mobile UX (Initiations / Actions)** | web-app | **Shipped** | Coordinator dashboard layout fixes on narrow viewports |
 | **Marketplace F–I** | IMPLEMENTATION § F–I | **Not started** | Beneficiary profile, transport, allocation |
 | **AI bridge** | AI_PLAN | **Shipped** | integration → ai-orchestration; flags on by default in `env.example` |
 | **AI live models** | AI_PLAN | **Shipped** | `AI_LLM_MODE=live` + Groq/Gemini keys — [ai-setup-handhold.md](../configuration/ai-setup-handhold.md) |
@@ -62,7 +64,7 @@ Direct order (vendor app)  +  Eco kitchen routes (pledge / I pay)
 | `sharingbridge-api-gateway`, `order-service`, `infra` | Scale path | **Not started** |
 | `sharingbridge-location-safety` | Geo scoring | **Archived** |
 
-Key integration routes: `suggest-vendors`, `instruction-pack`, `order-intents`, `seeker-demands`, `demand/board`, `pledges`, `vendor-bids`, `connections/:orderCode`, `device-tokens`. OpenAPI: [design/contracts/README.md](../design/contracts/README.md) (initiator handoff + marketplace + donor-setup presets).
+Key integration routes: `suggest-vendors`, `instruction-pack`, `order-intents`, `seeker-demands`, `demand/board`, `pledges`, `vendor-bids`, `connections/:orderCode`, `device-tokens`, **`geocode/reverse`**. OpenAPI: [design/contracts/README.md](../design/contracts/README.md) (initiator handoff + marketplace + donor-setup presets).
 
 ---
 

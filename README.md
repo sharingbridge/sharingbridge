@@ -70,7 +70,7 @@ Do not create parallel product-model files. Extend **PRODUCT_MODEL.md** (vocabul
 10. configuration/field-handoff.md                     — Help a seeker: handover in the user journey
 11. design/Location_Services_Vendor_Abstraction.md      — map/geocode vendor strategy (why + seams)
 12. design/Handover_Location_Map_Picker.md             — shipped cab-style picker + API
-13. configuration/mobile-client.md § Handover location — run on device (keys, GPS vs label)
+13. configuration/mobile-client.md § Handover location — device setup (`GOOGLE_MAPS_API_KEY` in `local.properties` only)
 14. Other deep dives as needed (auth, testing, web-client, environment-variables)
 ```
 

@@ -79,6 +79,8 @@ Secret generation: [authentication.md](./authentication.md). Postgres: [database
 - Web and mobile use **Google Sign-In** only on production (no dev token mint over HTTP).
 - photo-service: **Docker** — keep Render **Start Command** blank (`Dockerfile` + `start.sh`).
 - **`LOG_LEVEL`:** set `warn` (default) on all five backend APIs; use `info` temporarily for startup config dumps — see [environment-variables.md](./environment-variables.md#log_level-all-backend-apis).
+- **integration-service:** **`GIS_SCHEMA=extensions`** is **required** (Supabase spatial bootstrap). Set **`NOMINATIM_USER_AGENT`** for reverse geocode and postal `locality_key`. Redeploy after pulling `GET /v1/geocode/reverse` code.
+- **Mobile handover map:** optional `GOOGLE_MAPS_API_KEY` in `android/local.properties` (not Render) — [Handover_Location_Map_Picker.md](../design/Handover_Location_Map_Picker.md).
 
 After deploy, complete [e2e-deployment-sequence.md](./e2e-deployment-sequence.md) Phase 4 (Google origins + `WEB_CORS_ORIGINS`).
 

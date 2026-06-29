@@ -248,6 +248,10 @@ Deploy in order — [backend-render.md](./backend-render.md). Each repo’s **`r
 
 Set **Render production** column in [environment-variables.md](./environment-variables.md) on user-service, integration-service, photo-service, and notification-service. `DATABASE_URL`: [database-setup-sequence.md](./database-setup-sequence.md).
 
+**integration-service (required on latest code):** `GIS_SCHEMA=extensions` (must match Supabase spatial bootstrap); `NOMINATIM_USER_AGENT` for reverse geocode (`/v1/geocode/reverse`, menu `locality_key`). Without `GIS_SCHEMA`, the service **will not start**.
+
+**Mobile map picker (optional):** `GOOGLE_MAPS_API_KEY` in `android/local.properties` only — Gradle sets `HANDOVER_MAP_ENABLED=true`. Not a Render env var. See [mobile-client.md § Handover](./mobile-client.md#handover-location--map-picker-address-pickup-note).
+
 **This phase only:** `WEB_CORS_ORIGINS` may stay `http://localhost:5173` until Phase 4 if you test local Vite against hosted APIs; otherwise set the static site origin in Phase 4. Use Google Sign-In only on Render production (no dev JWT mint over HTTP).
 
 Note the two public URLs:

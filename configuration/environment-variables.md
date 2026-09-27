@@ -233,7 +233,7 @@ See [photo-service-local.md](./photo-service-local.md).
 | `GEMINI_API_KEY` | `AIza...` | Gemini vision for `image_description` + `seeker_appearance_hints` |
 | `GEMINI_VISION_MODEL` | `gemini-2.5-flash` | Gemini model for image analysis (`gemini-2.0-flash` shut down June 2026) |
 | `GROQ_API_KEY` | `gsk_...` | Groq text generation for `suggest-vendors` (vendor preset suggestions) and instruction-pack composition |
-| `GROQ_MODEL` | `llama-3.3-70b-versatile` | Groq model for text paths above |
+| `GROQ_MODEL` | `openai/gpt-oss-120b` | Groq model for text paths above (`llama-3.3-70b-versatile` retired 2026-08-16 on free/dev) |
 | `LOG_LEVEL` | `warn` | `error`, `warn`, `info`, or `debug` — see [LOG_LEVEL](#log_level-all-backend-apis) |
 | `NOMINATIM_USER_AGENT` | `SharingBridge/1.0 (ops@yourdomain.org)` | OSM reverse geocode identification (no API key needed) |
 | `PHOTO_SERVICE_BASE_URL` | `https://<photo-host>.onrender.com` | Source of signed image URLs that Gemini can fetch |

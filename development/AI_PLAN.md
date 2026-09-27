@@ -30,7 +30,7 @@ Two **free-tier** providers, one role each. Both called only from `sharingbridge
 | Provider | Role | Endpoints / steps | Models (staging defaults) |
 |----------|------|-------------------|---------------------------|
 | **Google Gemini** | **Vision** — reference photo at order-intent / instruction time | `image_description`, soft **seeker identification** (appearance only, no name claims) | `gemini-2.5-flash` (multimodal) |
-| **Groq** | **Text** — presets + instruction composition | `suggest-vendors` JSON; `delivery_instructions` + `seeker_handover_hints` using Gemini outputs + geocode + initiator notes | `llama-3.3-70b-versatile` |
+| **Groq** | **Text** — presets + instruction composition | `suggest-vendors` JSON; `delivery_instructions` + `seeker_handover_hints` using Gemini outputs + geocode + initiator notes | `openai/gpt-oss-120b` |
 
 **Why split**
 
@@ -208,7 +208,7 @@ suggest_vendors(payload):
 
 **Deploy:**
 
-- Render: `GROQ_API_KEY`, `GROQ_MODEL=llama-3.3-70b-versatile`, `AI_LLM_MODE=live`  
+- Render: `GROQ_API_KEY`, `GROQ_MODEL=openai/gpt-oss-120b`, `AI_LLM_MODE=live`  
 - Integration: `AI_SUGGEST_VENDORS_ENABLED=true`  
 
 **Done when:** Vendor preset setup search returns Groq-ranked vendors in staging.
@@ -279,7 +279,7 @@ See [SharingBridge_Technical_Architecture.md](../design/SharingBridge_Technical_
 |----------|---------|
 | `AI_LLM_MODE` | `deterministic` (CI/default) or `live` |
 | `GROQ_API_KEY` | [Groq console](https://console.groq.com/) — presets + instruction compose |
-| `GROQ_MODEL` | e.g. `llama-3.3-70b-versatile` |
+| `GROQ_MODEL` | e.g. `openai/gpt-oss-120b` |
 | `GROQ_BASE_URL` | default `https://api.groq.com/openai/v1` |
 | `GEMINI_API_KEY` | [Google AI Studio](https://aistudio.google.com/app/apikey) — vision only |
 | `GEMINI_VISION_MODEL` | `gemini-2.5-flash` |

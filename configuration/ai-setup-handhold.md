@@ -42,7 +42,7 @@ Other `source` values you may see:
 2. **API Keys** → **Create API Key**.
 3. Copy the key (starts with `gsk_`). Store it in a password manager; Groq shows it once.
 
-Default model in this project: `llama-3.3-70b-versatile`.
+Default model in this project: `openai/gpt-oss-120b` (Groq retired `llama-3.3-70b-versatile` on 2026-08-16 for free/dev tiers).
 
 ### Gemini (vision — reference photo description)
 
@@ -103,7 +103,7 @@ PORT=8091
 AI_LLM_MODE=live
 
 GROQ_API_KEY=gsk_your_key_here
-GROQ_MODEL=llama-3.3-70b-versatile
+GROQ_MODEL=openai/gpt-oss-120b
 
 GEMINI_API_KEY=your_gemini_key_here
 GEMINI_VISION_MODEL=gemini-2.5-flash
@@ -306,7 +306,7 @@ With `LOG_LEVEL=info` (debugging only), each instruction-pack request prints:
 ```text
 [instruction-pack] a1b2c3d4 start has_photo=true
 [gemini] vision request model=gemini-2.5-flash
-[groq] chat request model=llama-3.3-70b-versatile json=True
+[groq] chat request model=openai/gpt-oss-120b json=True
 [instruction-pack-live] done in 18432ms source=groq+gemini vision=True has_photo=True
 [instruction-pack] a1b2c3d4 done in 18432ms source=groq+gemini
 ```

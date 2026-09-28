@@ -19,7 +19,7 @@ Run each SQL file **once** in Supabase **SQL Editor** (or `psql -f`). Steps use 
 | **2** | [coordinator-seed.sql](./coordinator-seed.sql) | `coordinator` role for web dashboard (after your Gmail is in `users`) |
 | **M1** | [schema-marketplace-migration.sql](./schema-marketplace-migration.sql) | `standard_offers`, `meal_pledges`, `vendor_bids`, `demand_windows` |
 | **M2** | [schema-standard-offers-wire-migration.sql](./schema-standard-offers-wire-migration.sql) | `standard_offer_id` on pledges and vendor bids |
-| **M3** | [seed-standard-offers.sql](./seed-standard-offers.sql) | Postal catalog (`IN:TN:600115`); test mirror in integration `test/fixtures/standardOffersCatalog.js` |
+| **M3** | [seed-standard-offers.sql](./seed-standard-offers.sql) | Postal catalog (`IN:TN:600115`, `US:CA:95630`, state defaults `IN:TN` / `US:CA`) |
 | **M4** | [schema-eco-kitchen-phase3-migration.sql](./schema-eco-kitchen-phase3-migration.sql) | Order codes (`SB-…`), `initiation_route`, email-share consent |
 | **M5** | [schema-device-tokens-migration.sql](./schema-device-tokens-migration.sql) | `device_tokens` for FCM registration |
 | **Deploy** | notification-service + `CONNECTION_NOTIFY_WEBHOOK_*` + Firebase | Mobile **connection-ready** push after kitchen commit — [notification-service-local.md](./notification-service-local.md) |

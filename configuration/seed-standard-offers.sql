@@ -1,8 +1,10 @@
 -- Standard menu catalog keyed by hierarchical locality_key: {country}:{region}:{postal}
--- Example: IN:TN:600115 (Chennai Sholinganallur near 12.9427, 80.2379)
+-- Examples:
+--   IN:TN:600115 (Chennai Sholinganallur near 12.9427, 80.2379)
+--   US:CA:95630  (Folsom, California — Lembi Park / 95630)
 -- Run order: configuration/database-setup-sequence.md (step M3, after wire migration).
--- Test mirror: sharingbridge-integration-service/test/fixtures/standardOffersCatalog.js
 -- Clear old GPS-bucket rows first: reset-marketplace-data.sql
+-- Note: price_inr is the catalog amount column (MVP); values are local currency units for that area.
 
 DELETE FROM standard_offers
 WHERE locality_key LIKE '%,%'
@@ -48,6 +50,30 @@ INSERT INTO standard_offers (
     'IN:TN',
     'Full course lunch (state default)',
     110,
+    NOW(),
+    NOW()
+  ),
+  (
+    'so-us-ca-95630-lunch',
+    'US:CA:95630',
+    'Standard lunch (sandwich / bowl)',
+    12,
+    NOW(),
+    NOW()
+  ),
+  (
+    'so-us-ca-95630-dinner',
+    'US:CA:95630',
+    'Standard dinner (hot meal)',
+    15,
+    NOW(),
+    NOW()
+  ),
+  (
+    'so-us-ca-lunch-default',
+    'US:CA',
+    'California default lunch',
+    12,
     NOW(),
     NOW()
   )

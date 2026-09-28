@@ -20,6 +20,7 @@ Run each SQL file **once** in Supabase **SQL Editor** (or `psql -f`). Steps use 
 | **M1** | [schema-marketplace-migration.sql](./schema-marketplace-migration.sql) | `standard_offers`, `meal_pledges`, `vendor_bids`, `demand_windows` |
 | **M2** | [schema-standard-offers-wire-migration.sql](./schema-standard-offers-wire-migration.sql) | `standard_offer_id` on pledges and vendor bids |
 | **M3** | [seed-standard-offers.sql](./seed-standard-offers.sql) | Postal catalog (`IN:TN:600115`, `US:CA:95630`, state defaults `IN:TN` / `US:CA`) |
+| **M3a** | [schema-standard-offers-currency-migration.sql](./schema-standard-offers-currency-migration.sql) | `currency` column on `standard_offers`; re-run **M3** seed (sets ISO codes per row) |
 | **M4** | [schema-eco-kitchen-phase3-migration.sql](./schema-eco-kitchen-phase3-migration.sql) | Order codes (`SB-…`), `initiation_route`, email-share consent |
 | **M5** | [schema-device-tokens-migration.sql](./schema-device-tokens-migration.sql) | `device_tokens` for FCM registration |
 | **Deploy** | notification-service + `CONNECTION_NOTIFY_WEBHOOK_*` + Firebase | Mobile **connection-ready** push after kitchen commit — [notification-service-local.md](./notification-service-local.md) |
@@ -106,6 +107,7 @@ DONE
 | [schema-marketplace-migration.sql](./schema-marketplace-migration.sql) | **M1** |
 | [schema-standard-offers-wire-migration.sql](./schema-standard-offers-wire-migration.sql) | **M2** |
 | [seed-standard-offers.sql](./seed-standard-offers.sql) | **M3** |
+| [schema-standard-offers-currency-migration.sql](./schema-standard-offers-currency-migration.sql) | **M3a** |
 | [schema-eco-kitchen-phase3-migration.sql](./schema-eco-kitchen-phase3-migration.sql) | **M4** |
 | [schema-device-tokens-migration.sql](./schema-device-tokens-migration.sql) | **M5** |
 | [coordinator-seed.sql](./coordinator-seed.sql) | **2** |
@@ -126,6 +128,7 @@ DONE
 | Actions tab `schema_pending` | **M1** |
 | `column p.standard_offer_id does not exist` | **M2** |
 | Empty menu picker | **M3** |
+| Menu shows wrong currency symbol | **M3a** + re-run **M3** seed (currency is per-row in DB); redeploy integration + rebuild mobile/web |
 | No `SB-…` order codes | **M4** |
 | No `device_tokens` row after sign-in | **M5** + APK with `google-services.json` |
 | No push after commit | notification-service deploy + `CONNECTION_NOTIFY_WEBHOOK_*` + Firebase Admin JSON |
@@ -133,4 +136,4 @@ DONE
 
 ---
 
-**Last updated:** 2026-06 — progressive **1a → 1 → 2 → M1–M5 → notification deploy**.
+**Last updated:** 2026-09 — progressive **1a → 1 → 2 → M1–M5 → notification deploy**; **M3a** adds DB-driven `currency` on `standard_offers`.

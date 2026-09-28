@@ -540,6 +540,11 @@ components:
             price_inr:
               type: number
               nullable: true
+              description: Catalog amount in the offer currency (column name is historical)
+            currency:
+              type: string
+              description: ISO 4217 code (e.g. INR, USD)
+              example: INR
             locality_key:
               type: string
             seeker_demand_id:

@@ -6,6 +6,7 @@ CREATE TABLE IF NOT EXISTS standard_offers (
   locality_key       TEXT NOT NULL,
   menu_label         TEXT NOT NULL,
   price_inr          INTEGER,
+  currency           TEXT NOT NULL,
   created_at         TIMESTAMPTZ NOT NULL,
   updated_at         TIMESTAMPTZ NOT NULL
 );

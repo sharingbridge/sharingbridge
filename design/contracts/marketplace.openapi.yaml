@@ -252,6 +252,11 @@ components:
         price_inr:
           type: number
           nullable: true
+          description: Catalog amount in the offer currency (column name is historical)
+        currency:
+          type: string
+          description: ISO 4217 code (e.g. INR, USD)
+          example: INR
         meal_units_default:
           type: integer
 
@@ -313,6 +318,11 @@ components:
         price_inr:
           type: number
           nullable: true
+          description: Catalog amount in the offer currency (column name is historical)
+        currency:
+          type: string
+          description: ISO 4217 code (e.g. INR, USD)
+          example: INR
         need_description:
           type: string
         verbal_notes:
@@ -363,6 +373,11 @@ components:
         price_inr:
           type: number
           nullable: true
+          description: Catalog amount in the offer currency (column name is historical)
+        currency:
+          type: string
+          description: ISO 4217 code (e.g. INR, USD)
+          example: INR
         demand_count:
           type: integer
         meal_units_total:

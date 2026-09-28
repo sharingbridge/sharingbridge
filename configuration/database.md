@@ -19,7 +19,7 @@ There is **no** runtime fallback to JSON files after cutover — import once, th
 | Initiator vendor presets | `donor_presets` | integration → user-service |
 | Order intents | `order_intents` | integration-service |
 | Seeker demands | `seeker_demands` | mobile eco kitchen / pledging routes |
-| Marketplace | `standard_offers`, `meal_pledges`, `vendor_bids` | SQL **M1–M3** |
+| Marketplace | `standard_offers` (incl. per-row `currency`), `meal_pledges`, `vendor_bids` | SQL **M1–M3a** |
 | Eco kitchen phase 3 | `order_code`, `initiation_route` columns | SQL **M4** |
 | FCM device tokens | `device_tokens` | SQL **M5** — [notification-service-local.md](./notification-service-local.md) |
 
